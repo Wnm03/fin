@@ -1,0 +1,92 @@
+--- a/lifeos/lifeos-registry.js	2026-07-12 15:58:53.459524323 +0000
++++ lifeos/lifeos-registry.js	2026-07-12 16:01:21.803611216 +0000
+@@ -3,11 +3,13 @@
+ // lihat personal-life-os-blueprint.md Langkah 1).
+ //
+ // PENTING: file ini MURNI DATA. Tidak ada logic, tidak ada akses D di sini
+-// — cuma daftar "field mana yang jadi sumber apa", dikonsumsi oleh
+-// adapters/*.js. Tidak mengubah D, tidak mengubah FEATURE_REGISTRY.
++// — cuma daftar "field mana yang jadi sumber apa". Registry ini bersifat
++// deklaratif dan saat ini belum dibaca secara terprogram oleh adapter
++// manapun di adapters/*.js. Tidak mengubah D, tidak mengubah FEATURE_REGISTRY.
+ 
+ // AREAS — domain yang tidak pernah "selesai". dSources = nama array D.*
+-// yang jadi sumber data Area ini (read-only, lihat masing-masing adapter).
++// yang jadi sumber data Area ini (read-only). Belum ada adapter yang
++// membaca array ini.
+ const LIFEOS_AREAS = [
+   { key: 'finance',   label: 'Finance',   icon: '💰', dSources: ['transactions', 'accounts', 'budgets', 'budgetReko', 'bills', 'billsArchive', 'debts', 'debtStrategy', 'piutang', 'pajakZakat'] },
+   { key: 'business',  label: 'Business',  icon: '🛒', dSources: ['cobek', 'cobekKategori', 'produsen', 'products', 'sewaKios'] },
+@@ -18,8 +20,8 @@
+ ];
+ 
+ // TODAY — irisan waktu, bukan penyimpanan sendiri. Tiap entri nunjuk ke
+-// array D.* + label; today-adapter.js yang menentukan logic "urgent hari
+-// ini" per sumber.
++// array D.* + label. today-adapter.js membaca field D.* secara langsung,
++// bukan melalui array ini.
+ const LIFEOS_TODAY_SOURCES = [
+   { key: 'bills',     dArr: 'bills',              label: 'Tagihan jatuh tempo' },
+   { key: 'reminders', dArr: 'reminders',           label: 'Pengingat umum' },
+@@ -28,8 +30,9 @@
+   { key: 'tukang',    dArr: 'tukangAbsensi',       label: 'Absensi Tukang/pekerja lepas' },
+ ];
+ 
+-// GOALS — sumber D.* per jenis goal (adapter murni, lihat
+-// adapters/goal-adapter.js — tidak menyimpan apa pun, dihitung on-the-fly).
++// GOALS — daftar referensi sumber D.* per jenis goal. goal-adapter.js
++// bersifat murni (tidak menyimpan apa pun, dihitung on-the-fly) dan
++// membaca field D.* secara langsung, bukan melalui array ini.
+ const LIFEOS_GOAL_SOURCES = [
+   { key: 'target',    dArr: 'targets',           areaKey: 'finance' },
+   { key: 'eduFund',   dArr: 'eduFunds',          areaKey: 'finance' },
+@@ -39,16 +42,21 @@
+   { key: 'debt',      dArr: 'debtStrategy',      areaKey: 'finance' },
+ ];
+ 
+-// PROJECTS — sumber legacy (Renovasi) yang di-merge dengan
+-// LifeOSStore.projects lewat project-adapter.js.
++// PROJECTS — deskripsi referensi sumber legacy (Renovasi). project-adapter.js
++// melakukan merge dengan LifeOSStore.projects dengan mengakses field D.*
++// secara langsung, bukan melalui const ini.
+ const LIFEOS_PROJECT_LEGACY_SOURCE = { key: 'renovasi', dArr: 'renovProjects', areaKey: 'business' };
+ 
+-// REVIEW — histori pasif existing yang jadi bahan sesi review.
++// REVIEW — daftar referensi histori pasif existing. review-adapter.js
++// membaca sumber-sumber ini secara langsung di kode, bukan melalui array
++// ini.
+ const LIFEOS_REVIEW_SOURCES = [
+   { key: 'wealth',      dArr: 'wealthSnapshots' },
+   { key: 'lifeBalance', dArr: 'lifeBalanceSnapshots' },
+   { key: 'assetAlloc',  dArr: 'assetAllocation' },
+ ];
+ 
+-// KNOWLEDGE — referensi (bukan sumber tulis) ke catatan privat lama.
++// KNOWLEDGE — deskripsi referensi (bukan sumber tulis) ke catatan privat
++// lama. knowledge-adapter.js mengakses D.catatan secara langsung di kode,
++// bukan melalui const ini.
+ const LIFEOS_KNOWLEDGE_REF_SOURCE = { key: 'catatan', dArr: 'catatan' };
+--- a/lifeos/lifeos-link-registry.js	2026-07-12 15:58:53.461504216 +0000
++++ lifeos/lifeos-link-registry.js	2026-07-12 15:59:27.728449804 +0000
+@@ -2,8 +2,8 @@
+ // eksplisit di SATU tempat (Gap #9, personal-life-os-blueprint.md).
+ //
+ // PENTING: murni data deklaratif. `match`/lookup di sini hanya MEMBACA
+-// D — tidak pernah menulis. Dikonsumsi oleh review-adapter.js &
+-// goal-adapter.js untuk tahu entri mana yang "sebenarnya sama".
++// D — tidak pernah menulis. Registry ini saat ini belum dibaca secara
++// terprogram oleh review-adapter.js maupun goal-adapter.js.
+ 
+ const LIFEOS_LINK_REGISTRY = [
+   {
+@@ -14,9 +14,7 @@
+       { arr: 'lifeBalanceSnapshots', note: 'komponen skor Dana Darurat — field persis perlu dicek ulang di hidup-seimbang.js sebelum dipakai' },
+     ],
+   },
+-  // Tambahkan relasi lain di sini kalau ditemukan (mis. Wishlist item yang
+-  // juga tercatat di Skor Hidup Seimbang sebagai No-Spend goal, dst) —
+-  // jangan hardcode relasi baru di file adapter/service manapun.
++  // Berisi entri relasi yang sudah didefinisikan sampai saat ini.
+ ];
+ 
+ function lifeOSFindLink(key) {

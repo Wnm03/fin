@@ -1,0 +1,30 @@
+--- a/scripts/build.js
++++ b/scripts/build.js
+@@ -126,6 +126,27 @@
+   'dashboard-hub-registry.js',
+   'dashboard-hub.js',
+   'dashboard-hub-search.js',
++
++  // --- LifeOS: layer orkestrasi read-only di atas D (lihat
++  // lifeos-data-model.md). Urutan WAJIB: store -> registry -> link-registry
++  // -> adapters -> services -> ui. Jangan diacak / disisipkan di tempat lain.
++  'lifeos/lifeos-store.js',
++  'lifeos/lifeos-registry.js',
++  'lifeos/lifeos-link-registry.js',
++  'lifeos/adapters/goal-adapter.js',
++  'lifeos/adapters/project-adapter.js',
++  'lifeos/adapters/today-adapter.js',
++  'lifeos/adapters/review-adapter.js',
++  'lifeos/adapters/knowledge-adapter.js',
++  'lifeos/services/project-service.js',
++  'lifeos/services/review-service.js',
++  'lifeos/services/knowledge-service.js',
++  'lifeos/ui/lifeos-home.js',
++  'lifeos/ui/today.js',
++  'lifeos/ui/goals.js',
++  'lifeos/ui/projects.js',
++  'lifeos/ui/review.js',
++  'lifeos/ui/knowledge.js',
+ ];
+ const ALL_SOURCE = [...GROUP_A, ...GROUP_B];
+ const HTML_FILES = ['index.html', 'app_production.html'];
