@@ -188,11 +188,11 @@ test('guard — dashboard-hub-search.js sama sekali tidak mereferensikan globalS
 
 // ---------- guard: tidak mengubah MODAL_HTML ----------
 
-test('guard — MODAL_HTML[] di modals.js & document.write(MODAL_HTML[i]) di kedua HTML tetap sinkron pada baseline (70) — Feature Search tidak menambah modal baru', () => {
+test('guard — MODAL_HTML[] di modals.js & document.write(MODAL_HTML[i]) di kedua HTML tetap sinkron pada baseline (71) — Feature Search tidak menambah modal baru', () => {
   const modalCtx = loadSource(['modals.js'], {}, ['MODAL_HTML']);
   assert.ok(Array.isArray(modalCtx.MODAL_HTML));
   const modalCount = modalCtx.MODAL_HTML.length;
-  assert.equal(modalCount, 70, 'MODAL_HTML berubah jumlah — seharusnya Tahap 2 Feature Search tidak menambah modal baru sama sekali');
+  assert.equal(modalCount, 71, 'MODAL_HTML berubah jumlah — seharusnya Tahap 2 Feature Search tidak menambah modal baru sama sekali');
 
   for (const htmlFile of ['index.html', 'app_production.html']) {
     const htmlSrc = fs.readFileSync(path.join(ROOT, htmlFile), 'utf8');
