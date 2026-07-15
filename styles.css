@@ -780,6 +780,14 @@ textarea.fi { resize: vertical; min-height: 80px; }
    seluruhnya ke class .dashhub-qa* (tidak ada deklarasi lama yang diubah).
    Token yang dipakai semuanya SUDAH ADA di :root (sama seperti Hero Card di
    atas) — tidak ada token baru. */
+/* Summary Cards (Tahap 5) disembunyikan — datanya (Pemasukan/Pengeluaran/
+   Bersih Bulan Ini/Jumlah Transaksi) 100% duplikat dgn Analytics Row
+   (Tahap 7) yang tampil tepat di bawahnya dan sudah mencakup angka yang
+   sama plus rasio %. DashboardHubSummary.render() TETAP dipanggil (tidak
+   diubah di JS, tidak menyentuh test dashboard-hub-summary.test.js) —
+   cuma outputnya disembunyikan lewat display:none supaya tidak dobel
+   secara visual di layar. Lihat DASHBOARD-DEDUP.md. */
+.dashhub-summary-grid{display:none;}
 .dashhub-qa-row{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--sp-3);margin-bottom:var(--sp-6);}
 .dashhub-qa-btn{
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;

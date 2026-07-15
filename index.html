@@ -53,7 +53,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Keluarga W</title>
-<link rel="stylesheet" href="styles.css?v=273">
+<link rel="stylesheet" href="styles.css?v=275">
 <script>
 /* Debug console (Eruda) — aktifkan sekali lewat ?debug=1 di URL, nempel via localStorage.
    Matikan lagi lewat ?debug=0. Tidak aktif buat user biasa. */
@@ -106,8 +106,8 @@ b.appendChild(closeBtn);
 }catch(_e){ console.error('Gagal tampilkan banner error modul:',_e); }
 };
 </script>
-<script src="app-bundle-a.min.js?v=273" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
-<script src="smoke-test.js?v=273" defer></script>
+<script src="app-bundle-a.min.js?v=275" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
+<script src="smoke-test.js?v=275" defer></script>
 <link rel="manifest" id="pwaManifestLink" href="manifest.json">
 </head>
 <body data-theme="dark">
@@ -1943,7 +1943,15 @@ b.appendChild(closeBtn);
        menyentuh FEATURE_REGISTRY/ADR-001. Diisi oleh DashboardHubSummary.render()
        (dipanggil dari DashboardHub.render() di dashboard-hub.js). Tambahan
        murni, tidak mengubah baris lain di atas/bawahnya (Hero Card & Quick
-       Actions tidak tersentuh). -->
+       Actions tidak tersentuh).
+
+       CATATAN DEDUP (lihat DASHBOARD-DEDUP.md): grid ini SENGAJA
+       disembunyikan lewat CSS (.dashhub-summary-grid{display:none} di
+       styles.css) karena 4 angkanya (Pemasukan/Pengeluaran/Bersih Bulan
+       Ini/Jumlah Transaksi) 100% duplikat dgn Analytics Row (Tahap 7) di
+       bawahnya. DashboardHubSummary.render() TETAP dipanggil apa adanya
+       (JS tidak diubah) supaya test lama tidak rusak — jangan hapus class
+       "dashhub-summary-grid" atau id "dashHubSummaryGrid" ini. -->
   <div class="dashhub-summary-grid" id="dashHubSummaryGrid"></div>
   <!-- DASHBOARD ANALYTICS (Sprint 1 Tahap 7 — Dashboard 2.0, lihat
        DASHBOARD-ANALYTICS.md). Baris kartu horizontal kecil, tepat di bawah
@@ -2393,6 +2401,6 @@ b.appendChild(closeBtn);
 <script>document.write(MODAL_HTML[68]);</script><!-- modal:goldZakatModal (Analisa Emas & Zakat) -->
 <script>document.write(MODAL_HTML[69]);</script><!-- modal:importShopExcelModal (Import dari Excel Shop) -->
 
-<script src="app-bundle-b.min.js?v=273" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
+<script src="app-bundle-b.min.js?v=275" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
 </body>
 </html>
