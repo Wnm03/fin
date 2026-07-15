@@ -181,7 +181,7 @@ test('PAGE_NAV_IDX — nilainya sesuai urutan 7 nav-item nyata di DOM (dashboard
   // PAGE_NAV_IDX datang dari sandbox vm (realm beda, prototype Object beda),
   // jadi disalin ke object polos di realm host dulu sebelum deepEqual.
   assert.deepEqual({ ...PAGE_NAV_IDX }, {
-    dashboard: 0, keuangan: 1, shop: 2, ai: 3, carnotes: 4, pajak: 5, settings: 6,
+    dashboard: 0, 'dashboard-hub': 0, keuangan: 1, shop: 2, ai: 3, carnotes: 4, pajak: 5, settings: 6,
   });
 });
 
