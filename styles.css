@@ -221,7 +221,7 @@ details.card[open] summary::after{transform:rotate(180deg)}
 .u-bgaccsoft { background:var(--accent-soft); }
 .u-rel { position:relative; }
 .u-mt8 { margin-top:8px; }
-.u-dnone { display:none !important; }
+.u-dnone { display:none; }
 /* ==== Utility classes tambahan (auto-generated dari audit inline style, Jul 2026) ==== */
 .u-fs10 { font-size:10px; }
 .u-fs11 { font-size:var(--fs-caption); }
