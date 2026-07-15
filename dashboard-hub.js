@@ -25,6 +25,7 @@
 
 const PAGE_NAV_IDX = {
   dashboard: 0,
+  'dashboard-hub': 0,
   keuangan: 1,
   shop: 2,
   ai: 3,
@@ -281,26 +282,40 @@ const DashboardHub = {
       if (mainGridCountEl0) mainGridCountEl0.textContent = '0';
       return;
     }
-    el.innerHTML = FEATURE_REGISTRY.map(cat => `
+    el.innerHTML = FEATURE_REGISTRY.map(cat => {
+      const collapseKey = `dashHubCat-${cat.key}`;
+      return `
       <div class="dashhub-cat" id="dashHubCat-${escapeHtml(cat.key)}">
-        <div class="dashhub-cat-head">
+        <div class="dashhub-cat-head" data-action="toggleCardCollapse" data-args='${escapeHtml(JSON.stringify([collapseKey, '$event']))}'>
           <div class="dashhub-cat-icon">${cat.icon}</div>
           <div>
             <div class="dashhub-cat-label">${escapeHtml(cat.label)}<span class="dashhub-cat-badge">${cat.features.length}</span></div>
             <div class="dashhub-cat-desc">${escapeHtml(cat.desc)}</div>
           </div>
+          <span class="card-collapse-toggle" id="${collapseKey}-chev" data-action="toggleCardCollapse" data-args='${escapeHtml(JSON.stringify([collapseKey, '$event']))}' aria-label="Buka/tutup kategori">▾</span>
         </div>
-        <div class="dashhub-feature-grid dashhub-feature-grid--icon">
-          ${cat.features.map(f => `
-            <div class="dashhub-feature-card dashhub-feature-card--icon" data-action="DashboardHub.open" data-args='${escapeHtml(JSON.stringify([f.key]))}' title="${escapeHtml(f.desc || '')}">
-              <div class="dashhub-fav-star${_dashHubIsFav(f.key) ? ' is-fav' : ''}" data-stop data-action="DashboardHubFavoritView.toggle" data-args='${escapeHtml(JSON.stringify([f.key]))}' role="button" tabindex="0" aria-label="${_dashHubIsFav(f.key) ? 'Hapus dari favorit: ' + escapeHtml(f.label) : 'Tambah ke favorit: ' + escapeHtml(f.label)}">★</div>
-              <div class="dashhub-feature-icon">${f.icon || cat.icon}</div>
-              <div class="dashhub-feature-name">${escapeHtml(f.label)}</div>
-            </div>
-          `).join('')}
+        <div class="card-collapse-body" id="${collapseKey}-cbody">
+          <div class="dashhub-feature-grid dashhub-feature-grid--icon">
+            ${cat.features.map(f => `
+              <div class="dashhub-feature-card dashhub-feature-card--icon" data-action="DashboardHub.open" data-args='${escapeHtml(JSON.stringify([f.key]))}' title="${escapeHtml(f.desc || '')}">
+                <div class="dashhub-fav-star${_dashHubIsFav(f.key) ? ' is-fav' : ''}" data-stop data-action="DashboardHubFavoritView.toggle" data-args='${escapeHtml(JSON.stringify([f.key]))}' role="button" tabindex="0" aria-label="${_dashHubIsFav(f.key) ? 'Hapus dari favorit: ' + escapeHtml(f.label) : 'Tambah ke favorit: ' + escapeHtml(f.label)}">★</div>
+                <div class="dashhub-feature-icon">${f.icon || cat.icon}</div>
+                <div class="dashhub-feature-name">${escapeHtml(f.label)}</div>
+              </div>
+            `).join('')}
+          </div>
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
+
+    // Terapkan preferensi collapse per kategori (localStorage cardCollapsePrefs) —
+    // pola sama persis dgn applyOneCardCollapsePref() dipanggil setelah render
+    // kartu lain (lihat modules-render.js). Dipanggil per-kategori krn semua
+    // kategori di-render sekaligus lewat 1 innerHTML di atas.
+    if (typeof applyOneCardCollapsePref === 'function') {
+      FEATURE_REGISTRY.forEach(cat => applyOneCardCollapsePref(`dashHubCat-${cat.key}`));
+    }
 
     // Badge jumlah total fitur di header kartu collapse "Semua Fitur" (lihat
     // #dashHubMainGridCard di index.html/app_production.html). Tambahan

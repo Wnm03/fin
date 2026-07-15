@@ -53,7 +53,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Keluarga W</title>
-<link rel="stylesheet" href="styles.css?v=292">
+<link rel="stylesheet" href="styles.css?v=301">
 <script>
 /* Debug console (Eruda) — aktifkan sekali lewat ?debug=1 di URL, nempel via localStorage.
    Matikan lagi lewat ?debug=0. Tidak aktif buat user biasa. */
@@ -106,11 +106,11 @@ b.appendChild(closeBtn);
 }catch(_e){ console.error('Gagal tampilkan banner error modul:',_e); }
 };
 </script>
-<script src="app-bundle-a.min.js?v=292" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
-<script src="smoke-test.js?v=292" defer></script>
+<script src="app-bundle-a.min.js?v=301" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
+<script src="smoke-test.js?v=301" defer></script>
 <link rel="manifest" id="pwaManifestLink" href="manifest.json">
 </head>
-<body data-theme="dark">
+<body data-theme="fresh">
 
 <!-- ONBOARDING -->
 <!-- BUGFIX: dulu div ini TIDAK punya class u-dnone, jadi selalu kelihatan sebagai kondisi
@@ -127,7 +127,7 @@ b.appendChild(closeBtn);
     <div class="fg"><label class="fl">Nama Panggilan</label><input class="fi" id="ob_nama" placeholder="W" value="W"></div>
     <div class="fg"><label class="fl">Gaji Pokok Harian (Rp)</label><input class="fi" id="ob_gaji" type="number" placeholder="65000" value="65000" inputmode="numeric" oninput="updateOnboardPreview()"></div>
     <div class="fg"><label class="fl">Kiriman Rutin/Minggu (Rp)</label><input class="fi" id="ob_kirim" type="number" placeholder="500000" value="500000" inputmode="numeric" oninput="updateOnboardPreview()"></div>
-    <div class="u-r12 u-fs12" id="obPreviewBox" style="background:var(--surface2);padding:12px 14px;margin:2px 0 14px;line-height:1.7"></div>
+    <div class="u-r12 u-fs12" id="obPreviewBox" style="background:var(--surface3);padding:12px 14px;margin:2px 0 14px;line-height:1.7"></div>
     <div class="fg"><label class="fl">PIN Keamanan (4 digit)</label><input class="fi" id="ob_pin" type="password" maxlength="4" placeholder="••••" inputmode="numeric"></div>
     <div class="fg"><label class="fl">Pilih Tema</label>
       <select class="fs" id="ob_tema">
@@ -339,7 +339,7 @@ b.appendChild(closeBtn);
       </div>
     </div>
     <div class="card-collapse-body" id="keuBudgetCard-cbody">
-    <div class="budget-tabbar u-flex u-gap6" style="margin-bottom:14px;background:var(--surface2);border-radius:var(--r-md);padding:3px">
+    <div class="budget-tabbar u-flex u-gap6" style="margin-bottom:14px;background:var(--surface3);border-radius:var(--r-md);padding:3px">
       <button type="button" class="budget-tab-btn active u-flex1 u-fs12 u-fw700 u-r8 u-pointer u-t2" data-tab="list" data-action="BudgetTabs.switchTo" data-args='["list"]' style="border:none;background:none;padding:8px 6px">📊 Bulan Ini</button>
       <button type="button" class="budget-tab-btn u-flex1 u-fs12 u-fw700 u-r8 u-pointer u-t2" data-tab="reko" data-action="BudgetTabs.switchTo" data-args='["reko"]' style="border:none;background:none;padding:8px 6px">🎯 Rekomendasi Otomatis</button>
     </div>
@@ -483,7 +483,7 @@ b.appendChild(closeBtn);
         <div><label class="fl">Sampai</label><input type="date" class="fi" id="txListTo" onchange="resetTxPageAndRender()"></div>
       </div>
     </div>
-    <div class="u-dnone u-mb10 u-r10" id="keuFilterPanel" style="padding:10px;background:var(--surface2)">
+    <div class="u-dnone u-mb10 u-r10" id="keuFilterPanel" style="padding:10px;background:var(--surface3)">
       <div class="u-gap8 u-mb8 u-grid2-nogap">
         <div><label class="fl">Tipe</label><select class="fs" id="kfTipe" onchange="resetTxPageAndRender()"><option value="semua">Semua</option><option value="income">Pemasukan</option><option value="expense">Pengeluaran</option><option value="transfer">Transfer</option></select></div>
         <div><label class="fl">Kategori</label><select class="fs" id="kfKat" onchange="onKfKatChange()"><option value="semua">Semua</option></select></div>
@@ -644,7 +644,7 @@ b.appendChild(closeBtn);
       <div class="stat-box"><div class="stat-label">Tagihan Jatuh Tempo 30 Hari</div><div class="stat-val red u-fs13" id="cfBillsDue">Rp 0</div></div>
       <div class="stat-box"><div class="stat-label">Saldo Sekarang</div><div class="stat-val u-fs13" id="cfSaldoNow">Rp 0</div></div>
     </div>
-    <div class="u-r12" style="padding:12px 14px;background:var(--surface2)">
+    <div class="u-r12" style="padding:12px 14px;background:var(--surface3)">
       <div class="u-flex u-jcb u-aic"><span class="u-fs12t2">Proyeksi Saldo 30 Hari Lagi</span><span class="stat-val" id="cfProjected" style="font-size:17px">Rp 0</span></div>
       <div class="u-fs11 u-ctext3 u-mt4" id="cfNote"></div>
     </div>
@@ -1131,7 +1131,7 @@ b.appendChild(closeBtn);
         <div class="stat-box clickable" data-action="showFilteredTx" data-args='["dashboard", "income", "\ud83d\udc9a Penghasilan Bulan Ini (dasar Zakat Penghasilan)"]'><div class="stat-label">Penghasilan Bulan Ini</div><div class="stat-val green" id="zpIncomeBulan">Rp 0</div></div>
         <div class="stat-box"><div class="stat-label" title="Nisab = batas minimal penghasilan bulanan yang mewajibkan zakat (setara 85 gram emas / 12 bulan)">Nisab / Bulan ℹ️</div><div class="stat-val" id="zpNisabBulan">Rp 0</div></div>
       </div>
-      <div class="u-r12 u-mb10" id="zpStatusBox" style="padding:12px;background:var(--surface2)">
+      <div class="u-r12 u-mb10" id="zpStatusBox" style="padding:12px;background:var(--surface3)">
         <div class="u-flex u-jcb u-aic u-mb4"><span class="u-fs12t2">Status</span><span class="u-fw700 u-fs13" id="zpStatus">-</span></div>
         <div class="u-flex u-jcb u-aic"><span class="u-fs12t2">Zakat wajib dibayar (2,5%)</span><span id="zpJumlah" class="stat-val orange u-fs16">Rp 0</span></div>
       </div>
@@ -1147,7 +1147,7 @@ b.appendChild(closeBtn);
         <div class="stat-box clickable" data-action="goToList" data-args='["assetList", null]'><div class="stat-label">Total Harta Zakatable</div><div class="stat-val" id="zmTotalHarta">Rp 0</div></div>
         <div class="stat-box"><div class="stat-label" title="Nisab = batas minimal harta yang mewajibkan zakat maal, setara harga 85 gram emas saat ini">Nisab (85gr emas) ℹ️</div><div class="stat-val" id="zmNisab">Rp 0</div></div>
       </div>
-      <div class="u-r12 u-mb10" id="zmStatusBox" style="padding:12px;background:var(--surface2)">
+      <div class="u-r12 u-mb10" id="zmStatusBox" style="padding:12px;background:var(--surface3)">
         <div class="u-flex u-jcb u-aic u-mb4"><span class="u-fs12t2">Status</span><span class="u-fw700 u-fs13" id="zmStatus">-</span></div>
         <div class="u-flex u-jcb u-aic"><span class="u-fs12t2">Zakat maal (2,5%)</span><span id="zmJumlah" class="stat-val orange u-fs16">Rp 0</span></div>
       </div>
@@ -1177,7 +1177,7 @@ b.appendChild(closeBtn);
       <div class="card-title">🧾 Estimasi PPh 21 (Orang Pribadi) <span class="card-collapse-toggle" id="pjPPh21Card-chev" data-action="toggleCardCollapse" data-args='["pjPPh21Card","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
       <div class="card-collapse-body" id="pjPPh21Card-cbody">
       <div class="u-hint10">Estimasi tahunan pakai tarif progresif Pasal 17 UU HPP. Untuk potongan bulanan riil, kantor/pemberi kerja memakai skema TER (PP 58/2023) yang hasilnya bisa sedikit berbeda tiap bulan.</div>
-      <div class="u-flex u-jcb u-aic u-fs12 u-r10 u-mb8" style="padding:8px 10px;background:var(--surface2)"><span class="u-t2">📅 Lapor SPT Tahunan (batas 31 Maret)</span><span id="pphSptBadge" class="u-fw700">-</span></div>
+      <div class="u-flex u-jcb u-aic u-fs12 u-r10 u-mb8" style="padding:8px 10px;background:var(--surface3)"><span class="u-t2">📅 Lapor SPT Tahunan (batas 31 Maret)</span><span id="pphSptBadge" class="u-fw700">-</span></div>
       <button class="btn btn-ghost btn-full btn-sm u-mb4" data-action="ikatSptTagihan">🔔 Ikat ke Tagihan</button>
       <div class="u-fs11 u-t2 u-mb10 u-lh15" id="sptBillStatus"></div>
       <div class="fg u-mb8"><label class="fl">Penghasilan Bruto / Bulan <span class="u-fw400 u-t2">(tersimpan otomatis)</span></label><input type="text" inputmode="numeric" class="fi" id="pphBruto" placeholder="0" oninput="hitungPPh21()"></div>
@@ -1206,7 +1206,7 @@ b.appendChild(closeBtn);
         <div class="u-flex u-jcb u-fs12 u-mb6"><span class="u-t2">PTKP (<span id="pphStatusLabel">TK/0</span>)</span><span id="pphPTKP" class="u-fw700">Rp 0</span></div>
         <div class="u-flex u-jcb u-fs13 u-mb10" style="padding-top:6px;border-top:1px solid var(--border)"><span class="u-ctext">Penghasilan Kena Pajak (PKP)</span><span class="u-fw800" id="pphPKP">Rp 0</span></div>
         <div class="u-fs11 u-t2 u-mb10 u-lh16" id="pphBracketDetail"></div>
-        <div class="u-r12" style="padding:12px;background:var(--surface2)">
+        <div class="u-r12" style="padding:12px;background:var(--surface3)">
           <div class="u-flex u-jcb u-aic u-mb4"><span class="u-fs12t2">PPh 21 Terutang / Tahun</span><span id="pphSetahun" class="stat-val red u-fs16">Rp 0</span></div>
           <div class="u-flex u-jcb u-aic"><span class="u-fs12t2">≈ Per Bulan</span><span id="pphPerBulan" class="stat-val u-fs14">Rp 0</span></div>
         </div>
@@ -1232,7 +1232,7 @@ b.appendChild(closeBtn);
       <div class="hr-divider"></div>
       <div class="u-flex u-jcb u-fs12 u-mb6"><span class="u-t2">NJOP Total</span><span id="pbbNjopTotal" class="u-fw700">Rp 0</span></div>
       <div class="u-flex u-jcb u-fs13 u-mb10" style="padding-top:6px;border-top:1px solid var(--border)"><span class="u-ctext">NJOP Kena Pajak</span><span class="u-fw800" id="pbbNjopKenaPajak">Rp 0</span></div>
-      <div class="u-r12" style="padding:12px;background:var(--surface2)">
+      <div class="u-r12" style="padding:12px;background:var(--surface3)">
         <div class="u-flex u-jcb u-aic"><span class="u-fs12t2">PBB Terutang / Tahun</span><span id="pbbTerutang" class="stat-val red u-fs16">Rp 0</span></div>
       </div>
       <div class="hr-divider"></div>
@@ -2087,7 +2087,7 @@ b.appendChild(closeBtn);
       </div>
     </div>
     <div class="u-mt12 u-flex u-fdcol u-gap8" id="lbBars"></div>
-    <div class="u-dnone u-fs11 u-t2 u-mt8 u-r8 u-lh14" id="lbDataNote" style="padding:7px 9px;background:var(--surface2)"></div>
+    <div class="u-dnone u-fs11 u-t2 u-mt8 u-r8 u-lh14" id="lbDataNote" style="padding:7px 9px;background:var(--surface3)"></div>
     <div class="u-mt10" id="lbFocus"></div>
     </div>
   </div>
@@ -2432,6 +2432,6 @@ b.appendChild(closeBtn);
 <script>document.write(MODAL_HTML[69]);</script><!-- modal:importShopExcelModal (Import dari Excel Shop) -->
 <script>document.write(MODAL_HTML[70]);</script><!-- modal:mergeProductModal (Gabungkan Harga Produk) -->
 
-<script src="app-bundle-b.min.js?v=292" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
+<script src="app-bundle-b.min.js?v=301" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
 </body>
 </html>

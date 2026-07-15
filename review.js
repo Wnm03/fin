@@ -19,7 +19,7 @@ const LifeOSReview = {
         ${snapshots.wealth ? `<div>Kekayaan terakhir: ${escapeHtml(String(snapshots.wealth.netWorth ?? ''))}</div>` : ''}
         ${snapshots.lifeBalance ? `<div>Skor Hidup Seimbang terakhir tercatat</div>` : ''}
       </div>
-      <button data-action="LifeOSReview.startWeekly">Mulai Weekly Review</button>
+      <button class="btn btn-primary btn-full" style="margin-top:4px" data-action="LifeOSReview.startWeekly">🔁 Mulai Weekly Review</button>
     `;
   },
 

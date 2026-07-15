@@ -28,15 +28,15 @@ if(location.hostname==='localhost'||location.hostname==='127.0.0.1')return true;
 }catch(e){ /* anggap bukan dev mode kalau gagal deteksi */ }
 return false;
 }
-const APP_BUILD_VERSION = 'fix-udnone-important-css-2026-07-30';
-const PRODUCTION_BUILD_SYNCED_VERSION = 'fix-udnone-important-css-2026-07-30';
+const APP_BUILD_VERSION = 'fix-udnone-important-css-2026-07-39';
+const PRODUCTION_BUILD_SYNCED_VERSION = 'fix-udnone-important-css-2026-07-39';
 let D = {
 schemaVersion:SCHEMA_VERSION,
 transactions:[],cobek:[],products:[],produsen:[],cobekKategori:JSON.parse(JSON.stringify(DEFAULT_COBEK_KATEGORI)),targets:[],eduFunds:[],reminders:[],bills:[],billsArchive:[],
 catatan:{anak:[]},
 milestones:[false,false,false,false,false],
 nextPulang:'',lastBackup:null,lastResetPromptDate:null,
-profile:{nama:'W',gajiPokok:65000,kiriman:500000,theme:'dark',lemburMultiplier:1.5,tarifMinggu:139000,tanggalLahir:null,statusKawin:false,tanggungan:0,statusPekerjaan:null,targetGajiBulanan:null},
+profile:{nama:'W',gajiPokok:65000,kiriman:500000,theme:'fresh',lemburMultiplier:1.5,tarifMinggu:139000,tanggalLahir:null,statusKawin:false,tanggungan:0,statusPekerjaan:null,targetGajiBulanan:null},
 categories:{income:JSON.parse(JSON.stringify(DEFAULT_CATS.income)),expense:JSON.parse(JSON.stringify(DEFAULT_CATS.expense))},
 accounts:JSON.parse(JSON.stringify(DEFAULT_ACCOUNTS)),
 vehicles:[{id:'veh_1',name:'Vario 125',emoji:'🏍️',serviceIntervalKm:3000}],
