@@ -85,6 +85,10 @@ return `<div style="display:flex;justify-content:space-between;align-items:${ddI
         </div>`;
 }).join('')+
 '<div class="u-fs11 u-t2 u-mt10 u-lh15">⚠️ Ini cuma ilustrasi persentase umum, bukan saran investasi personal/berlisensi. Nama produk, jangka waktu, dan porsi pastinya perlu disesuaikan sama tujuan & riset kamu sendiri, atau konsultasi ke perencana keuangan berlisensi OJK.</div>';
+// Widget Rekomendasi AI (invest-ai-widget.js) — opsional, di-guard supaya
+// renderOne() tetap aman kalau file itu belum/tidak dimuat. Widget di-APPEND
+// ke box yang sama, TIDAK menimpa ilustrasi alokasi di atas.
+if(typeof InvestAI!=='undefined')InvestAI.mountInto(box);
 },
 init(suffix){
 AlokasiAset.renderOne(suffix||'');

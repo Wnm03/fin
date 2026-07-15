@@ -80,6 +80,7 @@ const GROUP_A = [
   'linktx.js',
   'renovasi.js',
   'aset.js',
+  'invest-ai-widget.js',
   'aset-emas-impor.js',
   'worthit.js',
 ];
@@ -130,6 +131,9 @@ const GROUP_B = [
   'dashboard-hub-favorit-view.js',
   'ai-command-center.js',
   'self-reward-engine.js',
+  'self-reward-view.js',
+  'self-reward-ai-widget.js',
+  'investasi.js',
 
   // --- LifeOS: layer orkestrasi read-only di atas D (lihat
   // lifeos-data-model.md). Urutan WAJIB: store -> registry -> link-registry
