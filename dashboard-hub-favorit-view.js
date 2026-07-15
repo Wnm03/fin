@@ -43,7 +43,7 @@ function resolveFavoritEntries(favoritKeys, registry) {
       if (f) { found = f; break; }
     }
     if (found) {
-      entries.push({ key: found.key, label: found.label, desc: found.desc, icon: null, target: found.target });
+      entries.push({ key: found.key, label: found.label, desc: found.desc, icon: found.icon || null, target: found.target });
     }
     // Key tidak ketemu di kategori maupun leaf manapun -> fitur/kategori itu
     // sudah dihapus developer dari registry -> di-skip diam-diam (§4.1
@@ -74,10 +74,10 @@ const DashboardHubFavoritView = {
     }
     section.classList.remove('u-dnone');
     list.innerHTML = entries.map((it) => `
-      <div class="dashhub-feature-card" data-action="DashboardHub.open" data-args='${escapeHtml(JSON.stringify([it.key]))}'>
+      <div class="dashhub-feature-card dashhub-feature-card--icon" data-action="DashboardHub.open" data-args='${escapeHtml(JSON.stringify([it.key]))}' title="${escapeHtml(it.desc || '')}">
         <div class="dashhub-fav-star is-fav" data-stop data-action="DashboardHubFavoritView.toggle" data-args='${escapeHtml(JSON.stringify([it.key]))}' role="button" tabindex="0" aria-label="${'Hapus dari favorit: ' + escapeHtml(it.label)}">★</div>
+        <div class="dashhub-feature-icon">${it.icon || '⭐'}</div>
         <div class="dashhub-feature-name">${escapeHtml(it.label)}</div>
-        <div class="dashhub-feature-desc">${escapeHtml(it.desc)}</div>
       </div>
     `).join('');
   },

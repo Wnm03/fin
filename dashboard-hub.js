@@ -277,6 +277,8 @@ const DashboardHub = {
     if (!el) return;
     if (typeof FEATURE_REGISTRY === 'undefined' || !FEATURE_REGISTRY.length) {
       el.innerHTML = '<div class="empty"><div class="empty-text">Belum ada data fitur</div></div>';
+      const mainGridCountEl0 = document.getElementById('dashHubMainGridCount');
+      if (mainGridCountEl0) mainGridCountEl0.textContent = '0';
       return;
     }
     el.innerHTML = FEATURE_REGISTRY.map(cat => `
@@ -288,17 +290,26 @@ const DashboardHub = {
             <div class="dashhub-cat-desc">${escapeHtml(cat.desc)}</div>
           </div>
         </div>
-        <div class="dashhub-feature-grid">
+        <div class="dashhub-feature-grid dashhub-feature-grid--icon">
           ${cat.features.map(f => `
-            <div class="dashhub-feature-card" data-action="DashboardHub.open" data-args='${escapeHtml(JSON.stringify([f.key]))}'>
+            <div class="dashhub-feature-card dashhub-feature-card--icon" data-action="DashboardHub.open" data-args='${escapeHtml(JSON.stringify([f.key]))}' title="${escapeHtml(f.desc || '')}">
               <div class="dashhub-fav-star${_dashHubIsFav(f.key) ? ' is-fav' : ''}" data-stop data-action="DashboardHubFavoritView.toggle" data-args='${escapeHtml(JSON.stringify([f.key]))}' role="button" tabindex="0" aria-label="${_dashHubIsFav(f.key) ? 'Hapus dari favorit: ' + escapeHtml(f.label) : 'Tambah ke favorit: ' + escapeHtml(f.label)}">★</div>
+              <div class="dashhub-feature-icon">${f.icon || cat.icon}</div>
               <div class="dashhub-feature-name">${escapeHtml(f.label)}</div>
-              <div class="dashhub-feature-desc">${escapeHtml(f.desc)}</div>
             </div>
           `).join('')}
         </div>
       </div>
     `).join('');
+
+    // Badge jumlah total fitur di header kartu collapse "Semua Fitur" (lihat
+    // #dashHubMainGridCard di index.html/app_production.html). Tambahan
+    // murni — cuma isi teks 1 elemen, tidak menyentuh grid di atas.
+    const mainGridCountEl = document.getElementById('dashHubMainGridCount');
+    if (mainGridCountEl) {
+      const totalFeatures = FEATURE_REGISTRY.reduce((s, c) => s + c.features.length, 0);
+      mainGridCountEl.textContent = String(totalFeatures);
+    }
 
     // LifeOS (section terpisah, lihat #lifeOSWrap di index.html/
     // app_production.html & lifeos/ui/lifeos-home.js). Tambahan murni —

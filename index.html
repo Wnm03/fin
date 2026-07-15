@@ -53,7 +53,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Keluarga W</title>
-<link rel="stylesheet" href="styles.css?v=281">
+<link rel="stylesheet" href="styles.css?v=292">
 <script>
 /* Debug console (Eruda) — aktifkan sekali lewat ?debug=1 di URL, nempel via localStorage.
    Matikan lagi lewat ?debug=0. Tidak aktif buat user biasa. */
@@ -106,8 +106,8 @@ b.appendChild(closeBtn);
 }catch(_e){ console.error('Gagal tampilkan banner error modul:',_e); }
 };
 </script>
-<script src="app-bundle-a.min.js?v=281" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
-<script src="smoke-test.js?v=281" defer></script>
+<script src="app-bundle-a.min.js?v=292" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
+<script src="smoke-test.js?v=292" defer></script>
 <link rel="manifest" id="pwaManifestLink" href="manifest.json">
 </head>
 <body data-theme="dark">
@@ -797,14 +797,25 @@ b.appendChild(closeBtn);
     <button class="btn btn-ghost btn-full btn-sm u-mb8" data-action="Etalase.openMergeModal">🔗 Gabungkan Harga Produk</button>
     <div class="u-fs12 u-t2 u-mb8">💡 Stok juga otomatis bertambah kalau kamu catat pengeluaran kategori "Bisnis" sub "Shop" di tab Keuangan — 2 arah, tetap sinkron.</div>
     <div class="card" id="priceRekoWidgetCard" style="display:none">
-      <div class="card-title">🤖 Rekomendasi Harga Jual AI</div>
-      <div class="u-fs12 u-t2 u-mb8">Estimasi cepat & gratis (rule-based, dari margin rata-rata produk sekategori + biaya transport BBM) — bukan hasil AI+web search. Tap 🔍 di produk yang ditandai buat verifikasi ke harga pasar sungguhan via AI.</div>
-      <div id="priceRekoWidgetList"></div>
+      <div class="card-title">🤖 Rekomendasi Harga Jual AI <span class="card-collapse-toggle" id="priceRekoWidgetCard-chev" data-action="toggleCardCollapse" data-args='["priceRekoWidgetCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
+      <div class="card-collapse-body" id="priceRekoWidgetCard-cbody">
+        <div class="u-fs12 u-t2 u-mb8">Estimasi cepat & gratis (rule-based, dari margin rata-rata produk sekategori + biaya transport BBM) — bukan hasil AI+web search. Tap 🔍 di produk yang ditandai buat verifikasi ke harga pasar sungguhan via AI.</div>
+        <div class="u-fs12 u-t2 u-mb6">🧮 Atau hitung ulang Harga Jual SEMUA produk sekaligus (bukan cuma yang ditandai) pakai Harga Beli masing-masing + Transport & Target Margin di bawah ini:</div>
+        <div class="u-grid2 u-mb8">
+          <div class="fg u-mb0"><label class="fl">Transport (Rp)</label><input type="number" class="fi" id="priceRekoBulkTransport" placeholder="0" inputmode="numeric"></div>
+          <div class="fg u-mb0"><label class="fl">Target Margin (%)</label><input type="number" class="fi" id="priceRekoBulkMargin" placeholder="50" inputmode="numeric"></div>
+        </div>
+        <button class="btn btn-primary btn-full btn-sm u-mb8" id="priceRekoWidgetApplyAll" data-action="PriceRekoWidget.applyBulk" aria-label="Terapkan ke Semua Produk">🧮 Terapkan ke Semua Produk (<span id="priceRekoWidgetCount">0</span>)</button>
+        <div id="priceRekoWidgetList"></div>
+      </div>
     </div>
     <div class="card" id="stockRekoWidgetCard" style="display:none">
-      <div class="card-title">📦 Rekomendasi Restock AI</div>
-      <div class="u-fs12 u-t2 u-mb8">Estimasi cepat & gratis (rule-based, dari kecepatan jual histori Penjualan Shop) — produk yang stoknya diperkirakan habis dalam ≤14 hari ditandai di sini, lengkap saran jumlah tambahan.</div>
-      <div id="stockRekoWidgetList"></div>
+      <div class="card-title">📦 Rekomendasi Restock AI <span class="card-collapse-toggle" id="stockRekoWidgetCard-chev" data-action="toggleCardCollapse" data-args='["stockRekoWidgetCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
+      <div class="card-collapse-body" id="stockRekoWidgetCard-cbody">
+        <div class="u-fs12 u-t2 u-mb8">Estimasi cepat & gratis (rule-based, dari kecepatan jual histori Penjualan Shop) — produk yang stoknya diperkirakan habis dalam ≤14 hari ditandai di sini, lengkap saran jumlah tambahan.</div>
+        <button class="btn btn-ghost btn-full btn-sm u-mb8 u-dnone" id="stockRekoWidgetApplyAll" data-action="StockRekoWidget.applyAll" aria-label="Tambah Semua Stok">➕ Tambah Semua Stok (<span id="stockRekoWidgetCount">0</span>)</button>
+        <div id="stockRekoWidgetList"></div>
+      </div>
     </div>
     <div class="card"><div class="card-title">📦 Etalase Produk</div><div id="productList" class="shop-product-grid"><div class="empty"><div class="empty-icon">📦</div><div class="empty-text">Belum ada produk</div></div></div></div>
   </div>
@@ -1983,10 +1994,28 @@ b.appendChild(closeBtn);
         <div class="dashhub-cat-desc">Akses cepat fitur pilihan Anda</div>
       </div>
     </div>
-    <div class="dashhub-feature-grid" id="dashHubFavoritList"></div>
+    <div class="dashhub-feature-grid dashhub-feature-grid--icon" id="dashHubFavoritList"></div>
   </div>
-  <div class="dashhub-wrap" id="dashboardHubWrap">
-    <div class="dashhub-grid" id="dashboardHubGrid"></div>
+  <!-- SEMUA FITUR — dibungkus jadi kartu collapse (fix "dashboard hub terlalu
+       mengganggu di tampilan utama"). Reuse PERSIS sistem collapse yang
+       sudah dipakai ~40+ kartu lain di app ini (toggleCardCollapse/
+       applyCardCollapsePrefs, lihat modal-navigasi.js) — TIDAK ada fungsi
+       toggle baru. Default TERTUTUP saat pertama kali dibuka (lihat
+       applyDashHubMainGridDefaultCollapse() di features-helpers-global-
+       security.js, dipanggil dari showMain()); setelah user pernah
+       membuka/menutup manual, pilihannya diingat via localStorage
+       cardCollapsePrefs sama seperti kartu lain — bukan collapse baru yang
+       terpisah. Isi grid (#dashboardHubGrid) & cara diisinya (DashboardHub.
+       render() di dashboard-hub.js) TIDAK diubah sama sekali. -->
+  <div class="card u-mb12" id="dashHubMainGridCard">
+    <div class="card-title">
+      🗂️ Semua Fitur <span class="u-flexc8"><span class="dashhub-cat-badge" id="dashHubMainGridCount"></span><span class="card-collapse-toggle" id="dashHubMainGrid-chev" data-action="toggleCardCollapse" data-args='["dashHubMainGrid","$event"]' aria-label="Buka/tutup bagian">▾</span></span>
+    </div>
+    <div class="card-collapse-body" id="dashHubMainGrid-cbody">
+      <div class="dashhub-wrap" id="dashboardHubWrap">
+        <div class="dashhub-grid" id="dashboardHubGrid"></div>
+      </div>
+    </div>
   </div>
   <!-- LIFE OS (lihat lifeos-data-model.md / personal-life-os-blueprint.md).
        Section di dalam Dashboard Hub, BUKAN page terpisah — showPage()
@@ -2004,7 +2033,7 @@ b.appendChild(closeBtn);
         <div class="dashhub-cat-desc">Today / Goals / Projects / Review / Knowledge — di atas data yang sudah ada</div>
       </div>
     </div>
-    <div class="dashhub-feature-grid" id="lifeOSHomeGrid"></div>
+    <div class="dashhub-feature-grid dashhub-feature-grid--icon" id="lifeOSHomeGrid"></div>
     <div class="lifeos-panel" id="lifeOSPanel-today"><div id="lifeOSTodayList"></div></div>
     <div class="lifeos-panel u-dnone" id="lifeOSPanel-goals"><div id="lifeOSGoalsGrid"></div></div>
     <div class="lifeos-panel u-dnone" id="lifeOSPanel-projects"><div id="lifeOSProjectsGrid"></div></div>
@@ -2403,6 +2432,6 @@ b.appendChild(closeBtn);
 <script>document.write(MODAL_HTML[69]);</script><!-- modal:importShopExcelModal (Import dari Excel Shop) -->
 <script>document.write(MODAL_HTML[70]);</script><!-- modal:mergeProductModal (Gabungkan Harga Produk) -->
 
-<script src="app-bundle-b.min.js?v=281" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
+<script src="app-bundle-b.min.js?v=292" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
 </body>
 </html>

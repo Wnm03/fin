@@ -1565,11 +1565,20 @@ const snapshot=getHtmlSnapshotForSelfTest();
 _selfTestAssert(snapshot.length>1000,'Snapshot HTML untuk tes regresi UI kosong/gagal terekam');
 const scriptSrc=Array.from(document.scripts).map(s=>s.textContent||'').join('\n');
 const idRe=/getElementById\(\s*['"]([\w-]+)['"]\s*\)/g;
-const ids=new Set(['scrollRoot']);
+// id-id berikut SENGAJA TIDAK ada di HTML statis -- dibuat/ditempel ke DOM secara dinamis lewat
+// JS, BUKAN typo, jadi dikecualikan dari cek "missing" di bawah (bukan cuma ditambah ke set yang
+// dicek -- itu bug lama, lihat riwayat fix):
+//   - selfRewardModal/selfRewardModalBody: ditempel SelfRewardView.ensureMounted() ke
+//     document.body sekali saat pertama dibuka (lihat self-reward-view.js).
+//   - investAiWidget: dibuat document.createElement() oleh InvestAI.mountInto(), di-append ke
+//     box Alokasi Aset SETELAH box.innerHTML preset ditulis (lihat invest-ai-widget.js).
+const DYNAMIC_MOUNT_IDS=new Set(['selfRewardModal','selfRewardModalBody','investAiWidget']);
+const ids=new Set();
 let m;
 while((m=idRe.exec(scriptSrc))){ ids.add(m[1]); }
 const missing=[];
 ids.forEach(id=>{
+if(DYNAMIC_MOUNT_IDS.has(id))return;
 const attrRe=new RegExp('id=["\']'+id.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'["\']');
 if(!attrRe.test(snapshot))missing.push(id);
 });
@@ -2049,6 +2058,8 @@ call:()=>{ Refleksi.open(); }},
 call:()=>{ GoldImport.open(); }},
 {label:'GoldZakat.open()',id:'goldZakatModal',
 call:()=>{ GoldZakat.open(); }},
+{label:'Etalase.openMergeModal()',id:'mergeProductModal',
+call:()=>{ Etalase.openMergeModal(); }},
 ];
 function computeModalSweepCoverageResults(){
 const allIds=Array.from(document.querySelectorAll('.overlay,.qs-modal-overlay,.calc-overlay'))
@@ -2373,6 +2384,6 @@ Object.assign(window,{
 Etalase,Produsen,Order,FI,DanaDaruratAI,WorthIt,TimelineW,Pensiun,Budget,BudgetTabs,BudgetReko,
 Laporan,Payroll,Tukang,BBM,Sparepart,Servis,Torsi,Pelanggan,SiapPulang,RefAI,Zakat,PPh21,PajakUMKM,
 Aset,LifeBalance,Piutang,Debt,DebtStrategy,Renov,RenovAI,SewaKios,RenovCalc,Kekayaan,AlokasiAset,PBB,
-IDBStore,LinkTx,Bill,AIWidget,EduFund,PriceReko,OngkirCalc,Refleksi,Kasir,Advisor,FinCoach,GoldImport,GoldZakat
+IDBStore,LinkTx,Bill,AIWidget,EduFund,PriceReko,OngkirCalc,PriceRekoWidget,StockRekoWidget,Refleksi,Kasir,Advisor,FinCoach,GoldImport,GoldZakat
 });
 init();

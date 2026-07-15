@@ -28,8 +28,8 @@ if(location.hostname==='localhost'||location.hostname==='127.0.0.1')return true;
 }catch(e){ /* anggap bukan dev mode kalau gagal deteksi */ }
 return false;
 }
-const APP_BUILD_VERSION = 'fix-udnone-important-css-2026-07-19';
-const PRODUCTION_BUILD_SYNCED_VERSION = 'fix-udnone-important-css-2026-07-19';
+const APP_BUILD_VERSION = 'fix-udnone-important-css-2026-07-30';
+const PRODUCTION_BUILD_SYNCED_VERSION = 'fix-udnone-important-css-2026-07-30';
 let D = {
 schemaVersion:SCHEMA_VERSION,
 transactions:[],cobek:[],products:[],produsen:[],cobekKategori:JSON.parse(JSON.stringify(DEFAULT_COBEK_KATEGORI)),targets:[],eduFunds:[],reminders:[],bills:[],billsArchive:[],
@@ -428,6 +428,15 @@ showAlertModal('Terjadi error saat membuka data tersimpan: '+(e&&e.message?e.mes
 }
 }
 function todayStr(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');}
+function applyDashHubMainGridDefaultCollapse(){
+let prefs={};
+try{prefs=JSON.parse(localStorage.getItem('cardCollapsePrefs')||'{}');}catch(e){}
+if('dashHubMainGrid' in prefs)return; // user sudah pernah pilih manual, hormati pilihannya
+const body=document.getElementById('dashHubMainGrid-cbody');
+const chev=document.getElementById('dashHubMainGrid-chev');
+if(body)body.classList.add('collapsed');
+if(chev)chev.classList.add('collapsed');
+}
 function showMain(){
 document.getElementById('onboard').style.display='none';
 document.getElementById('pinScreen').style.display='none';
@@ -438,6 +447,7 @@ const mn=document.getElementById('mainNav');mn.classList.remove('u-dnone');mn.st
 document.getElementById('hNama').textContent=D.profile.nama||'W';
 applyEffectiveTheme();
 applyCardCollapsePrefs();
+applyDashHubMainGridDefaultCollapse();
 autoSnapshotWealthIfNeeded();
 autoSnapshotLifeBalanceIfNeeded();
 renderDashboard(); checkBackup(); checkBills(); populateCatFilter(); populateAccFilters();

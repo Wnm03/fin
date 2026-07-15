@@ -314,11 +314,25 @@ return chk?{product:p,reko:chk.reko,diffPct:chk.diffPct}:null;
 render(){
 const card=document.getElementById('priceRekoWidgetCard');
 const list=document.getElementById('priceRekoWidgetList');
+const bulkT=document.getElementById('priceRekoBulkTransport');
+const bulkM=document.getElementById('priceRekoBulkMargin');
+const countEl=document.getElementById('priceRekoWidgetCount');
 if(!card||!list)return;
 const flagged=this.scan();
-if(!flagged.length){card.style.display='none';list.innerHTML='';return;}
+// targets = SEMUA produk dgn Harga Beli terisi, bukan cuma yg ditandai flagged — dipakai count tombol
+// bulk & syarat tampil kartu (kartu ini juga jadi rumah tombol bulk apply, jadi tetap tampil selama
+// ada minimal 1 produk yg bisa dihitung, walau kebetulan tidak ada yg lagi menyimpang)
+const targets=(D.products||[]).filter(p=>p.hargaBeli>0);
+if(!flagged.length&&!targets.length){card.style.display='none';list.innerHTML='';return;}
 card.style.display='';
-list.innerHTML=flagged.map(({product,reko,diffPct})=>{
+if(bulkT&&!bulkT.value)bulkT.value=Math.round(this.avgTransport());
+if(bulkM&&!bulkM.value){
+const withMargin=targets.filter(p=>p.hargaJual>0);
+const margins=withMargin.map(p=>((p.hargaJual-p.hargaBeli)/p.hargaBeli)*100).filter(m=>isFinite(m)&&m>0);
+bulkM.value=margins.length?Math.round(margins.reduce((a,b)=>a+b,0)/margins.length):50;
+}
+if(countEl)countEl.textContent=targets.length;
+list.innerHTML=flagged.length?flagged.map(({product,reko,diffPct})=>{
 const under=diffPct<0;
 const badgeColor=under?'var(--accent2)':'var(--accent4)';
 const badgeText=under?`⬇️ ${Math.abs(Math.round(diffPct))}% di bawah estimasi`:`⬆️ ${Math.round(diffPct)}% di atas estimasi`;
@@ -331,7 +345,7 @@ return`<div class="tx-item">
         <button class="tx-del u-bgaccsoft u-cacc" style="margin-right:6px" data-action="applyPriceRekoWidgetOne" data-args="${escapeHtml(JSON.stringify([product.id]))}" aria-label="Terapkan">✅</button>
         <button class="tx-del" data-action="openPriceRekoWidgetDetail" data-args="${escapeHtml(JSON.stringify([product.id]))}" aria-label="Detail">🔍</button>
       </div>`;
-}).join('');
+}).join(''):'<div class="u-fs12 u-t2 u-tac" style="padding:10px 0">✅ Tidak ada produk yang harganya menyimpang dari estimasi rule-based saat ini.</div>';
 },
 async applyOne(productId){
 const idx=(D.products||[]).findIndex(p=>p.id===productId);
@@ -343,6 +357,23 @@ if(!await askConfirm(`Ubah Harga Jual "${p.name}" dari ${fmt(p.hargaJual)} jadi 
 p.hargaJual=reko;
 save();this.render();renderProductList();
 toast(`✅ Harga Jual "${p.name}" diperbarui ke ${fmtFull(reko)}`);
+},
+// applyBulk() — hitung ulang Harga Jual SEMUA produk (yg Harga Beli-nya terisi) sekaligus, pakai
+// rumus PriceReko yg sama (Harga Beli + Transport) × (1 + Target Margin%), tapi Transport & Margin-nya
+// SATU angka yg diisi manual di sini (bukan rata-rata per-kategori kayak recommend()/scan() di atas)
+// — jadi hasilnya konsisten sesuai kebijakan harga yg mau dipakai, bukan cuma produk yg "menyimpang".
+async applyBulk(){
+const transportEl=document.getElementById('priceRekoBulkTransport');
+const marginEl=document.getElementById('priceRekoBulkMargin');
+const transport=Math.max(0,Number(transportEl?.value)||0);
+const margin=Number(marginEl?.value);
+if(!(margin>0)){toast('⚠️ Isi dulu Target Margin (%) yang mau dipakai');return;}
+const targets=(D.products||[]).filter(p=>p.hargaBeli>0);
+if(!targets.length){toast('⚠️ Belum ada produk dengan Harga Beli terisi');return;}
+if(!await askConfirm(`Hitung ulang Harga Jual ${targets.length} produk pakai rumus (Harga Beli + Transport ${fmtFull(transport)}) × (1 + Margin ${margin}%)? Harga Jual lama akan ditimpa.`,{okText:'Ya, Terapkan ke Semua'}))return;
+targets.forEach(p=>{p.hargaJual=PriceReko.roundNice((p.hargaBeli+transport)*(1+margin/100));});
+save();this.render();renderProductList();
+toast(`✅ Harga Jual ${targets.length} produk dihitung ulang sekaligus`);
 },
 openDetail(productId){
 const idx=(D.products||[]).findIndex(p=>p.id===productId);
@@ -411,10 +442,15 @@ return{product,members,sold,velocity,hasHistory,daysLeft,restockQty};
 render(){
 const card=document.getElementById('stockRekoWidgetCard');
 const list=document.getElementById('stockRekoWidgetList');
+const applyAllBtn=document.getElementById('stockRekoWidgetApplyAll');
+const countEl=document.getElementById('stockRekoWidgetCount');
 if(!card||!list)return;
 const flagged=this.scan();
-if(!flagged.length){card.style.display='none';list.innerHTML='';return;}
+const applicable=flagged.filter(x=>x.restockQty>0);
+if(!flagged.length){card.style.display='none';list.innerHTML='';if(applyAllBtn)applyAllBtn.classList.add('u-dnone');return;}
 card.style.display='';
+if(applyAllBtn)applyAllBtn.classList.toggle('u-dnone',!applicable.length);
+if(countEl)countEl.textContent=applicable.length;
 list.innerHTML=flagged.map(({product,members,hasHistory,velocity,daysLeft,restockQty})=>{
 const badgeText=hasHistory
 ?`⏳ Estimasi ~${Math.max(0,Math.round(daysLeft))} hari lagi habis (rata-rata jual ${(velocity*7).toFixed(1)}/minggu)`
@@ -442,5 +478,24 @@ const stockEl=document.getElementById('pStock');
 if(stockEl)stockEl.value=(D.products[idx].stock||0)+restockQty;
 },50);
 }
+},
+// applyAll() — versi massal: langsung tambah stok SEMUA produk yang ditandai sesuai saran
+// restockQty (bukan cuma prefill 1 produk lewat openDetail). TIDAK lewat productModal/akun
+// (beda dari nambah stok manual biasa yang tercatat sbg pengeluaran) — murni update angka stok,
+// jadi cocok dipakai pas baru terima barang & belum sempat catat pengeluarannya satu-satu.
+async applyAll(){
+const flagged=this.scan().filter(x=>x.restockQty>0);
+if(!flagged.length){toast('⚠️ Tidak ada saran restock yang bisa diterapkan saat ini');return;}
+const totalQty=flagged.reduce((s,x)=>s+x.restockQty,0);
+if(!await askConfirm(`Tambah stok ${flagged.length} produk (total +${totalQty} unit) sesuai saran restock? Ini cuma update angka stok, TIDAK otomatis tercatat sbg pengeluaran — catat belanjanya terpisah kalau perlu.`,{okText:'Ya, Tambah Semua'}))return;
+let count=0;
+flagged.forEach(({product,restockQty})=>{
+const idx=(D.products||[]).findIndex(p=>p.id===product.id);
+if(idx<0)return;
+D.products[idx].stock=(D.products[idx].stock||0)+restockQty;
+count++;
+});
+save();this.render();renderProductList();
+toast(`✅ Stok ${count} produk diperbarui (+${totalQty} unit total)`);
 }
 };

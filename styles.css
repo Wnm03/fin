@@ -714,6 +714,23 @@ textarea.fi { resize: vertical; min-height: 80px; }
 .dashhub-feature-name{font-size:12.5px;font-weight:700;line-height:1.35;margin-bottom:4px;padding-right:22px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;letter-spacing:.1px;}
 .dashhub-feature-desc{font-size:var(--fs-caption);color:var(--text2);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
+/* Icon grid mode — "full icon dengan label nama dibawah": setiap fitur
+   ditampilkan sbg ubin ikon besar (emoji per-fitur, FEATURE_REGISTRY.icon)
+   dgn nama singkat di bawahnya, mirip grid app-launcher. Dipakai lewat
+   class tambahan --icon (lihat DashboardHub.render() di dashboard-hub.js)
+   — TIDAK menghapus/collision dgn .dashhub-feature-grid/-card lama yang
+   masih dipakai Search & Favorit view. */
+.dashhub-feature-grid--icon{grid-template-columns:repeat(3,1fr);gap:var(--sp-3);}
+.dashhub-feature-card--icon{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;padding:var(--sp-4) var(--sp-2) var(--sp-3);gap:6px;}
+.dashhub-feature-icon{width:48px;height:48px;border-radius:var(--r-xl);background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;box-shadow:0 1px 2px rgba(0,0,0,.06);}
+.dashhub-feature-card--icon .dashhub-feature-name{font-size:11.5px;font-weight:600;text-align:center;margin-bottom:0;padding-right:0;-webkit-line-clamp:2;letter-spacing:0;}
+.dashhub-feature-card--icon .dashhub-fav-star{top:4px;right:4px;width:20px;height:20px;line-height:20px;font-size:12px;}
+.dashhub-feature-count{font-size:10.5px;color:var(--text2);line-height:1.3;margin-top:1px;}
+/* Breakpoint 600px/1024px tablet/desktop sudah diatur oleh rule
+   "#page-dashboard-hub .dashhub-feature-grid{...}" (Tahap 5, di bawah file
+   ini) yang otomatis berlaku juga di sini krn elemen tetap punya class
+   dasar .dashhub-feature-grid — tidak perlu breakpoint duplikat. */
+
 /* Favorit (Tahap 3, ADR-001) — tombol toggle bintang di pojok kartu fitur,
    dipakai ulang di grid Hub biasa, hasil Search, DAN section Favorit itu
    sendiri (satu class, tiga tempat pakai — tidak ada style baru per tempat).
@@ -765,6 +782,15 @@ textarea.fi { resize: vertical; min-height: 80px; }
 .dashhub-hero-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp-5);margin-top:var(--sp-7);padding-top:var(--sp-6);border-top:1px solid var(--border);}
 .dashhub-hero-stat-label{font-size:var(--fs-caption);color:var(--text2);margin-bottom:2px;}
 .dashhub-hero-stat-val{font-size:var(--fs-title-sm);font-weight:700;color:var(--text);}
+/* Hero Card: baris "Pemasukan/Pengeluaran Bulan Ini" (.dashhub-hero-stats)
+   disembunyikan — 100% duplikat dgn "Total Pemasukan"/"Total Pengeluaran" di
+   Analytics Row (Tahap 7) yang tampil tepat di bawahnya. Ini kelanjutan dari
+   dedup Summary Cards (lihat DASHBOARD-DEDUP.md) yang sebelumnya belum
+   menutup duplikasi ini — Hero dulu dibiarkan krn Saldo Semua Akun-nya unik,
+   tapi baris stats di bawah saldo itu sendiri tetap dobel dgn Analytics Row.
+   Saldo Semua Akun (.dashhub-hero-balance) TIDAK disembunyikan, tetap tampil
+   apa adanya. DashboardHubHero.render() TETAP dipanggil tanpa perubahan JS. */
+.dashhub-hero-stats{display:none!important;}
 @media (max-width:359px){
   /* Layar sangat kecil (mis. iPhone SE 320px) — 2 stat berdampingan jadi
      sempit banget, ditumpuk vertikal supaya angka tidak terpotong. */
@@ -787,7 +813,7 @@ textarea.fi { resize: vertical; min-height: 80px; }
    diubah di JS, tidak menyentuh test dashboard-hub-summary.test.js) —
    cuma outputnya disembunyikan lewat display:none supaya tidak dobel
    secara visual di layar. Lihat DASHBOARD-DEDUP.md. */
-.dashhub-summary-grid{display:none;}
+.dashhub-summary-grid{display:none!important;}
 .dashhub-qa-row{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--sp-3);margin-bottom:var(--sp-6);}
 .dashhub-qa-btn{
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;

@@ -1,5 +1,5 @@
 
-const MODULE_CALC_VERSION='fix-udnone-important-css-2026-07-19';
+const MODULE_CALC_VERSION='fix-udnone-important-css-2026-07-30';
 const FI={
 assetScopeState:'zakatable',
 investmentAssetValue(){

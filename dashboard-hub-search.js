@@ -39,6 +39,7 @@ function dashHubSearchFeatures(queryRaw, registry) {
           catKey: cat.key,
           catLabel: cat.label,
           catIcon: cat.icon,
+          icon: cat.icon,
           target: cat.target,
         });
       }
@@ -55,6 +56,7 @@ function dashHubSearchFeatures(queryRaw, registry) {
           catKey: cat.key,
           catLabel: cat.label,
           catIcon: cat.icon,
+          icon: f.icon || cat.icon,
           target: f.target,
         });
       }
@@ -87,7 +89,7 @@ const DashboardHubSearch = {
     const favKeys = (typeof DashboardHubFavorit !== 'undefined') ? DashboardHubFavorit.getFavoritKeys() : [];
     el.innerHTML = matches.map((m) => `
       <div class="dashhub-search-item" data-action="DashboardHubSearch.select" data-args='${escapeHtml(JSON.stringify([m.key]))}'>
-        <div class="dashhub-search-item-icon">${m.catIcon || ''}</div>
+        <div class="dashhub-search-item-icon">${m.icon || m.catIcon || ''}</div>
         <div>
           <div class="dashhub-search-item-label">${escapeHtml(m.label)}</div>
           <div class="dashhub-search-item-desc">${escapeHtml(m.desc)} · ${escapeHtml(m.catLabel)}</div>
