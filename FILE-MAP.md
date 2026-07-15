@@ -11,8 +11,8 @@
 > file tapi lupa `node build.js`), jalankan ulang generatornya, JANGAN diedit
 > tangan — editan manual bakal ketimpa lagi di build berikutnya.
 
-Terakhir digenerate: 2026-07-15T03:53:05.915Z
-Total file source: 87 · Total identifier global: 973
+Terakhir digenerate: 2026-07-15T06:51:24.226Z
+Total file source: 87 · Total identifier global: 974
 
 ## 1. Urutan load & ringkasan tiap file
 
@@ -25,7 +25,7 @@ bundler menggabungkan semua file jadi `app-bundle-a.min.js`/`app-bundle-b.min.js
 | 2 | `modals.js` | 7 | Modal HTML dipisah dari app_production.html untuk pemerataan ukuran file. Setiap elemen array persis sama dengan blok <div class="overlay" id="...">...</div> aslinya, di-inject balik ke posisi yang sama persis via … |
 | 3 | `modules-calc.js` | 859 | _(tidak ada komentar header)_ |
 | 4 | `cobek-etalase.js` | 368 | Domain Shop bagian Etalase: katalog produk (tambah/edit/hapus, size-pairing bracket harga, bundle, modal stok tertanam), stok, & produsen terkait produk. Dipecah dari cobek.js (2026-07-12, file lama 1966 baris > 500 … |
-| 5 | `cobek-pricing.js` | 447 | Domain Shop bagian rekomendasi harga & ongkir: PriceReko (kalkulator harga jual AI), OngkirCalc (kalkulator ongkos kirim), PriceRekoWidget & StockRekoWidget (widget dashboard rule-based). Bagian ke-2 dari 5 hasil … |
+| 5 | `cobek-pricing.js` | 502 | Domain Shop bagian rekomendasi harga & ongkir: PriceReko (kalkulator harga jual AI), OngkirCalc (kalkulator ongkos kirim), PriceRekoWidget & StockRekoWidget (widget dashboard rule-based). Bagian ke-2 dari 5 hasil … |
 | 6 | `cobek-order.js` | 459 | Domain Shop bagian order & pelanggan: Produsen (supplier), SiapPulang (status siap diambil/dikirim), Order (order pelanggan), Laporan (omzet), Pelanggan (data & riwayat pelanggan). Bagian ke-3 dari 5 hasil pemecahan … |
 | 7 | `cobek-tx-cart.js` | 371 | Domain Shop bagian integrasi form Transaksi: cart Stok Masuk & Penjualan Shop pada form Transaksi gabungan (populate/onChange/toggle/add/remove/sync/apply), termasuk applyBundleLinkedStock & recordShopSale. Bagian ke-4 … |
 | 8 | `cobek-io.js` | 458 | Domain Shop bagian impor/ekspor: ImportKatalog (impor massal produk+harga dari teks), wrapper tab/tombol UI ringan, ShopExport (ekspor XLSX), ImportShopExcel (impor dari file Excel). Bagian ke-5 (terakhir) dari 5 hasil … |
@@ -43,7 +43,7 @@ bundler menggabungkan semua file jadi `app-bundle-a.min.js`/`app-bundle-b.min.js
 | 20 | `aset-emas-impor.js` | 392 | FITUR BARU: GoldImport (impor massal nota emas via paste teks ATAU upload file .xlsx rekap nota) & GoldZakat (rekap emas utk zakat maal + analisa harga/gram & untung-rugi). CARA PASANG (lihat juga INTEGRASI-EMAS.md): 1. … |
 | 21 | `worthit.js` | 468 | Domain Worth It? & Prioritas Belanja: cek kondisi keuangan sebelum belanja + daftar prioritas barang yang mau dibeli CATATAN: modul WorthIt dipindah ke file baru ini dari features-renovasi-pajak-aset-order.js (v62). … |
 | 22 | `data-default.js` | 36 | Domain Data Default: kategori shop bawaan (DEFAULT_COBEK_KATEGORI), akun keuangan bawaan (DEFAULT_ACCOUNTS), kategori sparepart kendaraan bawaan (DEFAULT_SPAREPARTS). PENTING: file ini HARUS dimuat SEBELUM … |
-| 23 | `features-helpers-global-security.js` | 459 | Helper global (migrasi data, state D, save/load, event dispatcher) CATATAN: 3 konstanta default (DEFAULT_COBEK_KATEGORI/DEFAULT_ACCOUNTS/DEFAULT_SPAREPARTS) dipindah ke data-default.js (v79) — file itu HARUS dimuat … |
+| 23 | `features-helpers-global-security.js` | 469 | Helper global (migrasi data, state D, save/load, event dispatcher) CATATAN: 3 konstanta default (DEFAULT_COBEK_KATEGORI/DEFAULT_ACCOUNTS/DEFAULT_SPAREPARTS) dipindah ke data-default.js (v79) — file itu HARUS dimuat … |
 | 24 | `diagnostik-versi.js` | 77 | Domain Diagnostik & Sinkronisasi Versi: snapshot HTML utk self-test (getHtmlSnapshotForSelfTest), cek status sinkron versi produksi vs master (computeProductionSyncStatus), cek status sinkron versi antar file modul … |
 | 25 | `format-tema.js` | 34 | Domain Format Angka & Tema: format rupiah singkat (fmt, mis. "Rp 1.5 jt"), format rupiah penuh (fmtFull/fmtFullSigned), notifikasi toast di bawah layar (toast), dan ganti/terapkan tema warna app termasuk mode "auto" … |
 | 26 | `error-handler.js` | 38 | Domain Error Handler Global: tangkap error tak tertangani (uncaught error & unhandled promise rejection) di seluruh app, catat ke console utk debugging, dan tampilkan toast singkat yang ramah ke pengguna (dibatasi … |
@@ -80,10 +80,10 @@ bundler menggabungkan semua file jadi `app-bundle-a.min.js`/`app-bundle-b.min.js
 | 57 | `data-archive.js` | 161 | Storage usage estimate & Archive (export lalu hapus data lama per tahun). Dipisah dari tukang-absensi.js (2026-07-12, roadmap split file besar bagian ke-2) murni pengelompokan ulang file, BUKAN perubahan perilaku. … |
 | 58 | `sparepart-servis.js` | 520 | Domain Sparepart & Servis kendaraan: kategori & stok sparepart (Sparepart), catatan servis (wrapper ke Servis di features-budget-laporan-carnotes-pelanggan.js), interval servis per-kategori & override per-kendaraan, … |
 | 59 | `features-aiwidget-reminder-gdrive-search.js` | 1616 | Reminder, hari kerja, kendaraan (pajak/SIM/servis/BBM/sparepart), storage & arsip, skema Google Sheets (SHEETS_SCHEMAS/SHEETS_MODULES) CATATAN: SHEETS_SCHEMAS dipindah dari features-edukasi-pajak-utang-sewakios.js (v57) … |
-| 60 | `features-sheets-pwa-selftest.js` | 2379 | Settings, notifikasi, PWA setup, self-test/smoke-test rendering, pajak/zakat/aset/utang PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: … |
+| 60 | `features-sheets-pwa-selftest.js` | 2390 | Settings, notifikasi, PWA setup, self-test/smoke-test rendering, pajak/zakat/aset/utang PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: … |
 | 61 | `dashboard-hub-registry.js` | 223 | FEATURE_REGISTRY: sumber data tunggal taksonomi Dashboard Feature Hub (blueprint-dashboard-hub.md §1 & §7, Tahap 0). PENTING — file ini MURNI DATA, tidak ada logic render/navigasi apa pun. Tahap 0 blueprint: "Finalisasi … |
-| 62 | `dashboard-hub.js` | 372 | Dashboard Feature Hub (blueprint-dashboard-hub.md §5) STATUS (update v1.0-stabilization, build v234): sejak Tahap 4, halaman ini SUDAH jadi landing page default (satu-satunya class="page active" saat startup, lihat … |
-| 63 | `dashboard-hub-search.js` | 125 | Feature Search: cari FITUR/MENU (bukan data transaksi) lintas kategori FEATURE_REGISTRY (blueprint-dashboard-hub.md §2 & §6). Berbeda tujuan dari Global Search existing (`openGlobalSearch`) yang mencari DATA milik user … |
+| 62 | `dashboard-hub.js` | 383 | Dashboard Feature Hub (blueprint-dashboard-hub.md §5) STATUS (update v1.0-stabilization, build v234): sejak Tahap 4, halaman ini SUDAH jadi landing page default (satu-satunya class="page active" saat startup, lihat … |
+| 63 | `dashboard-hub-search.js` | 127 | Feature Search: cari FITUR/MENU (bukan data transaksi) lintas kategori FEATURE_REGISTRY (blueprint-dashboard-hub.md §2 & §6). Berbeda tujuan dari Global Search existing (`openGlobalSearch`) yang mencari DATA milik user … |
 | 64 | `dashboard-hub-favorit.js` | 38 | Favorit (Tahap 3, Langkah 6): storage + service MURNI (ADR-001 §3/§4/§5, blueprint Favorit final). Tidak ada DOM/render di file ini — itu ada di dashboard-hub-favorit-view.js (Langkah 7-8, sudah diimplementasikan; lihat … |
 | 65 | `dashboard-hub-favorit-view.js` | 112 | Favorit (Tahap 3, Langkah 7-8): render + toggle button wiring. Sengaja file TERPISAH dari dashboard-hub-favorit.js (storage murni, Langkah 6) supaya guard test "window.DashboardHubFavorit HANYA mengekspos getFavoritKeys … |
 | 66 | `ai-command-center.js` | 141 | Sprint 3 Tahap 3.1: AI Command Center Foundation. SCOPE Tahap 3.1 (Foundation SAJA): Menyediakan satu registry netral tempat modul lain (Tahap 3.2+) MENDAFTARKAN "command" AI (aksi yang bisa dijalankan lewat command … |
@@ -102,7 +102,7 @@ bundler menggabungkan semua file jadi `app-bundle-a.min.js`/`app-bundle-b.min.js
 | 79 | `lifeos/services/project-service.js` | 48 | services/project-service.js — SATU-SATUNYA tempat menulis LifeOSStore.projects (generic project). Tidak pernah menulis ke D.renovProjects atau array D.* lain — kalau butuh baca renovasi, pakai … |
 | 80 | `lifeos/services/review-service.js` | 34 | services/review-service.js — SATU-SATUNYA tempat menulis LifeOSStore.reviewLog. Boleh MEMBACA D.wealthSnapshots/ D.lifeBalanceSnapshots (lewat adapters/review-adapter.js) untuk menyimpan referensi id-nya, tapi tidak … |
 | 81 | `lifeos/services/knowledge-service.js` | 29 | services/knowledge-service.js — SATU-SATUNYA tempat menulis LifeOSStore.knowledge. Tidak pernah menulis ke D.catatan — kalau butuh baca catatan lama, pakai adapters/knowledge-adapter.js (knowledgeAdapterCatatanRef). |
-| 82 | `lifeos/ui/lifeos-home.js` | 71 | ui/lifeos-home.js — halaman masuk Life OS. Hanya membaca lewat adapter, menulis (kalau ada aksi) hanya lewat services/*.js. Tidak pernah akses D atau LifeOSStore langsung dari file UI — selalu lewat adapter/service. … |
+| 82 | `lifeos/ui/lifeos-home.js` | 80 | ui/lifeos-home.js — halaman masuk Life OS. Hanya membaca lewat adapter, menulis (kalau ada aksi) hanya lewat services/*.js. Tidak pernah akses D atau LifeOSStore langsung dari file UI — selalu lewat adapter/service. … |
 | 83 | `lifeos/ui/today.js` | 20 | ui/today.js — render-only lewat todayAdapterList(D). Aksi "selesaikan" tetap dispatch ke fungsi modul LAMA (mis. dismiss bill), Life OS tidak menduplikasi logic itu. |
 | 84 | `lifeos/ui/goals.js` | 23 | ui/goals.js — render-only lewat goalAdapterList(D). Tidak ada goal-service.js karena Goals tidak punya data tulis sendiri di Life OS (murni agregasi 6 sumber lama, lihat Gap #2). Aksi "tambah tabungan" dsb tetap … |
 | 85 | `lifeos/ui/projects.js` | 33 | ui/projects.js — render lewat projectAdapterList(D, store); aksi tulis (create/toggle checklist/dsb) HANYA lewat services/project-service.js. |
@@ -222,6 +222,7 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `applyBillFilter` | `tagihan-kalender.js` |
 | `applyBundleLinkedStock` | `cobek-tx-cart.js` |
 | `applyCardCollapsePrefs` | `modal-navigasi.js` |
+| `applyDashHubMainGridDefaultCollapse` | `features-helpers-global-security.js` |
 | `applyEffectiveTheme` | `format-tema.js` |
 | `applyLastAccForCat` | `transaksi.js` |
 | `applyOneCardCollapsePref` | `modal-navigasi.js` |

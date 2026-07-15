@@ -26,28 +26,37 @@ const LifeOSHome = {
     const projects = projectAdapterList(D, store);
     const knowledge = knowledgeAdapterList(store);
 
-    // Reuse class dashhub-feature-card/-name/-desc (sudah ada di styles.css,
-    // dipakai DashboardHub.render()) — sengaja, supaya tidak perlu CSS baru.
+    // Reuse class dashhub-feature-card/-name (sudah ada di styles.css,
+    // dipakai DashboardHub.render()) + modifier --icon (icon-grid) supaya
+    // konsisten dgn grid fitur utama — sengaja, supaya tidak perlu CSS
+    // baru selain .dashhub-feature-count kecil utk angka count (info yang
+    // sebelumnya ada di .dashhub-feature-desc, tetap dipertahankan, cuma
+    // dipindah ke caption pendek di bawah nama).
     el.innerHTML = `
-      <div class="dashhub-feature-card" data-action="LifeOSHome.switchPanel" data-args='["today"]'>
+      <div class="dashhub-feature-card dashhub-feature-card--icon" data-action="LifeOSHome.switchPanel" data-args='["today"]'>
+        <div class="dashhub-feature-icon">📅</div>
         <div class="dashhub-feature-name">Today</div>
-        <div class="dashhub-feature-desc">${today.length} item</div>
+        <div class="dashhub-feature-count">${today.length} item</div>
       </div>
-      <div class="dashhub-feature-card" data-action="LifeOSHome.switchPanel" data-args='["goals"]'>
+      <div class="dashhub-feature-card dashhub-feature-card--icon" data-action="LifeOSHome.switchPanel" data-args='["goals"]'>
+        <div class="dashhub-feature-icon">🎯</div>
         <div class="dashhub-feature-name">Goals</div>
-        <div class="dashhub-feature-desc">${goals.length} goal</div>
+        <div class="dashhub-feature-count">${goals.length} goal</div>
       </div>
-      <div class="dashhub-feature-card" data-action="LifeOSHome.switchPanel" data-args='["projects"]'>
+      <div class="dashhub-feature-card dashhub-feature-card--icon" data-action="LifeOSHome.switchPanel" data-args='["projects"]'>
+        <div class="dashhub-feature-icon">📁</div>
         <div class="dashhub-feature-name">Projects</div>
-        <div class="dashhub-feature-desc">${projects.length} project</div>
+        <div class="dashhub-feature-count">${projects.length} project</div>
       </div>
-      <div class="dashhub-feature-card" data-action="LifeOSHome.switchPanel" data-args='["review"]'>
+      <div class="dashhub-feature-card dashhub-feature-card--icon" data-action="LifeOSHome.switchPanel" data-args='["review"]'>
+        <div class="dashhub-feature-icon">🔁</div>
         <div class="dashhub-feature-name">Review</div>
-        <div class="dashhub-feature-desc">Weekly/Monthly</div>
+        <div class="dashhub-feature-count">Weekly/Monthly</div>
       </div>
-      <div class="dashhub-feature-card" data-action="LifeOSHome.switchPanel" data-args='["knowledge"]'>
+      <div class="dashhub-feature-card dashhub-feature-card--icon" data-action="LifeOSHome.switchPanel" data-args='["knowledge"]'>
+        <div class="dashhub-feature-icon">💡</div>
         <div class="dashhub-feature-name">Knowledge</div>
-        <div class="dashhub-feature-desc">${knowledge.length} insight</div>
+        <div class="dashhub-feature-count">${knowledge.length} insight</div>
       </div>
     `;
 
