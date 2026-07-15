@@ -2230,10 +2230,10 @@ uploadBackupToDrive(true);
 };
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')tryBackupOnClose();});
 window.addEventListener('pagehide',tryBackupOnClose);
-const setup=localStorage.getItem('kw_setup');
-if(!setup){const ob=document.getElementById('onboard');ob.classList.remove('u-dnone');ob.style.display='flex';updateOnboardPreview();return;}
 const pin=localStorage.getItem('kw_pin');
 if(pin){showPinScreen();return;}
+const setup=localStorage.getItem('kw_setup');
+if(!setup){const ob=document.getElementById('onboard');ob.classList.remove('u-dnone');ob.style.display='flex';updateOnboardPreview();return;}
 showMain();
 }
 function parsePzNum(v){

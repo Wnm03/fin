@@ -53,7 +53,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Keluarga W</title>
-<link rel="stylesheet" href="styles.css?v=277">
+<link rel="stylesheet" href="styles.css?v=281">
 <script>
 /* Debug console (Eruda) — aktifkan sekali lewat ?debug=1 di URL, nempel via localStorage.
    Matikan lagi lewat ?debug=0. Tidak aktif buat user biasa. */
@@ -106,8 +106,8 @@ b.appendChild(closeBtn);
 }catch(_e){ console.error('Gagal tampilkan banner error modul:',_e); }
 };
 </script>
-<script src="app-bundle-a.min.js?v=277" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
-<script src="smoke-test.js?v=277" defer></script>
+<script src="app-bundle-a.min.js?v=281" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
+<script src="smoke-test.js?v=281" defer></script>
 <link rel="manifest" id="pwaManifestLink" href="manifest.json">
 </head>
 <body data-theme="dark">
@@ -794,6 +794,7 @@ b.appendChild(closeBtn);
     <button class="btn btn-ghost btn-full btn-sm u-mb8" data-action="openImportKatalogModal">📋 Import Katalog & Harga</button>
     <button class="btn btn-ghost btn-full btn-sm u-mb8" data-action="exportShopEtalaseXLSX">📤 Export Excel (Etalase)</button>
     <button class="btn btn-ghost btn-full btn-sm u-mb8" data-action="openImportShopExcelModal" data-args='["etalase"]'>📥 Import Excel (Etalase)</button>
+    <button class="btn btn-ghost btn-full btn-sm u-mb8" data-action="Etalase.openMergeModal">🔗 Gabungkan Harga Produk</button>
     <div class="u-fs12 u-t2 u-mb8">💡 Stok juga otomatis bertambah kalau kamu catat pengeluaran kategori "Bisnis" sub "Shop" di tab Keuangan — 2 arah, tetap sinkron.</div>
     <div class="card" id="priceRekoWidgetCard" style="display:none">
       <div class="card-title">🤖 Rekomendasi Harga Jual AI</div>
@@ -2400,7 +2401,8 @@ b.appendChild(closeBtn);
 <script>document.write(MODAL_HTML[67]);</script><!-- modal:goldImportModal (Impor Nota Emas Massal) -->
 <script>document.write(MODAL_HTML[68]);</script><!-- modal:goldZakatModal (Analisa Emas & Zakat) -->
 <script>document.write(MODAL_HTML[69]);</script><!-- modal:importShopExcelModal (Import dari Excel Shop) -->
+<script>document.write(MODAL_HTML[70]);</script><!-- modal:mergeProductModal (Gabungkan Harga Produk) -->
 
-<script src="app-bundle-b.min.js?v=277" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
+<script src="app-bundle-b.min.js?v=281" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
 </body>
 </html>

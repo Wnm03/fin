@@ -83,14 +83,113 @@ return(D.products||[]).filter(p=>p.id!==product.id&&this.pairKey(p)===key);
 // disimpan (yang terakhir diedit menang), lalu kasih toast biar user tahu ada produk lain yg ikut
 // ke-update otomatis.
 syncPairedPrice(product){
-const siblings=this.pairSiblings(product);
+const siblings=this.linkedSiblings(product);
 if(!siblings.length)return;
 const changed=siblings.filter(s=>s.hargaJual!==product.hargaJual);
 if(!changed.length)return;
 changed.forEach(s=>{s.hargaJual=product.hargaJual;});
 save();
 this.renderList();
-toast(`🔗 Harga Jual ${changed.length} produk pasangan (${changed.map(s=>s.name).join(', ')}) ikut disinkron ke ${fmtFull(product.hargaJual)}`,6000);
+toast(`🔗 Harga Jual ${changed.length} produk pasangan/gabungan (${changed.map(s=>s.name).join(', ')}) ikut disinkron ke ${fmtFull(product.hargaJual)}`,6000);
+},
+// groupSiblings/linkedSiblings/openMergeModal/confirmMerge/unlinkFromGroup (kw209-cobek-manual-merge):
+// user minta cara GABUNGKAN 2+ produk (nama bebas, tidak harus ikut pola ukuran "Bentuk NNcm") jadi
+// 1 harga tanpa edit satu-satu, beda dari pairKey (otomatis dari nama) di atas -- ini manual, user pilih
+// sendiri produk mana saja lewat modal, ditandai field product.priceGroupId (id grup bebas). Kedua
+// mekanisme (pairKey & priceGroupId) digabung lewat linkedSiblings() supaya syncPairedPrice satu pintu.
+groupSiblings(product){
+if(!product||!product.priceGroupId)return[];
+return(D.products||[]).filter(p=>p.id!==product.id&&p.priceGroupId===product.priceGroupId);
+},
+linkedSiblings(product){
+const seen=new Set();
+const out=[];
+[...this.pairSiblings(product),...this.groupSiblings(product)].forEach(s=>{
+if(!seen.has(s.id)){seen.add(s.id);out.push(s);}
+});
+return out;
+},
+mergeSelectedIds:new Set(),
+openMergeModal(){
+this.mergeSelectedIds=new Set();
+const search=document.getElementById('mergeProductSearch');
+if(search)search.value='';
+const priceInput=document.getElementById('mergeProductPrice');
+if(priceInput){priceInput.value='';delete priceInput.dataset.userEdited;priceInput.oninput=()=>{priceInput.dataset.userEdited='1';};}
+this.renderMergeList();
+openModal('mergeProductModal');
+},
+renderMergeList(){
+const el=document.getElementById('mergeProductList');
+if(!el)return;
+const q=(document.getElementById('mergeProductSearch')?.value||'').toLowerCase().trim();
+const list=(D.products||[]).filter(p=>!q||p.name.toLowerCase().includes(q));
+if(!list.length){el.innerHTML='<div class="empty"><div class="empty-text">Tidak ada produk cocok</div></div>';this.updateMergeFooter();return;}
+el.innerHTML=list.map(p=>{
+const checked=this.mergeSelectedIds.has(p.id)?'checked':'';
+const groupInfo=p.priceGroupId?` <span style="color:var(--accent);font-size:11px;font-weight:700">🔗 sudah gabung (${this.groupSiblings(p).length+1} produk)</span>`:'';
+return`<label style="display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--border);cursor:pointer">
+<input type="checkbox" ${checked} data-action="Etalase.toggleMergeSelect" data-args='["${p.id}","$el"]' style="width:18px;height:18px;flex-shrink:0">
+<div style="flex:1"><div style="font-size:13px;font-weight:600">${escapeHtml(p.name)}${groupInfo}</div><div style="font-size:11px;color:var(--text2)">${fmt(p.hargaJual)}</div></div>
+</label>`;
+}).join('');
+this.updateMergeFooter();
+},
+toggleMergeSelect(id,el){
+const checked=el&&el.checked;
+if(checked)this.mergeSelectedIds.add(id);else this.mergeSelectedIds.delete(id);
+this.updateMergeFooter();
+},
+updateMergeFooter(){
+const n=this.mergeSelectedIds.size;
+const btn=document.getElementById('mergeProductConfirmBtn');
+const txt=document.getElementById('mergeProductPreviewText');
+const priceWrap=document.getElementById('mergeProductPriceWrap');
+const priceInput=document.getElementById('mergeProductPrice');
+if(n>=2){
+if(btn)btn.disabled=false;
+if(txt)txt.textContent=`${n} produk dipilih — akan disamakan ke 1 harga`;
+if(priceWrap)priceWrap.style.display='';
+if(priceInput&&!priceInput.dataset.userEdited){
+const firstId=[...this.mergeSelectedIds][0];
+const firstP=(D.products||[]).find(p=>p.id===firstId);
+if(firstP)priceInput.value=firstP.hargaJual;
+}
+}else{
+if(btn)btn.disabled=true;
+if(txt)txt.textContent='Pilih minimal 2 produk';
+if(priceWrap)priceWrap.style.display='none';
+}
+},
+confirmMerge(){
+const ids=[...this.mergeSelectedIds];
+if(ids.length<2){toast('⚠️ Pilih minimal 2 produk');return;}
+const priceInput=document.getElementById('mergeProductPrice');
+const price=parseFloat(priceInput?.value)||0;
+if(!price){toast('⚠️ Isi harga jual gabungan');return;}
+const selected=ids.map(id=>(D.products||[]).find(p=>p.id===id)).filter(Boolean);
+let groupId=null;
+for(const p of selected){if(p.priceGroupId){groupId=p.priceGroupId;break;}}
+if(!groupId)groupId='pg_'+Date.now();
+const allMembers=new Set(selected.map(p=>p.id));
+(D.products||[]).forEach(p=>{if(p.priceGroupId===groupId)allMembers.add(p.id);});
+const names=[];
+(D.products||[]).forEach(p=>{
+if(allMembers.has(p.id)){p.priceGroupId=groupId;p.hargaJual=price;names.push(p.name);}
+});
+save();
+this.renderList();
+closeModal('mergeProductModal');
+toast(`🔗 ${allMembers.size} produk digabung ke 1 harga ${fmtFull(price)}: ${names.join(', ')}`,6000);
+},
+async unlinkFromGroup(i){
+const p=D.products[i];
+if(!p||!p.priceGroupId)return;
+if(!await askConfirm(`Lepas "${p.name}" dari grup harga gabungan? Harga produk lain di grup tidak berubah, tapi produk ini tidak akan ikut ke-update otomatis lagi.`))return;
+delete p.priceGroupId;
+save();
+this.renderList();
+toast('🔓 Produk dilepas dari grup harga');
 },
 // totalModalStok/totalNilaiJualStok (kw208-cobek-modal-stok) — total uang modal (HPP) yg masih
 // "tertanam" di stok gudang (belum jadi uang tunai lagi sampai terjual), & estimasi nilai jualnya
@@ -228,6 +327,8 @@ const finalHarga=hasDiskon?Math.round(p.hargaJual*(1-p.diskonPersen/100)):p.harg
 const priceBlock=hasDiskon
 ?`<div class="shop-price-strike">${fmt(p.hargaJual)}</div><div class="shop-price-final discounted">${fmt(finalHarga)}<span class="shop-diskon-badge">-${p.diskonPersen}%</span></div>`
 :`<div class="shop-price-final">${fmt(p.hargaJual)}</div>`;
+const groupCount=p.priceGroupId?this.groupSiblings(p).length+1:0;
+const groupTag=groupCount?`<span class="shop-tag" style="color:var(--accent);font-weight:700">🔗 Gabungan (${groupCount} produk)</span>`:'';
 return`<div class="shop-product-card stock-${stockCls}">
         <div class="shop-product-head">
           <div>
@@ -235,6 +336,7 @@ return`<div class="shop-product-card stock-${stockCls}">
             <div class="shop-product-tags">
               ${kat?`<span class="shop-tag cat">🏷️ ${escapeHtml(kat)}</span>`:''}
               ${prod?`<span class="shop-tag">🏭 ${escapeHtml(prod)}</span>`:''}
+              ${groupTag}
             </div>
           </div>
           <div class="shop-stock-pill ${stockCls}">${p.stock} pcs · ${stockLbl}</div>
@@ -248,6 +350,7 @@ return`<div class="shop-product-card stock-${stockCls}">
           <div class="shop-product-right">
             <div class="shop-margin-badge">+${fmt(margin)} (${marginPct}%)</div>
             <div class="shop-product-actions">
+              ${p.priceGroupId?`<button data-action="Etalase.unlinkFromGroup" data-args="${escapeHtml(JSON.stringify([i]))}" aria-label="Lepas dari grup harga" title="Lepas dari grup harga gabungan">🔓</button>`:''}
               <button data-action="openProductModal" data-args="${escapeHtml(JSON.stringify([i]))}" aria-label="Edit/Buka">✏️</button>
               <button data-action="delProduct" data-args="${escapeHtml(JSON.stringify([i]))}" aria-label="Hapus">🗑</button>
             </div>

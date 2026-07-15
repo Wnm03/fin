@@ -167,6 +167,7 @@ const FEATURE_REGISTRY = [
       { key: 'per-edufund', label: 'Dana Pendidikan', desc: 'Target biaya sekolah/kuliah anak', target: { page: 'settings', group: 'stgGroup2', goTo: 'eduFundList' } },
       { key: 'per-anak', label: 'Perkembangan Anak', desc: 'Milestone tumbuh kembang anak', target: { page: 'settings', group: 'stgGroup3', goTo: 'anakList' } },
       { key: 'per-worthit', label: 'Worth It? & Prioritas Belanja', desc: 'Cek layak beli & daftar prioritas belanja', target: { action: 'WorthIt.open' } },
+      { key: 'per-self-reward', label: 'Self Reward', desc: 'Cek kelayakan & level self reward sesuai kondisi finansial', target: { action: 'SelfRewardView.open' } },
       { key: 'per-piutang-utang', label: 'Piutang & Utang', desc: 'Catatan piutang, utang, strategi pelunasan', target: { page: 'pajak', tab: 'zakat', goTo: 'piutangList' } },
       { key: 'per-pengingat', label: 'Pengingat', desc: 'Pengingat umum keluarga', target: { page: 'settings', group: 'stgGroup3', goTo: 'reminderList' } },
     ],
