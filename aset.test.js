@@ -489,11 +489,13 @@ test('totalValue — jumlah nilai semua aset, D.assets kosong/tidak ada -> 0', (
 // Ringkasan Diversifikasi (assetDashDiversifikasi — kesimpulan status sebaran
 // aset berdasarkan jumlah kategori & konsentrasi kategori terbesar).
 
-test('renderDashboard — D.assets kosong -> dashboard disembunyikan (u-dnone)', () => {
+test('renderDashboard — D.assets kosong -> dashboard tetap tampil dengan pesan ajakan (bukan disembunyikan)', () => {
   const D = { assets: [] };
   const { ctx, fakeDocument } = makeAset(D);
   ctx.Aset.renderDashboard();
-  assert.equal(fakeDocument.getElementById('assetDashboard').classList.contains('u-dnone'), true);
+  assert.equal(fakeDocument.getElementById('assetDashboard').classList.contains('u-dnone'), false);
+  assert.equal(fakeDocument.getElementById('assetDashTotal').textContent, 'Rp 0');
+  assert.match(fakeDocument.getElementById('assetDashKategori').innerHTML, /Belum ada aset tercatat/);
 });
 
 test('renderDashboard — ada aset -> dashboard ditampilkan & Total/Buku/Pasar terisi', () => {
@@ -598,18 +600,21 @@ test('renderDashboard — dipanggil otomatis lewat renderList() (save/delete/imp
 // > 0) -- aset tanpa data modal dikecualikan dari agregasi. Referensi "hari ini"
 // pakai todayStr() (di-stub '2026-07-11' lewat makeAset) supaya deterministik.
 
-test('renderInvestasi — tidak ada aset dgn data modal -> box disembunyikan (u-dnone)', () => {
+test('renderInvestasi — tidak ada aset dgn data modal -> box tetap tampil dengan pesan ajakan', () => {
   const D = { assets: [{ id: 'a1', jenis: 'Tanah', nilai: 500000000 }] }; // tanpa modal sama sekali
   const { ctx, fakeDocument } = makeAset(D);
   ctx.Aset.renderInvestasi();
-  assert.equal(fakeDocument.getElementById('assetInvestasiDashboard').classList.contains('u-dnone'), true);
+  assert.equal(fakeDocument.getElementById('assetInvestasiDashboard').classList.contains('u-dnone'), false);
+  assert.equal(fakeDocument.getElementById('assetInvestasiROI').textContent, '—');
+  assert.match(fakeDocument.getElementById('assetInvestasiRingkasan').innerHTML, /Belum ada aset dengan data modal/);
 });
 
-test('renderInvestasi — D.assets kosong -> box disembunyikan', () => {
+test('renderInvestasi — D.assets kosong -> box tetap tampil dengan pesan ajakan', () => {
   const D = { assets: [] };
   const { ctx, fakeDocument } = makeAset(D);
   ctx.Aset.renderInvestasi();
-  assert.equal(fakeDocument.getElementById('assetInvestasiDashboard').classList.contains('u-dnone'), true);
+  assert.equal(fakeDocument.getElementById('assetInvestasiDashboard').classList.contains('u-dnone'), false);
+  assert.match(fakeDocument.getElementById('assetInvestasiRingkasan').innerHTML, /Belum ada aset dengan data modal/);
 });
 
 test('renderInvestasi — ROI & Capital Gain/Loss dihitung dari total modal vs total nilai (untung)', () => {
@@ -1245,11 +1250,12 @@ test('Penyusutan.renderList — kartu/list tidak ada di DOM -> no-op', () => {
   assert.doesNotThrow(() => ctx.Penyusutan.renderList());
 });
 
-test('Penyusutan.renderList — tidak ada aset sama sekali -> kartu disembunyikan (u-dnone)', () => {
+test('Penyusutan.renderList — tidak ada aset sama sekali -> kartu tetap tampil dengan pesan ajakan', () => {
   const D = { assets: [] };
   const { ctx, fakeDocument } = makeAset(D);
   ctx.Penyusutan.renderList();
-  assert.equal(fakeDocument.getElementById('assetPenyusutanDashboard').classList.contains('u-dnone'), true);
+  assert.equal(fakeDocument.getElementById('assetPenyusutanDashboard').classList.contains('u-dnone'), false);
+  assert.match(fakeDocument.getElementById('assetPenyusutanList').innerHTML, /Belum ada aset tercatat/);
 });
 
 test('Penyusutan.renderList — ada aset (belum aktif penyusutan) -> kartu tampil, checkbox tidak dicentang, tanpa hasil hitung', () => {
@@ -1380,11 +1386,13 @@ test('PajakAset.renderList — kartu/list tidak ada di DOM -> no-op', () => {
   assert.doesNotThrow(() => ctx.PajakAset.renderList());
 });
 
-test('PajakAset.renderList — tidak ada aset properti maupun zakatable -> kartu disembunyikan (u-dnone)', () => {
+test('PajakAset.renderList — tidak ada aset properti maupun zakatable -> kartu tetap tampil dengan pesan ajakan', () => {
   const D = { assets: [{ id: '1', name: 'Motor', jenis: 'Kendaraan', nilai: 20000000, zakatable: false }] };
   const { ctx, fakeDocument } = makeAset(D);
   ctx.PajakAset.renderList();
-  assert.equal(fakeDocument.getElementById('assetPajakDashboard').classList.contains('u-dnone'), true);
+  assert.equal(fakeDocument.getElementById('assetPajakDashboard').classList.contains('u-dnone'), false);
+  assert.equal(fakeDocument.getElementById('assetPajakTotalPBB').textContent, 'Rp 0');
+  assert.match(fakeDocument.getElementById('assetPajakList').innerHTML, /Belum ada aset properti/);
 });
 
 test('PajakAset.renderList — ada aset Tanah & aset zakatable -> kartu tampil, breakdown PBB & Zakat, total & ringkasan benar', () => {
@@ -1428,14 +1436,13 @@ test('Aset.renderList — memicu PajakAset.renderList() (kartu Pajak Aset ikut s
   assert.equal(fakeDocument.getElementById('assetPajakDashboard').classList.contains('u-dnone'), false);
 });
 
-test('Aset.renderList — list KOSONG (hapus aset terakhir) TETAP memicu PajakAset.renderList() supaya kartu Pajak Aset ikut disembunyikan (BUGFIX: sebelumnya cabang empty-state ini melewatkan panggilan PajakAset.renderList(), jadi kartu PBB/Zakat sisa aset yg sudah dihapus tetap nyangkut tampil)', () => {
+test('Aset.renderList — list KOSONG (hapus aset terakhir) TETAP memicu PajakAset.renderList() supaya kartu Pajak Aset ikut dibersihkan dari data lama (BUGFIX: sebelumnya cabang empty-state ini melewatkan panggilan PajakAset.renderList(), jadi kartu PBB/Zakat sisa aset yg sudah dihapus tetap nyangkut tampil; sekarang kartu tetap tampil tapi kontennya direset ke pesan ajakan, bukan disembunyikan)', () => {
   const D = { assets: [] };
-  const { ctx, fakeDocument } = makeAset(D, {
-    domValues: { assetPajakDashboard: { classList: ['u-dnone'] } }, // simulasi: sebelumnya kartu tampil dgn data lama
-  });
-  fakeDocument.getElementById('assetPajakDashboard').classList.remove('u-dnone');
+  const { ctx, fakeDocument } = makeAset(D);
   ctx.Aset.renderList();
-  assert.equal(fakeDocument.getElementById('assetPajakDashboard').classList.contains('u-dnone'), true);
+  assert.equal(fakeDocument.getElementById('assetPajakDashboard').classList.contains('u-dnone'), false);
+  assert.equal(fakeDocument.getElementById('assetPajakTotalPBB').textContent, 'Rp 0');
+  assert.match(fakeDocument.getElementById('assetPajakList').innerHTML, /Belum ada aset properti/);
 });
 
 // ================= LaporanAset (bagian ke-13) =================
@@ -1580,11 +1587,12 @@ test('LaporanAset.renderList — kartu/elemen tidak ada di DOM -> no-op', () => 
   assert.doesNotThrow(() => ctx.LaporanAset.renderList());
 });
 
-test('LaporanAset.renderList — D.assets kosong -> kartu disembunyikan (u-dnone)', () => {
+test('LaporanAset.renderList — D.assets kosong -> kartu tetap tampil dengan pesan ajakan (bukan disembunyikan)', () => {
   const D = { assets: [] };
   const { ctx, fakeDocument } = makeAset(D);
   ctx.LaporanAset.renderList();
-  assert.equal(fakeDocument.getElementById('laporanAsetCard').classList.contains('u-dnone'), true);
+  assert.equal(fakeDocument.getElementById('laporanAsetCard').classList.contains('u-dnone'), false);
+  assert.match(fakeDocument.getElementById('lapAsetDaftar').innerHTML, /Belum ada aset tercatat/);
 });
 
 test('LaporanAset.renderList — ada aset -> kartu tampil & ke-5 bagian terisi', () => {
@@ -1615,9 +1623,9 @@ test('Aset.renderList — memicu LaporanAset.renderList() (kartu Laporan Aset ik
   assert.equal(fakeDocument.getElementById('laporanAsetCard').classList.contains('u-dnone'), false);
 });
 
-test('Aset.renderList — D.assets kosong -> LaporanAset.renderList() ikut jalan (kartu disembunyikan, bukan error)', () => {
+test('Aset.renderList — D.assets kosong -> LaporanAset.renderList() ikut jalan (kartu tetap tampil dgn pesan ajakan, bukan error)', () => {
   const D = { assets: [] };
   const { ctx, fakeDocument } = makeAset(D);
   assert.doesNotThrow(() => ctx.Aset.renderList());
-  assert.equal(fakeDocument.getElementById('laporanAsetCard').classList.contains('u-dnone'), true);
+  assert.equal(fakeDocument.getElementById('laporanAsetCard').classList.contains('u-dnone'), false);
 });

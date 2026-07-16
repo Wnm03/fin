@@ -81,7 +81,11 @@ test('styles.css: base .card/.card-title global TIDAK diubah oleh Tahap 6', () =
   // Nilai border-radius dimigrasi ke var(--r-2xl) di ROADMAP-v1.1.md Item 4
   // (Sprint 2 Tahap 11) — value-preserving (--r-2xl tetap 16px), guard ini
   // diupdate mengikuti, bukan menandakan .card berubah struktur/nilai.
-  assert.match(css, /\.card \{ background: var\(--surface2\); border-radius: var\(--r-2xl\); padding: 16px; margin-bottom: 12px; border: 1px solid var\(--border\); box-shadow: var\(--shadow-card, .*?\); position: relative;/);
+  // Redesign "dark premium fintech" (lihat permintaan user): padding
+  // 16px->20px & margin-bottom 12px->14px disengaja utk kesan lebih lega,
+  // --r-2xl sendiri juga naik dari 16px->20px di :root — guard diupdate
+  // mengikuti perubahan yang disengaja ini.
+  assert.match(css, /\.card \{ background: var\(--surface2\); border-radius: var\(--r-2xl\); padding: 20px; margin-bottom: 14px; border: 1px solid var\(--border\); box-shadow: var\(--shadow-card, .*?\); position: relative;/);
   assert.match(css, /\.card-title \{ font-size:var\(--fs-label\); font-weight: 700; color: var\(--text2\); text-transform: uppercase;/);
 });
 

@@ -176,12 +176,12 @@ test('source dashboard-hub.js memakai PAGE_NAV_IDX, TIDAK memakai cat.navIdx utk
   assert.match(SRC, /navItems\[PAGE_NAV_IDX\[target\.page\]\]/, 'showPage harus di-resolve lewat PAGE_NAV_IDX[target.page]');
 });
 
-test('PAGE_NAV_IDX — nilainya sesuai urutan 7 nav-item nyata di DOM (dashboard/keuangan/shop/ai/carnotes/pajak/settings)', () => {
+test('PAGE_NAV_IDX — nilainya sesuai urutan 7 nav-item nyata di DOM (dashboard/keuangan/shop/aset/carnotes/pajak/settings)', () => {
   const { PAGE_NAV_IDX } = makeHub(registry());
   // PAGE_NAV_IDX datang dari sandbox vm (realm beda, prototype Object beda),
   // jadi disalin ke object polos di realm host dulu sebelum deepEqual.
   assert.deepEqual({ ...PAGE_NAV_IDX }, {
-    dashboard: 0, 'dashboard-hub': 0, keuangan: 1, shop: 2, ai: 3, carnotes: 4, pajak: 5, settings: 6,
+    dashboard: 0, 'dashboard-hub': 0, keuangan: 1, shop: 2, aset: 3, carnotes: 4, pajak: 5, settings: 6,
   });
 });
 

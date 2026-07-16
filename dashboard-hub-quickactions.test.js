@@ -47,7 +47,7 @@ for (const file of HTML_FILES) {
     assert.match(html, /data-onclick="openCatatan\('anak'\)"/);
     assert.match(html, /data-onclick="openBackupModal\(\)"/);
     assert.match(html, /data-onclick="document\.getElementById\('dashHubSearchInput'\)\.focus\(\)"/);
-    assert.match(html, /data-onclick="showPage\('ai',document\.querySelectorAll\('\.nav-item'\)\[3\]\)"/);
+    assert.match(html, /data-onclick="showPage\('ai'\)"/);
   });
 
   test(`${file}: Hero Card & Grid Dashboard tidak disentuh (elemen sebelum/sesudah Quick Actions tetap sama persis)`, () => {

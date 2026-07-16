@@ -22,7 +22,7 @@ function accFields(overrides = {}) {
   return {
     accModalTitle: {}, accName: { value: '' }, accEmoji: { value: '' },
     accBalance: { value: '' }, accBalanceLabel: {}, accBalanceHint: { style: {} },
-    accLinkedAssetHint: { style: {} }, accIncludeBtn: {},
+    accLinkedAssetHint: { style: {} }, accIncludeBtn: {}, accJenis: { value: '' },
     fAcc: {}, txAcc: {}, trFrom: {}, trTo: {}, wrAcc: {}, tAcc: { value: '' },
     assetAccId: { value: '' },
     ...overrides,
@@ -321,7 +321,70 @@ test('_saveAccInner — edit akun: includeInBalance mengikuti accIncludeState sa
   assert.ok(calls.toast[0].includes('diperbarui'));
 });
 
-// ================= delAcc =================
+// ================= accJenis (Jenis Akun: kas bebas/dikunci/investasi) =================
+
+test('openAccModal — mode tambah: accJenis default kas_bebas', () => {
+  const D = { accounts: [] };
+  const { ctx, fakeDocument } = makeAkun(D);
+  ctx.openAccModal();
+  assert.equal(fakeDocument.getElementById('accJenis').value, 'kas_bebas');
+});
+
+test('openAccModal — mode edit: accJenis di-prefill dari a.jenis', () => {
+  const D = {
+    accounts: [{ id: 'a1', name: 'Reksadana', emoji: '📈', baseBalance: 0, jenis: 'investasi' }],
+    transactions: [],
+  };
+  const { ctx, fakeDocument } = makeAkun(D);
+  ctx.openAccModal(0);
+  assert.equal(fakeDocument.getElementById('accJenis').value, 'investasi');
+});
+
+test('openAccModal — mode edit: akun lama tanpa field jenis -> fallback kas_bebas (backward-compat)', () => {
+  const D = { accounts: [{ id: 'a1', name: 'Cash', emoji: '💵', baseBalance: 0 }], transactions: [] };
+  const { ctx, fakeDocument } = makeAkun(D);
+  ctx.openAccModal(0);
+  assert.equal(fakeDocument.getElementById('accJenis').value, 'kas_bebas');
+});
+
+test('openAccModal — aman no-op kalau elemen accJenis tidak ada di DOM', () => {
+  const D = { accounts: [] };
+  const { ctx, fakeDocument } = makeAkun(D);
+  fakeDocument.getElementById = new Proxy(fakeDocument.getElementById, {
+    apply(target, thisArg, args) { return args[0] === 'accJenis' ? null : Reflect.apply(target, thisArg, args); },
+  });
+  assert.doesNotThrow(() => ctx.openAccModal());
+});
+
+test('_saveAccInner — tambah akun baru menyimpan jenis yang dipilih (dikunci)', () => {
+  const D = { accounts: [], transactions: [] };
+  const { ctx } = makeAkun(D, {
+    domValues: { accName: { value: 'Dana Darurat' }, accEmoji: { value: '🚨' }, accBalance: { value: '0' }, accJenis: { value: 'dikunci' } },
+  });
+  ctx._saveAccInner();
+  assert.equal(D.accounts[0].jenis, 'dikunci');
+});
+
+test('_saveAccInner — tambah akun baru tanpa elemen accJenis -> fallback kas_bebas', () => {
+  const D = { accounts: [], transactions: [] };
+  const { ctx, fakeDocument } = makeAkun(D, { domValues: { accName: { value: 'X' }, accEmoji: { value: '💰' }, accBalance: { value: '0' } } });
+  fakeDocument.getElementById = new Proxy(fakeDocument.getElementById, {
+    apply(target, thisArg, args) { return args[0] === 'accJenis' ? null : Reflect.apply(target, thisArg, args); },
+  });
+  ctx._saveAccInner();
+  assert.equal(D.accounts[0].jenis, 'kas_bebas');
+});
+
+test('_saveAccInner — edit akun mengubah jenis dari kas_bebas ke investasi', () => {
+  const D = { accounts: [{ id: 'a1', name: 'BRI', emoji: '🏦', baseBalance: 0, jenis: 'kas_bebas' }], transactions: [] };
+  const { ctx, fakeDocument } = makeAkun(D);
+  ctx.openAccModal(0);
+  fakeDocument.getElementById('accJenis').value = 'investasi';
+  ctx._saveAccInner();
+  assert.equal(D.accounts[0].jenis, 'investasi');
+});
+
+
 
 test('delAcc — cuma 1 akun -> ditolak, toast peringatan, tidak hapus', async () => {
   const D = { accounts: [{ id: 'a1' }], transactions: [] };

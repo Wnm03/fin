@@ -15,7 +15,13 @@ function readCss() {
 
 test('styles.css: hover elevation ditambah utk tap-target sekunder di dalam @media (hover:hover) existing', () => {
   const css = readCss();
-  assert.match(css, /\.stat-box\.clickable:hover, \.cobek-stat\.clickable:hover, \.bbm-stat\.clickable:hover, \.budget-sum-box\.clickable:hover, \.budget-item\.clickable:hover\{box-shadow:0 2px 8px rgba\(0,0,0,\.08\);\}/);
+  // Sejak migrasi MD3 Dark tokens, nilai box-shadow literal dipindah ke
+  // custom property --shadow-hover-sm (dipakai bareng .card:hover juga).
+  // Rule & selector tetap sama, cuma nilainya sekarang lewat token.
+  assert.match(css, /\.stat-box\.clickable:hover, \.cobek-stat\.clickable:hover, \.bbm-stat\.clickable:hover, \.budget-sum-box\.clickable:hover, \.budget-item\.clickable:hover\{box-shadow:var\(--shadow-hover-sm\);\}/);
+  const tokenMatch = css.match(/--shadow-hover-sm:\s*([^;]+);/);
+  assert.ok(tokenMatch, '--shadow-hover-sm harus terdefinisi di :root');
+  assert.equal(tokenMatch[1].trim(), '0 2px 8px rgba(0,0,0,.08)', 'Nilai token harus sama persis dgn shadow hover sekunder yang dimaksud sprint ini');
 });
 
 test('styles.css: rule :active lama utk tap-target sekunder TIDAK diubah', () => {
