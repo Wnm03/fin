@@ -71,7 +71,23 @@ function createFakeDocument(initial = {}, queryGroups = {}) {
     return els.get(id);
   }
   for (const [id, val] of Object.entries(initial)) {
-    Object.assign(ensure(id), val);
+    // NOTE: kalau `val.classList` berupa ARRAY (mis. {classList:[]}), itu
+    // dimaksudkan sbg SEED daftar class awal -- harus diproses lewat
+    // createFakeElement (supaya jadi objek {add,remove,toggle,contains}
+    // asli), BUKAN di-assign mentah2 (itu akan menimpa classList jadi array
+    // biasa & bikin box.classList.remove() dst gagal). Tapi kalau
+    // `val.classList` sudah berupa OBJECT custom (mis. test yang sengaja
+    // mock {contains:()=>true, toggle(){}, ...}), itu tetap dipakai apa
+    // adanya seperti sebelumnya (test lain, mis. cobek.test.js, bergantung
+    // pada override penuh ini).
+    const { classList: cl, ...rest } = val || {};
+    const el = ensure(id);
+    if (Array.isArray(cl)) {
+      el.classList = createFakeElement({ classList: cl }).classList;
+    } else if (cl) {
+      el.classList = cl;
+    }
+    Object.assign(el, rest);
   }
 
   function querySelectorAll(selector) {

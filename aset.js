@@ -1,4 +1,4 @@
-// aset.js — Domain Aset & Kekayaan: ALOKASI_PRESETS/AlokasiAset (rekomendasi alokasi dana), Aset (Buku Aset & Kekayaan Bersih), IDBStore (helper generik penyimpanan IndexedDB), PORTFOLIO_LABELS, TimelineW (timeline tujuan keuangan)
+// aset.js — Domain Aset & Kekayaan: ALOKASI_PRESETS/AlokasiAset (rekomendasi alokasi dana), Aset (Buku Aset & Kekayaan Bersih), Penyusutan (estimasi nilai buku aset yg menurun nilainya: Garis Lurus/Saldo Menurun/Manual), PajakAset (estimasi PBB aset properti & Zakat Maal per aset zakatable + Ringkasan Pajak), LaporanAset (Laporan Aset gabungan: Daftar Aset, Riwayat Transaksi, Nilai Aset, Penyusutan, Ringkasan Kekayaan — dari sisi aset saja), IDBStore (helper generik penyimpanan IndexedDB), PORTFOLIO_LABELS, TimelineW (timeline tujuan keuangan)
 // CATATAN: modul-modul ini dipindah ke file baru ini dari features-renovasi-pajak-aset-order.js (v62).
 // CATATAN: IDBStore sebenarnya helper GENERIK (bukan spesifik domain Aset) yang dipakai save()/migrasi di features-helpers-global-security.js & self-test — ikut co-located di sini krn memang sudah dari dulu 1 file sama Aset, dipindah apa adanya tanpa isi diubah. Kandidat dipindah lagi ke file sendiri di sesi berikutnya kalau mau lebih rapi.
 // TimelineW.goals() memanggil Renov.totals() (sekarang di renovasi.js) lewat variabel global — aman krn dipanggil saat runtime (render), bukan saat file di-load, & renovasi.js tetap ikut ter-load lewat build.js.
@@ -148,7 +148,21 @@ const modalInvestasi=parsePzNum(document.getElementById('assetModalInvestasi').v
 const hargaBeli=parseDecStr(document.getElementById('assetHargaBeli').value);
 const jumlahUnit=parseDecStr(document.getElementById('assetJumlahUnit').value);
 const tanggal=document.getElementById('assetTanggal').value||'';
-const accountId=document.getElementById('assetAccId').value||null;
+let accountId=document.getElementById('assetAccId').value||null;
+// BUGFIX-FEATURE: opsi "__new__" = bukan menautkan ke akun yang SUDAH ADA, tapi
+// bikin akun baru otomatis dari aset ini -- biar akun itu langsung nongol di
+// daftar 🏦 Akun & bisa langsung dipakai buat transaksi (bayar/terima) seperti
+// akun biasa, bukan cuma referensi nilai doang. Saldo awal akun = nilai aset saat
+// ini. Setelah dibuat, id akun baru itu yang dipakai sbg accountId (tetap otomatis
+// dikecualikan dari Total Saldo Akun lewat linkedAssetAccountIds(), sama seperti
+// tautan ke akun lama, supaya nilainya gak dobel dihitung).
+let _createdNewAcc=false;
+if(accountId==='__new__'){
+const newAcc={id:'acc_'+Date.now(),name,emoji:Aset.ICON[jenis]||'📦',baseBalance:nilai,balance:nilai,includeInBalance:true};
+D.accounts.push(newAcc);
+accountId=newAcc.id;
+_createdNewAcc=true;
+}
 const keuntungan=modalInvestasi?(nilai-modalInvestasi):null;
 const keuntunganPct=modalInvestasi?((nilai-modalInvestasi)/modalInvestasi*100):null;
 const extra={modalInvestasi,hargaBeli,jumlahUnit,keuntungan,keuntunganPct};
@@ -162,7 +176,8 @@ D.assets.push(Object.assign({id:uid(),name,jenis,lokasi,nilai,tanggal,zakatable:
 save();
 closeModal('assetModal');
 Aset.renderList();renderKekayaanBersih();hitungZakatMaal();renderAccGrid();renderDashAccList();renderLapAccList();
-toast('✅ Aset tersimpan');
+if(typeof populateAccFilters==='function')populateAccFilters();
+toast(_createdNewAcc?'✅ Aset tersimpan & akun baru dibuat':'✅ Aset tersimpan');
 },
 async delete(id){
 if(!await askConfirm('Hapus aset ini dari Buku Aset?',{okText:'Ya, Hapus'}))return;
@@ -174,16 +189,189 @@ renderList(){
 const el=document.getElementById('assetList');
 if(!el)return;
 const list=D.assets||[];
-if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada aset tercatat</div></div>';return;}
+if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada aset tercatat</div></div>';Aset.renderDashboard();Aset.renderInvestasi();Penyusutan.renderList();PajakAset.renderList();LaporanAset.renderList();return;}
 el.innerHTML=list.map(a=>{
 const hasPct=a.keuntunganPct!=null&&isFinite(a.keuntunganPct);
 const pctBadge=hasPct?` <span style="font-size:10px;color:${a.keuntunganPct>=0?'var(--accent3)':'var(--accent2)'}">${a.keuntunganPct>=0?'▲':'▼'} ${a.keuntunganPct>=0?'+':''}${a.keuntunganPct.toFixed(2)}%</span>`:'';
 const linkedAcc=a.accountId?D.accounts.find(x=>sameId(x.id,a.accountId)):null;
 const linkMeta=linkedAcc?(' · 🔗 '+escapeHtml(linkedAcc.name)):(a.accountId?' · 🔗 (akun terhapus)':'');
-return `<div class="tx-item u-pointer" data-action="openAssetModal" data-args="${escapeHtml(JSON.stringify([a.id]))}"><div class="tx-icon u-bgaccsoft">${Aset.ICON[a.jenis]||'📦'}</div><div class="tx-info"><div class="tx-name">${escapeHtml(a.name)}${a.zakatable?' <span class="u-fs10 u-cacc3 u-r6 u-ml4" style="border:1px solid var(--accent3);padding:1px 5px">Zakat</span>':''}</div><div class="tx-meta">${a.jenis}${a.lokasi?' · '+escapeHtml(a.lokasi):''}${linkMeta}${pctBadge}</div></div><div class="tx-amount">${fmt(a.nilai)}</div><button class="tx-del" style="margin-right:2px" title="Update cepat via scan" data-stop="1" data-action="quickScanAsset" data-args="${escapeHtml(JSON.stringify([a.id]))}" aria-label="Update cepat via scan">⚡</button><button class="tx-del" data-stop="1" data-action="delAsset" data-args="${escapeHtml(JSON.stringify([a.id]))}" aria-label="Hapus">🗑</button></div>`;
+const histBtn=linkedAcc?`<button class="tx-del" style="margin-right:2px" title="Riwayat Transaksi akun ini" data-stop="1" data-action="Aset.openTxHistory" data-args="${escapeHtml(JSON.stringify([a.id]))}" aria-label="Riwayat Transaksi">📜</button>`:'';
+return `<div class="tx-item u-pointer" data-action="openAssetModal" data-args="${escapeHtml(JSON.stringify([a.id]))}"><div class="tx-icon u-bgaccsoft">${Aset.ICON[a.jenis]||'📦'}</div><div class="tx-info"><div class="tx-name">${escapeHtml(a.name)}${a.zakatable?' <span class="u-fs10 u-cacc3 u-r6 u-ml4" style="border:1px solid var(--accent3);padding:1px 5px">Zakat</span>':''}</div><div class="tx-meta">${a.jenis}${a.lokasi?' · '+escapeHtml(a.lokasi):''}${linkMeta}${pctBadge}</div></div><div class="tx-amount">${fmt(a.nilai)}</div>${histBtn}<button class="tx-del" style="margin-right:2px" title="Update cepat via scan" data-stop="1" data-action="quickScanAsset" data-args="${escapeHtml(JSON.stringify([a.id]))}" aria-label="Update cepat via scan">⚡</button><button class="tx-del" data-stop="1" data-action="delAsset" data-args="${escapeHtml(JSON.stringify([a.id]))}" aria-label="Hapus">🗑</button></div>`;
 }).join('');
+Aset.renderDashboard();
+Aset.renderInvestasi();
+Penyusutan.renderList();
+PajakAset.renderList();
+LaporanAset.renderList();
 },
 totalValue(){return(D.assets||[]).reduce((s,a)=>s+(a.nilai||0),0);},
+// FITUR BARU: Dashboard Aset — ringkasan Total Aset / Nilai Buku / Nilai Pasar +
+// breakdown per kategori (jenis). Nilai Pasar = total a.nilai (estimasi nilai saat
+// ini, sesuai yang diisi user di modal Aset). Nilai Buku = total modal/harga
+// perolehan (modalInvestasi kalau diisi, atau hargaBeli×jumlahUnit kalau itu yang
+// diisi; kalau dua-duanya kosong, dianggap sama dgn Nilai Pasar krn tidak ada data
+// modal -- supaya tidak salah tampil "untung/rugi" padahal cuma belum diisi).
+// Dipanggil otomatis tiap kali Aset.renderList() jalan (save/delete/import/scan
+// semua sudah lewat situ), jadi selalu sinkron tanpa perlu titik panggil baru.
+renderDashboard(){
+const box=document.getElementById('assetDashboard');
+if(!box)return;
+const list=D.assets||[];
+if(!list.length){box.classList.add('u-dnone');return;}
+box.classList.remove('u-dnone');
+let totalPasar=0,totalBuku=0;
+const perKategori={};
+list.forEach(a=>{
+const pasar=a.nilai||0;
+const buku=a.modalInvestasi!=null?a.modalInvestasi:(a.hargaBeli!=null&&a.jumlahUnit!=null?a.hargaBeli*a.jumlahUnit:pasar);
+totalPasar+=pasar;totalBuku+=buku;
+const jenis=a.jenis||'Lainnya';
+if(!perKategori[jenis])perKategori[jenis]={count:0,nilai:0};
+perKategori[jenis].count++;
+perKategori[jenis].nilai+=pasar;
+});
+const selisih=totalPasar-totalBuku;
+const selisihPct=totalBuku?(selisih/totalBuku*100):0;
+const selisihCls=selisih>=0?'green':'red';
+document.getElementById('assetDashTotal').textContent=fmtFull(totalPasar);
+document.getElementById('assetDashBuku').textContent=fmtFull(totalBuku);
+document.getElementById('assetDashPasar').textContent=fmtFull(totalPasar);
+const selEl=document.getElementById('assetDashSelisih');
+if(selEl)selEl.innerHTML=`Selisih Buku → Pasar: <b class="${selisihCls}">${fmtFullSigned(selisih)} (${selisih>=0?'+':''}${selisihPct.toFixed(2)}%)</b>`;
+const barColors=['var(--accent)','var(--accent2)','var(--accent3)','var(--accent4)'];
+// Komposisi Aset + Persentase Kategori: urut dari nilai (Rp) terbesar ke terkecil,
+// tiap baris tampilkan ikon/jenis/jumlah unit, nominal, bar proporsional, & %
+// terhadap totalPasar (bukan totalBuku, krn ini komposisi kekayaan SEKARANG).
+const kategoriRows=Object.entries(perKategori).sort((a,b)=>b[1].nilai-a[1].nilai);
+const katBox=document.getElementById('assetDashKategori');
+if(katBox){
+katBox.innerHTML=kategoriRows.map(([jenis,v],i)=>{
+const pct=totalPasar?(v.nilai/totalPasar*100):0;
+const icon=Aset.ICON[jenis]||'📦';
+return `<div class="u-mb10">
+      <div class="u-flex u-jcsb u-fs13 u-mb4"><span class="u-fw600">${icon} ${escapeHtml(jenis)} <span class="u-fs11 u-t2">(${v.count})</span></span><span class="u-fw700">${fmt(v.nilai)}</span></div>
+      <div class="budget-bar-track"><div class="budget-bar-fill" style="width:${pct}%;background:${barColors[i%barColors.length]}"></div></div>
+      <div class="budget-bar-label"><span>${pct.toFixed(1)}% dari total</span></div>
+    </div>`;
+}).join('');
+}
+// FITUR BARU: Ringkasan Diversifikasi — simpulkan sebaran aset per kategori jadi
+// 1 kalimat + label status, berdasarkan (a) jumlah kategori yang dipegang & (b)
+// konsentrasi kategori terbesar (% dari totalPasar). Ambang batas dipilih supaya
+// selaras dgn heuristik umum "jangan taruh semua telur di 1 keranjang":
+//  - 1 kategori doang -> jelas belum terdiversifikasi sama sekali.
+//  - kategori terbesar >=70% -> risiko konsentrasi tinggi meski kategori lain ada.
+//  - kategori terbesar >=50% -> lumayan terkonsentrasi, masih perlu diwaspadai.
+//  - selain itu (kategori terbesar <50%, jenis kategori >=3) -> dianggap sudah
+//    tersebar cukup baik.
+const divBox=document.getElementById('assetDashDiversifikasi');
+if(divBox){
+const jumlahKategori=kategoriRows.length;
+if(!jumlahKategori){
+divBox.innerHTML='';
+} else {
+const [topJenis,topV]=kategoriRows[0];
+const topPct=totalPasar?(topV.nilai/totalPasar*100):0;
+let label,cls,saran;
+if(jumlahKategori===1){
+label='⚠️ Belum Terdiversifikasi';cls='red';
+saran=`Semua aset (100%) masih ada di 1 kategori: <b>${escapeHtml(topJenis)}</b>. Pertimbangkan sebar ke kategori lain (mis. emas, reksadana, atau kas darurat) biar gak terlalu bergantung ke 1 jenis aset.`;
+} else if(topPct>=70){
+label='⚠️ Konsentrasi Tinggi';cls='red';
+saran=`${jumlahKategori} kategori sudah dipegang, tapi <b>${escapeHtml(topJenis)}</b> mendominasi ${topPct.toFixed(1)}% dari total. Risiko konsentrasi masih tinggi kalau nilai kategori itu turun.`;
+} else if(topPct>=50){
+label='🟡 Cukup Terkonsentrasi';cls='orange';
+saran=`${jumlahKategori} kategori tersebar, dgn <b>${escapeHtml(topJenis)}</b> sbg porsi terbesar (${topPct.toFixed(1)}%). Lumayan seimbang, tapi masih ada baiknya dipantau supaya gak makin dominan.`;
+} else {
+label='✅ Terdiversifikasi Baik';cls='green';
+saran=`Aset tersebar di ${jumlahKategori} kategori, tanpa satupun kategori yang mendominasi lebih dari separuh total (terbesar: ${escapeHtml(topJenis)}, ${topPct.toFixed(1)}%).`;
+}
+divBox.innerHTML=`<div class="u-r10 u-mt10" style="background:var(--accent-soft);padding:8px 10px">
+      <div class="u-fs12 u-fw700 ${cls}">${label}</div>
+      <div class="u-fs11 u-t2 u-mt4 u-lh15">${saran}</div>
+    </div>`;
+}
+}
+},
+// FITUR BARU: Ringkasan Performa Investasi — ROI, Capital Gain/Loss, Yield (CAGR
+// tahunan), & ringkasan performa portofolio. HANYA mencakup aset yang punya data
+// modal (modalInvestasi ATAU hargaBeli×jumlahUnit terisi & >0) -- ini yg disebut
+// "dilacak sebagai investasi" di sini, TERLEPAS dari jenis-nya (Tanah/Rumah pun
+// ikut kalau memang diisi modalnya), krn definisi "investasi" yg dipakai murni
+// berbasis ada/tidaknya data modal utk hitung untung-rugi, bukan kategori. Aset
+// tanpa data modal (nilai=modal by default) SENGAJA dikecualikan supaya ROI/Yield
+// portofolio gak keisi data semu (untung/rugi 0% terus krn memang belum diisi).
+// - ROI: total return keseluruhan portofolio sejak modal awal ((Nilai-Modal)/Modal).
+// - Capital Gain/Loss: nominal Rp selisih Nilai vs Modal (bisa +/-).
+// - Yield: rata2 tertimbang (bobot=modal) dari CAGR per-aset ((Nilai/Modal)^(365/hari)-1),
+//   HANYA aset yg py `tanggal` & sudah lewat >=1 hari -- dipakai buat estimasi
+//   "setara berapa %/tahun", beda dari ROI yg cuma total return mentah tanpa
+//   memperhitungkan lama waktu investasi.
+// Referensi "hari ini" pakai todayStr() (bukan `new Date()` langsung) supaya
+// determinstik & gampang di-test (sama seperti dipakai di openModal()).
+// Dipanggil otomatis lewat renderList() spy selalu sinkron tiap save/delete/import.
+renderInvestasi(){
+const box=document.getElementById('assetInvestasiDashboard');
+if(!box)return;
+const tracked=(D.assets||[]).map(a=>{
+const buku=a.modalInvestasi!=null?a.modalInvestasi:(a.hargaBeli!=null&&a.jumlahUnit!=null?a.hargaBeli*a.jumlahUnit:null);
+return{a,buku};
+}).filter(x=>x.buku!=null&&x.buku>0);
+if(!tracked.length){box.classList.add('u-dnone');return;}
+box.classList.remove('u-dnone');
+let totalModal=0,totalNilai=0,cagrSum=0,cagrWeight=0,best=null,worst=null;
+const todayMs=new Date(todayStr()).getTime();
+tracked.forEach(({a,buku})=>{
+const nilai=a.nilai||0;
+totalModal+=buku;totalNilai+=nilai;
+const pct=(nilai-buku)/buku*100;
+if(!best||pct>best.pct)best={name:a.name,pct};
+if(!worst||pct<worst.pct)worst={name:a.name,pct};
+if(a.tanggal){
+const days=(todayMs-new Date(a.tanggal).getTime())/86400000;
+if(days>=1){
+const years=days/365;
+const cagr=(Math.pow(nilai/buku,1/years)-1)*100;
+if(isFinite(cagr)){cagrSum+=cagr*buku;cagrWeight+=buku;}
+}
+}
+});
+const gain=totalNilai-totalModal;
+const roiPct=totalModal?(gain/totalModal*100):0;
+const yieldPct=cagrWeight?(cagrSum/cagrWeight):null;
+const gainCls=gain>=0?'green':'red';
+const roiEl=document.getElementById('assetInvestasiROI');
+if(roiEl)roiEl.innerHTML=`<b class="${gainCls}">${roiPct>=0?'+':''}${roiPct.toFixed(2)}%</b>`;
+const gainEl=document.getElementById('assetInvestasiGain');
+if(gainEl)gainEl.innerHTML=`<b class="${gainCls}">${fmtFullSigned(gain)} (${roiPct>=0?'+':''}${roiPct.toFixed(2)}%)</b>`;
+const yieldEl=document.getElementById('assetInvestasiYield');
+if(yieldEl){
+yieldEl.innerHTML=(yieldPct==null)?'<span class="u-t2">Belum bisa dihitung (tanggal aset belum diisi / kurang dari 1 hari)</span>':
+`<b class="${yieldPct>=0?'green':'red'}">${yieldPct>=0?'+':''}${yieldPct.toFixed(2)}%/tahun</b>`;
+}
+const ringkasanEl=document.getElementById('assetInvestasiRingkasan');
+if(ringkasanEl){
+let txt=`Dari <b>${tracked.length}</b> aset yang dilacak sbg investasi (ada data modal), total modal ${fmtFull(totalModal)} kini bernilai ${fmtFull(totalNilai)} — ${gain>=0?'untung':'rugi'} <b class="${gainCls}">${fmtFullSigned(gain)} (${roiPct>=0?'+':''}${roiPct.toFixed(2)}%)</b>`;
+if(yieldPct!=null)txt+=`, setara ~${yieldPct>=0?'+':''}${yieldPct.toFixed(2)}%/tahun (CAGR)`;
+txt+='.';
+if(tracked.length>1&&best&&worst&&best.name!==worst.name){
+txt+=` Kinerja terbaik: <b>${escapeHtml(best.name)}</b> (${best.pct>=0?'+':''}${best.pct.toFixed(2)}%), terendah: <b>${escapeHtml(worst.name)}</b> (${worst.pct>=0?'+':''}${worst.pct.toFixed(2)}%).`;
+}
+ringkasanEl.innerHTML=txt;
+}
+},
+// Riwayat Transaksi -- khusus aset yang sudah ditautkan/punya Akun Transaksi (a.accountId).
+// Pakai ulang filterTxModal (sama seperti Riwayat di tab Keuangan/Laporan) lewat scope
+// baru 'account' di showFilteredTx() (lihat filter-laporan.js) supaya tidak duplikasi UI.
+openTxHistory(id){
+const a=D.assets.find(x=>sameId(x.id,id));
+if(!a){toast('⚠️ Aset tidak ditemukan');return;}
+if(!a.accountId){toast('⚠️ Aset ini belum ditautkan ke Akun Transaksi');return;}
+const acc=D.accounts.find(x=>sameId(x.id,a.accountId));
+if(!acc){toast('⚠️ Akun Transaksi aset ini sudah terhapus');return;}
+if(typeof showFilteredTx!=='function'){toast('⚠️ Fitur riwayat transaksi belum tersedia');return;}
+showFilteredTx('account',undefined,'📜 Riwayat: '+acc.name,acc.id);
+},
 // AsetXLSX (bagian ke-10) — export/import data Buku Aset pakai format .xlsx, GANTI dari
 // JSON/CSV sebelumnya (exportJSON/exportCSV/importJSON lama dihapus). Pola sama dgn
 // ShopExport/ImportShopExcel di cobek.js: pustaka SheetJS di-lazy-load lewat ensureXLSX()
@@ -274,6 +462,451 @@ save();
 Aset.renderList();renderKekayaanBersih();hitungZakatMaal();renderAccGrid();renderDashAccList();renderLapAccList();
 toast('✅ '+valid.length+' aset berhasil di-import'+(skipped?' ('+skipped+' dilewati)':''));
 e.target.value='';
+}
+};
+// ================= PENYUSUTAN ASET (bagian ke-11) =================
+// FITUR BARU: Penyusutan (depreciation) — estimasi nilai buku aset yang nilainya
+// MENURUN dari waktu ke waktu (kendaraan, bangunan, peralatan, dst), kebalikan
+// dari "Ringkasan Performa Investasi" (renderInvestasi) di atas yang fokus ke
+// aset yang nilainya naik/fluktuatif. 3 metode didukung, sesuai request:
+//  - Garis Lurus (straight-line): beban penyusutan RATA tiap bulan sepanjang
+//    umur manfaat, dari (Harga Perolehan − Nilai Residu) / Umur Manfaat, lalu
+//    diprorata per bulan berjalan (bukan lompat 1x/tahun) supaya nilai buku
+//    berubah halus. Nilai buku dibatasi tidak boleh turun di bawah Nilai Residu.
+//  - Saldo Menurun (declining balance): tarif % diterapkan ke NILAI BUKU tahun
+//    berjalan (bukan ke harga perolehan awal) tiap tahun PENUH yang sudah
+//    lewat, sisa bulan di tahun berjalan diprorata linear dari tarif tahun itu.
+//    Nominal penyusutan makin kecil tiap tahun (khas saldo menurun), floor di
+//    Nilai Residu.
+//  - Manual: TIDAK ada formula otomatis — nilai buku = field "Nilai" aset yang
+//    sudah ada, di-update sendiri oleh user scr berkala lewat modal Edit Aset.
+//    Fungsi manual() di sini cuma pass-through supaya API hitung() tetap
+//    konsisten dipanggil dgn metode apapun tanpa percabangan di caller.
+// "Harga Perolehan" dasar hitung diambil dari modalInvestasi (kalau diisi) atau
+// hargaBeli×jumlahUnit — SAMA seperti dasar "Nilai Buku" di renderDashboard()/
+// renderInvestasi(), supaya satu app konsisten definisi "harga perolehan"-nya.
+// Kalau dua2nya kosong, Garis Lurus/Saldo Menurun tidak bisa dihitung (hitung()
+// balikin hargaPerolehan:null, ditangani di renderList() dgn pesan minta diisi
+// data modal dulu).
+// Disimpan per-aset di a.penyusutan={aktif,metode,umurManfaatTahun,nilaiResidu,
+// tarifPersen}. SENGAJA tidak dibatasi per jenis aset (siapa pun boleh
+// diaktifkan) — sama filosofinya dgn modalInvestasi yg juga lintas-jenis (lihat
+// catatan di renderInvestasi()), kartu UI cuma kasih hint aset apa yg lazim.
+// Dipanggil dari Aset.renderList() spy selalu sinkron tiap save/delete/import,
+// pola sama dgn renderDashboard()/renderInvestasi().
+const Penyusutan={
+METODE_LABELS:{garisLurus:'Garis Lurus',saldoMenurun:'Saldo Menurun',manual:'Manual'},
+DEFAULTS:{metode:'garisLurus',umurManfaatTahun:4,nilaiResidu:0,tarifPersen:25},
+// Harga Perolehan dasar hitung: sama dgn definisi "buku" di renderDashboard()/renderInvestasi().
+hargaPerolehan(a){
+if(!a)return null;
+if(a.modalInvestasi!=null)return a.modalInvestasi;
+if(a.hargaBeli!=null&&a.jumlahUnit!=null)return a.hargaBeli*a.jumlahUnit;
+return null;
+},
+_monthsBetween(dariStr,keStr){
+const dari=new Date(dariStr),ke=new Date(keStr);
+if(isNaN(dari)||isNaN(ke))return 0;
+let months=(ke.getFullYear()-dari.getFullYear())*12+(ke.getMonth()-dari.getMonth());
+if(ke.getDate()<dari.getDate())months-=1;
+return Math.max(0,months);
+},
+// Metode 1: Garis Lurus.
+garisLurus(hargaPerolehan,nilaiResidu,umurManfaatTahun,tanggalPerolehan,tanggalHitung){
+hargaPerolehan=Number(hargaPerolehan)||0;
+nilaiResidu=Number(nilaiResidu)||0;
+umurManfaatTahun=Number(umurManfaatTahun)||0;
+if(hargaPerolehan<=0||umurManfaatTahun<=0||!tanggalPerolehan){
+return{nilaiBuku:hargaPerolehan,akumulasi:0,bebanPerTahun:0,bebanPerBulan:0,bulanBerjalan:0,habisManfaat:false};
+}
+const nilaiDisusutkan=Math.max(0,hargaPerolehan-nilaiResidu);
+const bebanPerTahun=nilaiDisusutkan/umurManfaatTahun;
+const bebanPerBulan=bebanPerTahun/12;
+const totalBulanManfaat=umurManfaatTahun*12;
+const bulanBerjalanRaw=Penyusutan._monthsBetween(tanggalPerolehan,tanggalHitung||tanggalPerolehan);
+const bulanEfektif=Math.max(0,Math.min(bulanBerjalanRaw,totalBulanManfaat));
+const akumulasi=Math.min(nilaiDisusutkan,bebanPerBulan*bulanEfektif);
+const nilaiBuku=Math.max(nilaiResidu,hargaPerolehan-akumulasi);
+return{nilaiBuku,akumulasi,bebanPerTahun,bebanPerBulan,bulanBerjalan:bulanEfektif,habisManfaat:bulanBerjalanRaw>=totalBulanManfaat};
+},
+// Metode 2: Saldo Menurun.
+saldoMenurun(hargaPerolehan,tarifPersen,nilaiResidu,tanggalPerolehan,tanggalHitung){
+hargaPerolehan=Number(hargaPerolehan)||0;
+tarifPersen=Number(tarifPersen)||0;
+nilaiResidu=Number(nilaiResidu)||0;
+if(hargaPerolehan<=0||tarifPersen<=0||!tanggalPerolehan){
+return{nilaiBuku:hargaPerolehan,akumulasi:0,tahunBerjalan:0};
+}
+const bulanBerjalan=Penyusutan._monthsBetween(tanggalPerolehan,tanggalHitung||tanggalPerolehan);
+const tahunPenuh=Math.floor(bulanBerjalan/12);
+const sisaBulan=bulanBerjalan%12;
+const tarif=Math.min(1,tarifPersen/100);
+let nilaiBuku=hargaPerolehan;
+for(let i=0;i<tahunPenuh&&nilaiBuku>nilaiResidu;i++){
+nilaiBuku=Math.max(nilaiResidu,nilaiBuku*(1-tarif));
+}
+if(sisaBulan>0&&nilaiBuku>nilaiResidu){
+const bebanBulanIni=nilaiBuku*tarif/12*sisaBulan;
+nilaiBuku=Math.max(nilaiResidu,nilaiBuku-bebanBulanIni);
+}
+const akumulasi=Math.max(0,hargaPerolehan-nilaiBuku);
+return{nilaiBuku,akumulasi,tahunBerjalan:bulanBerjalan/12};
+},
+// Metode 3: Manual — pass-through, nilai buku = nilai aset yang diisi user sendiri.
+manual(nilaiSaatIni){
+return{nilaiBuku:Number(nilaiSaatIni)||0,akumulasi:null,tahunBerjalan:null};
+},
+// Dispatcher: hitung nilai buku SEKARANG (atau di tanggalHitung tertentu) sesuai
+// setting penyusutan yg tersimpan di aset (a.penyusutan). Balikin null kalau
+// penyusutan belum diaktifkan utk aset ini.
+hitung(a,tanggalHitung){
+if(!a||!a.penyusutan||!a.penyusutan.aktif)return null;
+const p=a.penyusutan;
+const metode=p.metode||'garisLurus';
+tanggalHitung=tanggalHitung||todayStr();
+if(metode==='manual'){
+return Object.assign({metode,hargaPerolehan:Penyusutan.hargaPerolehan(a)},Penyusutan.manual(a.nilai));
+}
+const hargaPerolehan=Penyusutan.hargaPerolehan(a);
+if(hargaPerolehan==null){
+return{metode,hargaPerolehan:null,nilaiBuku:a.nilai,akumulasi:null};
+}
+if(metode==='saldoMenurun'){
+return Object.assign({metode,hargaPerolehan},Penyusutan.saldoMenurun(hargaPerolehan,p.tarifPersen,p.nilaiResidu,a.tanggal,tanggalHitung));
+}
+return Object.assign({metode,hargaPerolehan},Penyusutan.garisLurus(hargaPerolehan,p.nilaiResidu,p.umurManfaatTahun,a.tanggal,tanggalHitung));
+},
+// Nyalakan/matikan penyusutan utk 1 aset. Saat dinyalakan pertama kali (belum
+// pernah punya a.penyusutan sama sekali), isi dgn DEFAULTS supaya field2 di UI
+// langsung ada nilainya (bukan kosong/NaN).
+toggleAktif(id){
+const a=D.assets.find(x=>sameId(x.id,id));
+if(!a)return;
+a.penyusutan=a.penyusutan||Object.assign({},Penyusutan.DEFAULTS);
+a.penyusutan.aktif=!a.penyusutan.aktif;
+save();
+Penyusutan.renderList();
+},
+// Update 1 parameter (metode/umurManfaatTahun/nilaiResidu/tarifPersen) dari kontrol
+// per-baris di kartu Penyusutan. no-op kalau aset/penyusutan-nya belum ada (mis.
+// race condition re-render), TIDAK bikin objek baru di sini spy tidak mem-bypass
+// toggleAktif() sbg satu2nya titik nyalain penyusutan.
+updateParam(id,field,rawValue){
+const a=D.assets.find(x=>sameId(x.id,id));
+if(!a||!a.penyusutan)return;
+if(field==='metode'){
+a.penyusutan.metode=rawValue;
+} else if(field==='nilaiResidu'){
+a.penyusutan.nilaiResidu=parsePzNum(rawValue);
+} else if(field==='umurManfaatTahun'){
+a.penyusutan.umurManfaatTahun=parseDecStr(rawValue)||0;
+} else if(field==='tarifPersen'){
+a.penyusutan.tarifPersen=parseDecStr(rawValue)||0;
+}
+save();
+Penyusutan.renderList();
+},
+// Render kartu "📉 Penyusutan Aset": 1 baris per aset (toggle aktif + kontrol
+// metode & parameter kalau aktif + hasil hitung), plus total Akumulasi
+// Penyusutan & total Nilai Buku Sekarang lintas aset yg aktif.
+renderList(){
+const card=document.getElementById('assetPenyusutanDashboard');
+const box=document.getElementById('assetPenyusutanList');
+if(!card||!box)return;
+const list=D.assets||[];
+if(!list.length){card.classList.add('u-dnone');return;}
+card.classList.remove('u-dnone');
+let totalAkumulasi=0,totalBuku=0;
+box.innerHTML=list.map(a=>{
+const aktif=!!(a.penyusutan&&a.penyusutan.aktif);
+const p=a.penyusutan||Penyusutan.DEFAULTS;
+const icon=Aset.ICON[a.jenis]||'📦';
+let bodyHtml='';
+if(aktif){
+const hasil=Penyusutan.hitung(a);
+const metode=p.metode||'garisLurus';
+const metodeOpts=['garisLurus','saldoMenurun','manual'].map(m=>`<option value="${m}" ${m===metode?'selected':''}>${Penyusutan.METODE_LABELS[m]}</option>`).join('');
+let fieldsHtml='';
+if(metode==='garisLurus'){
+fieldsHtml=`<div class="u-grid2 u-gap8 u-mb8">
+        <div><label class="fl">Umur Manfaat (tahun)</label><input type="text" inputmode="numeric" class="fi" value="${p.umurManfaatTahun!=null?p.umurManfaatTahun:''}" onchange="Penyusutan.updateParam('${a.id}','umurManfaatTahun',this.value)"></div>
+        <div><label class="fl">Nilai Residu (Rp)</label><input type="text" inputmode="numeric" class="fi" value="${p.nilaiResidu!=null?p.nilaiResidu:''}" onchange="Penyusutan.updateParam('${a.id}','nilaiResidu',this.value)"></div>
+      </div>`;
+} else if(metode==='saldoMenurun'){
+fieldsHtml=`<div class="u-grid2 u-gap8 u-mb8">
+        <div><label class="fl">Tarif per Tahun (%)</label><input type="text" inputmode="numeric" class="fi" value="${p.tarifPersen!=null?p.tarifPersen:''}" onchange="Penyusutan.updateParam('${a.id}','tarifPersen',this.value)"></div>
+        <div><label class="fl">Nilai Residu (Rp)</label><input type="text" inputmode="numeric" class="fi" value="${p.nilaiResidu!=null?p.nilaiResidu:''}" onchange="Penyusutan.updateParam('${a.id}','nilaiResidu',this.value)"></div>
+      </div>`;
+} else {
+fieldsHtml=`<div class="u-fs11 u-t2 u-mb8">Nilai buku = field "Nilai" aset ini, di-update manual sendiri lewat Edit Aset. Tidak ada formula otomatis di metode ini.</div>`;
+}
+let resultHtml='';
+if(metode!=='manual'&&hasil.hargaPerolehan==null){
+resultHtml=`<div class="u-fs11 u-cacc2">⚠️ Isi dulu Modal Investasi atau Harga Beli × Jumlah Unit di data aset ini supaya bisa dihitung.</div>`;
+} else {
+totalBuku+=hasil.nilaiBuku||0;
+if(hasil.akumulasi!=null)totalAkumulasi+=hasil.akumulasi;
+resultHtml=`<div class="u-fs12"><b>Nilai Buku Sekarang: ${fmtFull(hasil.nilaiBuku)}</b>${hasil.akumulasi!=null?' · Akumulasi Penyusutan: '+fmtFull(hasil.akumulasi):''}</div>`;
+if(hasil.habisManfaat)resultHtml+=`<div class="u-fs11 u-t2 u-mt2">✅ Sudah mencapai akhir umur manfaat.</div>`;
+}
+bodyHtml=`<div class="fg" style="margin-bottom:8px"><label class="fl">Metode</label><select class="fs" onchange="Penyusutan.updateParam('${a.id}','metode',this.value)">${metodeOpts}</select></div>`+fieldsHtml+resultHtml;
+}
+return `<div class="u-r10 u-mb10" style="border:1px solid var(--border);padding:10px 12px">
+      <div class="u-flex u-jcsb u-aic u-mb8">
+        <div class="u-fs13 u-fw600">${icon} ${escapeHtml(a.name)}</div>
+        <label class="u-fs11 u-flex u-aic" style="gap:4px"><input type="checkbox" ${aktif?'checked':''} onchange="Penyusutan.toggleAktif('${a.id}')"> Aktif</label>
+      </div>
+      ${bodyHtml}
+    </div>`;
+}).join('');
+const totalEl=document.getElementById('assetPenyusutanTotalAkumulasi');
+if(totalEl)totalEl.textContent=fmtFull(totalAkumulasi);
+const bukuEl=document.getElementById('assetPenyusutanTotalBuku');
+if(bukuEl)bukuEl.textContent=fmtFull(totalBuku);
+}
+};
+// ================= PAJAK ASET (bagian ke-12) =================
+// FITUR BARU: Pajak Aset — estimasi 2 kewajiban yang nempel langsung ke aset
+// yang tercatat di Buku Aset (BUKAN pengganti kalkulator umum di tab 🕌 Pajak
+// yang sudah ada — PPh21/PBB manual/Zakat Maal lengkap dgn aset cair & utang
+// -- ini scope-nya sengaja lebih sempit & auto-sync dari Buku Aset):
+//  - PBB (Pajak Bumi & Bangunan): khusus aset berjenis 'Tanah' atau
+//    'Rumah/Bangunan'. NJOP didekati dari field "Nilai" aset (Buku Aset tidak
+//    simpan NJOP resmi terpisah) dikurangi NJOPTKP, dikali tarif PBB-P2.
+//    NJOPTKP & tarif adalah SATU setting global (bukan per-aset) krn biasanya
+//    sama utk semua properti di 1 daerah yang sama — disimpan di
+//    D.pajakAsetSettings, default NJOPTKP Rp12.000.000 & tarif 0,5% (batas
+//    maks menurut UU HKPD), TAPI beda tiap Pemda jadi selalu ada disclaimer
+//    cek Perda/SPPT setempat (sama semangatnya dgn kartu PBB manual di tab
+//    Pajak).
+//  - Zakat Maal Aset: breakdown 2,5% KHUSUS dari aset yang ditandai
+//    zakatable di Buku Aset (a.zakatable) — beda dari hitungZakatMaal() di
+//    tab Pajak yang scope-nya lebih luas (ikut hitung aset cair & kurangi
+//    utang). Di sini murni supaya user lihat aset MANA aja yg nyumbang &
+//    berapa nominalnya per aset, tanpa perlu buka tab lain.
+// Ringkasan Pajak menggabungkan total PBB + total Zakat Maal Aset jadi 1
+// estimasi kewajiban tahunan per Buku Aset.
+// Dipanggil dari Aset.renderList() spy selalu sinkron tiap save/delete/import,
+// pola sama dgn Penyusutan.renderList().
+const PajakAset={
+DEFAULTS:{njoptkp:12000000,tarifPersen:0.5},
+JENIS_PROPERTI:['Tanah','Rumah/Bangunan'],
+settings(){
+D.pajakAsetSettings=D.pajakAsetSettings||Object.assign({},PajakAset.DEFAULTS);
+return D.pajakAsetSettings;
+},
+// Update setting global NJOPTKP/tarifPersen dari kontrol di kartu Pajak Aset.
+updateSetting(field,rawValue){
+if(field!=='njoptkp'&&field!=='tarifPersen')return;
+const s=PajakAset.settings();
+if(field==='njoptkp')s.njoptkp=parsePzNum(rawValue);
+else s.tarifPersen=parseDecStr(rawValue)||0;
+save();
+PajakAset.renderList();
+},
+// Estimasi PBB 1 aset properti. null kalau bukan jenis Tanah/Rumah-Bangunan.
+hitungPBB(a,settings){
+if(!a||!PajakAset.JENIS_PROPERTI.includes(a.jenis))return null;
+const s=settings||PajakAset.settings();
+const njop=a.nilai||0;
+const njoptkp=s.njoptkp||0;
+const dasar=Math.max(0,njop-njoptkp);
+const terutang=Math.round(dasar*(s.tarifPersen||0)/100);
+return{njop,njoptkp,dasar,terutang};
+},
+zakatableAssets(){
+return(D.assets||[]).filter(a=>a.zakatable);
+},
+// Breakdown Zakat Maal 2,5% khusus aset zakatable di Buku Aset (TANPA cek
+// haul/nishab terpisah — itu urusan kalkulator Zakat Maal utama di tab Pajak).
+hitungZakatAset(){
+const list=PajakAset.zakatableAssets();
+const totalNilai=list.reduce((s,a)=>s+(a.nilai||0),0);
+const totalZakat=Math.round(totalNilai*0.025);
+return{list,totalNilai,totalZakat};
+},
+// Render kartu "🧾 Pajak Aset": setting NJOPTKP/tarif, breakdown estimasi PBB
+// per aset properti, breakdown Zakat Maal per aset zakatable, & Ringkasan
+// Pajak (total gabungan). Kartu disembunyikan kalau tidak ada aset properti
+// maupun aset zakatable sama sekali (belum relevan ditampilkan).
+renderList(){
+const card=document.getElementById('assetPajakDashboard');
+const box=document.getElementById('assetPajakList');
+if(!card||!box)return;
+const properti=(D.assets||[]).filter(a=>PajakAset.JENIS_PROPERTI.includes(a.jenis));
+const zakat=PajakAset.hitungZakatAset();
+if(!properti.length&&!zakat.list.length){card.classList.add('u-dnone');return;}
+card.classList.remove('u-dnone');
+const s=PajakAset.settings();
+// BUGFIX-PROTECTIVE: tidak overwrite input NJOPTKP/tarif kalau lagi difokus
+// user (sedang diketik) supaya re-render (dipicu save/delete aset lain)
+// tidak "melompat"/reset kursor di tengah ngetik.
+const njoptkpEl=document.getElementById('pajakAsetNjoptkp');
+if(njoptkpEl&&document.activeElement!==njoptkpEl)njoptkpEl.value=s.njoptkp;
+const tarifEl=document.getElementById('pajakAsetTarif');
+if(tarifEl&&document.activeElement!==tarifEl)tarifEl.value=s.tarifPersen;
+let totalPBB=0;
+const pbbHtml=properti.length?('<div class="u-fs12t2 u-fw700 u-mb6">🏛️ Estimasi PBB</div>'+properti.map(a=>{
+const r=PajakAset.hitungPBB(a,s);
+totalPBB+=r.terutang;
+return `<div class="u-flex u-jcsb u-fs12 u-mb6"><span>${Aset.ICON[a.jenis]||'📦'} ${escapeHtml(a.name)}</span><span class="u-fw700">${fmtFull(r.terutang)}/th</span></div>`;
+}).join('')):'';
+const zakatHtml=zakat.list.length?('<div class="u-fs12t2 u-fw700 u-mb6 u-mt10">🕌 Zakat Maal Aset</div>'+zakat.list.map(a=>{
+const z=Math.round((a.nilai||0)*0.025);
+return `<div class="u-flex u-jcsb u-fs12 u-mb6"><span>${Aset.ICON[a.jenis]||'📦'} ${escapeHtml(a.name)}</span><span class="u-fw700">${fmtFull(z)}</span></div>`;
+}).join('')):'';
+box.innerHTML=(pbbHtml+zakatHtml)||'<div class="u-fs12 u-t2">Belum ada aset Tanah/Rumah-Bangunan atau aset zakatable.</div>';
+const pbbEl=document.getElementById('assetPajakTotalPBB');
+if(pbbEl)pbbEl.textContent=fmtFull(totalPBB);
+const zakatEl=document.getElementById('assetPajakTotalZakat');
+if(zakatEl)zakatEl.textContent=fmtFull(zakat.totalZakat);
+const totalPajak=totalPBB+zakat.totalZakat;
+const ringkasanEl=document.getElementById('assetPajakRingkasan');
+if(ringkasanEl){
+ringkasanEl.innerHTML=`📋 <b>Ringkasan Pajak:</b> estimasi total kewajiban pajak &amp; zakat dari Buku Aset ±<b>${fmtFull(totalPajak)}</b>/tahun — PBB ${fmtFull(totalPBB)} (${properti.length} aset properti) + Zakat Maal ${fmtFull(zakat.totalZakat)} (${zakat.list.length} aset zakatable). Estimasi kasar dari data Buku Aset, bukan angka resmi SPPT/lembaga zakat — cek Perda/BAZNAS setempat utk angka pasti.`;
+}
+}
+};
+// ================= LAPORAN ASET (bagian ke-13) =================
+// FITUR BARU: Laporan Aset — satu kartu ringkas yang menggabungkan 5 hal yang
+// sebelumnya cuma bisa dilihat kepencar di kartu2 lain, supaya bisa dibaca/
+// dicetak jadi 1 laporan utuh: (1) Daftar Aset, (2) Riwayat Transaksi (dari
+// akun2 yang ditautkan ke aset), (3) Nilai Aset (Pasar vs Buku + breakdown
+// kategori — angka SAMA dgn Aset.renderDashboard(), dihitung ulang di sini
+// spy modul ini berdiri sendiri/tidak bergantung urutan render kartu lain),
+// (4) Penyusutan (ringkasan akumulasi & nilai buku sekarang, KHUSUS aset yg
+// penyusutannya sudah Aktif — detail per-metode tetap di kartu 📉 Penyusutan
+// Aset), dan (5) Ringkasan Kekayaan (dari Aset) — total nilai, kategori
+// terbesar, & berapa yg zakatable. SENGAJA tidak mengulang scope kartu 🏦
+// Kekayaan Bersih (renderKekayaanBersih, di luar file ini — itu gabungan
+// akun+aset+utang) atau 🧾 Pajak Aset (PajakAset, PBB/Zakat) — laporan ini
+// murni rekap sisi ASET saja spy tidak tumpang tindih & gampang dites sendiri.
+// build() dipisah dari renderList() (pola sama dgn PajakAset.hitungZakatAset()
+// vs renderList()) supaya logic murni bisa dites tanpa DOM.
+const LaporanAset={
+// Riwayat Transaksi: HANYA mencakup aset yang sudah ditautkan ke Akun Transaksi
+// (a.accountId, sama syarat dgn Aset.openTxHistory()). D.transactions diasumsikan
+// array flat berisi seluruh transaksi keuangan app (field minimal dipakai di sini:
+// accountId, type ['income'|'expense'], amount, date, note) — kalau
+// D.transactions belum ada/bukan array, dianggap kosong (tidak error).
+riwayatTransaksi(){
+const assets=(D.assets||[]).filter(a=>a.accountId);
+const allTx=Array.isArray(D.transactions)?D.transactions:[];
+const akunTertaut=assets.map(a=>{
+const acc=(D.accounts||[]).find(x=>sameId(x.id,a.accountId));
+const txAkun=acc?allTx.filter(t=>sameId(t.accountId,acc.id)):[];
+const totalMasuk=txAkun.filter(t=>t.type==='income').reduce((s,t)=>s+(t.amount||0),0);
+const totalKeluar=txAkun.filter(t=>t.type==='expense').reduce((s,t)=>s+(t.amount||0),0);
+return{assetId:a.id,assetName:a.name,accountId:a.accountId,accountName:acc?acc.name:null,accountExists:!!acc,jumlahTx:txAkun.length,totalMasuk,totalKeluar};
+});
+const accIds=akunTertaut.filter(x=>x.accountExists).map(x=>x.accountId);
+const gabungan=allTx.filter(t=>accIds.some(id=>sameId(t.accountId,id)));
+const recentTx=gabungan.slice().sort((x,y)=>new Date(y.date||0)-new Date(x.date||0)).slice(0,10);
+return{akunTertaut,recentTx,totalTx:gabungan.length};
+},
+// Nilai Aset: total Nilai Pasar (a.nilai) vs Nilai Buku (modal/harga perolehan,
+// definisi SAMA dgn Aset.renderDashboard()) + breakdown per kategori (jenis).
+nilaiAset(){
+const list=D.assets||[];
+let totalPasar=0,totalBuku=0;
+const perKategori={};
+list.forEach(a=>{
+const pasar=a.nilai||0;
+const buku=a.modalInvestasi!=null?a.modalInvestasi:(a.hargaBeli!=null&&a.jumlahUnit!=null?a.hargaBeli*a.jumlahUnit:pasar);
+totalPasar+=pasar;totalBuku+=buku;
+const jenis=a.jenis||'Lainnya';
+if(!perKategori[jenis])perKategori[jenis]={count:0,nilai:0};
+perKategori[jenis].count++;
+perKategori[jenis].nilai+=pasar;
+});
+const selisih=totalPasar-totalBuku;
+const selisihPct=totalBuku?(selisih/totalBuku*100):0;
+return{totalPasar,totalBuku,selisih,selisihPct,perKategori};
+},
+// Penyusutan: rekap ringkas lintas aset yg penyusutannya AKTIF (detail per-metode
+// tetap di kartu Penyusutan.renderList() — di sini cuma total utk laporan).
+penyusutan(){
+const list=(D.assets||[]).filter(a=>a.penyusutan&&a.penyusutan.aktif);
+let totalAkumulasi=0,totalBukuSekarang=0,belumLengkap=0;
+list.forEach(a=>{
+const hasil=Penyusutan.hitung(a);
+if(!hasil)return;
+if(hasil.metode!=='manual'&&hasil.hargaPerolehan==null){belumLengkap++;return;}
+totalBukuSekarang+=hasil.nilaiBuku||0;
+if(hasil.akumulasi!=null)totalAkumulasi+=hasil.akumulasi;
+});
+return{jumlahAktif:list.length,totalAkumulasi,totalBukuSekarang,belumLengkap};
+},
+// Ringkasan Kekayaan (dari Aset) — SENGAJA cuma sisi aset (bukan gabungan akun+
+// utang spt renderKekayaanBersih() global), supaya laporan ini murni & mandiri.
+ringkasanKekayaan(){
+const list=D.assets||[];
+const nilai=LaporanAset.nilaiAset();
+const zakat=(typeof PajakAset!=='undefined'?PajakAset.hitungZakatAset():{totalNilai:0,totalZakat:0,list:[]});
+const kategoriRows=Object.entries(nilai.perKategori).sort((a,b)=>b[1].nilai-a[1].nilai);
+const terbesar=kategoriRows.length?{jenis:kategoriRows[0][0],pct:nilai.totalPasar?(kategoriRows[0][1].nilai/nilai.totalPasar*100):0}:null;
+return{jumlahAset:list.length,jumlahKategori:kategoriRows.length,totalNilaiPasar:nilai.totalPasar,totalNilaiBuku:nilai.totalBuku,totalZakatable:zakat.totalNilai,jumlahZakatable:zakat.list.length,kategoriTerbesar:terbesar};
+},
+// Gabungan semua data laporan (dipakai renderList() & bisa dipakai eksternal/test
+// tanpa DOM sama sekali).
+build(){
+return{
+daftarAset:(D.assets||[]).map(a=>({id:a.id,name:a.name,jenis:a.jenis,icon:Aset.ICON[a.jenis]||'📦',nilai:a.nilai||0,lokasi:a.lokasi||'',tanggal:a.tanggal||'',zakatable:!!a.zakatable,accountId:a.accountId||null})),
+riwayatTransaksi:LaporanAset.riwayatTransaksi(),
+nilaiAset:LaporanAset.nilaiAset(),
+penyusutan:LaporanAset.penyusutan(),
+ringkasanKekayaan:LaporanAset.ringkasanKekayaan()
+};
+},
+// Render kartu "📑 Laporan Aset". Kartu disembunyikan kalau belum ada aset sama
+// sekali (belum relevan ditampilkan) — pola sama dgn Penyusutan/PajakAset.
+// Dipanggil dari Aset.renderList() spy selalu sinkron tiap save/delete/import.
+renderList(){
+const card=document.getElementById('laporanAsetCard');
+if(!card)return;
+const list=D.assets||[];
+if(!list.length){card.classList.add('u-dnone');return;}
+card.classList.remove('u-dnone');
+const data=LaporanAset.build();
+// (1) Daftar Aset
+const daftarEl=document.getElementById('lapAsetDaftar');
+if(daftarEl){
+daftarEl.innerHTML=data.daftarAset.map(a=>`<div class="u-flex u-jcsb u-fs12 u-mb6"><span>${a.icon} ${escapeHtml(a.name)}${a.zakatable?' 🕌':''}</span><span class="u-fw700">${fmtFull(a.nilai)}</span></div>`).join('')||'<div class="u-fs12 u-t2">Belum ada aset tercatat</div>';
+}
+// (2) Riwayat Transaksi
+const riwayatEl=document.getElementById('lapAsetRiwayat');
+if(riwayatEl){
+const r=data.riwayatTransaksi;
+const tertaut=r.akunTertaut.filter(x=>x.accountExists);
+if(!tertaut.length){
+riwayatEl.innerHTML='<div class="u-fs12 u-t2">Belum ada aset yang ditautkan ke Akun Transaksi.</div>';
+} else {
+riwayatEl.innerHTML=tertaut.map(x=>`<div class="u-fs12 u-mb6"><b>${escapeHtml(x.assetName)}</b> · 🔗 ${escapeHtml(x.accountName)} — ${x.jumlahTx} transaksi <span class="green">+${fmtFull(x.totalMasuk)}</span> / <span class="red">-${fmtFull(x.totalKeluar)}</span></div>`).join('')+`<div class="u-fs11 u-t2 u-mt6">Total ${r.totalTx} transaksi tercatat lintas akun tertaut.</div>`;
+}
+}
+// (3) Nilai Aset
+const nilaiEl=document.getElementById('lapAsetNilai');
+if(nilaiEl){
+const n=data.nilaiAset;
+const cls=n.selisih>=0?'green':'red';
+nilaiEl.innerHTML=`<div class="u-fs12 u-mb6">Nilai Pasar: <b>${fmtFull(n.totalPasar)}</b> · Nilai Buku: <b>${fmtFull(n.totalBuku)}</b></div><div class="u-fs12 ${cls}">Selisih: ${fmtFullSigned(n.selisih)} (${n.selisih>=0?'+':''}${n.selisihPct.toFixed(2)}%)</div>`;
+}
+// (4) Penyusutan
+const penyusutanEl=document.getElementById('lapAsetPenyusutan');
+if(penyusutanEl){
+const p=data.penyusutan;
+penyusutanEl.innerHTML=p.jumlahAktif?`<div class="u-fs12">${p.jumlahAktif} aset aktif penyusutan · Akumulasi ${fmtFull(p.totalAkumulasi)} · Nilai Buku Sekarang ${fmtFull(p.totalBukuSekarang)}</div>`:'<div class="u-fs12 u-t2">Belum ada aset yang mengaktifkan penyusutan.</div>';
+}
+// (5) Ringkasan Kekayaan
+const ringkasanEl=document.getElementById('lapAsetRingkasan');
+if(ringkasanEl){
+const rk=data.ringkasanKekayaan;
+let txt=`📦 <b>${rk.jumlahAset}</b> aset di <b>${rk.jumlahKategori}</b> kategori, total nilai pasar <b>${fmtFull(rk.totalNilaiPasar)}</b> (nilai buku ${fmtFull(rk.totalNilaiBuku)})`;
+if(rk.kategoriTerbesar)txt+=`. Kategori terbesar: <b>${escapeHtml(rk.kategoriTerbesar.jenis)}</b> (${rk.kategoriTerbesar.pct.toFixed(1)}%)`;
+if(rk.jumlahZakatable)txt+=`. ${rk.jumlahZakatable} aset zakatable senilai ${fmtFull(rk.totalZakatable)}`;
+txt+='.';
+ringkasanEl.innerHTML=txt;
+}
 }
 };
 const IDBStore={
@@ -443,3 +1076,13 @@ card.innerHTML=`<div class="card-title">🗺️ Linimasa Tujuan Finansial <span 
 applyOneCardCollapsePref('timelineWCard');
 }
 };
+// BUGFIX-INTEGRASI: semua modul di atas dideklarasikan `const`, yang TIDAK
+// otomatis nempel ke `window` walau file ini di-load lewat <script> biasa
+// (bukan module). Dispatcher data-action (mis. data-action="Aset.exportXLSX",
+// "AlokasiAset.setRisk", dst di index.html/app_production.html) resolve nama
+// aksi lewat window[...], jadi TANPA baris ini semua binding tsb gagal diam2
+// di production walau unit test tetap hijau (test harness expose modul
+// langsung lewat context, bukan lewat window). Pola sama persis dgn bug
+// OngkirCalc di cobek-pricing.js yg sudah pernah kejadian & diperbaiki
+// sebelumnya — lihat CLAUDE.md.
+Object.assign(window,{ALOKASI_PRESETS,AlokasiAset,Aset,Penyusutan,PajakAset,LaporanAset,IDBStore,PORTFOLIO_LABELS,TimelineW});

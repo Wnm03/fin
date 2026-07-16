@@ -17,7 +17,7 @@ const KNOWN_TABS = {
   carnotes: ['bbm', 'servis'],
   pajak: ['zakat', 'pajak'],
 };
-const KNOWN_PAGES = ['dashboard', 'dashboard-hub', 'keuangan', 'shop', 'carnotes', 'pajak', 'ai', 'settings'];
+const KNOWN_PAGES = ['dashboard', 'dashboard-hub', 'keuangan', 'shop', 'carnotes', 'pajak', 'aset', 'ai', 'settings'];
 
 function ctx() {
   return loadSource(['dashboard-hub-registry.js'], {}, ['FEATURE_REGISTRY']);

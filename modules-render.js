@@ -1,7 +1,7 @@
 // Fungsi render (85 fungsi) dipisah dari app_production.html untuk pemerataan ukuran file.
 // Semua fungsi ini murni definisi function global (bukan module), jadi tetap bisa dipanggil dari file manapun
 // yang loadnya belakangan (sama seperti modules-calc.js/features-*.js).
-const MODULE_RENDER_VERSION='fix-udnone-important-css-2026-07-39';
+const MODULE_RENDER_VERSION='fix-udnone-important-css-2026-07-48';
 
 function renderPageContent(name){
 if(name==='dashboard')renderDashboard();
@@ -16,6 +16,7 @@ if(name==='laporan'){populateCatFilter();populateAccFilters();renderLaporan();}
 if(name==='carnotes'){renderVehicleSelect();renderCnTab();}
 if(name==='ai')initChat();
 if(name==='pajak')renderPajakZakat();
+if(name==='aset'){renderAssetList();AlokasiAset.init();renderWealthSnapshots();}
 if(name==='settings'){renderSettings();renderBillList();}
 }
 

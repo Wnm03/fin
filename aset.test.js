@@ -9,8 +9,24 @@ const { createFakeDocument, createFakeElement } = require('./helpers/fakeDom');
 // lihat catatan kerja bagian ke-25 di CLAUDE.md):
 // ALOKASI_PRESETS/AlokasiAset.{setRisk,onDanaInput,renderAll,renderOne,init},
 // Aset.{openModal,updateProfitPreview,toggleZakatable,save,delete,renderList,
-// totalValue}, PORTFOLIO_LABELS, TimelineW.{avgSurplus,goals,waterfall,
+// totalValue,renderDashboard}, Penyusutan.{hargaPerolehan,garisLurus,
+// saldoMenurun,manual,hitung,toggleAktif,updateParam,renderList},
+// PajakAset.{settings,updateSetting,hitungPBB,zakatableAssets,hitungZakatAset,
+// renderList}, PORTFOLIO_LABELS, TimelineW.{avgSurplus,goals,waterfall,
 // addMonthsToDate,render}.
+// PajakAset (fitur baru, bagian ke-12): estimasi PBB (khusus aset Tanah/
+// Rumah-Bangunan, dari NJOP≈nilai aset dikurangi NJOPTKP dikali tarif PBB-P2)
+// & breakdown Zakat Maal 2,5% khusus aset zakatable di Buku Aset, plus
+// Ringkasan Pajak gabungan keduanya — lihat blok test "PajakAset" di bagian
+// bawah file ini.
+// Penyusutan (fitur baru): estimasi nilai buku aset yg menurun (kendaraan/
+// bangunan/dll), 3 metode — Garis Lurus, Saldo Menurun, Manual — lihat blok
+// test "Penyusutan" di bagian bawah file ini utk detail skenario tiap metode.
+// Aset.renderDashboard() (Dashboard Aset): Komposisi Aset & Persentase Kategori
+// sudah ada sejak awal (breakdown per jenis + % dari total nilai pasar);
+// ditambahkan Ringkasan Diversifikasi (assetDashDiversifikasi) — simpulan 1
+// kalimat + label status berdasarkan jumlah kategori & konsentrasi kategori
+// terbesar. Lihat blok test "Aset.renderDashboard" di bawah.
 // Pola sama dgn akun.test.js/cicilan.test.js: fakeDocument + stub semua
 // dependency lintas-file (save/toast/openModal/closeModal/askConfirm/render*
 // dkk), BUKAN test integrasi lintas file sungguhan. parsePzNum/parseDecStr/
@@ -35,8 +51,15 @@ function simpleParseDecStr(v) {
   const n = parseFloat(s);
   return isNaN(n) ? null : n;
 }
+// plain() — konversi hasil sandbox vm (realm beda dari host, lihat catatan
+// cross-realm di tests/helpers/loadSource.js) jadi struktur host biasa
+// sebelum dibandingkan pakai assert.deepEqual (pola sama dgn
+// tests/ai-command-center.test.js / tests/dashboard-hub-favorit-view.test.js).
+function plain(x) { return JSON.parse(JSON.stringify(x)); }
+
 function fmt(n) { n = Math.abs(n || 0); return 'Rp ' + n; }
 function fmtFull(n) { return 'Rp ' + Number(Math.abs(n || 0)).toLocaleString('id-ID'); }
+function fmtFullSigned(n) { n = Number(n || 0); return (n < 0 ? '-' : '') + 'Rp ' + Math.abs(n).toLocaleString('id-ID'); }
 
 function makeChip() {
   return createFakeElement({ classList: [] });
@@ -49,7 +72,18 @@ function assetFields(overrides = {}) {
     assetHargaBeli: { value: '' }, assetJumlahUnit: { value: '' }, assetTanggal: { value: '' },
     assetAccId: { value: '' }, assetScanCandidates: { style: {} }, assetZakatableBtn: {},
     assetProfitInfo: {}, assetList: {},
+    assetDashboard: { classList: [] }, assetDashTotal: {}, assetDashBuku: {}, assetDashPasar: {},
+    assetDashSelisih: {}, assetDashKategori: {}, assetDashDiversifikasi: {},
+    assetInvestasiDashboard: { classList: [] }, assetInvestasiROI: {}, assetInvestasiGain: {},
+    assetInvestasiYield: {}, assetInvestasiRingkasan: {},
+    assetPenyusutanDashboard: { classList: [] }, assetPenyusutanList: {},
+    assetPenyusutanTotalAkumulasi: {}, assetPenyusutanTotalBuku: {},
+    assetPajakDashboard: { classList: [] }, assetPajakList: {},
+    assetPajakTotalPBB: {}, assetPajakTotalZakat: {}, assetPajakRingkasan: {},
+    pajakAsetNjoptkp: { value: '' }, pajakAsetTarif: { value: '' },
     aaResult: {}, aaDana: { value: '' },
+    laporanAsetCard: { classList: [] }, lapAsetDaftar: {}, lapAsetRiwayat: {},
+    lapAsetNilai: {}, lapAsetPenyusutan: {}, lapAsetRingkasan: {},
     ...overrides,
   };
 }
@@ -69,7 +103,7 @@ function makeAset(D, opts = {}) {
     parsePzNum: simpleParsePzNum,
     parseDecStr: simpleParseDecStr,
     calcPreviewValue: (s) => { const n = simpleParseDecStr(s); return n == null ? 0 : n; },
-    fmt, fmtFull,
+    fmt, fmtFull, fmtFullSigned,
     sameId: (a, b) => String(a) === String(b),
     uid: opts.uid || (() => 'uid-' + (++makeAset._c)),
     todayStr: () => '2026-07-11',
@@ -88,7 +122,8 @@ function makeAset(D, opts = {}) {
     applyOneCardCollapsePref: record('applyOneCardCollapsePref'),
     Renov: opts.Renov,
     Pensiun: opts.Pensiun,
-  }, ['ALOKASI_PRESETS', 'AlokasiAset', 'Aset', 'PORTFOLIO_LABELS', 'TimelineW']);
+    window: opts.window || {},
+  }, ['ALOKASI_PRESETS', 'AlokasiAset', 'Aset', 'Penyusutan', 'PajakAset', 'LaporanAset', 'PORTFOLIO_LABELS', 'TimelineW']);
   return { ctx, fakeDocument, calls, chips };
 }
 makeAset._c = 0;
@@ -448,6 +483,251 @@ test('totalValue — jumlah nilai semua aset, D.assets kosong/tidak ada -> 0', (
   assert.equal(ctx2.Aset.totalValue(), 0);
 });
 
+// ================= Aset.renderDashboard =================
+// Dashboard Aset: Komposisi Aset (breakdown per jenis, urut nilai terbesar ->
+// terkecil), Persentase Kategori (% tiap jenis dari total Nilai Pasar), dan
+// Ringkasan Diversifikasi (assetDashDiversifikasi — kesimpulan status sebaran
+// aset berdasarkan jumlah kategori & konsentrasi kategori terbesar).
+
+test('renderDashboard — D.assets kosong -> dashboard disembunyikan (u-dnone)', () => {
+  const D = { assets: [] };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderDashboard();
+  assert.equal(fakeDocument.getElementById('assetDashboard').classList.contains('u-dnone'), true);
+});
+
+test('renderDashboard — ada aset -> dashboard ditampilkan & Total/Buku/Pasar terisi', () => {
+  const D = {
+    assets: [
+      { id: 'a1', jenis: 'Emas/Logam Mulia', nilai: 1200000, modalInvestasi: 1000000 },
+      { id: 'a2', jenis: 'Reksadana', nilai: 500000, hargaBeli: 4000, jumlahUnit: 100 }, // buku 400.000
+      { id: 'a3', jenis: 'Tanah', nilai: 700000 }, // tanpa modal -> buku = pasar
+    ],
+  };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderDashboard();
+  assert.equal(fakeDocument.getElementById('assetDashboard').classList.contains('u-dnone'), false);
+  assert.equal(fakeDocument.getElementById('assetDashTotal').textContent, 'Rp 2.400.000');
+  assert.equal(fakeDocument.getElementById('assetDashPasar').textContent, 'Rp 2.400.000');
+  assert.equal(fakeDocument.getElementById('assetDashBuku').textContent, 'Rp 2.100.000');
+  assert.match(fakeDocument.getElementById('assetDashSelisih').innerHTML, /Rp 300\.000 \(\+14\.29%\)/);
+});
+
+test('renderDashboard — Komposisi Aset & Persentase Kategori: urut terbesar->terkecil, % dari total Nilai Pasar', () => {
+  const D = {
+    assets: [
+      { id: 'a1', name: 'Tanah A', jenis: 'Tanah', nilai: 600000000 },
+      { id: 'a2', name: 'Emas A', jenis: 'Emas/Logam Mulia', nilai: 300000000 },
+      { id: 'a3', name: 'Saham A', jenis: 'Saham', nilai: 100000000 },
+    ],
+  };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderDashboard();
+  const html = fakeDocument.getElementById('assetDashKategori').innerHTML;
+  const idxTanah = html.indexOf('Tanah');
+  const idxEmas = html.indexOf('Emas/Logam Mulia');
+  const idxSaham = html.indexOf('Saham');
+  assert.ok(idxTanah < idxEmas && idxEmas < idxSaham, 'urutan kategori harus dari nilai terbesar ke terkecil');
+  assert.match(html, /60\.0% dari total/);
+  assert.match(html, /30\.0% dari total/);
+  assert.match(html, /10\.0% dari total/);
+});
+
+test('renderDashboard — Ringkasan Diversifikasi: cuma 1 kategori -> "Belum Terdiversifikasi"', () => {
+  const D = { assets: [{ id: 'a1', jenis: 'Tanah', nilai: 500000000 }] };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderDashboard();
+  assert.match(fakeDocument.getElementById('assetDashDiversifikasi').innerHTML, /Belum Terdiversifikasi/);
+});
+
+test('renderDashboard — Ringkasan Diversifikasi: kategori terbesar >=70% -> "Konsentrasi Tinggi"', () => {
+  const D = {
+    assets: [
+      { id: 'a1', jenis: 'Tanah', nilai: 800000000 },
+      { id: 'a2', jenis: 'Emas/Logam Mulia', nilai: 200000000 },
+    ],
+  };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderDashboard();
+  const html = fakeDocument.getElementById('assetDashDiversifikasi').innerHTML;
+  assert.match(html, /Konsentrasi Tinggi/);
+  assert.match(html, /80\.0%/);
+});
+
+test('renderDashboard — Ringkasan Diversifikasi: kategori terbesar 50–70% -> "Cukup Terkonsentrasi"', () => {
+  const D = {
+    assets: [
+      { id: 'a1', jenis: 'Tanah', nilai: 550000000 },
+      { id: 'a2', jenis: 'Emas/Logam Mulia', nilai: 250000000 },
+      { id: 'a3', jenis: 'Saham', nilai: 200000000 },
+    ],
+  };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderDashboard();
+  assert.match(fakeDocument.getElementById('assetDashDiversifikasi').innerHTML, /Cukup Terkonsentrasi/);
+});
+
+test('renderDashboard — Ringkasan Diversifikasi: kategori terbesar <50% & >=3 kategori -> "Terdiversifikasi Baik"', () => {
+  const D = {
+    assets: [
+      { id: 'a1', jenis: 'Tanah', nilai: 300000000 },
+      { id: 'a2', jenis: 'Emas/Logam Mulia', nilai: 250000000 },
+      { id: 'a3', jenis: 'Saham', nilai: 250000000 },
+      { id: 'a4', jenis: 'Reksadana', nilai: 200000000 },
+    ],
+  };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderDashboard();
+  const html = fakeDocument.getElementById('assetDashDiversifikasi').innerHTML;
+  assert.match(html, /Terdiversifikasi Baik/);
+  assert.match(html, /4 kategori/);
+});
+
+test('renderDashboard — dipanggil otomatis lewat renderList() (save/delete/import semua lewat sini)', () => {
+  const D = { assets: [{ id: 'a1', jenis: 'Tanah', nilai: 100 }] };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderList();
+  assert.equal(fakeDocument.getElementById('assetDashboard').classList.contains('u-dnone'), false);
+  assert.match(fakeDocument.getElementById('assetDashDiversifikasi').innerHTML, /Belum Terdiversifikasi/);
+});
+
+// ================= Aset.renderInvestasi =================
+// Ringkasan Performa Investasi: ROI, Capital Gain/Loss, Yield (CAGR tahunan
+// tertimbang modal), & ringkasan performa portofolio (best/worst performer).
+// HANYA mencakup aset yg py data modal (modalInvestasi ATAU hargaBeli×jumlahUnit
+// > 0) -- aset tanpa data modal dikecualikan dari agregasi. Referensi "hari ini"
+// pakai todayStr() (di-stub '2026-07-11' lewat makeAset) supaya deterministik.
+
+test('renderInvestasi — tidak ada aset dgn data modal -> box disembunyikan (u-dnone)', () => {
+  const D = { assets: [{ id: 'a1', jenis: 'Tanah', nilai: 500000000 }] }; // tanpa modal sama sekali
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderInvestasi();
+  assert.equal(fakeDocument.getElementById('assetInvestasiDashboard').classList.contains('u-dnone'), true);
+});
+
+test('renderInvestasi — D.assets kosong -> box disembunyikan', () => {
+  const D = { assets: [] };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderInvestasi();
+  assert.equal(fakeDocument.getElementById('assetInvestasiDashboard').classList.contains('u-dnone'), true);
+});
+
+test('renderInvestasi — ROI & Capital Gain/Loss dihitung dari total modal vs total nilai (untung)', () => {
+  const D = {
+    assets: [
+      { id: 'a1', name: 'Emas Antam', jenis: 'Emas/Logam Mulia', nilai: 1200000, modalInvestasi: 1000000 },
+      { id: 'a2', name: 'Reksadana X', jenis: 'Reksadana', nilai: 500000, hargaBeli: 4000, jumlahUnit: 100 }, // modal 400.000
+    ],
+  };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderInvestasi();
+  assert.equal(fakeDocument.getElementById('assetInvestasiDashboard').classList.contains('u-dnone'), false);
+  // total modal 1.400.000, total nilai 1.700.000, gain 300.000, ROI 21.43%
+  assert.match(fakeDocument.getElementById('assetInvestasiROI').innerHTML, /class="green"/);
+  assert.match(fakeDocument.getElementById('assetInvestasiROI').innerHTML, /\+21\.43%/);
+  assert.match(fakeDocument.getElementById('assetInvestasiGain').innerHTML, /Rp 300\.000 \(\+21\.43%\)/);
+});
+
+test('renderInvestasi — rugi (total nilai < total modal) -> class red, tanpa tanda +', () => {
+  const D = {
+    assets: [{ id: 'a1', name: 'Saham Y', jenis: 'Saham', nilai: 700000, modalInvestasi: 1000000 }],
+  };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderInvestasi();
+  const roiHtml = fakeDocument.getElementById('assetInvestasiROI').innerHTML;
+  assert.match(roiHtml, /class="red"/);
+  assert.doesNotMatch(roiHtml, /\+/);
+  assert.match(roiHtml, /-30\.00%/);
+});
+
+test('renderInvestasi — aset tanpa tanggal -> Yield "belum bisa dihitung"', () => {
+  const D = { assets: [{ id: 'a1', name: 'Emas', jenis: 'Emas/Logam Mulia', nilai: 1200000, modalInvestasi: 1000000 }] };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderInvestasi();
+  assert.match(fakeDocument.getElementById('assetInvestasiYield').innerHTML, /Belum bisa dihitung/);
+});
+
+test('renderInvestasi — Yield (CAGR) dihitung tertimbang modal dari tanggal ke todayStr()', () => {
+  // Aset dipegang persis 1 tahun (365 hari): 2025-07-11 -> 2026-07-11 (todayStr stub).
+  // Modal 1.000.000 -> nilai 1.100.000 = return 10% dalam ~1 tahun -> CAGR ~10%.
+  const D = {
+    assets: [{ id: 'a1', name: 'Deposito', jenis: 'Deposito/Investasi', nilai: 1100000, modalInvestasi: 1000000, tanggal: '2025-07-11' }],
+  };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderInvestasi();
+  const html = fakeDocument.getElementById('assetInvestasiYield').innerHTML;
+  assert.match(html, /class="green"/);
+  assert.match(html, /\+(9\.9|10\.0)\d%\/tahun/); // toleransi pembulatan hari->tahun
+});
+
+test('renderInvestasi — Ringkasan Performa menyebutkan jumlah aset, total modal/nilai, & untung/rugi', () => {
+  const D = {
+    assets: [
+      { id: 'a1', name: 'Emas Antam', jenis: 'Emas/Logam Mulia', nilai: 1200000, modalInvestasi: 1000000 },
+      { id: 'a2', name: 'Reksadana X', jenis: 'Reksadana', nilai: 500000, hargaBeli: 4000, jumlahUnit: 100 },
+    ],
+  };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderInvestasi();
+  const html = fakeDocument.getElementById('assetInvestasiRingkasan').innerHTML;
+  assert.match(html, /Dari <b>2<\/b> aset/);
+  assert.match(html, /untung/);
+  assert.match(html, /Kinerja terbaik/);
+  assert.match(html, /Emas Antam/); // ROI 20% > Reksadana 25%? cek performer benar di bawah
+});
+
+test('renderInvestasi — best/worst performer dipilih dari %ROI per-aset tertinggi/terendah', () => {
+  const D = {
+    assets: [
+      { id: 'a1', name: 'Saham Cuan', jenis: 'Saham', nilai: 1500000, modalInvestasi: 1000000 }, // +50%
+      { id: 'a2', name: 'Reksadana Boncos', jenis: 'Reksadana', nilai: 800000, modalInvestasi: 1000000 }, // -20%
+    ],
+  };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderInvestasi();
+  const html = fakeDocument.getElementById('assetInvestasiRingkasan').innerHTML;
+  const idxBest = html.indexOf('terbaik');
+  const idxSahamCuan = html.indexOf('Saham Cuan');
+  const idxWorst = html.indexOf('terendah');
+  const idxReksaBoncos = html.indexOf('Reksadana Boncos');
+  assert.ok(idxBest > -1 && idxSahamCuan > idxBest, 'Saham Cuan harus jadi performer terbaik');
+  assert.ok(idxWorst > -1 && idxReksaBoncos > idxWorst, 'Reksadana Boncos harus jadi performer terendah');
+});
+
+test('renderInvestasi — cuma 1 aset ter-track -> tanpa kalimat best/worst performer', () => {
+  const D = { assets: [{ id: 'a1', name: 'Emas', jenis: 'Emas/Logam Mulia', nilai: 1200000, modalInvestasi: 1000000 }] };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderInvestasi();
+  assert.doesNotMatch(fakeDocument.getElementById('assetInvestasiRingkasan').innerHTML, /Kinerja terbaik/);
+});
+
+test('renderInvestasi — aset campur (ada modal & tidak) -> yg tanpa modal dikecualikan dari agregasi', () => {
+  const D = {
+    assets: [
+      { id: 'a1', name: 'Emas', jenis: 'Emas/Logam Mulia', nilai: 1200000, modalInvestasi: 1000000 },
+      { id: 'a2', name: 'Tanah Warisan', jenis: 'Tanah', nilai: 900000000 }, // tanpa modal, harus dikecualikan
+    ],
+  };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderInvestasi();
+  assert.match(fakeDocument.getElementById('assetInvestasiRingkasan').innerHTML, /Dari <b>1<\/b> aset/);
+});
+
+test('renderInvestasi — box tidak ada di DOM -> no-op (tidak error)', () => {
+  const D = { assets: [{ id: 'a1', nilai: 1, modalInvestasi: 1 }] };
+  const { ctx, fakeDocument } = makeAset(D);
+  fakeDocument.getElementById = (id) => (id === 'assetInvestasiDashboard' ? null : createFakeElement());
+  assert.doesNotThrow(() => ctx.Aset.renderInvestasi());
+});
+
+test('renderInvestasi — dipanggil otomatis lewat renderList()', () => {
+  const D = { assets: [{ id: 'a1', name: 'Emas', jenis: 'Emas/Logam Mulia', nilai: 1200000, modalInvestasi: 1000000 }] };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderList();
+  assert.equal(fakeDocument.getElementById('assetInvestasiDashboard').classList.contains('u-dnone'), false);
+  assert.match(fakeDocument.getElementById('assetInvestasiGain').innerHTML, /Rp 200\.000/);
+});
+
 // ================= Aset.exportXLSX / importXLSX =================
 // Fitur export/import data di Buku Aset, format .xlsx (ganti dari JSON/CSV
 // lama). Pola sama dgn ShopExport/ImportShopExcel di cobek.js: pustaka
@@ -482,6 +762,8 @@ function makeAsetIO(D, opts = {}) {
     uid: opts.uid || (() => 'uid-' + (++makeAsetIO._c)),
     todayStr: () => '2026-07-11',
     fmt,
+    fmtFull,
+    fmtFullSigned,
     save: () => { calls.save++; },
     toast: (msg) => calls.toast.push(msg),
     askConfirm: opts.askConfirm || (async () => true),
@@ -492,6 +774,7 @@ function makeAsetIO(D, opts = {}) {
     renderLapAccList: record('renderLapAccList'),
     XLSX,
     ensureXLSX: opts.ensureXLSX || (async () => {}),
+    window: opts.window || {},
   }, ['Aset']);
   return { ctx, fakeDocument, calls, XLSX };
 }
@@ -786,4 +1069,555 @@ test('TimelineW.render — proyeksi Pensiun kurang dari target -> tampilkan peri
   });
   ctx.TimelineW.render();
   assert.match(fakeDocument.getElementById('timelineWCard').innerHTML, /Proyeksi masih kurang/);
+});
+
+// ================= PENYUSUTAN =================
+
+test('Penyusutan.hargaPerolehan — pakai modalInvestasi kalau ada, fallback hargaBeli×jumlahUnit, else null', () => {
+  const { ctx } = makeAset({});
+  assert.equal(ctx.Penyusutan.hargaPerolehan({ modalInvestasi: 50000000, hargaBeli: 999, jumlahUnit: 999 }), 50000000);
+  assert.equal(ctx.Penyusutan.hargaPerolehan({ modalInvestasi: null, hargaBeli: 200000, jumlahUnit: 10 }), 2000000);
+  assert.equal(ctx.Penyusutan.hargaPerolehan({ modalInvestasi: null, hargaBeli: null, jumlahUnit: null }), null);
+  assert.equal(ctx.Penyusutan.hargaPerolehan(null), null);
+});
+
+test('Penyusutan.garisLurus — beban rata per bulan, nilai buku turun proporsional bulan berjalan', () => {
+  const { ctx } = makeAset({});
+  const r = ctx.Penyusutan.garisLurus(120000000, 20000000, 5, '2024-07-11', '2026-07-11');
+  assert.equal(r.bulanBerjalan, 24);
+  assert.equal(r.bebanPerTahun, 20000000);
+  assert.equal(r.akumulasi, 40000000);
+  assert.equal(r.nilaiBuku, 80000000);
+  assert.equal(r.habisManfaat, false);
+});
+
+test('Penyusutan.garisLurus — sudah lewat umur manfaat -> nilai buku mentok di Nilai Residu, habisManfaat true', () => {
+  const { ctx } = makeAset({});
+  const r = ctx.Penyusutan.garisLurus(120000000, 20000000, 5, '2010-01-01', '2026-07-11');
+  assert.equal(r.nilaiBuku, 20000000);
+  assert.equal(r.akumulasi, 100000000);
+  assert.equal(r.habisManfaat, true);
+});
+
+test('Penyusutan.garisLurus — belum ada waktu berjalan (tanggal perolehan = tanggal hitung) -> belum ada penyusutan', () => {
+  const { ctx } = makeAset({});
+  const r = ctx.Penyusutan.garisLurus(100000000, 0, 4, '2026-07-11', '2026-07-11');
+  assert.equal(r.bulanBerjalan, 0);
+  assert.equal(r.akumulasi, 0);
+  assert.equal(r.nilaiBuku, 100000000);
+});
+
+test('Penyusutan.garisLurus — input tidak valid (harga<=0 / umur<=0 / tanpa tanggal) -> nilai buku = harga apa adanya, tidak error', () => {
+  const { ctx } = makeAset({});
+  assert.deepEqual(plain(ctx.Penyusutan.garisLurus(0, 0, 4, '2020-01-01', '2026-07-11')), { nilaiBuku: 0, akumulasi: 0, bebanPerTahun: 0, bebanPerBulan: 0, bulanBerjalan: 0, habisManfaat: false });
+  const r2 = ctx.Penyusutan.garisLurus(100000000, 0, 0, '2020-01-01', '2026-07-11');
+  assert.equal(r2.nilaiBuku, 100000000);
+  const r3 = ctx.Penyusutan.garisLurus(100000000, 0, 4, '', '2026-07-11');
+  assert.equal(r3.nilaiBuku, 100000000);
+});
+
+test('Penyusutan.saldoMenurun — tarif diterapkan ke nilai buku (bukan harga awal) tiap tahun penuh', () => {
+  const { ctx } = makeAset({});
+  const r = ctx.Penyusutan.saldoMenurun(100000000, 20, 0, '2023-07-11', '2026-07-11');
+  assert.equal(Math.round(r.nilaiBuku), 51200000);
+  assert.equal(Math.round(r.akumulasi), 48800000);
+  assert.equal(r.tahunBerjalan, 3);
+});
+
+test('Penyusutan.saldoMenurun — nilai buku tidak boleh turun di bawah Nilai Residu (floor)', () => {
+  const { ctx } = makeAset({});
+  const r = ctx.Penyusutan.saldoMenurun(100000000, 90, 10000000, '2010-01-01', '2026-07-11');
+  assert.equal(r.nilaiBuku, 10000000);
+  assert.equal(r.akumulasi, 90000000);
+});
+
+test('Penyusutan.saldoMenurun — input tidak valid (harga<=0 / tarif<=0 / tanpa tanggal) -> nilai buku = harga apa adanya', () => {
+  const { ctx } = makeAset({});
+  assert.deepEqual(plain(ctx.Penyusutan.saldoMenurun(0, 20, 0, '2020-01-01', '2026-07-11')), { nilaiBuku: 0, akumulasi: 0, tahunBerjalan: 0 });
+  const r2 = ctx.Penyusutan.saldoMenurun(100000000, 0, 0, '2020-01-01', '2026-07-11');
+  assert.equal(r2.nilaiBuku, 100000000);
+});
+
+test('Penyusutan.manual — pass-through nilai aset saat ini, tanpa formula/akumulasi', () => {
+  const { ctx } = makeAset({});
+  assert.deepEqual(plain(ctx.Penyusutan.manual(7500000)), { nilaiBuku: 7500000, akumulasi: null, tahunBerjalan: null });
+  assert.deepEqual(plain(ctx.Penyusutan.manual(undefined)), { nilaiBuku: 0, akumulasi: null, tahunBerjalan: null });
+});
+
+test('Penyusutan.hitung — belum diaktifkan (tidak ada a.penyusutan / aktif:false) -> null', () => {
+  const { ctx } = makeAset({});
+  assert.equal(ctx.Penyusutan.hitung({ id: '1', nilai: 1000 }), null);
+  assert.equal(ctx.Penyusutan.hitung({ id: '1', nilai: 1000, penyusutan: { aktif: false, metode: 'manual' } }), null);
+  assert.equal(ctx.Penyusutan.hitung(null), null);
+});
+
+test('Penyusutan.hitung — metode manual -> dispatch ke manual(a.nilai)', () => {
+  const { ctx } = makeAset({});
+  const a = { id: '1', nilai: 7000000, modalInvestasi: 9000000, penyusutan: { aktif: true, metode: 'manual' } };
+  const r = ctx.Penyusutan.hitung(a);
+  assert.equal(r.metode, 'manual');
+  assert.equal(r.nilaiBuku, 7000000);
+  assert.equal(r.akumulasi, null);
+});
+
+test('Penyusutan.hitung — garisLurus/saldoMenurun tanpa data modal (hargaPerolehan null) -> nilai buku fallback ke a.nilai', () => {
+  const { ctx } = makeAset({});
+  const a = { id: '1', nilai: 15000000, tanggal: '2024-01-01', penyusutan: { aktif: true, metode: 'garisLurus', umurManfaatTahun: 4, nilaiResidu: 0 } };
+  const r = ctx.Penyusutan.hitung(a, '2026-07-11');
+  assert.equal(r.hargaPerolehan, null);
+  assert.equal(r.nilaiBuku, 15000000);
+  assert.equal(r.akumulasi, null);
+});
+
+test('Penyusutan.hitung — metode saldoMenurun dgn data modal lengkap -> hasil sama dgn panggil saldoMenurun() langsung', () => {
+  const { ctx } = makeAset({});
+  const a = { id: '1', nilai: 999, modalInvestasi: 100000000, tanggal: '2023-07-11', penyusutan: { aktif: true, metode: 'saldoMenurun', tarifPersen: 20, nilaiResidu: 0 } };
+  const r = ctx.Penyusutan.hitung(a, '2026-07-11');
+  const expected = ctx.Penyusutan.saldoMenurun(100000000, 20, 0, '2023-07-11', '2026-07-11');
+  assert.equal(r.metode, 'saldoMenurun');
+  assert.equal(r.hargaPerolehan, 100000000);
+  assert.equal(r.nilaiBuku, expected.nilaiBuku);
+  assert.equal(r.akumulasi, expected.akumulasi);
+});
+
+test('Penyusutan.hitung — default metode garisLurus kalau metode tidak diisi', () => {
+  const { ctx } = makeAset({});
+  const a = { id: '1', nilai: 999, modalInvestasi: 120000000, tanggal: '2024-07-11', penyusutan: { aktif: true, umurManfaatTahun: 5, nilaiResidu: 20000000 } };
+  const r = ctx.Penyusutan.hitung(a, '2026-07-11');
+  assert.equal(r.metode, 'garisLurus');
+  assert.equal(r.nilaiBuku, 80000000);
+});
+
+test('Penyusutan.toggleAktif — aset tidak ditemukan -> no-op', () => {
+  const D = { assets: [{ id: '1' }] };
+  const { ctx, calls } = makeAset(D);
+  ctx.Penyusutan.toggleAktif('99');
+  assert.equal(calls.save, 0);
+});
+
+test('Penyusutan.toggleAktif — pertama kali dinyalakan -> isi DEFAULTS & aktif=true, save() terpanggil', () => {
+  const D = { assets: [{ id: '1', name: 'Motor' }] };
+  const { ctx, calls } = makeAset(D);
+  ctx.Penyusutan.toggleAktif('1');
+  assert.equal(D.assets[0].penyusutan.aktif, true);
+  assert.equal(D.assets[0].penyusutan.metode, 'garisLurus');
+  assert.equal(D.assets[0].penyusutan.umurManfaatTahun, 4);
+  assert.equal(calls.save, 1);
+});
+
+test('Penyusutan.toggleAktif — dipanggil lagi -> toggle jadi nonaktif, parameter lain TIDAK direset', () => {
+  const D = { assets: [{ id: '1', penyusutan: { aktif: true, metode: 'saldoMenurun', tarifPersen: 30, nilaiResidu: 1000000 } }] };
+  const { ctx, calls } = makeAset(D);
+  ctx.Penyusutan.toggleAktif('1');
+  assert.equal(D.assets[0].penyusutan.aktif, false);
+  assert.equal(D.assets[0].penyusutan.tarifPersen, 30);
+  assert.equal(calls.save, 1);
+});
+
+test('Penyusutan.updateParam — aset atau penyusutan belum ada -> no-op (tidak bikin objek baru, tidak save)', () => {
+  const D = { assets: [{ id: '1' }] };
+  const { ctx, calls } = makeAset(D);
+  ctx.Penyusutan.updateParam('1', 'metode', 'manual');
+  assert.equal(D.assets[0].penyusutan, undefined);
+  assert.equal(calls.save, 0);
+  ctx.Penyusutan.updateParam('99', 'metode', 'manual');
+  assert.equal(calls.save, 0);
+});
+
+test('Penyusutan.updateParam — update metode/nilaiResidu(Rp)/umurManfaatTahun/tarifPersen, panggil save()', () => {
+  const D = { assets: [{ id: '1', penyusutan: { aktif: true, metode: 'garisLurus', umurManfaatTahun: 4, nilaiResidu: 0, tarifPersen: 25 } }] };
+  const { ctx, calls } = makeAset(D);
+  ctx.Penyusutan.updateParam('1', 'metode', 'saldoMenurun');
+  assert.equal(D.assets[0].penyusutan.metode, 'saldoMenurun');
+  ctx.Penyusutan.updateParam('1', 'nilaiResidu', '5.000.000');
+  assert.equal(D.assets[0].penyusutan.nilaiResidu, 5000000);
+  ctx.Penyusutan.updateParam('1', 'umurManfaatTahun', '8');
+  assert.equal(D.assets[0].penyusutan.umurManfaatTahun, 8);
+  ctx.Penyusutan.updateParam('1', 'tarifPersen', '12.5');
+  assert.equal(D.assets[0].penyusutan.tarifPersen, 12.5);
+  assert.equal(calls.save, 4);
+});
+
+test('Penyusutan.renderList — kartu/list tidak ada di DOM -> no-op', () => {
+  const D = { assets: [{ id: '1' }] };
+  const { ctx, fakeDocument } = makeAset(D);
+  fakeDocument.getElementById = (id) => (id === 'assetPenyusutanDashboard' ? null : createFakeElement());
+  assert.doesNotThrow(() => ctx.Penyusutan.renderList());
+});
+
+test('Penyusutan.renderList — tidak ada aset sama sekali -> kartu disembunyikan (u-dnone)', () => {
+  const D = { assets: [] };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Penyusutan.renderList();
+  assert.equal(fakeDocument.getElementById('assetPenyusutanDashboard').classList.contains('u-dnone'), true);
+});
+
+test('Penyusutan.renderList — ada aset (belum aktif penyusutan) -> kartu tampil, checkbox tidak dicentang, tanpa hasil hitung', () => {
+  const D = { assets: [{ id: '1', name: 'Rumah Kontrakan', jenis: 'Rumah/Bangunan' }] };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Penyusutan.renderList();
+  assert.equal(fakeDocument.getElementById('assetPenyusutanDashboard').classList.contains('u-dnone'), false);
+  const html = fakeDocument.getElementById('assetPenyusutanList').innerHTML;
+  assert.match(html, /Rumah Kontrakan/);
+  assert.doesNotMatch(html, /checked/);
+  assert.doesNotMatch(html, /Nilai Buku Sekarang/);
+});
+
+test('Penyusutan.renderList — aset aktif garisLurus dgn data modal lengkap -> tampilkan hasil & update total', () => {
+  const D = {
+    assets: [{ id: '1', name: 'Mobil', jenis: 'Kendaraan', modalInvestasi: 120000000, tanggal: '2024-07-11', penyusutan: { aktif: true, metode: 'garisLurus', umurManfaatTahun: 5, nilaiResidu: 20000000 } }],
+  };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Penyusutan.renderList();
+  const html = fakeDocument.getElementById('assetPenyusutanList').innerHTML;
+  assert.match(html, /checked/);
+  assert.match(html, /Nilai Buku Sekarang: Rp 80.000.000/);
+  assert.match(html, /Akumulasi Penyusutan: Rp 40.000.000/);
+  assert.equal(fakeDocument.getElementById('assetPenyusutanTotalAkumulasi').textContent, 'Rp 40.000.000');
+  assert.equal(fakeDocument.getElementById('assetPenyusutanTotalBuku').textContent, 'Rp 80.000.000');
+});
+
+test('Penyusutan.renderList — aset aktif tapi belum ada data modal (Modal Investasi/Harga Beli×Unit) -> tampilkan peringatan, bukan hasil hitung', () => {
+  const D = {
+    assets: [{ id: '1', name: 'Motor Bekas', jenis: 'Kendaraan', nilai: 8000000, tanggal: '2024-01-01', penyusutan: { aktif: true, metode: 'garisLurus', umurManfaatTahun: 4, nilaiResidu: 0 } }],
+  };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Penyusutan.renderList();
+  const html = fakeDocument.getElementById('assetPenyusutanList').innerHTML;
+  assert.match(html, /Isi dulu Modal Investasi atau Harga Beli/);
+  assert.doesNotMatch(html, /Nilai Buku Sekarang/);
+});
+
+test('Penyusutan.renderList — aset aktif metode manual -> tampilkan catatan manual, nilai buku = a.nilai, tidak masuk akumulasi', () => {
+  const D = {
+    assets: [{ id: '1', name: 'Emas Batangan', jenis: 'Emas/Logam Mulia', nilai: 25000000, penyusutan: { aktif: true, metode: 'manual' } }],
+  };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Penyusutan.renderList();
+  const html = fakeDocument.getElementById('assetPenyusutanList').innerHTML;
+  assert.match(html, /di-update manual sendiri/);
+  assert.match(html, /Nilai Buku Sekarang: Rp 25.000.000/);
+  assert.doesNotMatch(html, /Akumulasi Penyusutan/);
+  assert.equal(fakeDocument.getElementById('assetPenyusutanTotalAkumulasi').textContent, 'Rp 0');
+});
+
+// ================= PAJAK ASET =================
+
+test('PajakAset.settings — belum ada D.pajakAsetSettings -> isi DEFAULTS (NJOPTKP 12jt, tarif 0.5%)', () => {
+  const D = {};
+  const { ctx } = makeAset(D);
+  const s = ctx.PajakAset.settings();
+  assert.equal(s.njoptkp, 12000000);
+  assert.equal(s.tarifPersen, 0.5);
+  assert.equal(D.pajakAsetSettings, s);
+});
+
+test('PajakAset.settings — sudah ada D.pajakAsetSettings -> dipakai apa adanya, tidak ditimpa DEFAULTS', () => {
+  const D = { pajakAsetSettings: { njoptkp: 20000000, tarifPersen: 0.2 } };
+  const { ctx } = makeAset(D);
+  const s = ctx.PajakAset.settings();
+  assert.equal(s.njoptkp, 20000000);
+  assert.equal(s.tarifPersen, 0.2);
+});
+
+test('PajakAset.updateSetting — njoptkp pakai parsePzNum, tarifPersen pakai parseDecStr, panggil save() & renderList()', () => {
+  const D = { assets: [] };
+  const { ctx, calls } = makeAset(D);
+  ctx.PajakAset.updateSetting('njoptkp', '15.000.000');
+  assert.equal(D.pajakAsetSettings.njoptkp, 15000000);
+  ctx.PajakAset.updateSetting('tarifPersen', '0.3');
+  assert.equal(D.pajakAsetSettings.tarifPersen, 0.3);
+  assert.equal(calls.save, 2);
+});
+
+test('PajakAset.updateSetting — field tidak dikenal -> no-op, tidak save()', () => {
+  const D = { assets: [] };
+  const { ctx, calls } = makeAset(D);
+  ctx.PajakAset.updateSetting('lainnya', '123');
+  assert.equal('pajakAsetSettings' in D, false);
+  assert.equal(calls.save, 0);
+});
+
+test('PajakAset.hitungPBB — bukan aset Tanah/Rumah-Bangunan -> null', () => {
+  const { ctx } = makeAset({});
+  assert.equal(ctx.PajakAset.hitungPBB({ jenis: 'Kendaraan', nilai: 100000000 }), null);
+  assert.equal(ctx.PajakAset.hitungPBB(null), null);
+});
+
+test('PajakAset.hitungPBB — aset Tanah: (NJOP-NJOPTKP)*tarif, dasar tidak boleh negatif', () => {
+  const { ctx } = makeAset({});
+  const s = { njoptkp: 12000000, tarifPersen: 0.5 };
+  const r = ctx.PajakAset.hitungPBB({ jenis: 'Tanah', nilai: 212000000 }, s);
+  assert.equal(r.njop, 212000000);
+  assert.equal(r.njoptkp, 12000000);
+  assert.equal(r.dasar, 200000000);
+  assert.equal(r.terutang, 1000000);
+  const r2 = ctx.PajakAset.hitungPBB({ jenis: 'Rumah/Bangunan', nilai: 5000000 }, s);
+  assert.equal(r2.dasar, 0);
+  assert.equal(r2.terutang, 0);
+});
+
+test('PajakAset.zakatableAssets / hitungZakatAset — filter aset zakatable & hitung 2.5%', () => {
+  const D = {
+    assets: [
+      { id: '1', name: 'Emas', jenis: 'Emas/Logam Mulia', nilai: 40000000, zakatable: true },
+      { id: '2', name: 'Rumah Tinggal', jenis: 'Rumah/Bangunan', nilai: 500000000, zakatable: false },
+      { id: '3', name: 'Deposito', jenis: 'Deposito/Investasi', nilai: 60000000, zakatable: true },
+    ],
+  };
+  const { ctx } = makeAset(D);
+  const list = ctx.PajakAset.zakatableAssets();
+  assert.equal(list.length, 2);
+  const z = ctx.PajakAset.hitungZakatAset();
+  assert.equal(z.totalNilai, 100000000);
+  assert.equal(z.totalZakat, 2500000);
+});
+
+test('PajakAset.renderList — kartu/list tidak ada di DOM -> no-op', () => {
+  const D = { assets: [{ id: '1', jenis: 'Tanah', nilai: 100000000 }] };
+  const { ctx, fakeDocument } = makeAset(D);
+  fakeDocument.getElementById = (id) => (id === 'assetPajakDashboard' ? null : createFakeElement());
+  assert.doesNotThrow(() => ctx.PajakAset.renderList());
+});
+
+test('PajakAset.renderList — tidak ada aset properti maupun zakatable -> kartu disembunyikan (u-dnone)', () => {
+  const D = { assets: [{ id: '1', name: 'Motor', jenis: 'Kendaraan', nilai: 20000000, zakatable: false }] };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.PajakAset.renderList();
+  assert.equal(fakeDocument.getElementById('assetPajakDashboard').classList.contains('u-dnone'), true);
+});
+
+test('PajakAset.renderList — ada aset Tanah & aset zakatable -> kartu tampil, breakdown PBB & Zakat, total & ringkasan benar', () => {
+  const D = {
+    assets: [
+      { id: '1', name: 'Sawah Warisan', jenis: 'Tanah', nilai: 212000000 },
+      { id: '2', name: 'Emas Simpanan', jenis: 'Emas/Logam Mulia', nilai: 40000000, zakatable: true },
+    ],
+    pajakAsetSettings: { njoptkp: 12000000, tarifPersen: 0.5 },
+  };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.PajakAset.renderList();
+  assert.equal(fakeDocument.getElementById('assetPajakDashboard').classList.contains('u-dnone'), false);
+  const html = fakeDocument.getElementById('assetPajakList').innerHTML;
+  assert.match(html, /Sawah Warisan/);
+  assert.match(html, /Rp 1.000.000/); // PBB terutang
+  assert.match(html, /Emas Simpanan/);
+  assert.match(html, /Rp 1.000.000/); // zakat 2.5% dari 40jt
+  assert.equal(fakeDocument.getElementById('assetPajakTotalPBB').textContent, 'Rp 1.000.000');
+  assert.equal(fakeDocument.getElementById('assetPajakTotalZakat').textContent, 'Rp 1.000.000');
+  assert.equal(fakeDocument.getElementById('pajakAsetNjoptkp').value, 12000000);
+  assert.equal(fakeDocument.getElementById('pajakAsetTarif').value, 0.5);
+  const ringkasan = fakeDocument.getElementById('assetPajakRingkasan').innerHTML;
+  assert.match(ringkasan, /Ringkasan Pajak/);
+  assert.match(ringkasan, /Rp 2.000.000/); // total gabungan PBB + Zakat
+});
+
+test('PajakAset.renderList — setting NJOPTKP/tarif belum ada -> pakai DEFAULTS otomatis', () => {
+  const D = { assets: [{ id: '1', name: 'Tanah Kosong', jenis: 'Tanah', nilai: 100000000 }] };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.PajakAset.renderList();
+  assert.equal(fakeDocument.getElementById('pajakAsetNjoptkp').value, 12000000);
+  assert.equal(fakeDocument.getElementById('pajakAsetTarif').value, 0.5);
+  assert.equal(fakeDocument.getElementById('assetPajakTotalPBB').textContent, 'Rp 440.000');
+});
+
+test('Aset.renderList — memicu PajakAset.renderList() (kartu Pajak Aset ikut sinkron tiap save/delete/import)', () => {
+  const D = { assets: [{ id: '1', name: 'Tanah Kosong', jenis: 'Tanah', nilai: 100000000 }] };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderList();
+  assert.equal(fakeDocument.getElementById('assetPajakDashboard').classList.contains('u-dnone'), false);
+});
+
+test('Aset.renderList — list KOSONG (hapus aset terakhir) TETAP memicu PajakAset.renderList() supaya kartu Pajak Aset ikut disembunyikan (BUGFIX: sebelumnya cabang empty-state ini melewatkan panggilan PajakAset.renderList(), jadi kartu PBB/Zakat sisa aset yg sudah dihapus tetap nyangkut tampil)', () => {
+  const D = { assets: [] };
+  const { ctx, fakeDocument } = makeAset(D, {
+    domValues: { assetPajakDashboard: { classList: ['u-dnone'] } }, // simulasi: sebelumnya kartu tampil dgn data lama
+  });
+  fakeDocument.getElementById('assetPajakDashboard').classList.remove('u-dnone');
+  ctx.Aset.renderList();
+  assert.equal(fakeDocument.getElementById('assetPajakDashboard').classList.contains('u-dnone'), true);
+});
+
+// ================= LaporanAset (bagian ke-13) =================
+// Cakupan: LaporanAset.{riwayatTransaksi,nilaiAset,penyusutan,ringkasanKekayaan,
+// build,renderList}. Pola test sama dgn PajakAset di atas: fungsi murni (tanpa
+// DOM) dites terpisah dari renderList() (yg pegang DOM).
+
+test('LaporanAset.riwayatTransaksi — aset tanpa accountId -> tidak masuk akunTertaut, totalTx 0', () => {
+  const D = { assets: [{ id: 'a1', name: 'Motor', jenis: 'Kendaraan', nilai: 1 }] };
+  const { ctx } = makeAset(D);
+  const r = ctx.LaporanAset.riwayatTransaksi();
+  assert.equal(r.akunTertaut.length, 0);
+  assert.equal(r.totalTx, 0);
+  assert.equal(r.recentTx.length, 0);
+});
+
+test('LaporanAset.riwayatTransaksi — accountId nunjuk akun yang sudah terhapus -> accountExists false, tidak error', () => {
+  const D = { assets: [{ id: 'a1', name: 'Tanah', jenis: 'Tanah', nilai: 1, accountId: 'ghost' }], accounts: [] };
+  const { ctx } = makeAset(D);
+  const r = ctx.LaporanAset.riwayatTransaksi();
+  assert.equal(r.akunTertaut.length, 1);
+  assert.equal(r.akunTertaut[0].accountExists, false);
+  assert.equal(r.totalTx, 0);
+});
+
+test('LaporanAset.riwayatTransaksi — hitung jumlah/total masuk-keluar per akun tertaut & gabungan lintas akun', () => {
+  const D = {
+    assets: [
+      { id: 'a1', name: 'Tanah Kavling', jenis: 'Tanah', nilai: 1, accountId: 'acc1' },
+      { id: 'a2', name: 'Deposito', jenis: 'Deposito/Investasi', nilai: 1, accountId: 'acc2' },
+    ],
+    accounts: [{ id: 'acc1', name: 'Bank BCA' }, { id: 'acc2', name: 'Bank Mandiri' }],
+    transactions: [
+      { accountId: 'acc1', type: 'income', amount: 500000, date: '2026-07-01' },
+      { accountId: 'acc1', type: 'expense', amount: 200000, date: '2026-07-05' },
+      { accountId: 'acc2', type: 'income', amount: 1000000, date: '2026-07-10' },
+      { accountId: 'acc3', type: 'income', amount: 999999, date: '2026-07-11' }, // akun lain, tidak boleh ikut
+    ],
+  };
+  const { ctx } = makeAset(D);
+  const r = ctx.LaporanAset.riwayatTransaksi();
+  assert.equal(r.akunTertaut.length, 2);
+  const acc1 = r.akunTertaut.find((x) => x.accountId === 'acc1');
+  assert.equal(acc1.jumlahTx, 2);
+  assert.equal(acc1.totalMasuk, 500000);
+  assert.equal(acc1.totalKeluar, 200000);
+  assert.equal(r.totalTx, 3); // acc1 (2) + acc2 (1), acc3 dikecualikan
+  assert.equal(r.recentTx.length, 3);
+  assert.equal(r.recentTx[0].date, '2026-07-10'); // terbaru duluan
+});
+
+test('LaporanAset.nilaiAset — total pasar/buku, selisih, & breakdown per kategori', () => {
+  const D = {
+    assets: [
+      { id: 'a1', name: 'Emas', jenis: 'Emas/Logam Mulia', nilai: 1200000, modalInvestasi: 1000000 },
+      { id: 'a2', name: 'Motor', jenis: 'Kendaraan', nilai: 20000000 }, // tanpa modal -> buku = pasar
+    ],
+  };
+  const { ctx } = makeAset(D);
+  const n = ctx.LaporanAset.nilaiAset();
+  assert.equal(n.totalPasar, 21200000);
+  assert.equal(n.totalBuku, 21000000);
+  assert.equal(n.selisih, 200000);
+  assert.equal(n.perKategori['Emas/Logam Mulia'].count, 1);
+  assert.equal(n.perKategori['Kendaraan'].nilai, 20000000);
+});
+
+test('LaporanAset.nilaiAset — D.assets kosong -> semua total 0, perKategori {}', () => {
+  const { ctx } = makeAset({});
+  const n = ctx.LaporanAset.nilaiAset();
+  assert.equal(n.totalPasar, 0);
+  assert.equal(n.totalBuku, 0);
+  assert.equal(n.selisih, 0);
+  assert.equal(Object.keys(n.perKategori).length, 0);
+});
+
+test('LaporanAset.penyusutan — hanya hitung aset yg penyusutannya aktif & datanya lengkap', () => {
+  const D = {
+    assets: [
+      { id: 'a1', name: 'Mobil', jenis: 'Kendaraan', nilai: 200000000, modalInvestasi: 300000000, tanggal: '2023-07-11', penyusutan: { aktif: true, metode: 'garisLurus', umurManfaatTahun: 5, nilaiResidu: 0 } },
+      { id: 'a2', name: 'Tanah', jenis: 'Tanah', nilai: 100000000, penyusutan: { aktif: false } }, // tidak aktif
+      { id: 'a3', name: 'Kios', jenis: 'Rumah/Bangunan', nilai: 50000000, tanggal: '2020-01-01', penyusutan: { aktif: true, metode: 'garisLurus', umurManfaatTahun: 10 } }, // aktif tapi tanpa data modal
+    ],
+  };
+  const { ctx } = makeAset(D);
+  const p = ctx.LaporanAset.penyusutan();
+  assert.equal(p.jumlahAktif, 2); // a1 & a3 (yg aktif=true)
+  assert.equal(p.belumLengkap, 1); // a3 tanpa modal
+  assert.ok(p.totalAkumulasi > 0);
+  assert.ok(p.totalBukuSekarang > 0);
+});
+
+test('LaporanAset.penyusutan — tidak ada aset yg aktif penyusutan -> semua 0', () => {
+  const D = { assets: [{ id: 'a1', name: 'Tanah', jenis: 'Tanah', nilai: 1 }] };
+  const { ctx } = makeAset(D);
+  const p = ctx.LaporanAset.penyusutan();
+  assert.equal(p.jumlahAktif, 0);
+  assert.equal(p.totalAkumulasi, 0);
+  assert.equal(p.totalBukuSekarang, 0);
+});
+
+test('LaporanAset.ringkasanKekayaan — total nilai, kategori terbesar, & rekap zakatable dari PajakAset', () => {
+  const D = {
+    assets: [
+      { id: 'a1', name: 'Sawah', jenis: 'Tanah', nilai: 300000000 },
+      { id: 'a2', name: 'Emas', jenis: 'Emas/Logam Mulia', nilai: 40000000, zakatable: true },
+    ],
+  };
+  const { ctx } = makeAset(D);
+  const rk = ctx.LaporanAset.ringkasanKekayaan();
+  assert.equal(rk.jumlahAset, 2);
+  assert.equal(rk.jumlahKategori, 2);
+  assert.equal(rk.totalNilaiPasar, 340000000);
+  assert.equal(rk.kategoriTerbesar.jenis, 'Tanah');
+  assert.equal(rk.jumlahZakatable, 1);
+  assert.equal(rk.totalZakatable, 40000000);
+});
+
+test('LaporanAset.ringkasanKekayaan — D.assets kosong -> kategoriTerbesar null', () => {
+  const { ctx } = makeAset({});
+  const rk = ctx.LaporanAset.ringkasanKekayaan();
+  assert.equal(rk.jumlahAset, 0);
+  assert.equal(rk.kategoriTerbesar, null);
+});
+
+test('LaporanAset.build — menggabungkan ke-5 bagian sekaligus (tanpa DOM)', () => {
+  const D = { assets: [{ id: 'a1', name: 'Tanah', jenis: 'Tanah', nilai: 100000000, zakatable: false }] };
+  const { ctx } = makeAset(D);
+  const data = ctx.LaporanAset.build();
+  assert.equal(data.daftarAset.length, 1);
+  assert.equal(data.daftarAset[0].name, 'Tanah');
+  assert.ok('riwayatTransaksi' in data);
+  assert.ok('nilaiAset' in data);
+  assert.ok('penyusutan' in data);
+  assert.ok('ringkasanKekayaan' in data);
+});
+
+test('LaporanAset.renderList — kartu/elemen tidak ada di DOM -> no-op', () => {
+  const D = { assets: [{ id: '1', jenis: 'Tanah', nilai: 1 }] };
+  const { ctx, fakeDocument } = makeAset(D);
+  fakeDocument.getElementById = (id) => (id === 'laporanAsetCard' ? null : createFakeElement());
+  assert.doesNotThrow(() => ctx.LaporanAset.renderList());
+});
+
+test('LaporanAset.renderList — D.assets kosong -> kartu disembunyikan (u-dnone)', () => {
+  const D = { assets: [] };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.LaporanAset.renderList();
+  assert.equal(fakeDocument.getElementById('laporanAsetCard').classList.contains('u-dnone'), true);
+});
+
+test('LaporanAset.renderList — ada aset -> kartu tampil & ke-5 bagian terisi', () => {
+  const D = {
+    assets: [
+      { id: 'a1', name: 'Sawah Warisan', jenis: 'Tanah', nilai: 300000000, accountId: 'acc1' },
+      { id: 'a2', name: 'Emas Simpanan', jenis: 'Emas/Logam Mulia', nilai: 40000000, zakatable: true },
+    ],
+    accounts: [{ id: 'acc1', name: 'Bank BCA' }],
+    transactions: [{ accountId: 'acc1', type: 'income', amount: 1000000, date: '2026-07-01' }],
+  };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.LaporanAset.renderList();
+  assert.equal(fakeDocument.getElementById('laporanAsetCard').classList.contains('u-dnone'), false);
+  assert.match(fakeDocument.getElementById('lapAsetDaftar').innerHTML, /Sawah Warisan/);
+  assert.match(fakeDocument.getElementById('lapAsetRiwayat').innerHTML, /Bank BCA/);
+  assert.match(fakeDocument.getElementById('lapAsetRiwayat').innerHTML, /Rp 1.000.000/);
+  assert.match(fakeDocument.getElementById('lapAsetNilai').innerHTML, /Rp 340.000.000/);
+  assert.match(fakeDocument.getElementById('lapAsetPenyusutan').innerHTML, /Belum ada aset yang mengaktifkan penyusutan/);
+  assert.match(fakeDocument.getElementById('lapAsetRingkasan').innerHTML, /2<\/b> aset di <b>2<\/b> kategori/);
+  assert.match(fakeDocument.getElementById('lapAsetRingkasan').innerHTML, /1 aset zakatable/);
+});
+
+test('Aset.renderList — memicu LaporanAset.renderList() (kartu Laporan Aset ikut sinkron tiap save/delete/import)', () => {
+  const D = { assets: [{ id: '1', name: 'Tanah Kosong', jenis: 'Tanah', nilai: 100000000 }] };
+  const { ctx, fakeDocument } = makeAset(D);
+  ctx.Aset.renderList();
+  assert.equal(fakeDocument.getElementById('laporanAsetCard').classList.contains('u-dnone'), false);
+});
+
+test('Aset.renderList — D.assets kosong -> LaporanAset.renderList() ikut jalan (kartu disembunyikan, bukan error)', () => {
+  const D = { assets: [] };
+  const { ctx, fakeDocument } = makeAset(D);
+  assert.doesNotThrow(() => ctx.Aset.renderList());
+  assert.equal(fakeDocument.getElementById('laporanAsetCard').classList.contains('u-dnone'), true);
 });
