@@ -1,3 +1,111 @@
+# Changelog — Sprint 2 Tahap 19: Fitur Tangga Ternak Uang
+
+Baseline: Sprint 2 Tahap 18 (Resource Hints + Theme Color) selesai.
+
+## Ditambahkan
+
+- **`tangga-keuangan.js`** (modul baru) — kartu "🪜 Tangga Ternak Uang" di
+  Dashboard Hub, tepat di bawah Hero Card. Menganalisis OTOMATIS posisi
+  user di 7 anak tangga (Nabung Cash 10jt, Lunasi Hutang Kecil, Dana
+  Darurat 3-6 bulan, Investasi 20% income, Dana Pendidikan Anak, Lunasi
+  KPR, Kekayaan Abadi & Berbagi) berdasarkan data yang SUDAH ADA:
+  `totalSaldoAkun()`, `D.bills`, `D.targets` (Dana Darurat), `D.assets`
+  (kategori investasi), `D.eduFunds`, `AsetKeluarga.build()`, dan
+  `D.pajakZakat.zakatLog`. Beberapa threshold (mis. estimasi 20% income
+  & Rp1M kekayaan bersih di anak tangga 7) adalah **heuristik ilustratif**
+  yang ditulis transparan di catatan tiap baris kartu, bukan pelacakan
+  presisi/nasihat finansial personal.
+- **`tangga-ternak-uang.jpg`** — gambar infografis tangga, dipakai sebagai
+  background kartu.
+- **`styles.css`**: 10 baris CSS baru (`.tk-*`) khusus styling baris
+  anak tangga di kartu ini — murni tambahan di akhir file, tidak
+  menimpa rule lain.
+- **`index.html`, `app_production.html`**: tambah markup kartu (di
+  bawah Hero Card) + `<script src="tangga-keuangan.js?v=1">` di-load
+  SETELAH `app-bundle-a/b.min.js`.
+
+## Cara kerja teknis (non-invasive)
+
+- File JS terpisah dari bundle, dimuat belakangan — semua fungsi/modul
+  global yang dipakai (`D`, `WorthIt`, `AsetKeluarga`, `totalSaldoAkun`,
+  `escapeHtml`, `fmtFull`) dijamin sudah ada saat file ini jalan.
+- Render ulang saat halaman Dashboard Hub dibuka dilakukan dengan
+  **membungkus** `window.showPage` yang sudah ada (panggil versi asli
+  dulu, baru render kartu ini kalau halamannya `dashboard-hub`) —
+  bukan menimpa/mengganti isi fungsi asli di bundle.
+
+## Tidak diubah
+
+- Tidak ada baris di `app-bundle-a.min.js`/`app-bundle-b.min.js` yang
+  disentuh/di-rebuild.
+- Tidak ada logic/data existing (Keuangan, Dana Darurat, Investasi,
+  dst.) yang berubah — modul ini murni MEMBACA data yang sudah ada.
+
+---
+
+# Changelog — Sprint 2 Tahap 18: Resource Hints + Theme Color
+
+Baseline: Sprint 2 Tahap 17 (Shadow Token Migration + Modern UI Layer) selesai.
+
+## Ditambahkan
+
+- **`<meta name="theme-color" content="#08090c">`** — warna address bar
+  browser mobile mengikuti `--bg` tema dark (default app), kesan lebih
+  menyatu/native saat dibuka sebagai PWA/tab browser.
+- **`preconnect`/`dns-prefetch`** ke 3 domain yang sudah ada di
+  allowlist CSP (`cdn.jsdelivr.net`, `cdnjs.cloudflare.com`,
+  `accounts.google.com`) — domain-domain ini sebelumnya baru dikoneksi
+  saat fitur lazy-load (eruda/tesseract.js/jsPDF/Google Identity)
+  dipicu; hint ini cuma buka koneksi DNS/TLS lebih awal supaya saat
+  fitur itu dipakai terasa lebih cepat. 0 byte aset tambahan, 0
+  perubahan visual/JS.
+
+## Tidak diubah
+
+- Tidak ada file JavaScript yang disentuh.
+- Tidak ada `app-bundle-a/b.min.js` yang di-rebuild (tidak perlu).
+
+---
+
+# Changelog — Sprint 2 Tahap 17: Shadow Token Migration + Modern UI Layer
+
+Baseline: Sprint 2 Tahap 16 (Secondary Clickable Hover Elevation) selesai.
+
+## Ditambahkan
+
+- **`modern-ui-layer.css`** (file baru, ~3KB) — lapisan CSS tambahan
+  murni additive (tidak menimpa token warna/kontras Tahap 9): glass
+  blur pada header & bottom-nav, lift/elevation halus pada `.card`/
+  tombol saat hover/tap (pakai token `--shadow-*`/`--dur-*` yang sudah
+  ada), focus ring aksesibel untuk navigasi keyboard, scrollbar tipis
+  di layar ≥900px, font smoothing, dan menghormati
+  `prefers-reduced-motion`. Di-link dari `index.html` &
+  `app_production.html` setelah `styles.css`, terpisah dari bundle JS
+  sehingga tidak butuh rebuild `app-bundle-a/b.min.js`.
+
+## Diubah (value-preserving, tanpa perubahan visual)
+
+- **`styles.css`**: 22 deklarasi `box-shadow` literal (nilai numerik
+  langsung) dipindah ke 20 token `var(--shadow-*)` baru di `:root`
+  (`ROADMAP-v1.1.md` Item 5, Medium Priority, 🟢 CSS-only). Nilai akhir
+  identik persis dengan sebelumnya — pola sama seperti migrasi
+  border-radius (Tahap 11), duration (Tahap 12), dan font-size (Tahap
+  14). `0 0 0 0 transparent` (reset/animation-state, bukan shadow
+  desain) sengaja tidak dimigrasi.
+- **`index.html`, `app_production.html`**: tambah satu baris
+  `<link rel="stylesheet" href="modern-ui-layer.css?v=1">` setelah
+  `styles.css?v=337`.
+
+## Tidak diubah
+
+- Tidak ada file JavaScript yang disentuh, tidak ada `app-bundle-a/b.min.js`
+  yang di-rebuild (tidak perlu — perubahan murni CSS baru + tokenisasi
+  value-preserving).
+- Tidak ada nilai warna, kontras (Tahap 9), radius, ukuran font, atau
+  timing animasi yang berubah.
+
+---
+
 # Changelog — Tahap 1: Audit UI & Pembangunan Design System (Foundation)
 
 Baseline: `repo-final.zip` (v242 / `kw83-tahap0-feature-registry-17`).

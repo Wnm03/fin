@@ -67,6 +67,8 @@ document.getElementById('accBalance').value=a?recalcAccBalance(a.id):'';
 document.getElementById('accBalanceLabel').textContent=a?'Saldo Sekarang (Rp)':'Saldo Awal (Rp)';
 document.getElementById('accBalanceHint').style.display=a?'block':'none';
 document.getElementById('accLinkedAssetHint').style.display=(a&&isAccLinkedToAsset(a.id))?'block':'none';
+const accJenisEl=document.getElementById('accJenis');
+if(accJenisEl)accJenisEl.value=a?(a.jenis||'kas_bebas'):'kas_bebas';
 accIncludeState=a?(a.includeInBalance!==false):true;
 updateAccIncludeBtn();
 openModal('accModal');
@@ -83,16 +85,18 @@ function _saveAccInner(){
 const name=document.getElementById('accName').value.trim();
 const emoji=document.getElementById('accEmoji').value||'💰';
 const nominal=parseFloat(document.getElementById('accBalance').value)||0;
+const jenisEl=document.getElementById('accJenis');
+const jenis=jenisEl?jenisEl.value:'kas_bebas';
 if(!name){toast('⚠️ Isi nama akun');return;}
 if(editAccIdx>=0){
 const a=D.accounts[editAccIdx];
-a.name=name;a.emoji=emoji;a.includeInBalance=accIncludeState;
+a.name=name;a.emoji=emoji;a.includeInBalance=accIncludeState;a.jenis=jenis;
 const txDelta=recalcAccBalance(a.id)-(a.baseBalance!==undefined?a.baseBalance:(a.balance||0));
 a.baseBalance=nominal-txDelta;
 a.balance=nominal;
 save();closeModal('accModal');renderAccGrid();populateAccFilters();renderDashAccList();renderLapAccList();toast('✅ Akun diperbarui');
 } else {
-D.accounts.push({id:'acc_'+Date.now(),name,emoji,baseBalance:nominal,balance:nominal,includeInBalance:accIncludeState});
+D.accounts.push({id:'acc_'+Date.now(),name,emoji,baseBalance:nominal,balance:nominal,includeInBalance:accIncludeState,jenis});
 save();closeModal('accModal');renderAccGrid();populateAccFilters();renderDashAccList();renderLapAccList();toast('✅ Akun ditambahkan');
 }
 }

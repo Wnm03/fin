@@ -94,6 +94,84 @@ init(suffix){
 AlokasiAset.renderOne(suffix||'');
 }
 };
+// AssetInsight — kartu "💡 Insight Aset" di paling atas halaman Aset (page-aset).
+// Tujuan: kasih ringkasan cepat yg butuh perhatian, TANPA user perlu buka semua
+// card di bawahnya satu-satu (Dashboard Aset, Performa Investasi, Histori
+// Kekayaan, dst — semuanya sudah ada datanya, insight ini cuma menyorot bagian
+// yg paling relevan). Read-only, tidak nyimpen state sendiri, cuma baca ulang
+// D.assets & D.wealthSnapshots tiap kali dipanggil. Dipanggil dari
+// Aset.renderList() spy selalu sinkron tiap save/delete/import/scan.
+const AssetInsight={
+// Ambang persentase 1 kategori aset dianggap "kurang terdiversifikasi".
+CONCENTRATION_THRESHOLD:60,
+// compute() — DIPISAH dari render() supaya bisa dipakai ulang oleh FinCoach.compute()
+// (modules-calc.js) buat sinkronisasi ke widget "🩺 Insight Cepat" di Dashboard, TANPA
+// mengubah sedikit pun teks/urutan insight yang sudah ada & sudah dites di aset.test.js —
+// murni ekstraksi array `insights` yang sebelumnya dibangun langsung di render().
+compute(){
+const list=D.assets||[];
+const totalNilai=list.reduce((s,a)=>s+(a.nilai||0),0);
+const insights=[];
+// (1) Konsentrasi kategori — kalau 1 jenis aset mendominasi porsi terbesar,
+// user mungkin belum sadar portofolionya kurang terdiversifikasi.
+const perKategori={};
+list.forEach(a=>{
+const j=a.jenis||'Lainnya';
+perKategori[j]=(perKategori[j]||0)+(a.nilai||0);
+});
+const kategoriSorted=Object.entries(perKategori).sort((a,b)=>b[1]-a[1]);
+if(kategoriSorted.length&&totalNilai>0){
+const[topJenis,topNilai]=kategoriSorted[0];
+const pct=topNilai/totalNilai*100;
+if(pct>=AssetInsight.CONCENTRATION_THRESHOLD){
+insights.push(`⚠️ <b>${Math.round(pct)}%</b> dari total Aset kamu ada di kategori <b>${escapeHtml(topJenis)}</b> — pertimbangkan diversifikasi ke jenis aset lain supaya tidak terlalu bergantung pada satu instrumen.`);
+}
+}
+// (2) Performer terbaik/terburuk — cuma aset yg ada data modalnya (sama
+// dgn kriteria di Aset.renderInvestasi(), biar konsisten & tidak keisi
+// angka semu dari aset yg belum diisi modalnya).
+const tracked=list.map(a=>{
+const buku=a.modalInvestasi!=null?a.modalInvestasi:(a.hargaBeli!=null&&a.jumlahUnit!=null?a.hargaBeli*a.jumlahUnit:null);
+return{a,buku};
+}).filter(x=>x.buku!=null&&x.buku>0);
+if(tracked.length){
+let best=null,worst=null;
+tracked.forEach(({a,buku})=>{
+const pct=((a.nilai||0)-buku)/buku*100;
+if(!best||pct>best.pct)best={name:a.name,pct};
+if(!worst||pct<worst.pct)worst={name:a.name,pct};
+});
+if(best&&(!worst||best.name!==worst.name||tracked.length===1)){
+insights.push(`📈 Performa terbaik: <b>${escapeHtml(best.name)}</b> (${best.pct>=0?'+':''}${best.pct.toFixed(1)}%).`);
+}
+if(worst&&tracked.length>1&&worst.pct<0){
+insights.push(`📉 Perlu dipantau: <b>${escapeHtml(worst.name)}</b> (${worst.pct.toFixed(1)}%) — cek lagi apakah masih sesuai rencana.`);
+}
+}
+// (3) Growth Rate Aktual kekayaan bersih (dari snapshot Histori Kekayaan,
+// pakai fungsi yg sama dgn card Histori Kekayaan supaya angkanya konsisten).
+if(typeof Kekayaan!=='undefined'){
+const cagrResult=Kekayaan.actualCAGR();
+if(cagrResult&&!cagrResult.reason){
+const pct=cagrResult.cagr*100;
+insights.push(`${pct>=0?'🚀':'🔻'} Kekayaan Bersih tumbuh <b>${pct>=0?'+':''}${pct.toFixed(1)}%/tahun</b> (growth rate aktual dari snapshot, bukan asumsi).`);
+}
+}
+return insights;
+},
+render(){
+const card=document.getElementById('assetInsightCard');
+const box=document.getElementById('assetInsightBody');
+if(!card||!box)return;
+const list=D.assets||[];
+if(!list.length){card.classList.add('u-dnone');return;}
+card.classList.remove('u-dnone');
+const totalNilai=list.reduce((s,a)=>s+(a.nilai||0),0);
+const insights=AssetInsight.compute();
+box.innerHTML=`<div class=\"u-fs20 u-fw700 u-mb4\">${fmtFull(totalNilai)}</div><div class=\"u-fs11 u-t2 u-mb10\">Total nilai ${list.length} aset tercatat</div>`+
+(insights.length?insights.map(t=>`<div class=\"u-fs12 u-lh15 u-mb8\">${t}</div>`).join(''):'<div class=\"u-fs12 u-t2 u-lh15\">Belum ada insight khusus — data aset kamu sejauh ini terlihat wajar.</div>');
+}
+};
 const Aset={
 editId:null,
 _zakatableState:false,
@@ -189,7 +267,7 @@ renderList(){
 const el=document.getElementById('assetList');
 if(!el)return;
 const list=D.assets||[];
-if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada aset tercatat</div></div>';Aset.renderDashboard();Aset.renderInvestasi();Penyusutan.renderList();PajakAset.renderList();LaporanAset.renderList();return;}
+if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada aset tercatat</div></div>';Aset.renderDashboard();Aset.renderInvestasi();Penyusutan.renderList();PajakAset.renderList();LaporanAset.renderList();AssetInsight.render();return;}
 el.innerHTML=list.map(a=>{
 const hasPct=a.keuntunganPct!=null&&isFinite(a.keuntunganPct);
 const pctBadge=hasPct?` <span style="font-size:10px;color:${a.keuntunganPct>=0?'var(--accent3)':'var(--accent2)'}">${a.keuntunganPct>=0?'▲':'▼'} ${a.keuntunganPct>=0?'+':''}${a.keuntunganPct.toFixed(2)}%</span>`:'';
@@ -203,6 +281,7 @@ Aset.renderInvestasi();
 Penyusutan.renderList();
 PajakAset.renderList();
 LaporanAset.renderList();
+AssetInsight.render();
 },
 totalValue(){return(D.assets||[]).reduce((s,a)=>s+(a.nilai||0),0);},
 // FITUR BARU: Dashboard Aset — ringkasan Total Aset / Nilai Buku / Nilai Pasar +
@@ -217,8 +296,16 @@ renderDashboard(){
 const box=document.getElementById('assetDashboard');
 if(!box)return;
 const list=D.assets||[];
-if(!list.length){box.classList.add('u-dnone');return;}
 box.classList.remove('u-dnone');
+if(!list.length){
+const t=document.getElementById('assetDashTotal');if(t)t.textContent=fmtFull(0);
+const b=document.getElementById('assetDashBuku');if(b)b.textContent=fmtFull(0);
+const p=document.getElementById('assetDashPasar');if(p)p.textContent=fmtFull(0);
+const s=document.getElementById('assetDashSelisih');if(s)s.textContent='';
+const k=document.getElementById('assetDashKategori');if(k)k.innerHTML='<div class="u-fs12 u-t2 u-lh15">Belum ada aset tercatat — tambah aset pertama lewat 📋 Buku Aset di bawah untuk melihat ringkasan di sini.</div>';
+const d=document.getElementById('assetDashDiversifikasi');if(d)d.innerHTML='';
+return;
+}
 let totalPasar=0,totalBuku=0;
 const perKategori={};
 list.forEach(a=>{
@@ -249,7 +336,7 @@ katBox.innerHTML=kategoriRows.map(([jenis,v],i)=>{
 const pct=totalPasar?(v.nilai/totalPasar*100):0;
 const icon=Aset.ICON[jenis]||'📦';
 return `<div class="u-mb10">
-      <div class="u-flex u-jcsb u-fs13 u-mb4"><span class="u-fw600">${icon} ${escapeHtml(jenis)} <span class="u-fs11 u-t2">(${v.count})</span></span><span class="u-fw700">${fmt(v.nilai)}</span></div>
+      <div class="u-flex u-jcb u-aifs u-gap8 u-fs13 u-mb4"><span class="u-fw600 u-flex1">${icon} ${escapeHtml(jenis)} <span class="u-fs11 u-t2">(${v.count})</span></span><span class="u-fw700 u-tar" style="white-space:nowrap">${fmt(v.nilai)}</span></div>
       <div class="budget-bar-track"><div class="budget-bar-fill" style="width:${pct}%;background:${barColors[i%barColors.length]}"></div></div>
       <div class="budget-bar-label"><span>${pct.toFixed(1)}% dari total</span></div>
     </div>`;
@@ -317,8 +404,14 @@ const tracked=(D.assets||[]).map(a=>{
 const buku=a.modalInvestasi!=null?a.modalInvestasi:(a.hargaBeli!=null&&a.jumlahUnit!=null?a.hargaBeli*a.jumlahUnit:null);
 return{a,buku};
 }).filter(x=>x.buku!=null&&x.buku>0);
-if(!tracked.length){box.classList.add('u-dnone');return;}
 box.classList.remove('u-dnone');
+if(!tracked.length){
+const r=document.getElementById('assetInvestasiROI');if(r)r.textContent='—';
+const y=document.getElementById('assetInvestasiYield');if(y)y.textContent='—';
+const g=document.getElementById('assetInvestasiGain');if(g)g.innerHTML='';
+const rk=document.getElementById('assetInvestasiRingkasan');if(rk)rk.innerHTML='<div class="u-fs12 u-t2 u-lh15">Belum ada aset dengan data modal (Modal Investasi, atau Harga Beli × Jumlah Unit) — isi salah satunya di 📋 Buku Aset supaya ROI/Yield bisa dihitung.</div>';
+return;
+}
 let totalModal=0,totalNilai=0,cagrSum=0,cagrWeight=0,best=null,worst=null;
 const todayMs=new Date(todayStr()).getTime();
 tracked.forEach(({a,buku})=>{
@@ -614,8 +707,13 @@ const card=document.getElementById('assetPenyusutanDashboard');
 const box=document.getElementById('assetPenyusutanList');
 if(!card||!box)return;
 const list=D.assets||[];
-if(!list.length){card.classList.add('u-dnone');return;}
 card.classList.remove('u-dnone');
+if(!list.length){
+const ta=document.getElementById('assetPenyusutanTotalAkumulasi');if(ta)ta.textContent=fmtFull(0);
+const tb=document.getElementById('assetPenyusutanTotalBuku');if(tb)tb.textContent=fmtFull(0);
+box.innerHTML='<div class="u-fs12 u-t2 u-lh15">Belum ada aset tercatat — tambah aset pertama lewat 📋 Buku Aset di bawah, lalu aktifkan penyusutan per aset di sini.</div>';
+return;
+}
 let totalAkumulasi=0,totalBuku=0;
 box.innerHTML=list.map(a=>{
 const aktif=!!(a.penyusutan&&a.penyusutan.aktif);
@@ -652,7 +750,7 @@ if(hasil.habisManfaat)resultHtml+=`<div class="u-fs11 u-t2 u-mt2">✅ Sudah menc
 bodyHtml=`<div class="fg" style="margin-bottom:8px"><label class="fl">Metode</label><select class="fs" onchange="Penyusutan.updateParam('${a.id}','metode',this.value)">${metodeOpts}</select></div>`+fieldsHtml+resultHtml;
 }
 return `<div class="u-r10 u-mb10" style="border:1px solid var(--border);padding:10px 12px">
-      <div class="u-flex u-jcsb u-aic u-mb8">
+      <div class="u-flex u-jcb u-aic u-mb8">
         <div class="u-fs13 u-fw600">${icon} ${escapeHtml(a.name)}</div>
         <label class="u-fs11 u-flex u-aic" style="gap:4px"><input type="checkbox" ${aktif?'checked':''} onchange="Penyusutan.toggleAktif('${a.id}')"> Aktif</label>
       </div>
@@ -663,6 +761,14 @@ const totalEl=document.getElementById('assetPenyusutanTotalAkumulasi');
 if(totalEl)totalEl.textContent=fmtFull(totalAkumulasi);
 const bukuEl=document.getElementById('assetPenyusutanTotalBuku');
 if(bukuEl)bukuEl.textContent=fmtFull(totalBuku);
+// Widget Rekomendasi AI (penyusutan-ai-widget.js) — opsional, di-guard supaya
+// renderList() tetap aman kalau file itu belum/tidak dimuat. Container-nya
+// (#assetPenyusutanAI) TERPISAH dari #assetPenyusutanList, pola sama dgn
+// InvestAI.mountInto() di AlokasiAset.renderOne().
+if(typeof PenyusutanAI!=='undefined'){
+const aiEl=document.getElementById('assetPenyusutanAI');
+if(aiEl)PenyusutanAI.mountInto(aiEl);
+}
 }
 };
 // ================= PAJAK ASET (bagian ke-12) =================
@@ -735,8 +841,13 @@ const box=document.getElementById('assetPajakList');
 if(!card||!box)return;
 const properti=(D.assets||[]).filter(a=>PajakAset.JENIS_PROPERTI.includes(a.jenis));
 const zakat=PajakAset.hitungZakatAset();
-if(!properti.length&&!zakat.list.length){card.classList.add('u-dnone');return;}
 card.classList.remove('u-dnone');
+if(!properti.length&&!zakat.list.length){
+const tp=document.getElementById('assetPajakTotalPBB');if(tp)tp.textContent=fmtFull(0);
+const tz=document.getElementById('assetPajakTotalZakat');if(tz)tz.textContent=fmtFull(0);
+box.innerHTML='<div class="u-fs12 u-t2 u-lh15">Belum ada aset properti (tanah/bangunan) atau aset yang ditandai "Zakat" — tandai di 📋 Buku Aset supaya estimasi PBB/Zakat Maal muncul di sini.</div>';
+return;
+}
 const s=PajakAset.settings();
 // BUGFIX-PROTECTIVE: tidak overwrite input NJOPTKP/tarif kalau lagi difokus
 // user (sedang diketik) supaya re-render (dipicu save/delete aset lain)
@@ -749,11 +860,11 @@ let totalPBB=0;
 const pbbHtml=properti.length?('<div class="u-fs12t2 u-fw700 u-mb6">🏛️ Estimasi PBB</div>'+properti.map(a=>{
 const r=PajakAset.hitungPBB(a,s);
 totalPBB+=r.terutang;
-return `<div class="u-flex u-jcsb u-fs12 u-mb6"><span>${Aset.ICON[a.jenis]||'📦'} ${escapeHtml(a.name)}</span><span class="u-fw700">${fmtFull(r.terutang)}/th</span></div>`;
+return `<div class="u-flex u-jcb u-aifs u-gap8 u-fs12 u-mb6"><span class="u-flex1">${Aset.ICON[a.jenis]||'📦'} ${escapeHtml(a.name)}</span><span class="u-fw700 u-tar" style="white-space:nowrap">${fmtFull(r.terutang)}/th</span></div>`;
 }).join('')):'';
 const zakatHtml=zakat.list.length?('<div class="u-fs12t2 u-fw700 u-mb6 u-mt10">🕌 Zakat Maal Aset</div>'+zakat.list.map(a=>{
 const z=Math.round((a.nilai||0)*0.025);
-return `<div class="u-flex u-jcsb u-fs12 u-mb6"><span>${Aset.ICON[a.jenis]||'📦'} ${escapeHtml(a.name)}</span><span class="u-fw700">${fmtFull(z)}</span></div>`;
+return `<div class="u-flex u-jcb u-aifs u-gap8 u-fs12 u-mb6"><span class="u-flex1">${Aset.ICON[a.jenis]||'📦'} ${escapeHtml(a.name)}</span><span class="u-fw700 u-tar" style="white-space:nowrap">${fmtFull(z)}</span></div>`;
 }).join('')):'';
 box.innerHTML=(pbbHtml+zakatHtml)||'<div class="u-fs12 u-t2">Belum ada aset Tanah/Rumah-Bangunan atau aset zakatable.</div>';
 const pbbEl=document.getElementById('assetPajakTotalPBB');
@@ -864,14 +975,12 @@ ringkasanKekayaan:LaporanAset.ringkasanKekayaan()
 renderList(){
 const card=document.getElementById('laporanAsetCard');
 if(!card)return;
-const list=D.assets||[];
-if(!list.length){card.classList.add('u-dnone');return;}
 card.classList.remove('u-dnone');
 const data=LaporanAset.build();
 // (1) Daftar Aset
 const daftarEl=document.getElementById('lapAsetDaftar');
 if(daftarEl){
-daftarEl.innerHTML=data.daftarAset.map(a=>`<div class="u-flex u-jcsb u-fs12 u-mb6"><span>${a.icon} ${escapeHtml(a.name)}${a.zakatable?' 🕌':''}</span><span class="u-fw700">${fmtFull(a.nilai)}</span></div>`).join('')||'<div class="u-fs12 u-t2">Belum ada aset tercatat</div>';
+daftarEl.innerHTML=data.daftarAset.map(a=>`<div class="lap-aset-row u-fs12"><span class="lap-aset-name">${a.icon} ${escapeHtml(a.name)}${a.zakatable?' 🕌':''}</span><span class="lap-aset-val">${fmtFull(a.nilai)}</span></div>`).join('')||'<div class="u-fs12 u-t2">Belum ada aset tercatat</div>';
 }
 // (2) Riwayat Transaksi
 const riwayatEl=document.getElementById('lapAsetRiwayat');
@@ -1085,4 +1194,4 @@ applyOneCardCollapsePref('timelineWCard');
 // langsung lewat context, bukan lewat window). Pola sama persis dgn bug
 // OngkirCalc di cobek-pricing.js yg sudah pernah kejadian & diperbaiki
 // sebelumnya — lihat CLAUDE.md.
-Object.assign(window,{ALOKASI_PRESETS,AlokasiAset,Aset,Penyusutan,PajakAset,LaporanAset,IDBStore,PORTFOLIO_LABELS,TimelineW});
+Object.assign(window,{ALOKASI_PRESETS,AlokasiAset,AssetInsight,Aset,Penyusutan,PajakAset,LaporanAset,IDBStore,PORTFOLIO_LABELS,TimelineW});

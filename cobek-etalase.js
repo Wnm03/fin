@@ -312,6 +312,7 @@ if(!await askConfirm('Hapus produk ini dari etalase?'))return;
 D.products.splice(i,1);save();this.renderList();toast('🗑 Dihapus');
 },
 renderList(){
+if(typeof ShopInsight!=='undefined')ShopInsight.render();
 const el=document.getElementById('productList');
 if(!el)return;
 if(!D.products.length){el.innerHTML='<div class="empty"><div class="empty-icon">📦</div><div class="empty-text">Belum ada produk</div></div>';return;}
