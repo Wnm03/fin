@@ -1,7 +1,7 @@
 // Fungsi render (85 fungsi) dipisah dari app_production.html untuk pemerataan ukuran file.
 // Semua fungsi ini murni definisi function global (bukan module), jadi tetap bisa dipanggil dari file manapun
 // yang loadnya belakangan (sama seperti modules-calc.js/features-*.js).
-const MODULE_RENDER_VERSION='feature-icons-svg-342';
+const MODULE_RENDER_VERSION='feature-icons-svg-350';
 
 function renderPageContent(name){
 if(name==='dashboard')renderDashboard();
@@ -1215,6 +1215,7 @@ EduFund.render();
 renderMs();
 renderReminder();
 renderNotifSettings();
+if(typeof EIENotifSettings!=='undefined') EIENotifSettings.render();
 renderGDriveSettings();
 renderSheetsSettings();
 setImportType(curImportType,document.querySelector('#importChips .chip-btn'));

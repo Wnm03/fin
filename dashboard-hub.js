@@ -362,6 +362,14 @@ const DashboardHub = {
     // Tambahan murni, pola sama dgn DashboardHubSummary.render() di atas —
     // tidak mengubah baris manapun sebelum ini.
     if (typeof DashboardHubAnalytics !== 'undefined') DashboardHubAnalytics.render();
+
+    // Economic Intelligence Engine (fase 2, lihat
+    // Economic-Intelligence-Engine-Technical-Design.md & #eieWrap di
+    // index.html/app_production.html). Tambahan murni, pola sama dgn
+    // DashboardHubAnalytics.render() di atas — tidak mengubah baris
+    // manapun sebelum ini. Async & self-guarded (try/catch di dalam
+    // EIEDashboard.render()), jadi tidak memblokir render kartu lain.
+    if (typeof EIEDashboard !== 'undefined') EIEDashboard.render();
   },
 
   // Kontrak resolusi ADR-001 §4 — SATU-SATUNYA entry point publik navigasi.

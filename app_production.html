@@ -76,8 +76,8 @@
 <link rel="preconnect" href="https://accounts.google.com" crossorigin>
 <link rel="dns-prefetch" href="https://accounts.google.com">
 <title>Keluarga W</title>
-<link rel="stylesheet" href="styles.css?v=342">
-<link rel="stylesheet" href="modern-ui-layer.css?v=342">
+<link rel="stylesheet" href="styles.css?v=350">
+<link rel="stylesheet" href="modern-ui-layer.css?v=350">
 <script>
 /* Debug console (Eruda) — aktifkan sekali lewat ?debug=1 di URL, nempel via localStorage.
    Matikan lagi lewat ?debug=0. Tidak aktif buat user biasa. */
@@ -130,8 +130,8 @@ b.appendChild(closeBtn);
 }catch(_e){ console.error('Gagal tampilkan banner error modul:',_e); }
 };
 </script>
-<script src="app-bundle-a.min.js?v=342" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
-<script src="smoke-test.js?v=342" defer></script>
+<script src="app-bundle-a.min.js?v=350" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
+<script src="smoke-test.js?v=350" defer></script>
 <link rel="manifest" id="pwaManifestLink" href="manifest.json">
 </head>
 <body data-theme="fresh">
@@ -1738,6 +1738,16 @@ b.appendChild(closeBtn);
     <div class="u-fs12 u-t2 u-lh15 u-mt8">Notifikasi otomatis hanya berjalan selama aplikasi ini dibuka di browser/HP (tidak saat browser ditutup total). Untuk reminder ke WhatsApp, pakai tombol "💬 Kirim ke WA" yang ada di tagihan & jadwal pulang — kamu tinggal pilih kontak & kirim manual (kirim WA otomatis tanpa kamu pencet butuh WhatsApp Business API berbayar, tidak tersedia di aplikasi browser biasa).</div>
   </div>
 
+  <!-- NOTIFIKASI KONDISI EKONOMI (EIE, fase 3) -->
+  <div class="card">
+    <div class="card-title">🌦️ Notifikasi Kondisi Ekonomi</div>
+    <div class="setting-item">
+      <div><div class="setting-label">Insight kurs/inflasi/BI Rate/IHSG dsb</div><div class="setting-sub" id="eieNotifStatus">Belum aktif</div></div>
+      <label class="tgl-switch"><input type="checkbox" id="eieNotifToggle" onchange="toggleEieNotif(this.checked)"><span class="tgl-track"></span></label>
+    </div>
+    <div class="u-fs12 u-t2 u-lh15 u-mt8">Kalau aktif, insight baru dari kartu "Kondisi Ekonomi" di Dashboard (mis. kurs naik tajam, BI Rate naik & ada utang berbunga) juga muncul sebagai notifikasi toast — tidak cuma tampil kalau kamu buka Dashboard. Tidak mengirim apa pun ke luar aplikasi, murni notifikasi in-app.</div>
+  </div>
+
   <!-- GOOGLE DRIVE BACKUP -->
   <div class="card">
     <div class="card-title">☁️ Backup Otomatis ke Google Drive</div>
@@ -2262,6 +2272,22 @@ b.appendChild(closeBtn);
     <div class="lifeos-panel u-dnone" id="lifeOSPanel-review"><div id="lifeOSReviewPanel"></div></div>
     <div class="lifeos-panel u-dnone" id="lifeOSPanel-knowledge"><div id="lifeOSKnowledgeList"></div></div>
   </div>
+  <!-- ECONOMIC INTELLIGENCE ENGINE (fase 2, lihat
+       Economic-Intelligence-Engine-Technical-Design.md). Section di dalam
+       Dashboard Hub, sama seperti #lifeOSWrap di atas — diisi oleh
+       EIEDashboard.render() (dipanggil dari DashboardHub.render() di
+       dashboard-hub.js), yang lalu delegasi ke EIEInsightFeed.render(). -->
+  <div class="dashhub-wrap card u-mb12" id="eieWrap">
+    <div class="dashhub-cat-head">
+      <div class="dashhub-cat-icon">🌦️</div>
+      <div>
+        <div class="dashhub-cat-label">Kondisi Ekonomi</div>
+        <div class="dashhub-cat-desc">Dampak kurs/inflasi/BI Rate/IHSG ke keuanganmu, bukan berita mentah</div>
+      </div>
+    </div>
+    <div id="eieWeatherCard" style="padding:8px 2px;font-size:12.5px;opacity:.6;">Memuat kondisi ekonomi…</div>
+    <div id="eieInsightFeed"></div>
+  </div>
   <div class="dashhub-pinned-wrap" id="dashboardHubPinnedWrap">
     <div class="dashhub-cat-head">
       <div class="dashhub-cat-icon">📌</div>
@@ -2654,7 +2680,7 @@ b.appendChild(closeBtn);
 <script>document.write(MODAL_HTML[69]);</script><!-- modal:importShopExcelModal (Import dari Excel Shop) -->
 <script>document.write(MODAL_HTML[70]);</script><!-- modal:mergeProductModal (Gabungkan Harga Produk) -->
 
-<script src="app-bundle-b.min.js?v=342" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
-<script src="tangga-keuangan.js?v=342"></script>
+<script src="app-bundle-b.min.js?v=350" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
+<script src="tangga-keuangan.js?v=350"></script>
 </body>
 </html>
