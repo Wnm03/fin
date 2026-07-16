@@ -13015,7 +13015,7 @@ if(WorthIt.boughtViewOpen)WorthIt.renderBoughtList();
     <button type="button" class="dashhub-qa-btn" data-onclick="document.getElementById('dashHubSearchInput').focus()" aria-label="Cari">
       <span class="dashhub-qa-icon">🔍</span><span class="dashhub-qa-label">Cari</span>
     </button>
-    <button type="button" class="dashhub-qa-btn" data-onclick="showPage('ai',document.querySelectorAll('.nav-item')[3])" aria-label="Buka AI">
+    <button type="button" class="dashhub-qa-btn" data-onclick="showPage('ai')" aria-label="Buka AI">
       <span class="dashhub-qa-icon">🤖</span><span class="dashhub-qa-label">AI</span>
     </button>
   </div>
@@ -13230,9 +13230,9 @@ if(WorthIt.boughtViewOpen)WorthIt.renderBoughtList();
     <svg aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
     Shop<div class="nav-dot"></div>
   </button>
-  <button class="nav-item" aria-current="false" data-action="showPage" data-args='["ai", "$el"]' aria-label="Asisten AI">
-    <svg aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-    AI<div class="nav-dot"></div>
+  <button class="nav-item" aria-current="false" data-action="showPage" data-args='["aset", "$el"]' aria-label="Aset">
+    <svg aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+    Aset<div class="nav-dot"></div>
   </button>
   <button class="nav-item" aria-current="false" data-action="showPage" data-args='["carnotes", "$el"]'>
     <svg aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 17h14M5 17a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm14 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0zM5 17V9l2-5h10l2 5v8M5 9h14"/></svg>
@@ -14770,7 +14770,12 @@ if(_pinPromptResolve){const r=_pinPromptResolve;_pinPromptResolve=null;r(val);}
 function showPage(name,el){
 document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
 document.querySelectorAll('.nav-item').forEach(n=>{n.classList.remove('active');n.setAttribute('aria-current','false');});
-document.getElementById('page-'+name).classList.add('active');
+const pageEl=document.getElementById('page-'+name);
+if(!pageEl){
+console.warn(`showPage: halaman #page-${name} tidak ditemukan di DOM -- cek nama page/id (mis. typo, atau halaman belum dirender).`);
+return;
+}
+pageEl.classList.add('active');
 const activeBtn=el||document.querySelector(`.nav-item[onclick*="'${name}'"]`);
 if(activeBtn){activeBtn.classList.add('active');activeBtn.setAttribute('aria-current','page');}
 renderPageContent(name);
@@ -22352,7 +22357,7 @@ const genDate=new Date(r.generatedAt);
 box.innerHTML=`<div class="u-fs11 u-t2 u-mb8">🕒 Dibuat ${genDate.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})} ${genDate.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</div><div class="u-fs13 u-lh16">${AIWidget.mdToHtml(r.text)}</div>`;
 },
 openChat(){
-showPage('ai',document.querySelectorAll('.nav-item')[3]);
+showPage('ai');
 setTimeout(()=>{
 const input=document.getElementById('chatInput');
 if(input&&!input.value)input.value='Bahas lebih lanjut soal laporan analisis AI yang barusan dibuat di widget rekomendasi, saya mau tanya lebih detail.';
@@ -25963,7 +25968,7 @@ const PAGE_NAV_IDX = {
   'dashboard-hub': 0,
   keuangan: 1,
   shop: 2,
-  ai: 3,
+  aset: 3,
   carnotes: 4,
   pajak: 5,
   settings: 6,

@@ -29,10 +29,14 @@ Isu yang berdampak langsung ke pengalaman pengguna atau aksesibilitas.
    sebelum tahap ini — lihat komentar header file tsb).
    *Sumber: `KNOWN-ISSUES.md` §5.1.*
 
-3. **🔴 Ganti emoji `icon:` di `dashboard-hub-registry.js` (FEATURE_REGISTRY)
-   dan file data lain dengan SVG konsisten**, menyamakan gaya ikon di
-   seluruh aplikasi (Tahap 6 sudah menyelesaikan audit & satu
-   perbaikan aman di HTML; sisanya di JavaScript).
+3. ~~🔴 Ganti emoji `icon:` di `dashboard-hub-registry.js` (FEATURE_REGISTRY)
+   dengan SVG konsisten.~~ **✅ Selesai** — `feature-icons.js`
+   (`FeatureIcons.render()`) memetakan tiap emoji `icon:` ke markup SVG
+   inline bergaya sama dengan ikon lain di app (`stroke="currentColor"`,
+   `viewBox 0 0 24 24`), dipasang di `dashboard-hub.js`,
+   `dashboard-hub-search.js`, `dashboard-hub-favorit-view.js`. Emoji
+   lain di luar FEATURE_REGISTRY (widget AI/LifeOS Areas) sengaja tidak
+   disentuh — di luar scope §4.1.
    *Sumber: `KNOWN-ISSUES.md` §4.1.*
 
 ---
@@ -42,25 +46,38 @@ Isu yang berdampak langsung ke pengalaman pengguna atau aksesibilitas.
 Konsistensi & polish yang meningkatkan kualitas kode tanpa mengubah
 perilaku yang terlihat pengguna.
 
-4. **🟢 Migrasikan literal `border-radius` → token `var(--r-*)`** yang
-   sudah ada (16px→`--r-2xl`, 10px→`--r-md`, 20px→`--r-pill`,
-   12px→`--r-lg`). Value-preserving, pola sama seperti 71 deklarasi
-   yang sudah dimigrasi di Tahap 1.
+4. ~~🟢 Migrasikan literal `border-radius` → token `var(--r-*)`.~~ **✅
+   Selesai** — audit ulang `styles.css` tidak menemukan sisa literal
+   16px/10px/20px/12px yang belum pakai `var(--r-*)`.
    *Sumber: `KNOWN-ISSUES.md` §2.1.*
 
-5. **🟢 Definisikan & pakai token `--shadow-xs…xl`** untuk 17 nilai
-   `box-shadow` literal. Skala referensi sudah pernah disiapkan di
-   Tahap 1, tinggal diaplikasikan ke komponen.
+5. ~~🟢 Definisikan & pakai token `--shadow-*`.~~ **✅ Selesai** —
+   audit ulang: seluruh `box-shadow` netral literal sudah bertoken,
+   kecuali `.tgl-track::before` (thumb toggle) yang barusan
+   ditambahkan tokennya (`--shadow-toggle-thumb`, value-preserving).
+   Shadow ber-`var(--accent...)` (glow warna aksen/fokus, bukan
+   elevasi netral) sengaja dibiarkan literal karena bukan bagian skala
+   elevasi `--shadow-*`.
    *Sumber: `KNOWN-ISSUES.md` §2.2.*
 
 6. **🟢 Konsolidasikan durasi `transition` non-token** ke skala
    `--dur-fast/base/moderate/slow` yang sudah ada (saat ini ≥15
    variasi durasi/easing tersebar).
+
+   **Belum dikerjakan (beda dari #4/#5/#7/#10/#11 di atas)**: audit
+   ulang menemukan durasi literal yang tersisa (`.12s`, `.22s`, `0.3s`,
+   `0.4s`, `0.5s`, `0.6s` — progress bar, grafik bar, kasir tile, dll.)
+   **tidak match persis** ke token yang ada (`--dur-fast:100ms`,
+   `--dur-base:150ms`, `--dur-moderate:200ms`, `--dur-slow:250ms`).
+   Memaksa ke token terdekat akan MENGUBAH kecepatan animasi (bukan
+   value-preserving) — butuh review visual per komponen dulu sebelum
+   dieksekusi, sama seperti item #1.
    *Sumber: `KNOWN-ISSUES.md` §2.3.*
 
-7. **🟢 Perbesar area sentuh `.chip-btn`/`.qs-btn`** mendekati 44×44px
-   (tambah padding vertikal ±4–6px) tanpa mengubah ukuran visual
-   ikon/teks di dalamnya.
+7. ~~🟢 Perbesar area sentuh `.chip-btn`/`.qs-btn`.~~ **✅ Selesai** —
+   `.chip-btn` sudah `padding:11px 14px`, `.qs-btn` sudah
+   `padding:12px 12px`, keduanya sudah mendekati/mencapai 44px tinggi
+   efektif.
    *Sumber: `KNOWN-ISSUES.md` §1.2.*
 
 8. **🔴 Ripple berbasis koordinat sentuh asli** (bukan pulsa dari
@@ -78,30 +95,38 @@ Nice-to-have, dampak kecil terhadap pengguna akhir.
    8.5px) ke token `--fs-*` terdekat yang sudah ada.
    *Sumber: `KNOWN-ISSUES.md` §2.4.*
 
-10. **🟢 Tambahkan `max-width` container konsisten** untuk seluruh
-    `.page` (bukan hanya `#page-dashboard-hub`) di layar ≥1024px,
-    supaya kartu/list tidak melebar penuh di desktop.
+10. ~~🟢 Tambahkan `max-width` container konsisten untuk seluruh
+    `.page`.~~ **✅ Selesai Sprint 2 Tahap 15** — lihat komentar di
+    `styles.css` dekat rule `.page{max-width:1080px;...}` dalam
+    `@media (min-width:1024px)`.
     *Sumber: `KNOWN-ISSUES.md` §3.1.*
 
-11. **🟢 Tambahkan hover/elevation pada tap-target sekunder** lain
-    (`.stat-box.clickable`, `.budget-item.clickable`, dll.) yang
-    sengaja dilewati di Tahap 7 supaya perubahan tetap minimal.
+11. ~~🟢 Tambahkan hover/elevation pada tap-target sekunder lain.~~
+    **✅ Selesai** — `.stat-box.clickable`, `.cobek-stat.clickable`,
+    `.bbm-stat.clickable`, `.budget-sum-box.clickable`,
+    `.budget-item.clickable` sudah dapat `:hover{box-shadow:var(--shadow-hover-sm)}`
+    di `@media (min-width:1024px)`.
     *Sumber: `KNOWN-ISSUES.md` §5.3.*
 
 ---
 
-## Ringkasan
+## Ringkasan (diperbarui setelah audit ulang)
 
-| Prioritas | Jumlah item | 🟢 CSS-only | 🟡 Token warna | 🔴 Butuh JS |
-|---|---|---|---|---|
-| High | 3 | 0 | 1 | 2 |
-| Medium | 5 | 4 | 0 | 1 |
-| Low | 3 | 3 | 0 | 0 |
-| **Total** | **11** | **7** | **1** | **3** |
+| # | Item | Status |
+|---|---|---|
+| 1 | Kontras `--text3` 🟡 | ⏳ Belum — butuh review visual per tema |
+| 2 | Exit animation overlay/sheet 🔴 | ✅ Selesai (Tahap 10) |
+| 3 | Icon SVG FEATURE_REGISTRY 🔴 | ✅ Selesai |
+| 4 | Border-radius → token 🟢 | ✅ Selesai |
+| 5 | Box-shadow → token 🟢 | ✅ Selesai |
+| 6 | Konsolidasi durasi transition 🟢 | ⏳ Belum — bukan value-preserving, butuh review visual |
+| 7 | Touch target chip-btn/qs-btn 🟢 | ✅ Selesai |
+| 8 | Ripple berbasis koordinat 🔴 | ⏳ Belum — butuh JS |
+| 9 | Font-size kecil → token 🟢 | ⏳ Belum — beberapa nilai (8.5/10.5/11.5px) tidak match token manapun |
+| 10 | Container max-width konsisten 🟢 | ✅ Selesai (Sprint 2 Tahap 15) |
+| 11 | Hover/elevation tap-target sekunder 🟢 | ✅ Selesai |
 
-**Catatan implementasi**: seluruh item 🟢/🟡 dapat dikerjakan sebagai
-"Tahap 9" mengikuti pola kerja Tahap 1–8 (baseline tetap, perubahan
-minimal per iterasi, `node --test` wajib 1228/1228 PASS sebelum &
-sesudah). Item 🔴 membutuhkan sesi terpisah yang secara eksplisit
-mengizinkan perubahan JavaScript, di luar mandat "tanpa mengubah kode"
-yang berlaku untuk v1.0.
+**7 dari 11 item sudah selesai.** Sisa 4 item (1, 6, 8, 9) sengaja
+belum disentuh karena masing-masing butuh keputusan/verifikasi visual
+(1, 6, 9) atau perubahan JavaScript di luar mandat CSS-only (8) —
+bukan sekadar belum sempat dikerjakan.

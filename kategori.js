@@ -156,7 +156,8 @@ save();renderCatList();populateSubSelect('fSub','fKat');populateSubSelect('kfSub
 function toggleCatGroup(catId){
 const el=document.getElementById('subs_'+catId);
 const arrow=document.getElementById('arrow_'+catId);
-if(el){el.classList.toggle('open');arrow.classList.toggle('open');}
+if(el)el.classList.toggle('open');
+if(arrow)arrow.classList.toggle('open');
 }
 function filterCat(f,el){
 curCatFilter=f;

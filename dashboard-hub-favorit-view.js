@@ -76,7 +76,7 @@ const DashboardHubFavoritView = {
     list.innerHTML = entries.map((it) => `
       <div class="dashhub-feature-card dashhub-feature-card--icon" data-action="DashboardHub.open" data-args='${escapeHtml(JSON.stringify([it.key]))}' title="${escapeHtml(it.desc || '')}">
         <div class="dashhub-fav-star is-fav" data-stop data-action="DashboardHubFavoritView.toggle" data-args='${escapeHtml(JSON.stringify([it.key]))}' role="button" tabindex="0" aria-label="${'Hapus dari favorit: ' + escapeHtml(it.label)}">★</div>
-        <div class="dashhub-feature-icon">${it.icon || '⭐'}</div>
+        <div class="dashhub-feature-icon">${(typeof FeatureIcons !== 'undefined') ? FeatureIcons.render(it.icon || '⭐') : (it.icon || '⭐')}</div>
         <div class="dashhub-feature-name">${escapeHtml(it.label)}</div>
       </div>
     `).join('');

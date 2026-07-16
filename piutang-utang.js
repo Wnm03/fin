@@ -78,6 +78,7 @@ return(b.nilai||0)-(a.nilai||0);
 });
 },
 renderList(){
+if(typeof PiutangUtangInsight!=='undefined')PiutangUtangInsight.render();
 const el=document.getElementById('piutangList');
 if(!el)return;
 const list=D.piutang||[];
@@ -189,6 +190,7 @@ Debt.renderList();renderKekayaanBersih();hitungZakatMaal();renderBillList();chec
 totalValue(){return(D.debts||[]).filter(d=>!d.lunas).reduce((s,d)=>s+(d.nilai||0),0);},
 totalCicilanBulanan(){return(D.debts||[]).filter(d=>!d.lunas).reduce((s,d)=>s+(d.cicilanBulanan||0),0);},
 renderList(){
+if(typeof PiutangUtangInsight!=='undefined')PiutangUtangInsight.render();
 const el=document.getElementById('debtList');
 if(!el)return;
 const list=D.debts||[];

@@ -94,6 +94,7 @@ if(log[i].status==='disewa')disewaDays+=days;
 return{totalDays,disewaDays,pct:totalDays>0?Math.round((disewaDays/totalDays)*100):null,log};
 },
 render(){
+if(typeof SewaKiosRenovInsight!=='undefined')SewaKiosRenovInsight.render();
 const el=document.getElementById('sewaKiosList');
 if(!el)return;
 if(!D.sewaKios.units.length){

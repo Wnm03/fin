@@ -13,14 +13,16 @@
 // setCnTab/setPajakTab/toggleStgGroup yang sudah ada — tidak menulis ulang
 // logic halaman manapun (blueprint §5, §7).
 //
-// PENTING — Opsi 1 (keputusan sesi lampau, DIAMENDEMEN sesi ini): semula
+// PENTING — Opsi 1 (keputusan sesi lampau, DIAMENDEMEN 2x): semula
 // dashboard-hub-registry.js TIDAK diubah, semua kategori tanpa nav-item
 // sendiri (Bisnis, Aset, Personal, Backup) dinavigasikan ke tab/kartu di
-// salah satu dari 7 page ber-nav-item. Sesi ini kategori "Aset" DIPISAH jadi
-// page:'aset' TERSENDIRI (lihat page-aset di index.html/app_production.html)
-// — tetap TIDAK menambah nav-item bottom-nav baru (tetap 7 nav-item nyata:
-// dashboard/keuangan/shop/ai/carnotes/pajak/settings), dibuka murni lewat
-// showPage('aset', null) dari kartu Dashboard Hub. FEATURE_REGISTRY[].navIdx
+// salah satu dari 7 page ber-nav-item. Sesi berikutnya kategori "Aset"
+// DIPISAH jadi page:'aset' TERSENDIRI (lihat page-aset di
+// index.html/app_production.html), awalnya TANPA nav-item bottom-nav
+// sendiri. Sesi INI: nav-item bottom-nav slot index 3 (dulu "AI") DIGANTI
+// jadi "Aset" — jadi sekarang page:'aset' PUNYA nav-item sendiri, dan
+// page:'ai' yang TIDAK LAGI punya nav-item sendiri (dibuka murni lewat
+// showPage('ai', null) dari widget/kartu AI). FEATURE_REGISTRY[].navIdx
 // TETAP index KATEGORI taksonomi §1 (0-9), BUKAN index nav-item bottom-nav —
 // memakai cat.navIdx langsung ke showPage(page, navItems[cat.navIdx]) akan
 // salah highlight nav-item utk kategori yang tidak py nav-item sendiri.
@@ -32,14 +34,15 @@ const PAGE_NAV_IDX = {
   'dashboard-hub': 0,
   keuangan: 1,
   shop: 2,
-  ai: 3,
+  aset: 3,
   carnotes: 4,
   pajak: 5,
   settings: 6,
-  // 'aset' SENGAJA tidak dimasukkan: halaman ini murni dibuka lewat
-  // showPage('aset', null) dari kartu Dashboard Hub / goToList lintas-halaman,
-  // TIDAK punya nav-item bottom-nav sendiri (tetap 7 nav-item nyata di DOM).
-  // navItems[PAGE_NAV_IDX['aset']] otomatis jadi undefined -> showPage()
+  // 'ai' SENGAJA tidak dimasukkan lagi: slot nav-item index 3 sudah diganti
+  // jadi "Aset" (lihat index.html/app_production.html bottom-nav). Halaman
+  // 'ai' sekarang murni dibuka lewat showPage('ai', null) dari kartu
+  // Dashboard Hub / widget AI, TIDAK punya nav-item bottom-nav sendiri.
+  // navItems[PAGE_NAV_IDX['ai']] otomatis jadi undefined -> showPage()
   // dipanggil dgn el=null, aman (lihat showPage() di modal-navigasi.js).
 };
 
@@ -136,8 +139,19 @@ function dashHubNavigateToFeature(target) {
 // dengan _dashHubIsFav() di atas) supaya file ini tetap aman dipakai
 // tests/dashboard-hub.test.js yang me-load dashboard-hub.js sendirian tanpa
 // D/akun.js/format-tema.js ikut di-load.
-function _dashHubHeroMonthTx() {
-  if (typeof D === 'undefined' || !D.transactions) return { inc: 0, exp: 0 };
+// _dashHubMonthTxShared() — SATU-SATUNYA tempat filter+agregasi transaksi
+// bulan berjalan dihitung untuk seluruh baris Dashboard Hub (Hero, Summary,
+// Analytics). Sebelumnya logika ini di-copy-paste identik 3x (lihat
+// DASHBOARD-DEDUP.md) karena masing-masing Tahap sengaja tidak menyentuh
+// Tahap sebelumnya — risikonya kalau satu diedit tanpa yang lain, angka yang
+// tampil di 3 tempat itu bisa jadi beda-beda padahal sama-sama mengklaim
+// "Bulan Ini". Konsolidasi ini TIDAK mengubah signature/perilaku
+// _dashHubHeroMonthTx()/_dashHubSummaryMonthTx()/_dashHubAnalyticsMonthTx()
+// (nama & bentuk return per fungsi tetap sama, cuma isinya sekarang
+// delegasi ke sini) — DashboardHubHero/Summary/Analytics tetap 3 object
+// terpisah seperti sebelumnya (lihat test "...tetap terpisah dari...").
+function _dashHubMonthTxShared() {
+  if (typeof D === 'undefined' || !D.transactions) return { inc: 0, exp: 0, count: 0 };
   const now = new Date(), m = now.getMonth(), y = now.getFullYear();
   const txM = D.transactions.filter((t) => {
     const d = new Date(t.date);
@@ -145,6 +159,11 @@ function _dashHubHeroMonthTx() {
   });
   const inc = txM.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0);
   const exp = txM.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+  return { inc, exp, count: txM.length };
+}
+
+function _dashHubHeroMonthTx() {
+  const { inc, exp } = _dashHubMonthTxShared();
   return { inc, exp };
 }
 
@@ -188,15 +207,7 @@ const DashboardHubHero = {
 // DashboardHubHero di atas) supaya file ini tetap aman dipakai
 // tests/dashboard-hub.test.js yang me-load dashboard-hub.js sendirian.
 function _dashHubSummaryMonthTx() {
-  if (typeof D === 'undefined' || !D.transactions) return { inc: 0, exp: 0, count: 0 };
-  const now = new Date(), m = now.getMonth(), y = now.getFullYear();
-  const txM = D.transactions.filter((t) => {
-    const d = new Date(t.date);
-    return d.getMonth() === m && d.getFullYear() === y;
-  });
-  const inc = txM.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-  const exp = txM.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-  return { inc, exp, count: txM.length };
+  return _dashHubMonthTxShared();
 }
 
 const DashboardHubSummary = {
@@ -239,15 +250,7 @@ const DashboardHubSummary = {
 // di atas) supaya file ini tetap aman dipakai
 // tests/dashboard-hub.test.js yang me-load dashboard-hub.js sendirian.
 function _dashHubAnalyticsMonthTx() {
-  if (typeof D === 'undefined' || !D.transactions) return { inc: 0, exp: 0, count: 0 };
-  const now = new Date(), m = now.getMonth(), y = now.getFullYear();
-  const txM = D.transactions.filter((t) => {
-    const d = new Date(t.date);
-    return d.getMonth() === m && d.getFullYear() === y;
-  });
-  const inc = txM.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-  const exp = txM.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-  return { inc, exp, count: txM.length };
+  return _dashHubMonthTxShared();
 }
 
 const DashboardHubAnalytics = {
@@ -296,7 +299,7 @@ const DashboardHub = {
       return `
       <div class="dashhub-cat" id="dashHubCat-${escapeHtml(cat.key)}">
         <div class="dashhub-cat-head" data-action="toggleCardCollapse" data-args='${escapeHtml(JSON.stringify([collapseKey, '$event']))}'>
-          <div class="dashhub-cat-icon">${cat.icon}</div>
+          <div class="dashhub-cat-icon">${(typeof FeatureIcons !== 'undefined') ? FeatureIcons.render(cat.icon) : cat.icon}</div>
           <div>
             <div class="dashhub-cat-label">${escapeHtml(cat.label)}<span class="dashhub-cat-badge">${cat.features.length}</span></div>
             <div class="dashhub-cat-desc">${escapeHtml(cat.desc)}</div>
@@ -308,7 +311,7 @@ const DashboardHub = {
             ${cat.features.map(f => `
               <div class="dashhub-feature-card dashhub-feature-card--icon" data-action="DashboardHub.open" data-args='${escapeHtml(JSON.stringify([f.key]))}' title="${escapeHtml(f.desc || '')}">
                 <div class="dashhub-fav-star${_dashHubIsFav(f.key) ? ' is-fav' : ''}" data-stop data-action="DashboardHubFavoritView.toggle" data-args='${escapeHtml(JSON.stringify([f.key]))}' role="button" tabindex="0" aria-label="${_dashHubIsFav(f.key) ? 'Hapus dari favorit: ' + escapeHtml(f.label) : 'Tambah ke favorit: ' + escapeHtml(f.label)}">★</div>
-                <div class="dashhub-feature-icon">${f.icon || cat.icon}</div>
+                <div class="dashhub-feature-icon">${(typeof FeatureIcons !== 'undefined') ? FeatureIcons.render(f.icon || cat.icon) : (f.icon || cat.icon)}</div>
                 <div class="dashhub-feature-name">${escapeHtml(f.label)}</div>
               </div>
             `).join('')}

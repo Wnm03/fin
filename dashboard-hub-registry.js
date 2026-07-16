@@ -47,8 +47,8 @@
 //   page:'shop'     -> 'kasir'|'jual'|'etalase'|'produsen'|'riwayat'|'pelanggan' (setShopTab, cobek-io.js)
 //   page:'carnotes' -> 'bbm' | 'servis'           (setCnTab, vehicle-core.js)
 //   page:'pajak'    -> 'zakat' | 'pajak'           (setPajakTab, features-sheets-pwa-selftest.js)
-//   page:'aset'     -> (tanpa tab; halaman tunggal, dibuka lewat showPage('aset', null) —
-//                        TIDAK punya nav-item bottom-nav sendiri, lihat PAGE_NAV_IDX di dashboard-hub.js)
+//   page:'aset'     -> (tanpa tab; halaman tunggal, PUNYA nav-item bottom-nav sendiri
+//                        (slot index 3, dulu "AI") sejak update ini, lihat PAGE_NAV_IDX di dashboard-hub.js)
 //
 // `icon` per fitur/kategori SENGAJA masih emoji (bukan nama ikon SVG
 // Feather/Lucide dari Design System §9) — emoji ini adalah yang SUDAH
@@ -170,7 +170,7 @@ const FEATURE_REGISTRY = [
       { key: 'per-anak', label: 'Perkembangan Anak', icon: '👶', desc: 'Milestone tumbuh kembang anak', target: { page: 'settings', group: 'stgGroup3', goTo: 'anakList' } },
       { key: 'per-worthit', label: 'Worth It? & Prioritas Belanja', icon: '🤔', desc: 'Cek layak beli & daftar prioritas belanja', target: { action: 'WorthIt.open' } },
       { key: 'per-self-reward', label: 'Self Reward', icon: '🎁', desc: 'Cek kelayakan & level self reward sesuai kondisi finansial', target: { action: 'SelfRewardView.open' } },
-      { key: 'per-piutang-utang', label: 'Piutang & Utang', icon: '🤝', desc: 'Catatan piutang, utang, strategi pelunasan', target: { page: 'pajak', tab: 'zakat', goTo: 'piutangList' } },
+      { key: 'per-piutang-utang', label: 'Piutang & Utang', icon: '🤝', desc: 'Catatan piutang, utang, strategi pelunasan', target: { page: 'keuangan', tab: 'kelola', goTo: 'piutangList' } },
       { key: 'per-pengingat', label: 'Pengingat', icon: '🔔', desc: 'Pengingat umum keluarga', target: { page: 'settings', group: 'stgGroup3', goTo: 'reminderList' } },
     ],
   },

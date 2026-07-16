@@ -111,6 +111,13 @@ return null;
 // "Subtotal ..." atau "Total ongkos kirim" dsb (butuh kata "total" LANGSUNG diikuti salah satu
 // kata kunci di bawah, bukan cuma mengandung substring "total").
 const RECEIPT_TOTAL_LABEL_RE=/total\s*(belanja|tagihan|pembayaran|bayar|(?:yang\s*)?harus\s*dibayar)\b/i;
+// BUGFIX: catatan transaksi (txNote) diisi dari "baris pertama" hasil OCR yang bukan angka murni.
+// Itu cocok untuk struk kasir fisik (baris pertama = nama toko), tapi SALAH untuk screenshot
+// marketplace (Tokopedia/Shopee/dll) seperti "Detail Pesanan" -- baris paling atas di situ malah
+// jam status bar HP ("20:53"), judul halaman, nomor pesanan, atau "Lihat Invoice", bukan nama
+// barang. Akibatnya catatan hasil scan jadi terisi teks acak, bukan nama produk yang dibeli.
+// Fix: skip baris "chrome" umum ini saat mencari firstLine, supaya jatuh ke baris nama produk.
+const RECEIPT_NOISE_LINE_RE=/^\d{1,2}[:.]\d{2}$|^\d{1,3}\s*%$|detail\s*pesanan|no\.?\s*pesanan|lihat\s*invoice|tanggal\s*pembelian|^selesai$|^diproses$|^dikirim$|^dibatalkan$|detail\s*produk|beli\s*lagi|chat\s*penjual|info\s*pengiriman|\bwib\b|\d{1,2}\s+(jan(?:uari)?|feb(?:ruari)?|mar(?:et)?|apr(?:il)?|mei|jun(?:i)?|jul(?:i)?|agu(?:stus)?|sep(?:t|tember)?|okt(?:ober)?|nov(?:ember)?|des(?:ember)?)\s+\d{4}/i;
 function scanReceipt(amtId,dateId,noteId){
 const inp=document.createElement('input');
 inp.type='file'; inp.accept='image/*';
@@ -265,7 +272,12 @@ jumlahUnit:extractLabeledAmount(text,PORTFOLIO_LABELS.jumlahUnit)
 function extractBitgetFields(text){
 const nilaiM=text.match(/[≈=]\s*([\d][\d.,]*)\s*idr/i);
 const qtyM=text.match(/total\s*aset[\s\S]{0,15}?(\d+\.\d+)/i);
-const impasM=text.match(/([\d][\d.,]*)\s*usdt/i);
+// BUGFIX: regex lama pakai \s* yang ikut nangkep newline, jadi bisa nyambungin jam
+// di status bar ("20:35") dengan baris "USDT" di bawahnya -> salah kebaca "35 USDT".
+// Sekarang diprioritaskan cari label "Harga impas" dulu (baris label & nilai boleh
+// terpisah newline, tapi antara angka & "USDT" wajib satu baris/spasi saja).
+const impasLabelM=text.match(/harga\s*impas[\s\S]{0,20}?([\d][\d.,]*)[ \t]*usdt/i);
+const impasM=impasLabelM||text.match(/([\d][\d.,]*)[ \t]*usdt\b/i);
 return{
 nilai:nilaiM?normalizeOcrNumber(nilaiM[1]):null,
 jumlahUnit:qtyM?normalizeOcrNumber(qtyM[1]):null,
@@ -309,7 +321,9 @@ const afterLabel=lines[i].replace(ASSET_NAME_LABEL_RE,'').trim();
 const candidate=(afterLabel.length>2?afterLabel:lines[i+1])||'';
 if(candidate.length>2&&/[a-zA-Z]{3,}/.test(candidate))return candidate.slice(0,60);
 }
-for(const l of lines.slice(0,8)){
+// BUGFIX: window 8 baris ketinggalan nama produk asli yang sering ada di baris
+// ke-9/10 (setelah breadcrumb folder + ringkasan angka). Diperlebar ke 20 baris.
+for(const l of lines.slice(0,20)){
 if(l.length<=2||l.length>60)continue;
 if(!/[a-zA-Z]{3,}/.test(l))continue;
 const clean=l.replace(/[^a-zA-Z0-9\s]/g,'').trim();
@@ -457,7 +471,7 @@ else if(nums.length){amt=Math.round(Math.max(...nums));const el=document.getElem
 let isoDate=null;
 const dm=text.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
 if(dm){let[,d,m,y]=dm;if(y.length===2)y='20'+y;const iso=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;if(!isNaN(new Date(iso).getTime())){isoDate=iso;const el=document.getElementById('txDate');if(el)el.value=iso;}}
-const firstLine=text.split('\n').map(l=>l.trim()).find(l=>l.length>3&&!/^\d+$/.test(l));
+const firstLine=text.split('\n').map(l=>l.trim()).find(l=>l.length>3&&!/^\d+$/.test(l)&&!RECEIPT_NOISE_LINE_RE.test(l)&&(l.match(/[a-zA-Z]/g)||[]).length>=8);
 if(firstLine){const el=document.getElementById('txNote');if(el)el.value=firstLine.slice(0,60);}
 const guessedCat=guessCategoryFromReceiptText(text);
 const catField=document.getElementById('txCat');
@@ -580,14 +594,16 @@ return null;
 // cuma dulu kepisah gara-gara ikut nomor batch lama. Dipakai WorthIt.scanCheckout()/scanCheckoutList()
 // di worthit.js lewat scanWorthItCheckout(mode). Bergantung ke ocrRecognize()/scanErrorMessage()
 // (sudah di file yang sama sekarang) & WorthIt.* (worthit.js, diakses lewat variabel global saat runtime).
-const CHECKOUT_UI_EXCLUDE_RE=/checkout|keranjang|alamat|pengiriman|^toko\b|kargo|estimasi|\btiba\b|gratis|pengembalian|proteksi|rusak\s*total|asuransi|kasih\s*catatan|tambah\s*catatan|belanjaanmu|hemat\s*rp|dapat\s*bonus|tagihan|bayar\s*sekarang|^stok|^sisa|^plus\b|pembayaran|voucher|kupon|rincian|subtotal|admin|lihat\s*semua|beli\s*sekalian|rating\s*tinggi|terjadi\s*kesalahan|coba\s*lagi/i;
+// BUGFIX: badge pendek seperti "Pasti Ori" belum masuk exclude list, jadi suka
+// ketuker jadi "nama produk" padahal cuma label kecil di bawah nama produk asli.
+const CHECKOUT_UI_EXCLUDE_RE=/checkout|keranjang|alamat|pengiriman|^toko\b|kargo|estimasi|\btiba\b|gratis|pengembalian|proteksi|rusak\s*total|asuransi|kasih\s*catatan|tambah\s*catatan|belanjaanmu|hemat\s*rp|dapat\s*bonus|tagihan|bayar\s*sekarang|^stok|^sisa|^plus\b|pembayaran|voucher|kupon|rincian|subtotal|admin|lihat\s*semua|beli\s*sekalian|rating\s*tinggi|terjadi\s*kesalahan|coba\s*lagi|pasti\s*ori|^ori\s*100|100%?\s*ori|garansi\s*resmi|cod\s*tersedia|^cashback\b|flash\s*sale|^termurah\b|^terlaris\b|best\s*seller|stok\s*terbatas|barang\s*ready/i;
 const CHECKOUT_ADDR_RE=/\bjl\.?\b|\balamat\b|\bkecamatan\b|\bkelurahan\b|\bkabupaten\b/i;
 const CHECKOUT_RATING_PREFIX_RE=/^\d{1,2}[.,]\d\s+(?=[A-Za-z])/;
 function guessCheckoutItemName(text){
 const lines=String(text).split('\n').map(l=>l.trim()).filter(Boolean);
 let priceIdx=lines.findIndex(l=>/rp\s?\d/i.test(l));
 const searchLines=priceIdx>=0?lines.slice(Math.max(0,priceIdx-5),priceIdx):lines;
-let best=null;
+let best=null,bestLetters=0;
 for(const raw of searchLines){
 const l=raw.replace(CHECKOUT_RATING_PREFIX_RE,'');
 if(l.length<8||l.length>110)continue;
@@ -595,7 +611,11 @@ if(/^rp\b/i.test(l)||/^\d/.test(l))continue;
 if(CHECKOUT_ADDR_RE.test(l)||CHECKOUT_UI_EXCLUDE_RE.test(l))continue;
 const letters=(l.match(/[a-zA-Z]/g)||[]).length;
 if(letters<8)continue;
-best=l;
+// BUGFIX: dulu ambil kandidat TERAKHIR di window, jadi badge pendek yang muncul
+// setelah nama produk asli (co. "Pasti Ori") bisa menimpa hasil yang benar.
+// Sekarang ambil kandidat dengan jumlah huruf TERBANYAK, karena nama produk
+// asli hampir selalu lebih panjang/detail dibanding badge/label kecil.
+if(letters>bestLetters){best=l;bestLetters=letters;}
 }
 if(best)return best.slice(0,80);
 for(const raw of lines){
@@ -641,8 +661,13 @@ return WORTHIT_KEBUTUHAN_KEYWORDS.test(String(text).toLowerCase())?'kebutuhan':'
 // Ambil kemunculan TERAKHIR karena biasanya baris ini muncul 2x (ringkasan
 // & footer sebelum tombol Bayar) — yang terakhir paling dekat ke tombol
 // bayar, jadi paling representatif.
-const CHECKOUT_TOTAL_RE=/total\s*(?:tagihan|pembayaran|bayar|(?:yang\s*)?harus\s*dibayar)\b[^\d\n]{0,25}rp\s?([\d][\d.,]*)/gi;
-const CHECKOUT_TOTAL_FALLBACK_RE=/grand\s*total[^\d\n]{0,25}rp\s?([\d][\d.,]*)/gi;
+// BUGFIX: dulu [^\d\n]{0,25} melarang newline antara label & "Rp", padahal di
+// banyak screenshot (co. Tokopedia) "Total Tagihan" dan "Rp4.041.450" itu dua
+// baris terpisah -> regex gak pernah match, hasilnya selalu null. Newline
+// sekarang diperbolehkan di celah itu (digit tetap dilarang biar gak accidentally
+// lompatin angka lain yang gak berhubungan).
+const CHECKOUT_TOTAL_RE=/total\s*(?:tagihan|pembayaran|bayar|(?:yang\s*)?harus\s*dibayar)\b[^\d]{0,25}rp\s?([\d][\d.,]*)/gi;
+const CHECKOUT_TOTAL_FALLBACK_RE=/grand\s*total[^\d]{0,25}rp\s?([\d][\d.,]*)/gi;
 function guessCheckoutTotalTagihan(text){
 const full=String(text);
 let matches=[...full.matchAll(CHECKOUT_TOTAL_RE)];

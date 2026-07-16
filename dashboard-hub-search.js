@@ -89,7 +89,7 @@ const DashboardHubSearch = {
     const favKeys = (typeof DashboardHubFavorit !== 'undefined') ? DashboardHubFavorit.getFavoritKeys() : [];
     el.innerHTML = matches.map((m) => `
       <div class="dashhub-search-item" data-action="DashboardHubSearch.select" data-args='${escapeHtml(JSON.stringify([m.key]))}'>
-        <div class="dashhub-search-item-icon">${m.icon || m.catIcon || ''}</div>
+        <div class="dashhub-search-item-icon">${(typeof FeatureIcons !== 'undefined') ? FeatureIcons.render(m.icon || m.catIcon || '') : (m.icon || m.catIcon || '')}</div>
         <div>
           <div class="dashhub-search-item-label">${escapeHtml(m.label)}</div>
           <div class="dashhub-search-item-desc">${escapeHtml(m.desc)} · ${escapeHtml(m.catLabel)}</div>

@@ -301,6 +301,7 @@ document.getElementById('txCicilanHistoryBtn').style.display='none';
 ['txCicilanNama','txCicilanTotal','txCicilanPerBulan','txCicilanBunga','txLanggananNama'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
 document.getElementById('txCicilanTenor').value='6';
 document.getElementById('txCicilanShared').checked=false;
+const txCicilanIsKprEl=document.getElementById('txCicilanIsKpr');if(txCicilanIsKprEl)txCicilanIsKprEl.checked=false;
 document.getElementById('txCicilanSharedPct').value=50;
 document.getElementById('txCicilanSharedNominal').value='';
 cicilanSharedLastInput='pct';
@@ -445,6 +446,7 @@ document.getElementById('txCicilanTenor').value=linkedBill.tenor||6;
 document.getElementById('txCicilanBunga').value=linkedBill.bunga||0;
 document.getElementById('txCicilanDue').value=linkedBill.nextDue;
 document.getElementById('txCicilanShared').checked=!!linkedBill.shared;
+const txCicilanIsKprEditEl=document.getElementById('txCicilanIsKpr');if(txCicilanIsKprEditEl)txCicilanIsKprEditEl.checked=!!linkedBill.isKpr;
 document.getElementById('txCicilanSharedPct').value=linkedBill.sharedPct||50;
 document.getElementById('txCicilanSharedNominal').value=linkedBill.shared?linkedBill.amount:'';
 document.getElementById('txCicilanSharedWrap').style.display=linkedBill.shared?'block':'none';
@@ -569,7 +571,9 @@ const sh=getCicilanSharedMine(perBulan);
 const cicilanShared=sh.shared;
 const cicilanSharedPct=sh.pct;
 const perBulanMine=sh.mine;
-Object.assign(existingBill,{name:nama,amount:perBulanMine,nextDue:due,category:cat,accountId:accId,note,totalHarga:total,tenor,bunga,shared:cicilanShared,sharedPct:cicilanSharedPct,totalAmount:cicilanShared?total:null});
+const txCicilanIsKprSaveEl=document.getElementById('txCicilanIsKpr');
+const isKpr=txCicilanIsKprSaveEl?txCicilanIsKprSaveEl.checked:false;
+Object.assign(existingBill,{name:nama,amount:perBulanMine,nextDue:due,category:cat,accountId:accId,note,totalHarga:total,tenor,bunga,shared:cicilanShared,sharedPct:cicilanSharedPct,totalAmount:cicilanShared?total:null,isKpr});
 Object.assign(existingTx,{amount:perBulanMine,category:cat,subcategory:subCat,accountId:accId,date,note:nama+(note?' - '+note:'')});
 } else {
 Object.assign(existingTx,{category:cat,subcategory:subCat,accountId:accId,date,note:nama+(note?' - '+note:'')});
@@ -613,7 +617,9 @@ if(sisaTenor>0){
 const nextDueDate=new Date(due);
 nextDueDate.setMonth(nextDueDate.getMonth()+1);
 const nextDue=nextDueDate.toISOString().split('T')[0];
-D.bills.push({id:billId,name:nama,amount:perBulanMine,nextDue,freq:'bulanan',sisaTenor,category:cat,subcategory:subCat,accountId:accId,note:note,kind:'cicilan',totalHarga:total,tenor,bunga,shared:cicilanShared,sharedPct:cicilanSharedPct,totalAmount:cicilanShared?total:null});
+const txCicilanIsKprNewEl=document.getElementById('txCicilanIsKpr');
+const isKprNew=txCicilanIsKprNewEl?txCicilanIsKprNewEl.checked:false;
+D.bills.push({id:billId,name:nama,amount:perBulanMine,nextDue,freq:'bulanan',sisaTenor,category:cat,subcategory:subCat,accountId:accId,note:note,kind:'cicilan',totalHarga:total,tenor,bunga,shared:cicilanShared,sharedPct:cicilanSharedPct,totalAmount:cicilanShared?total:null,isKpr:isKprNew});
 }
 D.transactions.push({id:billId+1,type:'expense',amount:perBulanMine,category:cat,subcategory:subCat,accountId:accId,payMethod:'cicilan',billLinkId:sisaTenor>0?billId:null,note:nama+(note?' - '+note:''),date});
 applyTxStockFromTx(nama);

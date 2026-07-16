@@ -1,7 +1,7 @@
 // Fungsi render (85 fungsi) dipisah dari app_production.html untuk pemerataan ukuran file.
 // Semua fungsi ini murni definisi function global (bukan module), jadi tetap bisa dipanggil dari file manapun
 // yang loadnya belakangan (sama seperti modules-calc.js/features-*.js).
-const MODULE_RENDER_VERSION='fix-udnone-important-css-2026-07-48';
+const MODULE_RENDER_VERSION='feature-icons-svg-342';
 
 function renderPageContent(name){
 if(name==='dashboard')renderDashboard();
@@ -28,10 +28,12 @@ const bal=recalcAccBalance(a.id);
 const off=a.includeInBalance===false;
 const linked=!off&&isAccLinkedToAsset(a.id);
 const badge=off?' <span class="u-fs12t2">(off)</span>':(linked?' <span class="u-fs12t2">(via Aset)</span>':'');
+const jenisLabel=a.jenis==='dikunci'?'🔒 Dikunci':(a.jenis==='investasi'?'📈 Investasi':'');
+const jenisBadge=jenisLabel?` <span class="u-fs12t2">${jenisLabel}</span>`:'';
 return`<div class="acc-card" style="${off||linked?'opacity:.55':''}" data-action="openAccModal" data-args="${escapeHtml(JSON.stringify([i]))}">
       <button class="acc-card-del" data-stop="1" data-action="delAcc" data-args="${escapeHtml(JSON.stringify([i]))}" aria-label="Hapus">🗑</button>
       <div class="acc-card-icon">${a.emoji}</div>
-      <div class="acc-card-name">${escapeHtml(a.name)}${badge}</div>
+      <div class="acc-card-name">${escapeHtml(a.name)}${badge}${jenisBadge}</div>
       <div class="acc-card-bal ${bal<0?'red':'green'}">${bal<0?'-':''}${fmt(Math.abs(bal))}</div>
     </div>`;
 }).join('');
@@ -615,6 +617,10 @@ if(document.getElementById('page-dashboard'))renderDashboard();
 }
 
 function renderDashboard(){
+// Dashboard = halaman default saat boot -- panggil di sini juga (selain di showPage(),
+// modal-navigasi.js) supaya kartu #aiSmartInsightCard (ai-smart-insight.js) sudah terisi
+// SEBELUM user sempat pindah tab pertama kali, bukan cuma nunggu showPage() berikutnya.
+if(typeof AiSmartInsight!=='undefined')AiSmartInsight.render();
 LifeBalance.render();
 // Konteks bulan-berjalan dihitung SEKALI di sini (dulu FinCoach & dashBillCard hitung
 // txM/inc/exp/billStats sendiri-sendiri lagi walau datanya sama persis dengan yang dihitung di
@@ -726,6 +732,7 @@ cardEl.classList.add('u-dnone');cardEl.style.display='none';
 }
 }
 function renderKeuangan(){
+if(typeof KeuanganInsight!=='undefined')KeuanganInsight.render();
 document.getElementById('monthLabel').textContent=MONTHS_FULL[curMonth]+' '+curYear;
 renderKeuAbsensiGajiCard();
 const txM=D.transactions.filter(t=>{const d=new Date(t.date);return d.getMonth()===curMonth&&d.getFullYear()===curYear;});
@@ -820,6 +827,7 @@ if(cntEl)cntEl.textContent=nActive?`${nActive} filter aktif`:'';
 renderGrafik();
 renderLapAccList();
 renderCashflowForecast();
+if(typeof AsetKeluarga!=='undefined')AsetKeluarga.render();
 const km={};
 txs.forEach(t=>{if(!km[t.category])km[t.category]={inc:0,exp:0,n:0};if(t.type==='income')km[t.category].inc+=t.amount;else km[t.category].exp+=t.amount;km[t.category].n++;});
 const ks=Object.entries(km).sort((a,b)=>(b[1].inc+b[1].exp)-(a[1].inc+a[1].exp));
@@ -1011,6 +1019,7 @@ return `<div class="tx-item u-pointer" data-action="openSimModal" data-args="${e
 }
 
 function renderCnTab(){
+if(typeof MobilInsight!=='undefined')MobilInsight.render();
 const curKmEl=document.getElementById('cnCurKm');
 if(curKmEl&&!document.getElementById('cnCurKmInput'))curKmEl.textContent=getVehicleKm(curVehicleId).toLocaleString('id-ID')+' km';
 renderCarImportVehicleSelect();
@@ -1333,6 +1342,7 @@ if(copyBtn) copyBtn.style.display=data.results.length?'block':'none';
 }
 
 function renderPajakZakat(){
+if(typeof PajakInsight!=='undefined')PajakInsight.render();
 const pz=D.pajakZakat;
 const elHE=document.getElementById('pzHargaEmas'); if(elHE&&!elHE.matches(':focus'))elHE.value=pz.hargaEmasPerGram;
 const elNB=document.getElementById('pzNisabBulan'); if(elNB&&!elNB.matches(':focus'))elNB.value=pz.nisabPenghasilanBulan;

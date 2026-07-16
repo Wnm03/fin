@@ -3,8 +3,18 @@
 // data-default.js (v79) — file itu HARUS dimuat SEBELUM file ini karena dibaca langsung di `let D = {...}`.
 // PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: data-default.js, features-helpers-global-security.js, diagnostik-versi.js, format-tema.js, error-handler.js, helper-teks.js, keamanan-pin.js, modal-navigasi.js, reset-gaji-mingguan.js, debug-console.js, pengaturan-search.js, onboarding.js, kalkulator-input.js, scan-ocr.js, akun.js, gaji-calc.js, transaksi.js, profil-pengaturan.js, kategori.js, tagihan-kalender.js, backup-restore.js, payroll-absensi.js, tukang-absensi.js, features-aiwidget-reminder-gdrive-search.js, features-sheets-pwa-selftest.js
 
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 const DATA_MIGRATIONS=[
+{toVersion:2,desc:'Tambah kategori baku Investasi & Sedekah/Donasi (pengeluaran) utk user lama',migrate(d){
+if(!d.categories||!d.categories.expense)return;
+const exp=d.categories.expense;
+if(!exp.some(c=>c.id==='cat_inv'||/^investasi$/i.test(c.name||''))){
+exp.splice(Math.max(0,exp.length-1),0,{id:'cat_inv',name:'Investasi',emoji:'📈',subs:[]});
+}
+if(!exp.some(c=>c.id==='cat_sedekah'||/^sedekah\/?donasi$/i.test((c.name||'').replace(/\s+/g,'')))){
+exp.splice(Math.max(0,exp.length-1),0,{id:'cat_sedekah',name:'Sedekah/Donasi',emoji:'🤲',subs:[]});
+}
+}},
 ];
 function runDataMigrations(fromVersion){
 let v=Number.isFinite(fromVersion)?fromVersion:0;
@@ -28,15 +38,15 @@ if(location.hostname==='localhost'||location.hostname==='127.0.0.1')return true;
 }catch(e){ /* anggap bukan dev mode kalau gagal deteksi */ }
 return false;
 }
-const APP_BUILD_VERSION = 'fix-udnone-important-css-2026-07-48';
-const PRODUCTION_BUILD_SYNCED_VERSION = 'fix-udnone-important-css-2026-07-48';
+const APP_BUILD_VERSION = 'feature-icons-svg-342';
+const PRODUCTION_BUILD_SYNCED_VERSION = 'feature-icons-svg-342';
 let D = {
 schemaVersion:SCHEMA_VERSION,
 transactions:[],cobek:[],products:[],produsen:[],cobekKategori:JSON.parse(JSON.stringify(DEFAULT_COBEK_KATEGORI)),targets:[],eduFunds:[],reminders:[],bills:[],billsArchive:[],
 catatan:{anak:[]},
 milestones:[false,false,false,false,false],
 nextPulang:'',lastBackup:null,lastResetPromptDate:null,
-profile:{nama:'W',gajiPokok:65000,kiriman:500000,theme:'fresh',lemburMultiplier:1.5,tarifMinggu:139000,tanggalLahir:null,statusKawin:false,tanggungan:0,statusPekerjaan:null,targetGajiBulanan:null},
+profile:{nama:'W',gajiPokok:65000,kiriman:500000,theme:'dark',lemburMultiplier:1.5,tarifMinggu:139000,tanggalLahir:null,statusKawin:false,tanggungan:0,statusPekerjaan:null,targetGajiBulanan:null},
 categories:{income:JSON.parse(JSON.stringify(DEFAULT_CATS.income)),expense:JSON.parse(JSON.stringify(DEFAULT_CATS.expense))},
 accounts:JSON.parse(JSON.stringify(DEFAULT_ACCOUNTS)),
 vehicles:[{id:'veh_1',name:'Vario 125',emoji:'🏍️',serviceIntervalKm:3000}],

@@ -118,6 +118,7 @@ document.getElementById('dashEduFundSub').textContent=`${D.eduFunds.length} renc
 card.classList.remove('u-dnone');card.style.display='block';
 },
 render(){
+if(typeof EduFundInsight!=='undefined')EduFundInsight.render();
 const el=document.getElementById('eduFundList');
 if(!el)return;
 if(!D.eduFunds.length){el.innerHTML='<div class="empty"><div class="empty-icon">🎓</div><div class="empty-text">Belum ada rencana dana pendidikan</div></div>';return;}

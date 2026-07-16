@@ -1,5 +1,5 @@
 
-const MODULE_CALC_VERSION='fix-udnone-important-css-2026-07-48';
+const MODULE_CALC_VERSION='feature-icons-svg-342';
 const FI={
 assetScopeState:'zakatable',
 investmentAssetValue(){
@@ -123,6 +123,7 @@ if(!card)return;
 const fi=D.finansialFreedom||(D.finansialFreedom={expenseCatIds:[],avgMonths:6,swr:4,assumsiReturn:8,assumsiInflasi:5,scenarioRange:2});
 const setup=document.getElementById('dashFiSetupPrompt');
 const body=document.getElementById('dashFiBody');
+if(!setup||!body)return;
 const monthsData=FI.monthsOfDataAvailable();
 if(monthsData<1){
 setup.classList.remove('u-dnone');setup.style.display='block';
@@ -600,24 +601,14 @@ const y=(ctx&&ctx.y!=null)?ctx.y:now.getFullYear();
 const txM=(ctx&&ctx.txM)||D.transactions.filter(t=>{const d=new Date(t.date);return d.getMonth()===m&&d.getFullYear()===y;});
 const inc=(ctx&&ctx.inc!=null)?ctx.inc:txM.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
 const exp=(ctx&&ctx.exp!=null)?ctx.exp:txM.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-// 1. Defisit bulan berjalan (pengeluaran > pemasukan bulan ini)
-if(inc>0&&exp>inc){
-out.push({id:'defisit',level:'danger',icon:'🔴',text:`Bulan ini pengeluaran (${fmtFull(exp)}) sudah melebihi pemasukan (${fmtFull(inc)}) — defisit ${fmtFull(exp-inc)}.`,action:{label:'Cek Laporan',page:'keuangan',navIdx:1}});
-}
-// 2. Anggaran paling parah (>=80% terpakai), ambil yang paling tinggi persennya
+// 1-2. Defisit bulan berjalan & anggaran ketat/jebol — logic SEKARANG hidup satu-satunya di
+// KeuanganInsight.compute() (feature-insights.js, kartu "💡 Insight Keuangan" paling atas nav
+// Keuangan), dipanggil langsung di sini (bukan ditulis ulang) supaya kartu di nav Keuangan &
+// widget "🩺 Insight Cepat" Dashboard ini SELALU sinkron 1:1. ctx dioper spy txM/inc/exp yg sudah
+// dihitung di atas tidak discan ulang.
 try{
-if((D.budgets||[]).length){
-const rows=D.budgets.map(b=>{
-const used=D.transactions.filter(t=>{const d=new Date(t.date);return d.getMonth()===m&&d.getFullYear()===y&&budgetMatchesTx(b,t);}).reduce((s,t)=>s+t.amount,0);
-const pct=b.limit>0?Math.round(used/b.limit*100):0;
-return{b,pct};
-}).filter(r=>r.pct>=80).sort((a,b)=>b.pct-a.pct);
-if(rows.length){
-const r=rows[0],over=r.pct>=100;
-out.push({id:'budget-'+r.b.id,level:over?'danger':'warning',icon:over?'🔴':'🟠',text:`Anggaran "${escapeHtml(r.b.name)}" sudah ${r.pct}% terpakai${over?' (OVER)':''}${rows.length>1?` (+${rows.length-1} anggaran lain juga ketat)`:''}.`,action:{label:'Lihat Anggaran',page:'keuangan',navIdx:1}});
-}
-}
-}catch(e){console.warn('FinCoach: gagal cek anggaran',e);}
+if(typeof KeuanganInsight!=='undefined')out.push(...KeuanganInsight.compute({now,m,y,txM,inc,exp}));
+}catch(e){console.warn('FinCoach: gagal sinkron KeuanganInsight',e);}
 // 3. Tagihan telat/segera jatuh tempo (pakai getBillStats() yg sudah ada, dipakai jg di dashBillCard —
 // atau reuse ctx.billStats kalau sudah dihitung sekali oleh renderDashboard(), lihat catatan di atas)
 try{
@@ -648,14 +639,12 @@ if(negAcc){
 out.push({id:'acc-negative-'+negAcc.id,level:'danger',icon:'🔴',text:`Saldo akun "${escapeHtml(negAcc.name)}" minus (${fmtFull(recalcAccBalance(negAcc.id))}) — cek transaksi yang mungkin belum tercatat.`});
 }
 }catch(e){console.warn('FinCoach: gagal cek saldo akun',e);}
-// 6. Utang belum lunas yang jatuh tempo dekat (<=7 hari, termasuk yang sudah lewat)
+// 6. Piutang & Utang (jatuh tempo dekat/lewat, DSR berat) — logic SEKARANG hidup satu-satunya di
+// PiutangUtangInsight.compute() (feature-insights.js, kartu di halaman Pajak & Zakat, section
+// Piutang & Utang), dipanggil langsung di sini supaya sinkron 1:1 dgn Dashboard.
 try{
-const soonDebt=(D.debts||[]).filter(d=>!d.lunas&&d.jatuhTempo).map(d=>({d,diff:Math.ceil((new Date(d.jatuhTempo)-now)/(1000*60*60*24))})).filter(x=>x.diff<=7).sort((a,b)=>a.diff-b.diff);
-if(soonDebt.length){
-const x=soonDebt[0],late=x.diff<0;
-out.push({id:'debt-due-'+x.d.id,level:late?'danger':'warning',icon:late?'🔴':'🟠',text:`Utang "${escapeHtml(x.d.name)}" (${fmtFull(x.d.nilai)}) ${late?'sudah lewat '+Math.abs(x.diff)+' hari dari':x.diff===0?'jatuh tempo hari ini':x.diff+' hari lagi ke'} tanggal jatuh tempo.`});
-}
-}catch(e){console.warn('FinCoach: gagal cek utang',e);}
+if(typeof PiutangUtangInsight!=='undefined')out.push(...PiutangUtangInsight.compute());
+}catch(e){console.warn('FinCoach: gagal sinkron PiutangUtangInsight',e);}
 // 7. Rata-rata surplus bulanan negatif (dipakai jg di FI) — sinyal dini progres Kebebasan Finansial mundur
 try{
 if(typeof fiMonthlySurplus==='function'&&D.transactions.length){
@@ -700,6 +689,37 @@ out.push({id:'wh-lowdays',level:'info',icon:'🔔',text:`Hari kerja minggu ini b
 }
 }
 }catch(e){console.warn('FinCoach: gagal cek hari kerja mingguan',e);}
+// 11-16. SINKRONISASI dgn kartu "💡 Insight ..." di halaman/fitur Pajak & Zakat, Bisnis Shop,
+// Car Notes, Aset, Sewa Kios & Renovasi, dan Dana Pendidikan (lihat feature-insights.js utk
+// sebagian besar & AssetInsight.compute() di aset.js) — supaya "🩺 Insight Cepat" di Dashboard ini
+// jadi SATU feed gabungan dari SEMUA fitur, bukan cuma Keuangan/Tagihan/Shop-margin seperti
+// sebelumnya. Item 'shop-margin' dari ShopInsight SENGAJA disaring keluar di sini krn sudah
+// dihitung apa adanya di sinyal #8 di atas (persis sama isinya) — dihindari supaya tidak dobel
+// muncul di widget yg sama.
+try{
+if(typeof PajakInsight!=='undefined')out.push(...PajakInsight.compute());
+}catch(e){console.warn('FinCoach: gagal sinkron PajakInsight',e);}
+try{
+if(typeof ShopInsight!=='undefined')out.push(...ShopInsight.compute().filter(x=>x.id!=='shop-margin'));
+}catch(e){console.warn('FinCoach: gagal sinkron ShopInsight',e);}
+try{
+if(typeof MobilInsight!=='undefined')out.push(...MobilInsight.compute());
+}catch(e){console.warn('FinCoach: gagal sinkron MobilInsight',e);}
+try{
+if(typeof SewaKiosRenovInsight!=='undefined')out.push(...SewaKiosRenovInsight.compute());
+}catch(e){console.warn('FinCoach: gagal sinkron SewaKiosRenovInsight',e);}
+try{
+if(typeof EduFundInsight!=='undefined')out.push(...EduFundInsight.compute());
+}catch(e){console.warn('FinCoach: gagal sinkron EduFundInsight',e);}
+try{
+if(typeof AssetInsight!=='undefined'){
+// text dari AssetInsight.compute() SUDAH diawali emoji sendiri (⚠️/📈/📉/🚀/🔻) — icon
+// dikosongkan di sini supaya tidak dobel emoji saat dirender FinCoach.renderDash().
+AssetInsight.compute().forEach((text,i)=>{
+out.push({id:'asset-insight-'+i,level:'info',icon:'',text,action:{label:'Lihat Aset',page:'aset',navIdx:3}});
+});
+}
+}catch(e){console.warn('FinCoach: gagal sinkron AssetInsight',e);}
 // Kalau tidak ada satupun sinyal bahaya/peringatan, kasih 1 insight positif biar widget tidak
 // kosong & user tetap tahu semua indikator utama aman (bukan cuma diam kalau memang aman).
 if(!out.some(o=>o.level==='danger'||o.level==='warning')&&inc>0){
@@ -766,6 +786,7 @@ D.wealthSnapshots.sort((a,b)=>a.date.localeCompare(b.date));
 save();
 Kekayaan.renderSnapshots();
 renderFinancialFreedom();
+if(typeof AssetInsight!=='undefined')AssetInsight.render();
 if(manual)toast('✅ Snapshot kekayaan tersimpan: '+fmtFull(nw));
 },
 autoSnapshotIfNeeded(){
@@ -781,6 +802,7 @@ D.wealthSnapshots=(D.wealthSnapshots||[]).filter(s=>!sameId(s.id,id));
 save();
 Kekayaan.renderSnapshots();
 renderFinancialFreedom();
+if(typeof AssetInsight!=='undefined')AssetInsight.render();
 },
 actualCAGR(){
 const list=(D.wealthSnapshots||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));

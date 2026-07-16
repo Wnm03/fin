@@ -112,6 +112,7 @@ const paidCount=items.filter(it=>it.paid).length;
 return{total,paid,sisa:total-paid,count,paidCount};
 },
 render(){
+if(typeof SewaKiosRenovInsight!=='undefined')SewaKiosRenovInsight.render();
 const el=document.getElementById('renovList');
 if(!el)return;
 if(!D.renovProjects||!D.renovProjects.length){
@@ -393,6 +394,8 @@ expense:[
 {id:'cat_rv',name:'Renovasi',emoji:'🔨',subs:[]},
 {id:'cat_bl',name:'Belanja',emoji:'🛒',subs:[]},
 {id:'cat_cbb',name:'Bisnis',emoji:'🪨',subs:[{id:'sub_cbb_cobek',name:'Cobek'}]},
+{id:'cat_inv',name:'Investasi',emoji:'📈',subs:[]},
+{id:'cat_sedekah',name:'Sedekah/Donasi',emoji:'🤲',subs:[]},
 {id:'cat_lx',name:'Lainnya',emoji:'📦',subs:[]}
 ]
 };

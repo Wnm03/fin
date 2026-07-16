@@ -150,10 +150,19 @@ if(_pinPromptResolve){const r=_pinPromptResolve;_pinPromptResolve=null;r(val);}
 function showPage(name,el){
 document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
 document.querySelectorAll('.nav-item').forEach(n=>{n.classList.remove('active');n.setAttribute('aria-current','false');});
-document.getElementById('page-'+name).classList.add('active');
+const pageEl=document.getElementById('page-'+name);
+if(!pageEl){
+console.warn(`showPage: halaman #page-${name} tidak ditemukan di DOM -- cek nama page/id (mis. typo, atau halaman belum dirender).`);
+return;
+}
+pageEl.classList.add('active');
 const activeBtn=el||document.querySelector(`.nav-item[onclick*="'${name}'"]`);
 if(activeBtn){activeBtn.classList.add('active');activeBtn.setAttribute('aria-current','page');}
 renderPageContent(name);
+// AiSmartInsight (ai-smart-insight.js) kartunya di LUAR .page (lihat index.html) jadi tidak
+// ikut disentuh loop .page di atas -- di-refresh manual di sini tiap pindah tab supaya datanya
+// tetap segar, TANPA elemennya ikut hide/pindah (makanya posisinya konsisten di semua tab).
+if(typeof AiSmartInsight!=='undefined')AiSmartInsight.render();
 const sr=document.getElementById('scrollRoot');
 if(sr)sr.scrollTop=0;
 }
@@ -171,6 +180,7 @@ function openModal(id){
 const el=document.getElementById(id);
 if(!el){
 console.warn(`Modal #${id} tidak ditemukan di DOM — cek document.write index (lihat modals.js MODAL_HTML[] vs document.write(MODAL_HTML[i]) di index.html/app_production.html, urutan/jumlahnya harus persis sama).`);
+return;
 }
 el.classList.remove('closing');
 el.classList.add('open');

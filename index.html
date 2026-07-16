@@ -39,6 +39,18 @@
     api.anthropic.com, generativelanguage.googleapis.com -> panggilan AI
       (fitur AI Asisten, pakai API key milik user sendiri, disimpan lokal).
     www.googleapis.com, sheets.googleapis.com -> integrasi Google Drive & Sheets.
+    BUGFIX: cdn.jsdelivr.net & tessdata.projectnaptha.com di connect-src
+      (+ cdn.jsdelivr.net di worker-src) -> setelah <script src> tesseract.min.js
+      dari jsdelivr berhasil dimuat (sudah di-allowlist di script-src), library-nya
+      SENDIRI masih fetch() worker.min.js + tesseract-core*.wasm dari jsdelivr dan
+      *.traineddata dari tessdata.projectnaptha.com saat runtime. Dua domain itu
+      tadinya TIDAK ada di connect-src, jadi fetch-nya kena blokir CSP diam2 --
+      munculnya cuma "Script error."/objek Error kosong {} yang opaque (khas
+      request cross-origin diblok, browser sensor detailnya), scan OCR pun gagal
+      total walau script utamanya kebaca. cdn.jsdelivr.net ditambah juga ke
+      worker-src untuk jaga2 kalau workerBlobURL browser tertentu tidak
+      memakai jalur blob: (defaultnya tesseract.js v5 fetch lalu bikin blob:,
+      yang sudah tercakup 'blob:' -- tapi ini lapisan aman tambahan).
     data:/blob: di img-src & worker-src -> preview foto hasil scan (OCR),
       unduhan file (URL.createObjectURL), dan service worker PWA yang
       didaftarkan dari Blob (lihat setupPWA di features-sheets-pwa-selftest.js).
@@ -49,11 +61,23 @@
   ini dihosting di server sendiri, sebaiknya arahan ini juga dikirim lewat
   header `Content-Security-Policy` di response, bukan cuma meta tag di sini.
 -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://api.anthropic.com https://generativelanguage.googleapis.com https://www.googleapis.com https://sheets.googleapis.com https://accounts.google.com; frame-src https://accounts.google.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://api.anthropic.com https://generativelanguage.googleapis.com https://www.googleapis.com https://sheets.googleapis.com https://accounts.google.com https://cdn.jsdelivr.net https://tessdata.projectnaptha.com; frame-src https://accounts.google.com; worker-src 'self' blob: https://cdn.jsdelivr.net; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self';">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#08090c">
+<!-- Sprint 2 Tahap 18 -- resource hints ringan (0 byte tambahan setelah
+     koneksi dibuka lebih awal ke domain yang sudah di-allowlist CSP,
+     dipakai lazy oleh eruda/tesseract.js/jsPDF/Google Identity). Murni
+     performa, tidak ada perubahan visual/JS. -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+<link rel="preconnect" href="https://accounts.google.com" crossorigin>
+<link rel="dns-prefetch" href="https://accounts.google.com">
 <title>Keluarga W</title>
-<link rel="stylesheet" href="styles.css?v=312">
+<link rel="stylesheet" href="styles.css?v=342">
+<link rel="stylesheet" href="modern-ui-layer.css?v=342">
 <script>
 /* Debug console (Eruda) — aktifkan sekali lewat ?debug=1 di URL, nempel via localStorage.
    Matikan lagi lewat ?debug=0. Tidak aktif buat user biasa. */
@@ -106,8 +130,8 @@ b.appendChild(closeBtn);
 }catch(_e){ console.error('Gagal tampilkan banner error modul:',_e); }
 };
 </script>
-<script src="app-bundle-a.min.js?v=312" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
-<script src="smoke-test.js?v=312" defer></script>
+<script src="app-bundle-a.min.js?v=342" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
+<script src="smoke-test.js?v=342" defer></script>
 <link rel="manifest" id="pwaManifestLink" href="manifest.json">
 </head>
 <body data-theme="fresh">
@@ -170,6 +194,21 @@ b.appendChild(closeBtn);
 
 <div id="mainApp" class="u-dnone">
 
+<!-- AI SMART INSIGHT — di LUAR .page dengan sengaja: showPage() (modal-navigasi.js) cuma
+     toggle class active di elemen .page, elemen ini bukan salah satunya jadi TIDAK pernah
+     ikut disembunyikan/dipindah saat pindah tab -- otomatis selalu tampil di posisi paling
+     atas (tepat di bawah header) di SEMUA tab. Isinya di-refresh tiap showPage() lewat
+     AiSmartInsight.render() (lihat ai-smart-insight.js). -->
+<div id="aiSmartInsightWrap">
+  <div class="card u-mb0" id="aiSmartInsightCard">
+    <div class="card-title">🤖 Insight AI <span class="u-flexc8"><span class="acc-chip" id="aiSmartInsightBadge">–</span><span class="card-collapse-toggle" id="aiSmartInsightCard-chev" data-action="toggleCardCollapse" data-args='["aiSmartInsightCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
+    <div class="card-collapse-body" id="aiSmartInsightCard-cbody">
+      <div class="u-fs12 u-fw700 u-mb6" id="aiSmartInsightHeadline"></div>
+      <div id="aiSmartInsightBody"></div>
+    </div>
+  </div>
+</div>
+
 <!-- DASHBOARD -->
 <div class="page" id="page-dashboard">
   <div class="page-settings-btn">
@@ -208,6 +247,20 @@ b.appendChild(closeBtn);
   <div class="card u-mb12 u-dnone" id="dashDanaDaruratCard"></div>
   <div class="card u-mb12 u-dnone" id="cashflowForecastCard"></div>
   <div class="card u-mb12 u-dnone" id="timelineWCard"></div>
+  <!-- Redesign: kelompokkan 3 kartu ringkasan sekunder (Anggaran/Dana Pendidikan/Zakat) jadi
+       satu section yg bisa dilipat SEKALIGUS — pola stg-group yg sudah dipakai & teruji di
+       halaman Pengaturan (lihat stgGroup1/2/3), reuse toggleStgGroup() yg sudah ada, tanpa
+       fungsi/CSS baru. Default TERTUTUP (bukan "open") supaya Beranda tidak terasa panjang saat
+       pertama dibuka — kartu ini murni informasi rutin (bukan alert), beda dgn Tagihan/Saldo/
+       Transaksi Terakhir yg SENGAJA dibiarkan di luar grup & selalu terlihat. Collapse per-kartu
+       di dalamnya (card-collapse-toggle) tetap utuh, tidak diubah — jadi 2 lapis collapse
+       (grup, lalu per-kartu) sama seperti pola accordion-di-dalam-accordion yg lazim. -->
+  <div class="stg-group" id="dashSecondaryGroup">
+    <div class="stg-group-head" data-action="toggleStgGroup" data-args='["dashSecondaryGroup"]' role="button" tabindex="0" aria-expanded="false" aria-controls="dashSecondaryGroup-body">
+      <div class="stg-group-head-left"><div class="stg-group-icon">📊</div><div><div class="stg-group-title">Anggaran & Target</div><div class="stg-group-sub">Anggaran, Dana Pendidikan, Zakat</div></div></div>
+      <div class="stg-group-chevron">▼</div>
+    </div>
+    <div class="stg-group-body" id="dashSecondaryGroup-body"><div class="stg-group-body-inner">
   <div class="card u-mb12 u-dnone u-pointer" id="dashBudgetMiniCard" data-action="showPage" data-args='["keuangan", "$nav:1"]'>
     <div class="card-title">📊 Anggaran Bulan Ini <span class="card-collapse-toggle" id="dashBudgetMiniCard-chev" data-action="toggleCardCollapse" data-args='["dashBudgetMiniCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
     <div class="card-collapse-body" id="dashBudgetMiniCard-cbody">
@@ -237,6 +290,8 @@ b.appendChild(closeBtn);
       <span class="stat-val orange u-fs16" id="dashZakatJumlah">Rp 0</span>
     </div>
     </div>
+  </div>
+    </div></div>
   </div>
   <div class="grid2">
     <div class="stat-box clickable" data-action="showFilteredTx" data-args='["dashboard", "income", "\ud83d\udc9a Pemasukan Bulan Ini"]'><div class="stat-label">💚 Pemasukan</div><div class="stat-val green" id="dIncome">Rp 0</div></div>
@@ -303,6 +358,10 @@ b.appendChild(closeBtn);
 
   <!-- KELOLA -->
   <div id="keuanganTab-kelola">
+    <div class="card u-mb12 u-dnone" id="keuanganInsightCard">
+      <div class="card-title">💡 Insight Keuangan</div>
+      <div id="keuanganInsightBody"></div>
+    </div>
   <div class="page-settings-btn">
     <div class="month-nav u-flex1" style="margin-bottom:0">
       <button class="month-nav-btn" data-action="changeMonth" data-args='[-1]' aria-label="Sebelumnya">‹</button>
@@ -373,6 +432,12 @@ b.appendChild(closeBtn);
     </div>
     </div>
   </div>
+  <div class="stg-group" id="keuAsetProyekGroup">
+    <div class="stg-group-head" data-action="toggleStgGroup" data-args='["keuAsetProyekGroup"]' role="button" tabindex="0" aria-expanded="false" aria-controls="keuAsetProyekGroup-body">
+      <div class="stg-group-head-left"><div class="stg-group-icon">🏠</div><div><div class="stg-group-title">Aset & Proyek</div><div class="stg-group-sub">Dana Pensiun, Renovasi, Sewa Kios</div></div></div>
+      <div class="stg-group-chevron">▼</div>
+    </div>
+    <div class="stg-group-body" id="keuAsetProyekGroup-body"><div class="stg-group-body-inner">
   <div class="card u-mb12">
     <div class="card-title">🏖️ Dana Pensiun
       <div class="u-flex u-gap6 u-aic">
@@ -384,6 +449,10 @@ b.appendChild(closeBtn);
     <div class="u-hint10">Sinkron 2 arah dengan Keuangan: saldo & proyeksi dihitung otomatis dari akun & rata-rata transaksi asli kamu, dan kontribusi yang dicatat di sini langsung jadi transaksi nyata yang mempengaruhi saldo akun.</div>
     <div id="pensiunBody"></div>
     </div>
+  </div>
+  <div class="card u-mb12 u-dnone" id="sewaKiosRenovInsightCard">
+    <div class="card-title">💡 Insight Sewa Kios & Renovasi</div>
+    <div id="sewaKiosRenovInsightBody"></div>
   </div>
   <div class="card u-mb12">
     <div class="card-title">🛠️ Proyek Renovasi
@@ -414,6 +483,8 @@ b.appendChild(closeBtn);
     <div class="u-hint10">Lacak hasil sewa kios pasca renovasi: status unit, pendapatan sewa yang tersambung ke Transaksi (sync 2 arah, sama seperti Proyek Renovasi), dan estimasi balik modal (ROI) dibanding biaya renovasinya.</div>
     <div id="sewaKiosList"><div class="empty"><div class="empty-icon">🏠</div><div class="empty-text">Belum ada unit kios</div></div></div>
     </div>
+  </div>
+    </div></div>
   </div>
   <div class="card u-mb12">
     <div class="card-title">🔔 Tagihan, Cicilan & Langganan
@@ -543,6 +614,85 @@ b.appendChild(closeBtn);
       <div id="importResult"></div>
     </div>
   </details>
+
+  <!-- Dipindah dari tab Zakat (halaman Pajak) -- ini murni ringkasan kekayaan,
+       piutang & utang, tidak spesifik zakat. Tab Zakat sekarang cuma isi
+       perhitungan zakat (Penghasilan, Maal, Fitrah, Riwayat). -->
+    <div class="card u-mb12" style="padding:12px 14px">
+      <div class="card-title u-mb8">📊 Kekayaan Bersih <span class="card-collapse-toggle" id="pzKekayaanCard-chev" data-action="toggleCardCollapse" data-args='["pzKekayaanCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
+      <div class="card-collapse-body" id="pzKekayaanCard-cbody">
+      <div class="grid3">
+        <div class="stat-box clickable" data-action="showPage" data-args='["dashboard", "$nav:0"]'><div class="stat-label">Saldo Akun</div><div class="stat-val green u-fs13" id="kbSaldoAkun">Rp 0</div></div>
+        <div class="stat-box clickable" data-action="goToList" data-args='["assetList", "aset"]'><div class="stat-label">Total Aset</div><div class="stat-val u-fs13" id="kbTotalAset">Rp 0</div></div>
+        <div class="stat-box"><div class="stat-label">Utang</div><div class="stat-val red u-fs13" id="kbUtang">Rp 0</div></div>
+      </div>
+      <div class="u-flex u-jcb u-aic u-mt10 divider-top">
+        <span class="u-fs12t2">🤝 Piutang (akan diterima)</span>
+        <span class="stat-val green u-fs14 u-pointer" id="kbPiutang" data-action="goToList" data-args='["piutangList", null]' aria-label="Lihat daftar piutang">Rp 0</span>
+      </div>
+      <div class="u-flex u-jcb u-aic u-mt10 divider-top">
+        <span class="u-fs12t2">📦 Inventori Bisnis (modal stok)</span>
+        <span class="stat-val u-fs14 u-pointer" id="kbInventori" data-action="showPage" data-args='["shop", "$el"]' aria-label="Lihat etalase produk">Rp 0</span>
+      </div>
+      <div class="u-flex u-jcb u-aic u-mt10 divider-top">
+        <span class="u-fs12t2">Kekayaan Bersih</span>
+        <span class="stat-val purple u-fs18" id="kbNetWorth">Rp 0</span>
+      </div>
+      </div>
+    </div>
+
+    <div class="card u-mb12 u-dnone" id="piutangUtangInsightCard">
+      <div class="card-title">💡 Insight Piutang & Utang</div>
+      <div id="piutangUtangInsightBody"></div>
+    </div>
+
+    <div class="stg-group" id="pzPiutangUtangGroup">
+      <div class="stg-group-head" data-action="toggleStgGroup" data-args='["pzPiutangUtangGroup"]' role="button" tabindex="0" aria-expanded="false" aria-controls="pzPiutangUtangGroup-body">
+        <div class="stg-group-head-left"><div class="stg-group-icon">🤝</div><div><div class="stg-group-title">Piutang & Utang</div><div class="stg-group-sub">Piutang, Buku Utang, Strategi Pelunasan</div></div></div>
+        <div class="stg-group-chevron">▼</div>
+      </div>
+      <div class="stg-group-body" id="pzPiutangUtangGroup-body"><div class="stg-group-body-inner">
+    <div class="card u-mb12">
+      <div class="card-title">🤝 Piutang <span class="u-flexc8"><span class="card-setting-btn u-pointer" data-action="openPiutangModal">＋ Tambah Piutang</span><span class="card-collapse-toggle" id="pzPiutangCard-chev" data-action="toggleCardCollapse" data-args='["pzPiutangCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
+      <div class="card-collapse-body" id="pzPiutangCard-cbody">
+      <div class="u-hint10">Catat uang yang dipinjamkan ke orang lain di sini. Piutang yang diyakini akan kembali dihitung sebagai penambah Kekayaan Bersih & bisa diikutkan Zakat Maal. Tandai "Lunas" kalau sudah dibayar supaya tidak lagi dihitung.</div>
+      <div id="piutangList"><div class="empty"><div class="empty-icon">🤝</div><div class="empty-text">Belum ada piutang tercatat</div></div></div>
+      </div>
+    </div>
+
+    <div class="card u-mb12">
+      <div class="card-title">📕 Buku Utang <span class="u-flexc8"><span class="card-setting-btn u-pointer" data-action="openDebtModal">＋ Tambah Utang</span><span class="card-collapse-toggle" id="pzUtangCard-chev" data-action="toggleCardCollapse" data-args='["pzUtangCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
+      <div class="card-collapse-body" id="pzUtangCard-cbody">
+      <div class="u-hint10">Catat detail utang ke orang/bank/lembaga lain di sini (pinjaman pribadi, KTA, paylater, dll) — lengkap dgn bunga & cicilan per bulan kalau ada. Total utang belum lunas otomatis jadi pengurang Kekayaan Bersih & Zakat Maal. Tandai "Lunas" kalau sudah dibayar penuh. 🔄 Isi "Cicilan/Bulan" → otomatis muncul sebagai tagihan bulanan (kena reminder & Perkiraan Kas 30 Hari); tiap kali tagihan itu dibayar, sisa utang di sini ikut berkurang otomatis & auto-Lunas kalau sudah habis.</div>
+      <div class="grid2 u-mb10">
+        <div class="stat-box"><div class="stat-label">Total Sisa Utang</div><div class="stat-val red u-fs14" id="debtTotalVal">Rp 0</div></div>
+        <div class="stat-box"><div class="stat-label">Cicilan/Bulan (semua utang)</div><div class="stat-val red u-fs14" id="debtCicilanVal">Rp 0</div></div>
+      </div>
+      <div id="debtList"><div class="empty"><div class="empty-icon">📕</div><div class="empty-text">Belum ada utang tercatat</div></div></div>
+      </div>
+    </div>
+
+    <div class="card u-mb12">
+      <div class="card-title">🎯 Strategi Pelunasan Utang <span class="card-collapse-toggle" id="pzDebtStratCard-chev" data-action="toggleCardCollapse" data-args='["pzDebtStratCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
+      <div class="card-collapse-body" id="pzDebtStratCard-cbody">
+      <div class="u-hint10">Urutan mana yang sebaiknya dilunasi duluan, dihitung otomatis dari data 📕 Buku Utang di atas. <b>Avalanche</b> = bunga tertinggi dulu (paling hemat total bunga). <b>Snowball</b> = saldo terkecil dulu (lebih cepat "menang" secara psikologis, biar makin termotivasi).</div>
+      <div class="u-flex u-gap8 u-fwrap u-mb12" id="dsMethodChips">
+        <button type="button" class="chip-btn" data-action="setDebtStrategyMethod" data-args='["avalanche"]'>🏔️ Avalanche (hemat bunga)</button>
+        <button type="button" class="chip-btn" data-action="setDebtStrategyMethod" data-args='["snowball"]'>⛄ Snowball (cepat menang)</button>
+      </div>
+      <div class="fg u-mb12">
+        <label class="fl">Dana Ekstra per Bulan buat Nambah Cicilan (opsional)</label>
+        <div class="amt-wrap">
+          <input type="text" class="fi fi-calc-only" id="dsExtra" placeholder="0" inputmode="decimal" oninput="onDsExtraInput()" onblur="evalAmtExpr('dsExtra')">
+          <button type="button" class="calc-trigger" data-action="openCalc" data-args='["dsExtra"]' title="Buka kalkulator" aria-label="Buka kalkulator">🧮</button>
+        </div>
+        <div class="u-fs11 u-t2 u-mt4">Kalau ada surplus kas bulanan yang mau dialihkan ke cicilan tambahan, isi di sini buat lihat simulasi seberapa cepat semua utang lunas (tetap bayar minimum semua utang dulu, sisanya diarahkan ke utang prioritas teratas).</div>
+      </div>
+      <div id="dsResult"></div>
+      </div>
+    </div>
+    </div></div>
+    </div>
   </div>
 
   <!-- LAPORAN -->
@@ -611,6 +761,27 @@ b.appendChild(closeBtn);
     </div>
     </div>
   </div>
+  <!-- Sprint 2 Tahap 5: Laporan gabungan lintas-modul "🏠 Aset Keluarga" —
+       menyusun ulang (bukan menduplikasi sumber angka) 3 modul yang selama
+       ini cuma bisa dilihat terpisah: Keuangan (saldo akun/utang), Shop
+       (nilai stok/piutang), Car Notes (nilai kendaraan yg tercatat di Buku
+       Aset). Lihat aset-keluarga.js utk detail & alasan tiap angka. -->
+  <div class="card u-mb12" id="asetKeluargaCard">
+    <div class="card-title">🏠 Aset Keluarga <span class="card-collapse-toggle" id="asetKeluargaCard-chev" data-action="toggleCardCollapse" data-args='["asetKeluargaCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
+    <div class="card-collapse-body" id="asetKeluargaCard-cbody">
+    <div class="u-hint10">Ringkasan gabungan 3 modul — bukan angka baru, cuma disusun ulang per-modul supaya kelihatan kontribusi masing-masing ke total aset keluarga. Untuk detail lengkap tiap modul, lihat kartu 🏦 Kekayaan Bersih (Pajak &amp; Zakat), 📦 Etalase (Shop), &amp; 🏍️ Kendaraan (Car Notes).</div>
+    <div class="u-fs11 u-t2 u-fw700 u-mb4" style="text-transform:uppercase;letter-spacing:.5px">💰 Keuangan</div>
+    <div id="akKeuangan" class="u-mb10"></div>
+    <div class="u-fs11 u-t2 u-fw700 u-mb4" style="text-transform:uppercase;letter-spacing:.5px">🪨 Shop</div>
+    <div id="akShop" class="u-mb10"></div>
+    <div class="u-fs11 u-t2 u-fw700 u-mb4" style="text-transform:uppercase;letter-spacing:.5px">🏍️ Car Notes</div>
+    <div id="akCarNotes" class="u-mb10"></div>
+    <div class="u-flex u-jcb u-aic u-mt10 divider-top">
+      <span class="u-fs12t2">Total Aset Keluarga</span>
+      <span class="stat-val u-fs16" id="akTotal">Rp 0</span>
+    </div>
+    </div>
+  </div>
   <div class="grid3 u-mb8">
     <div class="stat-box clickable u-tac" style="padding:12px 8px" data-action="showFilteredTx" data-args='["laporan", "income", "\ud83d\udc9a Masuk"]'><div class="stat-val green u-fs14" id="lapIn">Rp 0</div><div class="stat-label">Masuk</div></div>
     <div class="stat-box clickable u-tac" style="padding:12px 8px" data-action="showFilteredTx" data-args='["laporan", "expense", "\ud83d\udd34 Keluar"]'><div class="stat-val red u-fs14" id="lapOut">Rp 0</div><div class="stat-label">Keluar</div></div>
@@ -667,6 +838,11 @@ b.appendChild(closeBtn);
     <div class="page-title">🪨 Bisnis Shop</div>
     <button class="qs-btn" data-action="openQS" data-args='["qsShop"]' aria-label="Buka menu cepat"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Atur</button>
   </div>
+    <div class="card u-mb12 u-dnone" id="shopInsightCard">
+      <div class="card-title">💡 Insight Shop</div>
+      <div id="shopInsightBody"></div>
+    </div>
+
   <div class="shop-grid">
     <div class="shop-stat clickable" data-action="goToList" data-args='["shopList", null, null, "riwayat"]'><div class="shop-val" id="cTrip">0</div><div class="shop-lbl">Transaksi</div></div>
     <div class="shop-stat clickable" data-action="goToList" data-args='["shopList", null, null, "riwayat"]'><div class="shop-val u-fs14" id="cSet">Rp 0</div><div class="shop-lbl">Omzet</div></div>
@@ -869,6 +1045,11 @@ b.appendChild(closeBtn);
     <div class="page-title">🏍️ Car Notes</div>
     <button class="qs-btn" data-action="openQS" data-args='["qsCarnotes"]' aria-label="Buka menu cepat"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </div>
+    <div class="card u-mb12 u-dnone" id="mobilInsightCard">
+      <div class="card-title">💡 Insight Mobil</div>
+      <div id="mobilInsightBody"></div>
+    </div>
+
   <div class="vehicle-select" id="vehicleSelect"></div>
   <div class="card u-mb10 u-flex u-aic u-jcb" style="padding:12px 14px">
     <div><div class="u-fs12 u-t2 u-fw700" style="text-transform:uppercase;letter-spacing:0.6px">Odometer Saat Ini</div><div class="u-fw800 u-pointer" style="font-size:20px;user-select:none;-webkit-user-select:none" id="cnCurKm" data-action="startEditCurKm" title="Tap untuk edit langsung" aria-label="Edit odometer saat ini">0 km</div></div>
@@ -998,6 +1179,11 @@ b.appendChild(closeBtn);
     <div class="page-title">🕌 Pajak &amp; Zakat</div>
   </div>
 
+    <div class="card u-mb12 u-dnone" id="pajakInsightCard">
+      <div class="card-title">💡 Insight Pajak &amp; Zakat</div>
+      <div id="pajakInsightBody"></div>
+    </div>
+
   <div class="card u-mb12" style="padding:12px 14px;background:linear-gradient(135deg,var(--accent3-soft),var(--surface2));border:1px solid var(--accent3)">
     <div class="u-fs12 u-lh16 u-t2">ℹ️ Semua angka di halaman ini adalah <b>estimasi referensi</b> berbasis data transaksi Anda &amp; aturan yang berlaku umum tahun 2026 (UU HPP, PMK 101/2016, ketetapan nisab BAZNAS). Bukan pengganti konsultasi resmi ke <b>DJP (pajak.go.id)</b> atau <b>BAZNAS/lembaga zakat</b> terpercaya. Nilai nisab &amp; harga emas bisa berubah — cek &amp; sesuaikan berkala di ⚙️ Pengaturan Referensi.</div>
   </div>
@@ -1010,68 +1196,6 @@ b.appendChild(closeBtn);
   <!-- ZAKAT TAB -->
   <div id="pajakTab-zakat">
 
-    <div class="card u-mb12" style="padding:12px 14px">
-      <div class="card-title u-mb8">📊 Kekayaan Bersih <span class="card-collapse-toggle" id="pzKekayaanCard-chev" data-action="toggleCardCollapse" data-args='["pzKekayaanCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
-      <div class="card-collapse-body" id="pzKekayaanCard-cbody">
-      <div class="grid3">
-        <div class="stat-box clickable" data-action="showPage" data-args='["dashboard", "$nav:0"]'><div class="stat-label">Saldo Akun</div><div class="stat-val green u-fs13" id="kbSaldoAkun">Rp 0</div></div>
-        <div class="stat-box clickable" data-action="goToList" data-args='["assetList", "aset"]'><div class="stat-label">Total Aset</div><div class="stat-val u-fs13" id="kbTotalAset">Rp 0</div></div>
-        <div class="stat-box"><div class="stat-label">Utang</div><div class="stat-val red u-fs13" id="kbUtang">Rp 0</div></div>
-      </div>
-      <div class="u-flex u-jcb u-aic u-mt10 divider-top">
-        <span class="u-fs12t2">🤝 Piutang (akan diterima)</span>
-        <span class="stat-val green u-fs14 u-pointer" id="kbPiutang" data-action="goToList" data-args='["piutangList", null]' aria-label="Lihat daftar piutang">Rp 0</span>
-      </div>
-      <div class="u-flex u-jcb u-aic u-mt10 divider-top">
-        <span class="u-fs12t2">📦 Inventori Bisnis (modal stok)</span>
-        <span class="stat-val u-fs14 u-pointer" id="kbInventori" data-action="showPage" data-args='["shop", "$el"]' aria-label="Lihat etalase produk">Rp 0</span>
-      </div>
-      <div class="u-flex u-jcb u-aic u-mt10 divider-top">
-        <span class="u-fs12t2">Kekayaan Bersih</span>
-        <span class="stat-val purple u-fs18" id="kbNetWorth">Rp 0</span>
-      </div>
-      </div>
-    </div>
-
-    <div class="card u-mb12">
-      <div class="card-title">🤝 Piutang <span class="u-flexc8"><span class="card-setting-btn u-pointer" data-action="openPiutangModal">＋ Tambah Piutang</span><span class="card-collapse-toggle" id="pzPiutangCard-chev" data-action="toggleCardCollapse" data-args='["pzPiutangCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
-      <div class="card-collapse-body" id="pzPiutangCard-cbody">
-      <div class="u-hint10">Catat uang yang dipinjamkan ke orang lain di sini. Piutang yang diyakini akan kembali dihitung sebagai penambah Kekayaan Bersih & bisa diikutkan Zakat Maal. Tandai "Lunas" kalau sudah dibayar supaya tidak lagi dihitung.</div>
-      <div id="piutangList"><div class="empty"><div class="empty-icon">🤝</div><div class="empty-text">Belum ada piutang tercatat</div></div></div>
-      </div>
-    </div>
-
-    <div class="card u-mb12">
-      <div class="card-title">📕 Buku Utang <span class="u-flexc8"><span class="card-setting-btn u-pointer" data-action="openDebtModal">＋ Tambah Utang</span><span class="card-collapse-toggle" id="pzUtangCard-chev" data-action="toggleCardCollapse" data-args='["pzUtangCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
-      <div class="card-collapse-body" id="pzUtangCard-cbody">
-      <div class="u-hint10">Catat detail utang ke orang/bank/lembaga lain di sini (pinjaman pribadi, KTA, paylater, dll) — lengkap dgn bunga & cicilan per bulan kalau ada. Total utang belum lunas otomatis jadi pengurang Kekayaan Bersih & Zakat Maal. Tandai "Lunas" kalau sudah dibayar penuh. 🔄 Isi "Cicilan/Bulan" → otomatis muncul sebagai tagihan bulanan (kena reminder & Perkiraan Kas 30 Hari); tiap kali tagihan itu dibayar, sisa utang di sini ikut berkurang otomatis & auto-Lunas kalau sudah habis.</div>
-      <div class="grid2 u-mb10">
-        <div class="stat-box"><div class="stat-label">Total Sisa Utang</div><div class="stat-val red u-fs14" id="debtTotalVal">Rp 0</div></div>
-        <div class="stat-box"><div class="stat-label">Cicilan/Bulan (semua utang)</div><div class="stat-val red u-fs14" id="debtCicilanVal">Rp 0</div></div>
-      </div>
-      <div id="debtList"><div class="empty"><div class="empty-icon">📕</div><div class="empty-text">Belum ada utang tercatat</div></div></div>
-      </div>
-    </div>
-
-    <div class="card u-mb12">
-      <div class="card-title">🎯 Strategi Pelunasan Utang <span class="card-collapse-toggle" id="pzDebtStratCard-chev" data-action="toggleCardCollapse" data-args='["pzDebtStratCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
-      <div class="card-collapse-body" id="pzDebtStratCard-cbody">
-      <div class="u-hint10">Urutan mana yang sebaiknya dilunasi duluan, dihitung otomatis dari data 📕 Buku Utang di atas. <b>Avalanche</b> = bunga tertinggi dulu (paling hemat total bunga). <b>Snowball</b> = saldo terkecil dulu (lebih cepat "menang" secara psikologis, biar makin termotivasi).</div>
-      <div class="u-flex u-gap8 u-fwrap u-mb12" id="dsMethodChips">
-        <button type="button" class="chip-btn" data-action="setDebtStrategyMethod" data-args='["avalanche"]'>🏔️ Avalanche (hemat bunga)</button>
-        <button type="button" class="chip-btn" data-action="setDebtStrategyMethod" data-args='["snowball"]'>⛄ Snowball (cepat menang)</button>
-      </div>
-      <div class="fg u-mb12">
-        <label class="fl">Dana Ekstra per Bulan buat Nambah Cicilan (opsional)</label>
-        <div class="amt-wrap">
-          <input type="text" class="fi fi-calc-only" id="dsExtra" placeholder="0" inputmode="decimal" oninput="onDsExtraInput()" onblur="evalAmtExpr('dsExtra')">
-          <button type="button" class="calc-trigger" data-action="openCalc" data-args='["dsExtra"]' title="Buka kalkulator" aria-label="Buka kalkulator">🧮</button>
-        </div>
-        <div class="u-fs11 u-t2 u-mt4">Kalau ada surplus kas bulanan yang mau dialihkan ke cicilan tambahan, isi di sini buat lihat simulasi seberapa cepat semua utang lunas (tetap bayar minimum semua utang dulu, sisanya diarahkan ke utang prioritas teratas).</div>
-      </div>
-      <div id="dsResult"></div>
-      </div>
-    </div>
 
     <div class="card u-mb12">
       <div class="card-title">💼 Zakat Penghasilan (Profesi) <span class="u-flexc8"><span class="card-setting-btn u-pointer" data-action="hitungZakatPenghasilan">🔄 Hitung dari Transaksi</span><span class="card-collapse-toggle" id="pzZakatPenghasilanCard-chev" data-action="toggleCardCollapse" data-args='["pzZakatPenghasilanCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
@@ -1234,13 +1358,18 @@ b.appendChild(closeBtn);
 <!-- MODAL: RIWAYAT SKOR HIDUP SEIMBANG -->
 <script>document.write(MODAL_HTML[1]);</script><!-- modal:lbHistoryModal externalized to modals.js -->
 
-<!-- ASET (Navigation Asset, dipisah dari Pajak — dibuka lewat kartu Dashboard Hub kategori
-     "Aset"/goToList lintas-halaman, TIDAK ditambah nav-item bottom-nav baru, sama seperti
-     halaman lain yang dibuka murni lewat showPage() dari luar bottom-nav) -->
+<!-- ASET (Navigation Asset, dipisah dari Pajak — bisa dibuka lewat nav-item bottom-nav
+     "Aset" (menggantikan slot "AI" lama), maupun lewat kartu Dashboard Hub kategori
+     "Aset"/goToList lintas-halaman) -->
 <div class="page" id="page-aset">
   <div class="page-settings-btn">
     <div class="page-title">📦 Aset</div>
   </div>
+
+    <div class="card u-mb12 u-dnone" id="assetInsightCard">
+      <div class="card-title">💡 Insight Aset</div>
+      <div id="assetInsightBody"></div>
+    </div>
 
     <div class="card u-mb12 u-dnone" id="assetDashboard">
       <div class="card-title">📊 Dashboard Aset</div>
@@ -1274,6 +1403,7 @@ b.appendChild(closeBtn);
         <div class="budget-sum-box"><div class="budget-sum-val" id="assetPenyusutanTotalBuku">Rp 0</div><div class="budget-sum-lbl">Nilai Buku Skrg</div></div>
       </div>
       <div id="assetPenyusutanList"></div>
+      <div id="assetPenyusutanAI"></div>
     </div>
 
     <div class="card u-mb12 u-dnone" id="assetPajakDashboard">
@@ -1529,6 +1659,10 @@ b.appendChild(closeBtn);
   </div>
 
   <!-- DANA PENDIDIKAN -->
+  <div class="card u-mb12 u-dnone" id="eduFundInsightCard">
+    <div class="card-title">💡 Insight Dana Pendidikan</div>
+    <div id="eduFundInsightBody"></div>
+  </div>
   <div class="card">
     <div class="card-title">🎓 Dana Pendidikan</div>
     <div id="eduFundList"><div class="empty"><div class="empty-icon">🎓</div><div class="empty-text">Belum ada rencana dana pendidikan</div></div></div>
@@ -1998,6 +2132,19 @@ b.appendChild(closeBtn);
       </div>
     </div>
   </div>
+  <!-- TANGGA KEUANGAN (fitur baru -- lihat tangga-keuangan.js). Kartu murni
+       tambahan, diisi oleh TanggaKeuangan.render() yang di-load sebagai
+       <script src> terpisah SETELAH app-bundle-a/b.min.js -- tidak mengubah
+       1 baris pun kode yang sudah ada di bundle. -->
+  <div class="card u-mb12" id="tanggaKeuanganCard" style="background-image:linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.75)), url('tangga-ternak-uang.jpg'); background-size:cover; background-position:top center; color:#fff;">
+    <div class="card-title" style="color:#fff;">🪜 Tangga Ternak Uang</div>
+    <div style="font-size:12px;color:#e8e8e8;margin-bottom:10px;">Analisis otomatis dari data keuangan kamu (estimasi, bukan nasihat finansial personal).</div>
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+      <div style="font-size:40px;font-weight:800;line-height:1;" id="tanggaKeuanganStepNum">-</div>
+      <div style="font-size:13px;font-weight:700;" id="tanggaKeuanganStepTitle">Menghitung...</div>
+    </div>
+    <div id="tanggaKeuanganList"></div>
+  </div>
   <!-- QUICK ACTIONS (Sprint 1 Tahap 3 — Dashboard 2.0, lihat QUICK-ACTIONS.md).
        Baris tombol kartu kecil ala Material 3, tepat di bawah Hero Card. Setiap
        tombol HANYA memanggil fungsi yang SUDAH ADA (openTxModal/openCatatan/
@@ -2018,7 +2165,7 @@ b.appendChild(closeBtn);
     <button type="button" class="dashhub-qa-btn" data-onclick="document.getElementById('dashHubSearchInput').focus()" aria-label="Cari">
       <span class="dashhub-qa-icon">🔍</span><span class="dashhub-qa-label">Cari</span>
     </button>
-    <button type="button" class="dashhub-qa-btn" data-onclick="showPage('ai',document.querySelectorAll('.nav-item')[3])" aria-label="Buka AI">
+    <button type="button" class="dashhub-qa-btn" data-onclick="showPage('ai')" aria-label="Buka AI">
       <span class="dashhub-qa-icon">🤖</span><span class="dashhub-qa-label">AI</span>
     </button>
   </div>
@@ -2251,9 +2398,9 @@ b.appendChild(closeBtn);
     <svg aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
     Shop<div class="nav-dot"></div>
   </button>
-  <button class="nav-item" aria-current="false" data-action="showPage" data-args='["ai", "$el"]' aria-label="Asisten AI">
-    <svg aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-    AI<div class="nav-dot"></div>
+  <button class="nav-item" aria-current="false" data-action="showPage" data-args='["aset", "$el"]' aria-label="Aset">
+    <svg aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+    Aset<div class="nav-dot"></div>
   </button>
   <button class="nav-item" aria-current="false" data-action="showPage" data-args='["carnotes", "$el"]'>
     <svg aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 17h14M5 17a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm14 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0zM5 17V9l2-5h10l2 5v8M5 9h14"/></svg>
@@ -2507,6 +2654,7 @@ b.appendChild(closeBtn);
 <script>document.write(MODAL_HTML[69]);</script><!-- modal:importShopExcelModal (Import dari Excel Shop) -->
 <script>document.write(MODAL_HTML[70]);</script><!-- modal:mergeProductModal (Gabungkan Harga Produk) -->
 
-<script src="app-bundle-b.min.js?v=312" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
+<script src="app-bundle-b.min.js?v=342" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
+<script src="tangga-keuangan.js?v=342"></script>
 </body>
 </html>
