@@ -353,7 +353,7 @@ let html=`
 </div>
 <div style="font-size:11px;color:var(--text2);margin-top:4px">Isi harga emas Antam/pasar hari ini per gram (24K) — dipakai utk estimasi nilai sekarang & cek Nisab. Cek harga terkini di Pegadaian/Antam/toko emas langganan.</div>
 </div>
-<div style="background:var(--surface2);border-radius:12px;padding:14px;margin-bottom:14px">
+<div style="background:var(--surface3);border-radius:12px;padding:14px;margin-bottom:14px">
 <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span class="u-t2">Total berat (apa adanya)</span><b>${gramApaAdanya.toFixed(3)} gram</b></div>
 <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span class="u-t2">Total setara emas 24K</span><b>${gramEquiv.toFixed(3)} gram</b></div>
 <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span class="u-t2">Total modal/harga beli</span><b>${fmtFull(modal)}</b></div>

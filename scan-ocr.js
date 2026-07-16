@@ -100,6 +100,17 @@ if(!isNaN(new Date(iso).getTime()))return iso;
 }
 return null;
 }
+// BUGFIX: struk/riwayat pesanan marketplace (mis. "Detail Pesanan" Tokopedia/Shopee) sering
+// punya banyak angka bertingkat -- harga produk, ongkir, voucher, asuransi, dst -- dan yang
+// BENERAN dibayar (mis. "Total Belanja"/"Total Tagihan"/"Total Pembayaran") bisa LEBIH KECIL
+// dari harga produk doang (karena voucher/diskon). scanReceipt()/scanReceiptBelanja() dulu
+// cuma ambil Math.max(...nums) dari SEMUA angka di struk -- jadi salah ambil harga produk
+// (lebih besar) padahal yang harus diisi ke nominal transaksi itu total akhir yang lebih kecil.
+// Fix: kalau ada baris berlabel total akhir yang jelas, prioritaskan itu; fallback ke angka
+// terbesar kalau labelnya tidak ketemu (struk kasir biasa/format lain). Sengaja TIDAK match
+// "Subtotal ..." atau "Total ongkos kirim" dsb (butuh kata "total" LANGSUNG diikuti salah satu
+// kata kunci di bawah, bukan cuma mengandung substring "total").
+const RECEIPT_TOTAL_LABEL_RE=/total\s*(belanja|tagihan|pembayaran|bayar|(?:yang\s*)?harus\s*dibayar)\b/i;
 function scanReceipt(amtId,dateId,noteId){
 const inp=document.createElement('input');
 inp.type='file'; inp.accept='image/*';
@@ -111,13 +122,15 @@ const result=await ocrRecognize(file);
 const text=result&&result.data?result.data.text:'';
 const rawNums=text.match(/\d{1,3}(?:[.,]\d{3})+(?:[.,]\d{1,2})?|\d{4,}/g)||[];
 const nums=rawNums.map(s=>parseFloat(s.replace(/[.,](?=\d{3}(\D|$))/g,'').replace(',','.'))).filter(n=>n>=500&&n<500000000);
-if(nums.length&&amtId){const amt=Math.round(Math.max(...nums));const el=document.getElementById(amtId);if(el){el.value=amt;if(el.oninput)el.oninput();}}
+const labeledTotal=extractLabeledAmount(text,RECEIPT_TOTAL_LABEL_RE);
+const bestAmt=labeledTotal!=null?Math.round(labeledTotal):(nums.length?Math.round(Math.max(...nums)):null);
+if(bestAmt!=null&&amtId){const el=document.getElementById(amtId);if(el){el.value=bestAmt;if(el.oninput)el.oninput();}}
 const isoForBill=extractDateFromText(text);
 if(dateId&&isoForBill){const el=document.getElementById(dateId);if(el)el.value=isoForBill;}
 const firstLine=text.split('\n').map(l=>l.trim()).find(l=>l.length>3&&!/^\d+$/.test(l));
 if(firstLine){const el=document.getElementById(noteId);if(el)el.value=firstLine.slice(0,60);}
-toast(nums.length?'✅ Scan selesai, cek & koreksi hasilnya':'⚠️ Nominal tidak terbaca, isi manual ya');
-await maybeOfferPaylaterReminder(text,nums.length?Math.round(Math.max(...nums)):null,isoForBill);
+toast(bestAmt!=null?'✅ Scan selesai, cek & koreksi hasilnya':'⚠️ Nominal tidak terbaca, isi manual ya');
+await maybeOfferPaylaterReminder(text,bestAmt,isoForBill);
 }catch(err){
 toast('❌ Gagal scan: '+scanErrorMessage(err));
 }
@@ -438,7 +451,9 @@ const text=result&&result.data?result.data.text:'';
 const rawNums=text.match(/\d{1,3}(?:[.,]\d{3})+(?:[.,]\d{1,2})?|\d{4,}/g)||[];
 const nums=rawNums.map(s=>parseFloat(s.replace(/[.,](?=\d{3}(\D|$))/g,'').replace(',','.'))).filter(n=>n>=500&&n<500000000);
 let amt=0;
-if(nums.length){amt=Math.round(Math.max(...nums));const el=document.getElementById('txAmt');if(el){el.value=amt;if(el.oninput)el.oninput();}}
+const labeledTotal=extractLabeledAmount(text,RECEIPT_TOTAL_LABEL_RE);
+if(labeledTotal!=null){amt=Math.round(labeledTotal);const el=document.getElementById('txAmt');if(el){el.value=amt;if(el.oninput)el.oninput();}}
+else if(nums.length){amt=Math.round(Math.max(...nums));const el=document.getElementById('txAmt');if(el){el.value=amt;if(el.oninput)el.oninput();}}
 let isoDate=null;
 const dm=text.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
 if(dm){let[,d,m,y]=dm;if(y.length===2)y='20'+y;const iso=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;if(!isNaN(new Date(iso).getTime())){isoDate=iso;const el=document.getElementById('txDate');if(el)el.value=iso;}}
@@ -466,10 +481,10 @@ const qtyEl=document.getElementById('txStockQty');if(qtyEl)qtyEl.value=guessedPa
 const unitEl=document.getElementById('txStockUnit');if(unitEl)unitEl.value=guessedPart.unit;
 toast('✅ Scan selesai — tebakan sparepart & jumlah otomatis terisi, cek & koreksi kalau meleset');
 } else {
-toast(nums.length?'✅ Scan selesai, cek & koreksi hasilnya. Nama sparepart tidak terbaca jelas, isi manual ya':'⚠️ Nominal tidak terbaca, isi manual ya');
+toast(amt?'✅ Scan selesai, cek & koreksi hasilnya. Nama sparepart tidak terbaca jelas, isi manual ya':'⚠️ Nominal tidak terbaca, isi manual ya');
 }
 } else {
-toast(nums.length?'✅ Scan selesai, cek & koreksi hasilnya':'⚠️ Nominal tidak terbaca, isi manual ya');
+toast(amt?'✅ Scan selesai, cek & koreksi hasilnya':'⚠️ Nominal tidak terbaca, isi manual ya');
 }
 await maybeOfferPaylaterReminder(text,amt||null,isoDate);
 }catch(err){

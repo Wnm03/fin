@@ -176,7 +176,7 @@ const el=document.getElementById('txShopStockCartList');
 if(!el)return;
 if(!curShopStockCart.length){el.innerHTML='';return;}
 el.innerHTML=curShopStockCart.map((it,i)=>`
-    <div class="u-flex u-aic u-gap8 u-r8 u-mb6" style="background:var(--surface2);padding:8px 10px">
+    <div class="u-flex u-aic u-gap8 u-r8 u-mb6" style="background:var(--surface3);padding:8px 10px">
       <div class="u-flex1 u-minw0">
         <div class="u-fs12 u-fw700" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(it.name)}${it.isNew?' <span class="u-cacc u-fw600">(baru)</span>':''}</div>
         <div class="u-fs12t2">${it.qty} x ${fmtFull(it.hargaBeli)} = ${fmtFull(it.qty*it.hargaBeli)}</div>
@@ -191,7 +191,7 @@ if(!el)return;
 if(!curTxShopSaleCart.length){el.innerHTML='';return;}
 const{lines,total,profit}=computeTxShopSaleTotals();
 el.innerHTML=lines.map((l,i)=>`
-    <div class="u-flex u-aic u-gap8 u-r8 u-mb6" style="background:var(--surface2);padding:8px 10px">
+    <div class="u-flex u-aic u-gap8 u-r8 u-mb6" style="background:var(--surface3);padding:8px 10px">
       <div class="u-flex1 u-minw0">
         <div class="u-fs12 u-fw700" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(l.name)}</div>
         <div class="u-fs12t2">${l.qty} x ${fmtFull(l.harga)} = ${fmtFull(l.lineTotal)}</div>

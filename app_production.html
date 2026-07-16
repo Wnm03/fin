@@ -53,7 +53,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Keluarga W</title>
-<link rel="stylesheet" href="styles.css?v=301">
+<link rel="stylesheet" href="styles.css?v=312">
 <script>
 /* Debug console (Eruda) — aktifkan sekali lewat ?debug=1 di URL, nempel via localStorage.
    Matikan lagi lewat ?debug=0. Tidak aktif buat user biasa. */
@@ -106,8 +106,8 @@ b.appendChild(closeBtn);
 }catch(_e){ console.error('Gagal tampilkan banner error modul:',_e); }
 };
 </script>
-<script src="app-bundle-a.min.js?v=301" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
-<script src="smoke-test.js?v=301" defer></script>
+<script src="app-bundle-a.min.js?v=312" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
+<script src="smoke-test.js?v=312" defer></script>
 <link rel="manifest" id="pwaManifestLink" href="manifest.json">
 </head>
 <body data-theme="fresh">
@@ -1015,7 +1015,7 @@ b.appendChild(closeBtn);
       <div class="card-collapse-body" id="pzKekayaanCard-cbody">
       <div class="grid3">
         <div class="stat-box clickable" data-action="showPage" data-args='["dashboard", "$nav:0"]'><div class="stat-label">Saldo Akun</div><div class="stat-val green u-fs13" id="kbSaldoAkun">Rp 0</div></div>
-        <div class="stat-box clickable" data-action="goToList" data-args='["assetList", null]'><div class="stat-label">Total Aset</div><div class="stat-val u-fs13" id="kbTotalAset">Rp 0</div></div>
+        <div class="stat-box clickable" data-action="goToList" data-args='["assetList", "aset"]'><div class="stat-label">Total Aset</div><div class="stat-val u-fs13" id="kbTotalAset">Rp 0</div></div>
         <div class="stat-box"><div class="stat-label">Utang</div><div class="stat-val red u-fs13" id="kbUtang">Rp 0</div></div>
       </div>
       <div class="u-flex u-jcb u-aic u-mt10 divider-top">
@@ -1030,56 +1030,6 @@ b.appendChild(closeBtn);
         <span class="u-fs12t2">Kekayaan Bersih</span>
         <span class="stat-val purple u-fs18" id="kbNetWorth">Rp 0</span>
       </div>
-      </div>
-    </div>
-
-    <div class="card u-mb12">
-      <div class="card-title">📈 Histori Kekayaan &amp; Growth Rate Aktual <span class="u-flexc8"><span class="card-setting-btn u-pointer" data-action="saveWealthSnapshot" data-args='[true]'>📸 Catat Sekarang</span><span class="card-collapse-toggle" id="pzHistoriCard-chev" data-action="toggleCardCollapse" data-args='["pzHistoriCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
-      <div class="card-collapse-body" id="pzHistoriCard-cbody">
-      <div class="u-hint10">Simpan snapshot Kekayaan Bersih dari waktu ke waktu supaya bisa dihitung <b>growth rate AKTUAL</b> (bukan cuma asumsi) — dipakai buat bandingkan sama Asumsi Return di kalkulator Kebebasan Finansial. 1 snapshot otomatis tercatat tiap bulan saat app dibuka; bisa juga catat manual kapan saja.</div>
-      <div class="u-dnone u-mb10 u-bgaccsoft u-r10" id="wealthGrowthSummary" style="padding:10px 12px">
-        <div class="u-fs11 u-t2">Growth Rate Aktual (CAGR)</div>
-        <div class="stat-val purple u-fs18" id="wealthCAGR">-</div>
-        <div class="u-fs11 u-ctext3 u-mt2 u-lh14" id="wealthCAGRNote"></div>
-      </div>
-      <div id="wealthSnapshotList"><div class="empty"><div class="empty-icon">📸</div><div class="empty-text">Belum ada snapshot kekayaan tercatat</div></div></div>
-      </div>
-    </div>
-
-    <div class="card u-mb12">
-      <div class="card-title">📋 Buku Aset <span class="u-flexc8"><span class="card-setting-btn u-pointer" data-action="openAssetModal">＋ Tambah Aset</span><span class="card-collapse-toggle" id="pzAsetCard-chev" data-action="toggleCardCollapse" data-args='["pzAsetCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
-      <div class="card-collapse-body" id="pzAsetCard-cbody">
-      <div class="u-hint10">Catat tanah, rumah, kendaraan, emas, saham, reksadana, kripto, atau investasi lain di sini. Tandai "Hitung ke Zakat Maal" hanya untuk aset produktif/dagang (emas, deposito, saham, tanah investasi) — bukan rumah tinggal atau kendaraan pakai sehari-hari.</div>
-      <div id="assetList"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada aset tercatat</div></div></div>
-      <div class="u-grid2 u-mb10">
-        <button class="btn btn-ghost btn-sm" data-action="Aset.exportXLSX">⬇️ Export Aset (Excel)</button>
-        <button class="btn btn-ghost btn-sm" data-onclick="document.getElementById('assetImportFile').click()">⬆️ Import Aset</button>
-      </div>
-      <input type="file" id="assetImportFile" accept=".xlsx,.xls" style="display:none" onchange="Aset.importXLSX(event)">
-      <button class="btn btn-ghost btn-full btn-sm u-mb10" data-action="GoldImport.open">📋 Impor Nota Emas (Massal)</button>
-      <button class="btn btn-ghost btn-full btn-sm u-mb10" data-action="GoldZakat.open">🕌 Analisa Emas & Zakat</button>
-      <div class="fg u-mt10" style="margin-bottom:0"><label class="fl">Utang Lain-lain (belum tercatat di Buku Utang)</label><input type="text" inputmode="numeric" class="fi" id="zmUtang" placeholder="0" oninput="hitungZakatMaal()"></div>
-      <div class="u-fs11 u-ctext3 u-mt4">💡 Untuk utang dengan nama pemberi pinjaman, bunga, & jatuh tempo yang jelas, catat di kartu 📕 Buku Utang di bawah supaya lebih rapi & bisa dipantau per-item.</div>
-      </div>
-    </div>
-
-    <div class="card u-mb12">
-      <div class="card-title">🧭 Rekomendasi Alokasi Aset <span class="card-collapse-toggle" id="pzAlokasiCard-chev" data-action="toggleCardCollapse" data-args='["pzAlokasiCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
-      <div class="card-collapse-body" id="pzAlokasiCard-cbody">
-      <div class="u-hint10">Ilustrasi pembagian dana ke beberapa jenis instrumen berdasarkan profil risiko — <b>bukan rekomendasi produk/investasi personal</b>, cuma gambaran umum untuk bahan pertimbangan. Sesuaikan dgn kondisi, tujuan, dan toleransi risiko kamu sendiri.</div>
-      <div class="fg u-mb10"><label class="fl">Dana yang Mau Dialokasikan (Rp)</label>
-        <div class="amt-wrap">
-          <input type="text" class="fi fi-calc-only" id="aaDana" placeholder="0" inputmode="decimal" oninput="AlokasiAset.onDanaInput()" onblur="evalAmtExpr('aaDana')">
-          <button type="button" class="calc-trigger" data-action="openCalc" data-args='["aaDana"]' title="Buka kalkulator" aria-label="Buka kalkulator">🧮</button>
-        </div>
-        <div class="u-fs11 u-t2 u-mt4">Default terisi dari total saldo akun kamu saat ini — boleh diedit manual.</div>
-      </div>
-      <div class="u-flex u-gap8 u-fwrap u-mb12" id="aaRiskChips">
-        <button type="button" class="chip-btn" data-action="AlokasiAset.setRisk" data-args='["konservatif", "$el"]'>🛡️ Konservatif</button>
-        <button type="button" class="chip-btn" data-action="AlokasiAset.setRisk" data-args='["moderat", "$el"]'>⚖️ Moderat</button>
-        <button type="button" class="chip-btn" data-action="AlokasiAset.setRisk" data-args='["agresif", "$el"]'>🚀 Agresif</button>
-      </div>
-      <div id="aaResult"></div>
       </div>
     </div>
 
@@ -1144,7 +1094,7 @@ b.appendChild(closeBtn);
       <div class="card-collapse-body" id="pzZakatMaalCard-cbody">
       <div class="u-hint10">Dihitung dari Saldo Akun + Aset yang ditandai "Hitung ke Zakat Maal" di Buku Aset − Utang. Wajib jika totalnya mencapai nisab <b>85 gram emas</b> dan sudah mengendap 1 tahun (haul).</div>
       <div class="grid2 u-mb10">
-        <div class="stat-box clickable" data-action="goToList" data-args='["assetList", null]'><div class="stat-label">Total Harta Zakatable</div><div class="stat-val" id="zmTotalHarta">Rp 0</div></div>
+        <div class="stat-box clickable" data-action="goToList" data-args='["assetList", "aset"]'><div class="stat-label">Total Harta Zakatable</div><div class="stat-val" id="zmTotalHarta">Rp 0</div></div>
         <div class="stat-box"><div class="stat-label" title="Nisab = batas minimal harta yang mewajibkan zakat maal, setara harga 85 gram emas saat ini">Nisab (85gr emas) ℹ️</div><div class="stat-val" id="zmNisab">Rp 0</div></div>
       </div>
       <div class="u-r12 u-mb10" id="zmStatusBox" style="padding:12px;background:var(--surface3)">
@@ -1283,6 +1233,131 @@ b.appendChild(closeBtn);
 <script>document.write(MODAL_HTML[0]);</script><!-- modal:refAiModal externalized to modals.js -->
 <!-- MODAL: RIWAYAT SKOR HIDUP SEIMBANG -->
 <script>document.write(MODAL_HTML[1]);</script><!-- modal:lbHistoryModal externalized to modals.js -->
+
+<!-- ASET (Navigation Asset, dipisah dari Pajak — dibuka lewat kartu Dashboard Hub kategori
+     "Aset"/goToList lintas-halaman, TIDAK ditambah nav-item bottom-nav baru, sama seperti
+     halaman lain yang dibuka murni lewat showPage() dari luar bottom-nav) -->
+<div class="page" id="page-aset">
+  <div class="page-settings-btn">
+    <div class="page-title">📦 Aset</div>
+  </div>
+
+    <div class="card u-mb12 u-dnone" id="assetDashboard">
+      <div class="card-title">📊 Dashboard Aset</div>
+      <div class="budget-summary-grid">
+        <div class="budget-sum-box"><div class="budget-sum-val purple" id="assetDashTotal">Rp 0</div><div class="budget-sum-lbl">Total Aset</div></div>
+        <div class="budget-sum-box"><div class="budget-sum-val" id="assetDashBuku">Rp 0</div><div class="budget-sum-lbl">Nilai Buku</div></div>
+        <div class="budget-sum-box"><div class="budget-sum-val" id="assetDashPasar">Rp 0</div><div class="budget-sum-lbl">Nilai Pasar</div></div>
+      </div>
+      <div class="u-fs12 u-t2 u-mb12" id="assetDashSelisih"></div>
+      <div class="u-fs12 u-t2 u-fw700 u-mb8" style="letter-spacing:0.5px;text-transform:uppercase">Ringkasan per Kategori</div>
+      <div id="assetDashKategori"></div>
+      <div id="assetDashDiversifikasi"></div>
+    </div>
+
+    <div class="card u-mb12 u-dnone" id="assetInvestasiDashboard">
+      <div class="card-title">💹 Ringkasan Performa Investasi</div>
+      <div class="u-hint10">Cuma mencakup aset yang ada data modalnya (Modal Investasi, atau Harga Beli × Jumlah Unit) — aset tanpa data modal dikecualikan biar ROI/Yield gak keisi angka semu.</div>
+      <div class="budget-summary-grid">
+        <div class="budget-sum-box"><div class="budget-sum-val" id="assetInvestasiROI">—</div><div class="budget-sum-lbl">ROI</div></div>
+        <div class="budget-sum-box"><div class="budget-sum-val" id="assetInvestasiYield">—</div><div class="budget-sum-lbl">Yield (CAGR/tahun)</div></div>
+      </div>
+      <div class="u-fs13 u-mt10" id="assetInvestasiGain"></div>
+      <div class="u-fs12 u-t2 u-mt10 u-lh15" id="assetInvestasiRingkasan"></div>
+    </div>
+
+    <div class="card u-mb12 u-dnone" id="assetPenyusutanDashboard">
+      <div class="card-title">📉 Penyusutan Aset</div>
+      <div class="u-hint10">Estimasi nilai buku aset yang nilainya <b>menurun</b> dari waktu ke waktu (mis. kendaraan, bangunan, peralatan) — bukan utk aset yang cenderung naik nilainya (tanah, emas, saham/reksadana; pakai kartu 💹 Performa Investasi di atas utk itu). Aktifkan per aset & pilih metode: <b>Garis Lurus</b> (beban rata tiap tahun), <b>Saldo Menurun</b> (persentase dari nilai buku, makin kecil tiap tahun), atau <b>Manual</b> (nilai buku ikut field "Nilai" yang kamu update sendiri, tanpa formula otomatis).</div>
+      <div class="budget-summary-grid u-mb10">
+        <div class="budget-sum-box"><div class="budget-sum-val" id="assetPenyusutanTotalAkumulasi">Rp 0</div><div class="budget-sum-lbl">Akumulasi Penyusutan</div></div>
+        <div class="budget-sum-box"><div class="budget-sum-val" id="assetPenyusutanTotalBuku">Rp 0</div><div class="budget-sum-lbl">Nilai Buku Skrg</div></div>
+      </div>
+      <div id="assetPenyusutanList"></div>
+    </div>
+
+    <div class="card u-mb12 u-dnone" id="assetPajakDashboard">
+      <div class="card-title">🧾 Pajak Aset</div>
+      <div class="u-hint10">Estimasi <b>PBB</b> (Pajak Bumi &amp; Bangunan) utk aset Tanah/Rumah-Bangunan &amp; <b>Zakat Maal</b> khusus aset yang ditandai "Hitung ke Zakat Maal" di Buku Aset — beda dari kalkulator Zakat Maal lengkap di tab 🕌 Pajak (yang juga menghitung aset cair &amp; utang). NJOP di sini didekati dari field "Nilai" aset (bukan NJOP resmi SPPT) — cek Perda/SPPT setempat utk angka pasti.</div>
+      <div class="u-grid2 u-gap8 u-mb10">
+        <div><label class="fl">NJOPTKP (Rp)</label><input type="text" inputmode="numeric" class="fi" id="pajakAsetNjoptkp" placeholder="12000000" oninput="PajakAset.updateSetting('njoptkp',this.value)"></div>
+        <div><label class="fl">Tarif PBB-P2 (%, cek Perda daerah)</label><input type="text" inputmode="decimal" class="fi" id="pajakAsetTarif" placeholder="0.5" oninput="PajakAset.updateSetting('tarifPersen',this.value)"></div>
+      </div>
+      <div class="budget-summary-grid u-mb10">
+        <div class="budget-sum-box"><div class="budget-sum-val red" id="assetPajakTotalPBB">Rp 0</div><div class="budget-sum-lbl">Estimasi PBB/Tahun</div></div>
+        <div class="budget-sum-box"><div class="budget-sum-val orange" id="assetPajakTotalZakat">Rp 0</div><div class="budget-sum-lbl">Zakat Maal Aset (2,5%)</div></div>
+      </div>
+      <div id="assetPajakList"></div>
+      <div class="u-fs12 u-t2 u-mt10 u-lh15" id="assetPajakRingkasan"></div>
+    </div>
+
+    <div class="card u-mb12">
+      <div class="card-title">📈 Histori Kekayaan &amp; Growth Rate Aktual <span class="u-flexc8"><span class="card-setting-btn u-pointer" data-action="saveWealthSnapshot" data-args='[true]'>📸 Catat Sekarang</span><span class="card-collapse-toggle" id="pzHistoriCard-chev" data-action="toggleCardCollapse" data-args='["pzHistoriCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
+      <div class="card-collapse-body" id="pzHistoriCard-cbody">
+      <div class="u-hint10">Simpan snapshot Kekayaan Bersih dari waktu ke waktu supaya bisa dihitung <b>growth rate AKTUAL</b> (bukan cuma asumsi) — dipakai buat bandingkan sama Asumsi Return di kalkulator Kebebasan Finansial. 1 snapshot otomatis tercatat tiap bulan saat app dibuka; bisa juga catat manual kapan saja.</div>
+      <div class="u-dnone u-mb10 u-bgaccsoft u-r10" id="wealthGrowthSummary" style="padding:10px 12px">
+        <div class="u-fs11 u-t2">Growth Rate Aktual (CAGR)</div>
+        <div class="stat-val purple u-fs18" id="wealthCAGR">-</div>
+        <div class="u-fs11 u-ctext3 u-mt2 u-lh14" id="wealthCAGRNote"></div>
+      </div>
+      <div id="wealthSnapshotList"><div class="empty"><div class="empty-icon">📸</div><div class="empty-text">Belum ada snapshot kekayaan tercatat</div></div></div>
+      </div>
+    </div>
+
+    <div class="card u-mb12">
+      <div class="card-title">📋 Buku Aset <span class="u-flexc8"><span class="card-setting-btn u-pointer" data-action="openAssetModal">＋ Tambah Aset</span><span class="card-collapse-toggle" id="pzAsetCard-chev" data-action="toggleCardCollapse" data-args='["pzAsetCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
+      <div class="card-collapse-body" id="pzAsetCard-cbody">
+      <div class="u-hint10">Catat tanah, rumah, kendaraan, emas, saham, reksadana, kripto, atau investasi lain di sini. Tandai "Hitung ke Zakat Maal" hanya untuk aset produktif/dagang (emas, deposito, saham, tanah investasi) — bukan rumah tinggal atau kendaraan pakai sehari-hari.</div>
+      <div id="assetList"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada aset tercatat</div></div></div>
+      <div class="u-grid2 u-mb10">
+        <button class="btn btn-ghost btn-sm" data-action="Aset.exportXLSX">⬇️ Export Aset (Excel)</button>
+        <button class="btn btn-ghost btn-sm" data-onclick="document.getElementById('assetImportFile').click()">⬆️ Import Aset</button>
+      </div>
+      <input type="file" id="assetImportFile" accept=".xlsx,.xls" style="display:none" onchange="Aset.importXLSX(event)">
+      <button class="btn btn-ghost btn-full btn-sm u-mb10" data-action="GoldImport.open">📋 Impor Nota Emas (Massal)</button>
+      <button class="btn btn-ghost btn-full btn-sm u-mb10" data-action="GoldZakat.open">🕌 Analisa Emas & Zakat</button>
+      <div class="fg u-mt10" style="margin-bottom:0"><label class="fl">Utang Lain-lain (belum tercatat di Buku Utang)</label><input type="text" inputmode="numeric" class="fi" id="zmUtang" placeholder="0" oninput="hitungZakatMaal()"></div>
+      <div class="u-fs11 u-ctext3 u-mt4">💡 Untuk utang dengan nama pemberi pinjaman, bunga, & jatuh tempo yang jelas, catat di kartu 📕 Buku Utang di 🕌 Pajak &amp; Zakat supaya lebih rapi & bisa dipantau per-item.</div>
+      </div>
+    </div>
+
+    <div class="card u-mb12 u-dnone" id="laporanAsetCard">
+      <div class="card-title">📑 Laporan Aset <span class="u-flexc8"><span class="card-setting-btn u-pointer" data-onclick="window.print()">🖨️ Cetak</span><span class="card-collapse-toggle" id="laporanAsetCard-chev" data-action="toggleCardCollapse" data-args='["laporanAsetCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
+      <div class="card-collapse-body" id="laporanAsetCard-cbody">
+      <div class="u-hint10">Rekap 1 halaman dari sisi Aset saja: Daftar Aset, Riwayat Transaksi (akun tertaut), Nilai Aset, Penyusutan, &amp; Ringkasan Kekayaan. Untuk Kekayaan Bersih gabungan akun+utang, lihat kartu 🏦 Kekayaan Bersih di Dashboard.</div>
+      <div class="u-fs12 u-fw700 u-mb6 u-mt10" style="letter-spacing:0.5px;text-transform:uppercase">📋 Daftar Aset</div>
+      <div id="lapAsetDaftar"></div>
+      <div class="u-fs12 u-fw700 u-mb6 u-mt10" style="letter-spacing:0.5px;text-transform:uppercase">📜 Riwayat Transaksi</div>
+      <div id="lapAsetRiwayat"></div>
+      <div class="u-fs12 u-fw700 u-mb6 u-mt10" style="letter-spacing:0.5px;text-transform:uppercase">💰 Nilai Aset</div>
+      <div id="lapAsetNilai"></div>
+      <div class="u-fs12 u-fw700 u-mb6 u-mt10" style="letter-spacing:0.5px;text-transform:uppercase">📉 Penyusutan</div>
+      <div id="lapAsetPenyusutan"></div>
+      <div class="u-fs12 u-fw700 u-mb6 u-mt10" style="letter-spacing:0.5px;text-transform:uppercase">🧮 Ringkasan Kekayaan</div>
+      <div id="lapAsetRingkasan" class="u-fs12 u-t2 u-lh15"></div>
+      </div>
+    </div>
+
+    <div class="card u-mb12">
+      <div class="card-title">🧭 Rekomendasi Alokasi Aset <span class="card-collapse-toggle" id="pzAlokasiCard-chev" data-action="toggleCardCollapse" data-args='["pzAlokasiCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
+      <div class="card-collapse-body" id="pzAlokasiCard-cbody">
+      <div class="u-hint10">Ilustrasi pembagian dana ke beberapa jenis instrumen berdasarkan profil risiko — <b>bukan rekomendasi produk/investasi personal</b>, cuma gambaran umum untuk bahan pertimbangan. Sesuaikan dgn kondisi, tujuan, dan toleransi risiko kamu sendiri.</div>
+      <div class="fg u-mb10"><label class="fl">Dana yang Mau Dialokasikan (Rp)</label>
+        <div class="amt-wrap">
+          <input type="text" class="fi fi-calc-only" id="aaDana" placeholder="0" inputmode="decimal" oninput="AlokasiAset.onDanaInput()" onblur="evalAmtExpr('aaDana')">
+          <button type="button" class="calc-trigger" data-action="openCalc" data-args='["aaDana"]' title="Buka kalkulator" aria-label="Buka kalkulator">🧮</button>
+        </div>
+        <div class="u-fs11 u-t2 u-mt4">Default terisi dari total saldo akun kamu saat ini — boleh diedit manual.</div>
+      </div>
+      <div class="u-flex u-gap8 u-fwrap u-mb12" id="aaRiskChips">
+        <button type="button" class="chip-btn" data-action="AlokasiAset.setRisk" data-args='["konservatif", "$el"]'>🛡️ Konservatif</button>
+        <button type="button" class="chip-btn" data-action="AlokasiAset.setRisk" data-args='["moderat", "$el"]'>⚖️ Moderat</button>
+        <button type="button" class="chip-btn" data-action="AlokasiAset.setRisk" data-args='["agresif", "$el"]'>🚀 Agresif</button>
+      </div>
+      <div id="aaResult"></div>
+      </div>
+    </div>
+</div>
 
 <!-- AI -->
 <div class="page" id="page-ai">
@@ -2432,6 +2507,6 @@ b.appendChild(closeBtn);
 <script>document.write(MODAL_HTML[69]);</script><!-- modal:importShopExcelModal (Import dari Excel Shop) -->
 <script>document.write(MODAL_HTML[70]);</script><!-- modal:mergeProductModal (Gabungkan Harga Produk) -->
 
-<script src="app-bundle-b.min.js?v=301" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
+<script src="app-bundle-b.min.js?v=312" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
 </body>
 </html>

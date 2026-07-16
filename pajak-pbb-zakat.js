@@ -227,14 +227,14 @@ body.innerHTML=RefAI.ITEMS.map(it=>{
 const cur=pz[it.key];
 const item=d[it.key];
 if(!item||item.value===null||item.value===undefined||!isFinite(Number(item.value))||Number(item.value)<=0){
-return `<div class="u-r10 u-mb8" style="padding:10px;background:var(--surface2)">
+return `<div class="u-r10 u-mb8" style="padding:10px;background:var(--surface3)">
           <div class="u-fw700 u-fs13 u-mb2">${it.label}</div>
           <div class="u-fs11 u-t2">⚠️ AI tidak menemukan nilai yang cukup yakin${item&&item.source?': '+escapeHtml(item.source):''}. Nilai tersimpan tetap ${fmtFull(cur)}.</div>
         </div>`;
 }
 anyValid=true;
 const changed=Math.round(Number(item.value))!==Math.round(cur);
-return `<div class="u-r10 u-mb8" style="padding:10px;background:var(--surface2)">
+return `<div class="u-r10 u-mb8" style="padding:10px;background:var(--surface3)">
         <label class="u-flex u-gap8 u-aifs u-pointer">
           <input type="checkbox" data-refkey="${it.key}" ${changed?'checked':''} style="margin-top:3px">
           <div class="u-flex1">

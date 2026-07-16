@@ -165,7 +165,7 @@ setTimeout(()=>el.classList.remove('flash-highlight'),1200);
 if(pageName){showPage(pageName,document.querySelectorAll('.nav-item')[navIdx]);jump();}
 else jump();
 }
-function showFilteredTx(scope, type, label){
+function showFilteredTx(scope, type, label, accId){
 let txs=[];
 if(scope==='dashboard'){
 const now=new Date(),m=now.getMonth(),y=now.getFullYear();
@@ -183,6 +183,12 @@ if(t.type==='transfer_in'||t.type==='transfer_out')return false;
 if(!txMatchesFilters(t,f))return false;
 return true;
 });
+} else if(scope==='account'){
+// Riwayat Transaksi 1 akun (dipakai a.l. dari Buku Aset -- lihat Aset.openTxHistory di
+// aset.js). SENGAJA tidak exclude transfer_in/transfer_out spt scope 'laporan' di atas,
+// karena di sini tujuannya lihat riwayat LENGKAP akun tsb (termasuk transfer keluar/masuk),
+// bukan cuma pemasukan/pengeluaran biasa.
+txs=D.transactions.filter(t=>t.accountId===accId);
 }
 if(type==='income')txs=txs.filter(t=>t.type==='income');
 else if(type==='expense')txs=txs.filter(t=>t.type==='expense');

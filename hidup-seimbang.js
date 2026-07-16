@@ -114,7 +114,7 @@ el.innerHTML='<div class="u-fs11 u-cacc3 u-r8" style="padding:8px 10px;backgroun
 return;
 }
 el.innerHTML='<div class="u-fs11 u-fw700 u-t2" style="margin-bottom:5px">🔍 Fokus Perbaikan (paling narik turun skor)</div>'+
-areas.map(p=>`<div class="u-fs11 u-r8 u-lh14" style="padding:7px 9px;background:var(--surface2);margin-bottom:5px"><b>${p.label}</b> <span class="u-cacc2">(${p.pct}%)</span> — ${LifeBalance.tips[p.label]||'Perbaiki komponen ini utk naikkan skor.'}</div>`).join('');
+areas.map(p=>`<div class="u-fs11 u-r8 u-lh14" style="padding:7px 9px;background:var(--surface3);margin-bottom:5px"><b>${p.label}</b> <span class="u-cacc2">(${p.pct}%)</span> — ${LifeBalance.tips[p.label]||'Perbaiki komponen ini utk naikkan skor.'}</div>`).join('');
 },
 saveSnapshot(manual){
 const today=todayStr();

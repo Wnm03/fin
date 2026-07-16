@@ -13,15 +13,19 @@
 // setCnTab/setPajakTab/toggleStgGroup yang sudah ada — tidak menulis ulang
 // logic halaman manapun (blueprint §5, §7).
 //
-// PENTING — Opsi 1 (keputusan sesi ini): dashboard-hub-registry.js TIDAK
-// diubah. FEATURE_REGISTRY[].navIdx adalah index KATEGORI taksonomi §1
-// (0-9), BUKAN index nav-item bottom-nav asli (cuma 7 nav-item nyata ada di
-// DOM: dashboard/keuangan/shop/ai/carnotes/pajak/settings). Memakai
-// cat.navIdx langsung ke showPage(page, navItems[cat.navIdx]) akan salah
-// highlight nav-item untuk kategori yang tidak py nav-item sendiri (Bisnis,
-// Aset, Personal, Backup). Sebagai gantinya dipakai lookup lokal
-// PAGE_NAV_IDX di bawah, dikunci ke NAMA PAGE (target.page), bukan ke
-// kategori.
+// PENTING — Opsi 1 (keputusan sesi lampau, DIAMENDEMEN sesi ini): semula
+// dashboard-hub-registry.js TIDAK diubah, semua kategori tanpa nav-item
+// sendiri (Bisnis, Aset, Personal, Backup) dinavigasikan ke tab/kartu di
+// salah satu dari 7 page ber-nav-item. Sesi ini kategori "Aset" DIPISAH jadi
+// page:'aset' TERSENDIRI (lihat page-aset di index.html/app_production.html)
+// — tetap TIDAK menambah nav-item bottom-nav baru (tetap 7 nav-item nyata:
+// dashboard/keuangan/shop/ai/carnotes/pajak/settings), dibuka murni lewat
+// showPage('aset', null) dari kartu Dashboard Hub. FEATURE_REGISTRY[].navIdx
+// TETAP index KATEGORI taksonomi §1 (0-9), BUKAN index nav-item bottom-nav —
+// memakai cat.navIdx langsung ke showPage(page, navItems[cat.navIdx]) akan
+// salah highlight nav-item utk kategori yang tidak py nav-item sendiri.
+// Sebagai gantinya dipakai lookup lokal PAGE_NAV_IDX di bawah, dikunci ke
+// NAMA PAGE (target.page), bukan ke kategori.
 
 const PAGE_NAV_IDX = {
   dashboard: 0,
@@ -32,6 +36,11 @@ const PAGE_NAV_IDX = {
   carnotes: 4,
   pajak: 5,
   settings: 6,
+  // 'aset' SENGAJA tidak dimasukkan: halaman ini murni dibuka lewat
+  // showPage('aset', null) dari kartu Dashboard Hub / goToList lintas-halaman,
+  // TIDAK punya nav-item bottom-nav sendiri (tetap 7 nav-item nyata di DOM).
+  // navItems[PAGE_NAV_IDX['aset']] otomatis jadi undefined -> showPage()
+  // dipanggil dgn el=null, aman (lihat showPage() di modal-navigasi.js).
 };
 
 // Index tombol tab (.cn-tab) sesuai URUTAN DOM asli di tiap halaman —

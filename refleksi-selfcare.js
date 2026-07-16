@@ -48,7 +48,7 @@ if(!el)return;
 const r=this.compute();
 if(!r.ready){
 // lint-ok-no-escape: r.note selalu string tetap yg ditulis di compute() di atas, bukan data ketikan user
-el.innerHTML=`<div class="u-fs11 u-t2 u-r8 u-lh14" style="padding:8px 10px;background:var(--surface2);margin-bottom:12px">💡 ${r.note}</div>`;
+el.innerHTML=`<div class="u-fs11 u-t2 u-r8 u-lh14" style="padding:8px 10px;background:var(--surface3);margin-bottom:12px">💡 ${r.note}</div>`;
 return;
 }
 const parts=[];

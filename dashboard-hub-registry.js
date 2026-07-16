@@ -47,6 +47,8 @@
 //   page:'shop'     -> 'kasir'|'jual'|'etalase'|'produsen'|'riwayat'|'pelanggan' (setShopTab, cobek-io.js)
 //   page:'carnotes' -> 'bbm' | 'servis'           (setCnTab, vehicle-core.js)
 //   page:'pajak'    -> 'zakat' | 'pajak'           (setPajakTab, features-sheets-pwa-selftest.js)
+//   page:'aset'     -> (tanpa tab; halaman tunggal, dibuka lewat showPage('aset', null) —
+//                        TIDAK punya nav-item bottom-nav sendiri, lihat PAGE_NAV_IDX di dashboard-hub.js)
 //
 // `icon` per fitur/kategori SENGAJA masih emoji (bukan nama ikon SVG
 // Feather/Lucide dari Design System §9) — emoji ini adalah yang SUDAH
@@ -150,10 +152,10 @@ const FEATURE_REGISTRY = [
     desc: 'Kekayaan di luar arus kas harian',
     navIdx: 5,
     features: [
-      { key: 'aset-buku', label: 'Buku Aset & Kekayaan Bersih', icon: '📚', desc: 'Daftar aset & total kekayaan bersih', target: { page: 'pajak', tab: 'zakat', goTo: 'assetList' } },
-      { key: 'aset-histori', label: 'Histori Kekayaan & Growth Rate', icon: '📉', desc: 'Snapshot kekayaan & CAGR', target: { page: 'pajak', tab: 'zakat', goTo: 'wealthSnapshotList' } },
-      { key: 'aset-alokasi', label: 'Rekomendasi Alokasi Aset', icon: '🧭', desc: 'Saran alokasi dana sesuai profil risiko', target: { page: 'pajak', tab: 'zakat', goTo: 'aaResult' } },
-      { key: 'aset-emas', label: 'Aset Emas (impor nota massal)', icon: '🥇', desc: 'Impor nota emas & rekap zakat maal emas', target: { page: 'pajak', tab: 'zakat', goTo: 'assetList', action: 'GoldImport.open' } },
+      { key: 'aset-buku', label: 'Buku Aset & Kekayaan Bersih', icon: '📚', desc: 'Daftar aset & total kekayaan bersih', target: { page: 'aset', goTo: 'assetList' } },
+      { key: 'aset-histori', label: 'Histori Kekayaan & Growth Rate', icon: '📉', desc: 'Snapshot kekayaan & CAGR', target: { page: 'aset', goTo: 'wealthSnapshotList' } },
+      { key: 'aset-alokasi', label: 'Rekomendasi Alokasi Aset', icon: '🧭', desc: 'Saran alokasi dana sesuai profil risiko', target: { page: 'aset', goTo: 'aaResult' } },
+      { key: 'aset-emas', label: 'Aset Emas (impor nota massal)', icon: '🥇', desc: 'Impor nota emas & rekap zakat maal emas', target: { page: 'aset', goTo: 'assetList', action: 'GoldImport.open' } },
     ],
   },
   {

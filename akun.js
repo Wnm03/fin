@@ -30,7 +30,7 @@ if(wrAcc) wrAcc.innerHTML=opts;
 const tAcc=document.getElementById('tAcc');
 if(tAcc){const cur=tAcc.value;tAcc.innerHTML='<option value="">— Tidak terkait akun, isi manual —</option>'+opts;if(cur)tAcc.value=cur;}
 const assetAccId=document.getElementById('assetAccId');
-if(assetAccId){const cur=assetAccId.value;assetAccId.innerHTML='<option value="">— Tidak ditautkan —</option>'+opts;if(cur)assetAccId.value=cur;}
+if(assetAccId){const cur=assetAccId.value;assetAccId.innerHTML='<option value="">— Tidak ditautkan —</option><option value="__new__">➕ Buat Akun Baru dari Aset Ini</option>'+opts;if(cur)assetAccId.value=cur;}
 populateKeuFilters();
 }
 /* moved to modules-render.js: renderAccGrid */

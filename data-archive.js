@@ -77,7 +77,7 @@ hintEl.textContent='Belum ada data riwayat yang bisa diarsip.';
 hintEl.textContent=years.includes(curYear)?'⚠️ Tahun berjalan ('+curYear+') tetap bisa dipilih, tapi hati-hati kalau masih aktif dipakai.':'';
 listEl.innerHTML=years.map(y=>{
 const counts=ARCHIVE_MODULES.reduce((s,m)=>s+(D[m.key]||[]).filter(it=>archiveGetYear(it.date)===y).length,0);
-return `<label class="u-flex u-aic u-gap10 u-r10 u-pointer" style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border2)">
+return `<label class="u-flex u-aic u-gap10 u-r10 u-pointer" style="padding:10px 12px;background:var(--surface3);border:1px solid var(--border2)">
         <input type="checkbox" style="width:18px;height:18px" onchange="toggleArchiveYear(${y},this)">
         <span class="u-flex1">${y}</span>
         <span class="u-fs12t2">${counts.toLocaleString('id-ID')} data</span>

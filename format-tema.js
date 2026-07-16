@@ -24,7 +24,7 @@ document.querySelectorAll('.theme-card').forEach(c=>c.classList.toggle('active',
 toast(t==='auto'?'Tema otomatis aktif 🌗 (ikut jam HP)':'Tema '+t+' aktif ✨');
 }
 function applyEffectiveTheme(){
-let t=D.profile.theme||'dark';
+let t=D.profile.theme||'fresh';
 if(t==='auto'){
 const h=new Date().getHours();
 t=(h>=6&&h<18)?'light':'dark';
