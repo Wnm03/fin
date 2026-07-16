@@ -13,6 +13,126 @@
 
 ## SUDAH SELESAI (terverifikasi)
 
+- ✅ **[2026-07-16] Test `feature-icons.js` + `ai-smart-insight.js` (build #350).** Lanjutan
+  daftar modul nol-test dari entri `chat-action.js` di atas, 2 file berikutnya urutan
+  ringan→berat. **Tidak ada bug ditemukan** — murni menambah cakupan test yang sebelumnya
+  nol, tidak ada perubahan perilaku di kode aplikasi.
+  1. **`tests/feature-icons.test.js` (10 test).** `FeatureIcons.svg()` (emoji dengan mapping
+     -> markup `<svg>` benar incl. `viewBox`/`stroke`/`aria-hidden`, emoji tanpa mapping ->
+     `null`, default size 20 vs size custom dari `opts.size`), `FeatureIcons.render()`
+     (delegasi ke `svg()` kalau ada mapping, fallback ke emoji apa adanya kalau tidak ada
+     mapping/emoji kosong), plus sanity-check seluruh isi `_MAP` (setiap entry punya markup
+     SVG dasar non-kosong & bisa dirender tanpa error, loop semua ~50 emoji yang dipetakan).
+  2. **`tests/ai-smart-insight.test.js` (23 test).** `readSignals()` (D belum ada / kosong ->
+     semua sinyal falsy, `chatCount` cuma menghitung pesan `role:'user'`, `learnedCount` dari
+     jumlah key `D.learnedItemCat`, `usedInvestAI`/`usedPenyusutanAI` dari
+     `D.assetAllocation.risk`/`D.assets[].penyusutan.aktif`, guard `Array.isArray` biar tidak
+     crash kalau `chatHistory`/`assets` bukan array), `pickLevel()` (4 level dari kombinasi
+     skor, termasuk kasus apiKey belum aktif SELALU "belum" apapun sinyal lain), `buildTips()`
+     (tip ajakan API key tunggal kalau belum aktif, 3 tips kalau sudah aktif tapi belum
+     pakai fitur lain, tip apresiasi tunggal kalau semua sinyal terpenuhi, dibatasi maks 3
+     item), `compute()` (gabungan sinyal+level+tips), dan `render()` (guard elemen kartu
+     tidak lengkap -> return dini, D belum ada -> kartu disembunyikan `u-dnone`, D ada ->
+     kartu tampil & badge/headline/body terisi).
+  **Catatan teknis:** objek/array yang lahir DI DALAM sandbox vm (`readSignals()`/
+  `buildTips()`) beda `[[Prototype]]`/realm dari literal host Node, jadi
+  `assert.deepEqual`/`deepStrictEqual` gagal walau isinya identik (pola yang sudah berulang
+  kali didokumentasikan di `CLAUDE.md`) — dibandingkan lewat helper `plain()` (JSON
+  round-trip) di `ai-smart-insight.test.js`.
+  **Diverifikasi:** sanity-check sengaja merusak `pickLevel()` (`return this.LEVELS[1]` ->
+  `this.LEVELS[0]`) → 1 test langsung merah → dikembalikan → hijau lagi. `node --test
+  tests/*.test.js` → **1696/1696 pass** (naik dari 1663, +33 test baru, 0 regresi). `node
+  scripts/build.js` → sukses build #350, kedua bundle lolos `node --check`,
+  `index.html`/`app_production.html` tetap identik, `FILE-MAP.md` diregenerasi (kedua file
+  otomatis hilang dari daftar nol-test).
+  **Untuk sesi berikutnya — modul nol-test yang masih tersisa** (urutan ringan→berat by
+  baris): `data-archive.js` (160), `invest-ai-widget.js` (177), `self-reward-ai-widget.js`
+  (233), `sewakios.js` (243), `linktx.js` (244), `tagihan-kalender.js` (443),
+  `payroll-absensi.js` (448). `features-aiwidget-reminder-gdrive-search.js` juga masih belum
+  ada test langsung (file besar, ~1586+ baris).
+
+- ✅ **[2026-07-16] Test `chat-action.js` (build #349).** Lanjutan audit cakupan test — file ini
+  (61 baris, murni parsing/format blok `[[ACTION]]` dari balasan AI Chat/RefAI, TIDAK menyentuh
+  DOM) sebelumnya nol test sama sekali sejak dipisah dari `tukang-absensi.js` (2026-07-12,
+  roadmap split bagian ke-1). **Tidak ada bug ditemukan** — murni menambah cakupan test yang
+  sebelumnya nol, tidak ada perubahan perilaku di kode aplikasi.
+  File baru `tests/chat-action.test.js` (21 test), di-load bareng `format-tema.js` (`fmtFull`
+  ASLI) & `helper-teks.js` (`escapeHtml` ASLI) — bukan stub — supaya format Rupiah & escaping
+  yang dites benar-benar implementasi produksi. `CHAT_ACTION_LABELS`/`CHAT_ACTION_HANDLERS`
+  (didefinisikan di `features-budget-laporan-carnotes-pelanggan.js`, sengaja tidak di-load
+  penuh) di-stub minimal via `extraGlobals` karena fungsi yang dites cuma BACA kedua objek itu.
+  Cakupan: `chatActionSummary()` (seluruh 6 tipe aksi + fallback nama/kategori kosong + tipe tak
+  dikenal → `JSON.stringify(data)`), `extractChatAction()` (tanpa blok ACTION, blok valid, JSON
+  rusak tapi bisa diperbaiki `_repairLooseJson`, JSON rusak total, type di luar
+  `CHAT_ACTION_HANDLERS`, `data` bukan objek/tidak ada), `_repairLooseJson()` (smart quotes,
+  trailing comma, key tanpa quote), dan `chatActionInnerHTML()` (label dari
+  `CHAT_ACTION_LABELS` vs fallback "Usul Aksi", ringkasan di-escape, 3 tombol dengan
+  `data-args` benar).
+  **Diverifikasi:** sanity-check sengaja merusak 1 baris (`chatActionSummary` label
+  "Pemasukan") → 1 test langsung merah → dikembalikan → hijau lagi (bukti test menguji
+  perilaku sungguhan). `node --test tests/*.test.js` → **1663/1663 pass** (naik dari 1642,
+  +21 test baru, 0 regresi). `node scripts/build.js` → sukses build #349, kedua bundle lolos
+  `node --check`, `index.html`/`app_production.html` tetap identik, `FILE-MAP.md`
+  diregenerasi (`chat-action.js` otomatis hilang dari daftar nol-test).
+  **Untuk sesi berikutnya — modul nol-test yang masih tersisa** (dicek via pola `grep` nama
+  file di seluruh `tests/*.test.js`, urutan ringan→berat by baris): `feature-icons.js` (103),
+  `ai-smart-insight.js` (108), `data-archive.js` (160), `invest-ai-widget.js` (177),
+  `self-reward-ai-widget.js` (233), `sewakios.js` (243), `linktx.js` (244),
+  `tagihan-kalender.js` (443), `payroll-absensi.js` (448). `features-aiwidget-reminder-
+  gdrive-search.js` juga masih belum ada test langsung (file besar, ~1586+ baris).
+
+- ✅ **[2026-07-16] Economic Intelligence Engine (EIE) — fase 3: nyalakan notifikasi + 7 rule
+  tambahan (build #346).** Lanjutan dari fase 1 (engine, senyap) & fase 2 (UI Dashboard Hub —
+  `#eieWrap`/`EIEDashboard`/`EIEInsightFeed`, sudah ada duluan) yang sebelumnya belum pernah
+  dites (0 test EIE sama sekali sebelum sesi ini).
+  1. **Notifikasi (opt-in, default OFF)** — `NotificationService.enable()/disable()` dari fase 1
+     sekarang benar-benar dipakai lewat toggle baru di Pengaturan → Notifikasi & Backup, kartu
+     "🌦️ Notifikasi Kondisi Ekonomi" (`index.html`/`app_production.html`, identik). File baru
+     `economic-intelligence/ui/eie-notif-settings.js` (`EIENotifSettings.render/toggle/bootstrap`
+     + wrapper global `toggleEieNotif(checked)` dipanggil dari `onchange=` HTML, pola sama persis
+     `toggleNotifEnabled` reminder tagihan yang sudah ada). Preferensi disimpan di
+     `EIEStore.notificationsEnabled` (BUKAN di `D`, sesuai aturan wajib `eie-store.js`) — default
+     `false` di `EIE_STORE_DEFAULT`. `EIENotifSettings.bootstrap()` dipanggil dari
+     `EIEDashboard.render()` supaya preferensi ON dari sesi sebelumnya otomatis aktif lagi setelah
+     reload, tanpa user perlu toggle ulang.
+  2. **7 rule tambahan** di `rules/rule-definitions.js` (16 → 23 rule), SEMUA di kategori yang
+     sudah ada (tidak ada kategori baru per instruksi sesi ini): `R-USD-003` (kurs turun tajam,
+     info), `R-INF-003` (inflasi naik & incomeStabilityScore rendah, warning), `R-BI-003` (BI Rate
+     turun & ada utang floating, info — peluang refinancing), `R-IHSG-003` (IHSG turun tajam +
+     buffer kuat + alokasi volatil masih rendah, info — peluang beli), `R-EMAS-003` (emas naik
+     tajam & alokasi emas >50% dari total investasi, warning — risiko konsentrasi), `R-BBM-002`
+     (BBM turun tajam, info), `R-COMP-006` (incomeStabilityScore rendah & DSR tinggi bersamaan,
+     warning — baseline personal, tidak bergantung macro).
+  3. **`scripts/build.js`** — `economic-intelligence/ui/eie-notif-settings.js` ditambahkan ke
+     `GROUP_B`, setelah `eie-insight-feed.js`.
+  4. **`modules-render.js`** — `renderSettings()` memanggil `EIENotifSettings.render()` (guarded
+     `typeof`) tepat setelah `renderNotifSettings()`, supaya status toggle ter-sync tiap halaman
+     Pengaturan dibuka.
+  **Test baru (0 → 13 test khusus EIE, total suite 1629 → 1642):**
+  `tests/eie-rules-fase3.test.js` (9 test: validasi skema seluruh 23 rule + `id` unik + logic
+  condition/action ke-7 rule baru satu-satu) dan `tests/eie-notif-settings.test.js` (4 test:
+  toggle ON/OFF benar-benar meng-subscribe/unsubscribe `NotificationService` ke `EIEBus`, dan
+  `bootstrap()` menyalakan ulang berdasarkan preferensi tersimpan). Keduanya pakai
+  `tests/helpers/loadSource.js` (source asli, bukan re-implementasi) — perhatian: perbandingan
+  array hasil `validateRuleShape()` HARUS pakai `errors.length===0`, bukan
+  `assert.deepStrictEqual(errors,[])`, karena array dari sandbox `vm` beda realm dgn array literal
+  test (lihat komentar di test).
+  **Diverifikasi:** `node --test tests/*.test.js` → 1642/1642 pass; `node scripts/build.js` →
+  sukses build #346, `node --check` kedua bundle valid, `index.html`/`app_production.html` tetap
+  identik; smoke-test browser (Playwright + Chrome headless) → 0 `pageerror`, 0 `domMissing`/
+  `actionMissing` (1131 `getElementById` & 77 `data-action` semua valid — naik dari 1044/69
+  sebelumnya, konsisten dgn penambahan). Toggle diuji manual di browser nyata: default
+  "Belum aktif" → set ON lewat DOM → status berubah "Aktif" → reload (sesi/context sama) →
+  `EIEStore.notificationsEnabled` tetap `true` → `DashboardHub.render()` (titik masuk yang sama
+  dgn boot asli app lewat `showMain()`→`refreshCurrentPage()`) → `NotificationService._enabled`
+  jadi `true` lagi otomatis, sesuai desain.
+  **Belum dikerjakan (di luar scope "notif + rule tambahan" sesi ini):** preferensi granular
+  (mis. toggle terpisah "hanya kritis" vs semua severity — saat ini satu toggle ON/OFF
+  meng-enable semua severity); kategori/topik rule baru di luar 6 kategori existing (user
+  eksplisit minta tetap di kategori yang sudah ada sesi ini); fase 3 lain yang disebut di
+  komentar lama `engine/insight-generator.js` (§21, upgrade LLM utk insight generation) —
+  BEDA dari "fase 3" yang dimaksud instruksi sesi ini (notif+rule), belum disentuh.
+
 - ✅ **[2026-07-13] Audit menyeluruh pasca-patch v205 (fitur impor emas/zakat) — build #238.**
   Menjalankan ulang seluruh self-test (102/102), full modal-registry sweep (78/78 modal
   ter-cover, 0 hilang), dan smoke-test browser (`getElementById`/`data-action` scan) di atas
@@ -758,18 +878,11 @@
 
 ## BELUM DIKERJAKAN (butuh tindak lanjut di sesi berikutnya)
 
-- Self-test "UI: elemen interaktif (data-action) yang cuma berisi ikon/emoji/tanpa teks wajib
-  punya aria-label" gagal utk `<button data-action="loadMoreBbmList">` (BBM.renderList() di
-  `features-budget-laporan-carnotes-pelanggan.js`, sekitar variabel `bbmMoreWrap`) — tombol
-  "muat lebih banyak" ini dirender tanpa teks/aria-label. TIDAK terkait 2 bug dari screenshot
-  user (sudah ada sebelum sesi ini), belum diperbaiki krn di luar scope laporan user kali ini.
-
-- Smoke-test browser (`smoke-test.js`) melaporkan false-positive "data-action merujuk
-  modul/fungsi yang TIDAK ke-expose" untuk string literal `"..."` — **SUDAH DIPERBAIKI
-  2026-07-13, lihat "SUDAH SELESAI" di atas.**
-
-_(sisanya kosong — item lama lain sudah tuntas per 2026-07-13; roadmap split
-`features-tukang-kendaraan-storage.js` sudah TUNTAS 5/5 bagian, lihat "SUDAH SELESAI" di atas)_
+_(kosong — item terakhir yang tersisa, aria-label `loadMoreBbmList`, dikonfirmasi 2026-07-16
+sudah punya `aria-label="Tampilkan lebih banyak riwayat BBM"` di source
+(`features-budget-laporan-carnotes-pelanggan.js`, `BBM.renderList()`); `node --test
+tests/*.test.js` → 1642/1642 pass. Roadmap split `features-tukang-kendaraan-storage.js` sudah
+TUNTAS 5/5 bagian; item lama lain sudah tuntas per 2026-07-13.)_
 
 ## Cara jalanin pengecekan otomatis lagi (kalau perlu ulang dari nol)
 

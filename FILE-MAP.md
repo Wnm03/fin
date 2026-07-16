@@ -11,8 +11,8 @@
 > file tapi lupa `node build.js`), jalankan ulang generatornya, JANGAN diedit
 > tangan — editan manual bakal ketimpa lagi di build berikutnya.
 
-Terakhir digenerate: 2026-07-16T10:36:46.950Z
-Total file source: 92 · Total identifier global: 997
+Terakhir digenerate: 2026-07-16T11:43:23.610Z
+Total file source: 112 · Total identifier global: 1045
 
 ## 1. Urutan load & ringkasan tiap file
 
@@ -21,7 +21,7 @@ bundler menggabungkan semua file jadi `app-bundle-a.min.js`/`app-bundle-b.min.js
 
 | # | File | Baris | Ringkasan |
 |---|------|------:|-----------|
-| 1 | `modules-render.js` | 1412 | Fungsi render (85 fungsi) dipisah dari app_production.html untuk pemerataan ukuran file. Semua fungsi ini murni definisi function global (bukan module), jadi tetap bisa dipanggil dari file manapun yang loadnya … |
+| 1 | `modules-render.js` | 1413 | Fungsi render (85 fungsi) dipisah dari app_production.html untuk pemerataan ukuran file. Semua fungsi ini murni definisi function global (bukan module), jadi tetap bisa dipanggil dari file manapun yang loadnya … |
 | 2 | `modals.js` | 7 | Modal HTML dipisah dari app_production.html untuk pemerataan ukuran file. Setiap elemen array persis sama dengan blok <div class="overlay" id="...">...</div> aslinya, di-inject balik ke posisi yang sama persis via … |
 | 3 | `modules-calc.js` | 881 | _(tidak ada komentar header)_ |
 | 4 | `cobek-etalase.js` | 369 | Domain Shop bagian Etalase: katalog produk (tambah/edit/hapus, size-pairing bracket harga, bundle, modal stok tertanam), stok, & produsen terkait produk. Dipecah dari cobek.js (2026-07-12, file lama 1966 baris > 500 … |
@@ -87,7 +87,7 @@ bundler menggabungkan semua file jadi `app-bundle-a.min.js`/`app-bundle-b.min.js
 | 64 | `features-sheets-pwa-selftest.js` | 2390 | Settings, notifikasi, PWA setup, self-test/smoke-test rendering, pajak/zakat/aset/utang PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: … |
 | 65 | `feature-icons.js` | 104 | Migrasi Icon Emoji -> SVG (KNOWN-ISSUES.md §4.1 / ROADMAP-v1.1.md #3) LATAR: field `icon:` di FEATURE_REGISTRY (dashboard-hub-registry.js) & registry serupa berisi emoji literal, tidak konsisten dengan SVG inline yang … |
 | 66 | `dashboard-hub-registry.js` | 225 | FEATURE_REGISTRY: sumber data tunggal taksonomi Dashboard Feature Hub (blueprint-dashboard-hub.md §1 & §7, Tahap 0). PENTING — file ini MURNI DATA, tidak ada logic render/navigasi apa pun. Tahap 0 blueprint: "Finalisasi … |
-| 67 | `dashboard-hub.js` | 410 | Dashboard Feature Hub (blueprint-dashboard-hub.md §5) STATUS (update v1.0-stabilization, build v234): sejak Tahap 4, halaman ini SUDAH jadi landing page default (satu-satunya class="page active" saat startup, lihat … |
+| 67 | `dashboard-hub.js` | 418 | Dashboard Feature Hub (blueprint-dashboard-hub.md §5) STATUS (update v1.0-stabilization, build v234): sejak Tahap 4, halaman ini SUDAH jadi landing page default (satu-satunya class="page active" saat startup, lihat … |
 | 68 | `dashboard-hub-search.js` | 127 | Feature Search: cari FITUR/MENU (bukan data transaksi) lintas kategori FEATURE_REGISTRY (blueprint-dashboard-hub.md §2 & §6). Berbeda tujuan dari Global Search existing (`openGlobalSearch`) yang mencari DATA milik user … |
 | 69 | `dashboard-hub-favorit.js` | 38 | Favorit (Tahap 3, Langkah 6): storage + service MURNI (ADR-001 §3/§4/§5, blueprint Favorit final). Tidak ada DOM/render di file ini — itu ada di dashboard-hub-favorit-view.js (Langkah 7-8, sudah diimplementasikan; lihat … |
 | 70 | `dashboard-hub-favorit-view.js` | 112 | Favorit (Tahap 3, Langkah 7-8): render + toggle button wiring. Sengaja file TERPISAH dari dashboard-hub-favorit.js (storage murni, Langkah 6) supaya guard test "window.DashboardHubFavorit HANYA mengekspos getFavoritKeys … |
@@ -113,6 +113,26 @@ bundler menggabungkan semua file jadi `app-bundle-a.min.js`/`app-bundle-b.min.js
 | 90 | `lifeos/ui/projects.js` | 33 | ui/projects.js — render lewat projectAdapterList(D, store); aksi tulis (create/toggle checklist/dsb) HANYA lewat services/project-service.js. |
 | 91 | `lifeos/ui/review.js` | 32 | ui/review.js — render lewat review-adapter.js; aksi mulai/selesai sesi review HANYA lewat services/review-service.js. |
 | 92 | `lifeos/ui/knowledge.js` | 43 | ui/knowledge.js — render lewat knowledge-adapter.js; aksi simpan/hapus HANYA lewat services/knowledge-service.js. D.catatan ditampilkan sebagai referensi read-only, tidak pernah dimigrasikan ke sini. |
+| 93 | `economic-intelligence/eie-bus.js` | 41 | Event bus internal Economic Intelligence Engine (EIE). Pola pub/sub sederhana, TIDAK bergantung pada library luar, TIDAK menyentuh IndexedDB/D. Dipakai supaya macro-sync-service/scoring-engine bisa "memancarkan" event … |
+| 94 | `economic-intelligence/eie-store.js` | 60 | SATU-SATUNYA tempat EIE boleh MENULIS/MEMBACA persistensi. ATURAN WAJIB (sama persis dgn pola lifeos-store.js yang sudah terbukti): - Tidak pernah menyentuh D. Tidak ada property baru di D, tidak ada perubahan struktur … |
+| 95 | `economic-intelligence/domain/entities.js` | 70 | domain/entities.js — Definisi bentuk data EIE (JSDoc typedef murni). ATURAN DOMAIN LAYER: file ini TIDAK BOLEH import/reference apa pun dari adapters/ atau eie-store.js. Tidak ada I/O. Tidak ada IndexedDB/API. 100% … |
+| 96 | `economic-intelligence/domain/scoring-formulas.js` | 129 | domain/scoring-formulas.js — Pure function rumus EES/PEHS/ERI. ATURAN DOMAIN LAYER: TIDAK ADA I/O di file ini. Semua fungsi murni menerima UserFinanceSnapshot/MacroSnapshot dan mengembalikan angka — 100% unit-testable … |
+| 97 | `economic-intelligence/domain/weather-classifier.js` | 18 | domain/weather-classifier.js — Pure function skor -> Economic Weather. Tidak ada I/O. Lihat §8 dokumen desain. |
+| 98 | `economic-intelligence/adapters/user-finance-adapter.js` | 117 | adapters/user-finance-adapter.js — READ-ONLY. Menerjemahkan D.* (state finance existing app) jadi UserFinanceSnapshot (lihat domain/entities.js). ATURAN (sama seperti adapters/goal-adapter.js LifeOS): tidak menyimpan … |
+| 99 | `economic-intelligence/adapters/macro-data-adapter.js` | 107 | adapters/macro-data-adapter.js — Normalisasi data makro dari berbagai sumber, dgn fallback cache (offline-first, §16 dokumen desain). FASE 1 (MVP, "senyap"): TIDAK ada fetch ke API eksternal apa pun — app ini berjalan … |
+| 100 | `economic-intelligence/rules/rule-schema.js` | 19 | rules/rule-schema.js — Validasi struktur Rule (§9.1). Dipakai oleh EIERegistry.registerRule() supaya rule custom (plugin, §20) tidak bisa masuk dalam bentuk yang salah dan mendiamkan error di tengah evaluasi. |
+| 101 | `economic-intelligence/rules/rule-definitions.js` | 287 | rules/rule-definitions.js — rule IF-THEN prioritas tertinggi. 16 rule awal dari fase 1 MVP (§22 dokumen desain) + 7 rule tambahan fase 3 (ditandai FASE 3 di komentar masing-masing, per kategori yang sudah ada — tidak … |
+| 102 | `economic-intelligence/engine/rule-engine.js` | 56 | engine/rule-engine.js — Evaluator IF-THEN generik (§9.2). SATU-SATUNYA tempat yang menjalankan condition/action dari rules/rule-definitions.js + rule custom hasil EIERegistry.registerRule() (§20). Cooldown anti-spam … |
+| 103 | `economic-intelligence/engine/scoring-engine.js` | 69 | engine/scoring-engine.js — Orkestrasi EES/PEHS/ERI + Economic Weather (§5-8), memanggil RuleEngine (§9) untuk insight, lalu PERSIST hasil ke eie-store. Ini SATU-SATUNYA tempat yang menulis EIEScoreSnapshot & Insight[] … |
+| 104 | `economic-intelligence/engine/insight-generator.js` | 43 | engine/insight-generator.js — Fase 1: template + slot filling SUDAH dilakukan langsung di dalam rule.action() (rules/rule-definitions.js), jadi file ini fokus jadi helper baca/kelola Insight[] tersimpan, dengan … |
+| 105 | `economic-intelligence/services/macro-sync-service.js` | 25 | services/macro-sync-service.js — Orkestrasi refresh macro + recompute skor. Ini titik masuk utama yang dipanggil UI/scheduler (§2: "SATU- SATUNYA tempat menulis ke EIEStore.*" ada di layer services/engine). FASE 1 … |
+| 106 | `economic-intelligence/services/notification-service.js` | 50 | services/notification-service.js — Event listener -> Notification API / in-app toast (§2, §14 dokumen desain). FASE 1 ("senyap", sesuai permintaan implementasi bertahap): service ini TIDAK subscribe ke EIEBus secara … |
+| 107 | `economic-intelligence/services/recommendation-service.js` | 38 | services/recommendation-service.js — mapping recommendationId -> aksi konkret (deep link ke fitur app existing yang SUDAH ada, bukan fitur baru). Data-only map + 1 fungsi baca, tidak ada state/I/O. `target` di sini … |
+| 108 | `economic-intelligence/scheduler/eie-scheduler.js` | 26 | scheduler/eie-scheduler.js — Trigger periodik untuk MacroSyncService (§14). FASE 1 ("senyap"): TIDAK ada setInterval yang otomatis jalan saat file ini dimuat. start()/stop() harus dipanggil eksplisit — supaya … |
+| 109 | `economic-intelligence/ui/eie-dashboard.js` | 58 | ui/eie-dashboard.js — Economic Weather card (§19). HANYA render, tidak pernah akses EIEStore/adapter langsung — selalu lewat EIEScoringEngine/ MacroSyncService. Dipanggil dari DashboardHub.render() (pola "tambahan … |
+| 110 | `economic-intelligence/ui/eie-insight-feed.js` | 32 | ui/eie-insight-feed.js — Feed insight & rekomendasi (§3, §19). HANYA render, akses data lewat InsightGenerator/RecommendationService (bukan EIEStore langsung). |
+| 111 | `economic-intelligence/ui/eie-notif-settings.js` | 72 | ui/eie-notif-settings.js — Toggle notifikasi EIE di Pengaturan (fase 3). HANYA render + baca/tulis toggle lewat eie-store; tidak pernah menyentuh D (sama seperti ui/eie-dashboard.js & ui/eie-insight-feed.js). Menyalakan … |
+| 112 | `economic-intelligence/eie-registry.js` | 43 | Plugin registry EIE. Dimuat PALING AKHIR (lihat urutan load di scripts/build.js), supaya EIE_RULES bawaan (rules/rule-definitions.js) sudah tersedia untuk diregistrasi sbg default. - registerIndicator(): daftar sumber … |
 
 ## 2. Index fungsi/variabel global → file (urut abjad)
 
@@ -139,6 +159,15 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `_dashHubMonthTxShared` | `dashboard-hub.js` |
 | `_dashHubSummaryMonthTx` | `dashboard-hub.js` |
 | `_deriveApiKeyCryptoKey` | `keamanan-pin.js` |
+| `_eieComputeTrend` | `economic-intelligence/adapters/macro-data-adapter.js` |
+| `_eieDebtStats` | `economic-intelligence/adapters/user-finance-adapter.js` |
+| `_eieEmergencyFundMonths` | `economic-intelligence/adapters/user-finance-adapter.js` |
+| `_eieExpenseMonthly` | `economic-intelligence/adapters/user-finance-adapter.js` |
+| `_eieImportDependencyRatio` | `economic-intelligence/adapters/user-finance-adapter.js` |
+| `_eieInvestmentBreakdown` | `economic-intelligence/adapters/user-finance-adapter.js` |
+| `_eieLoaded` | `economic-intelligence/eie-store.js` |
+| `_eieMonthsBack` | `economic-intelligence/adapters/user-finance-adapter.js` |
+| `_eieSeedMacro` | `economic-intelligence/adapters/macro-data-adapter.js` |
 | `_formatLockDuration` | `keamanan-pin.js` |
 | `_friendlyErrorNotice` | `error-handler.js` |
 | `_gcLastTotal` | `gaji-calc.js` |
@@ -162,6 +191,7 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `_lastSelfTestData` | `features-sheets-pwa-selftest.js` |
 | `_lastUid` | `features-helpers-global-security.js` |
 | `_lifeOSLoaded` | `lifeos/lifeos-store.js` |
+| `_magnitudeScore` | `economic-intelligence/domain/scoring-formulas.js` |
 | `_ocrWorkerPromise` | `scan-ocr.js` |
 | `_paEsc` | `penyusutan-ai-widget.js` |
 | `_paFmtRp` | `penyusutan-ai-widget.js` |
@@ -285,8 +315,11 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `calcCicilanPerBulanFromTotal` | `cicilan.js` |
 | `calcCicilanTotalFromPerBulan` | `cicilan.js` |
 | `calcClear` | `kalkulator-input.js` |
+| `calcEES` | `economic-intelligence/domain/scoring-formulas.js` |
 | `calcEquals` | `kalkulator-input.js` |
+| `calcERI` | `economic-intelligence/domain/scoring-formulas.js` |
 | `calcGaji` | `gaji-calc.js` |
+| `calcPEHS` | `economic-intelligence/domain/scoring-formulas.js` |
 | `calcPress` | `kalkulator-input.js` |
 | `calcPreviewValue` | `kalkulator-input.js` |
 | `calcRenderDisplay` | `kalkulator-input.js` |
@@ -321,6 +354,8 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `cicilanDateLinked` | `features-helpers-global-security.js` |
 | `cicilanLastInput` | `features-helpers-global-security.js` |
 | `cicilanSharedLastInput` | `features-helpers-global-security.js` |
+| `clamp` | `economic-intelligence/domain/scoring-formulas.js` |
+| `classifyWeather` | `economic-intelligence/domain/weather-classifier.js` |
 | `cleanCatOptText` | `features-budget-laporan-carnotes-pelanggan.js` |
 | `clearChat` | `features-helpers-global-security.js` |
 | `closeCalc` | `kalkulator-input.js` |
@@ -418,6 +453,27 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `editWorkDay` | `payroll-absensi.js` |
 | `EduFund` | `edukasi-dana.js` |
 | `EduFundInsight` | `feature-insights.js` |
+| `EES_WEIGHTS` | `economic-intelligence/domain/scoring-formulas.js` |
+| `EIE_IMPORT_KEYWORDS` | `economic-intelligence/adapters/user-finance-adapter.js` |
+| `EIE_MACRO_INDICATORS` | `economic-intelligence/adapters/macro-data-adapter.js` |
+| `EIE_RECOMMENDATIONS` | `economic-intelligence/services/recommendation-service.js` |
+| `EIE_RULES` | `economic-intelligence/rules/rule-definitions.js` |
+| `EIE_SEVERITY_ORDER` | `economic-intelligence/engine/rule-engine.js` |
+| `EIE_STORE_DEFAULT` | `economic-intelligence/eie-store.js` |
+| `EIE_STORE_KEY` | `economic-intelligence/eie-store.js` |
+| `EIE_VALID_SEVERITIES` | `economic-intelligence/rules/rule-schema.js` |
+| `EIEBus` | `economic-intelligence/eie-bus.js` |
+| `EIEDashboard` | `economic-intelligence/ui/eie-dashboard.js` |
+| `eieEnsureLoaded` | `economic-intelligence/eie-store.js` |
+| `eieGetStore` | `economic-intelligence/eie-store.js` |
+| `EIEInsightFeed` | `economic-intelligence/ui/eie-insight-feed.js` |
+| `eieLoad` | `economic-intelligence/eie-store.js` |
+| `EIENotifSettings` | `economic-intelligence/ui/eie-notif-settings.js` |
+| `EIERegistry` | `economic-intelligence/eie-registry.js` |
+| `eieSave` | `economic-intelligence/eie-store.js` |
+| `EIEScheduler` | `economic-intelligence/scheduler/eie-scheduler.js` |
+| `EIEScoringEngine` | `economic-intelligence/engine/scoring-engine.js` |
+| `EIEStore` | `economic-intelligence/eie-store.js` |
 | `enableSwipeToDismiss` | `modal-navigasi.js` |
 | `encryptApiKeyWithPin` | `keamanan-pin.js` |
 | `escapeHtml` | `helper-teks.js` |
@@ -474,6 +530,7 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `fmtDateID` | `vehicle-core.js` |
 | `fmtFull` | `format-tema.js` |
 | `fmtFullSigned` | `format-tema.js` |
+| `fmtIDR` | `economic-intelligence/rules/rule-definitions.js` |
 | `gantiPin` | `keamanan-pin.js` |
 | `GDRIVE_EMAIL_SCOPE` | `features-aiwidget-reminder-gdrive-search.js` |
 | `gdriveAccessToken` | `features-aiwidget-reminder-gdrive-search.js` |
@@ -561,6 +618,7 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `ImportShopExcel` | `cobek-io.js` |
 | `initChat` | `features-aiwidget-reminder-gdrive-search.js` |
 | `inRange` | `backup-restore.js` |
+| `InsightGenerator` | `economic-intelligence/engine/insight-generator.js` |
 | `InvestAI` | `invest-ai-widget.js` |
 | `Investment` | `investasi.js` |
 | `INVESTMENT_TYPES` | `investasi.js` |
@@ -618,6 +676,8 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `loadMoreLapTx` | `filter-laporan.js` |
 | `loadMoreServisList` | `sparepart-servis.js` |
 | `loadMoreTx` | `filter-laporan.js` |
+| `MacroDataAdapter` | `economic-intelligence/adapters/macro-data-adapter.js` |
+| `MacroSyncService` | `economic-intelligence/services/macro-sync-service.js` |
 | `markBillPaid` | `tagihan-kalender.js` |
 | `markShopDelivered` | `cobek-io.js` |
 | `markSparepartServiced` | `sparepart-servis.js` |
@@ -636,6 +696,7 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `MY_WRENCH_SCALE` | `sparepart-servis.js` |
 | `navBillCalendar` | `tagihan-kalender.js` |
 | `normalizeAmtToken` | `kalkulator-input.js` |
+| `NotificationService` | `economic-intelligence/services/notification-service.js` |
 | `ocrRecognize` | `scan-ocr.js` |
 | `onBackupPeriodeChange` | `backup-restore.js` |
 | `onBudgetCatChildToggle` | `features-budget-laporan-carnotes-pelanggan.js` |
@@ -713,6 +774,7 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `PAYLATER_DUE_NEXT_MONTH_RE` | `scan-ocr.js` |
 | `Payroll` | `payroll-absensi.js` |
 | `PBB` | `pajak-pbb-zakat.js` |
+| `PEHS_WEIGHTS` | `economic-intelligence/domain/scoring-formulas.js` |
 | `Pelanggan` | `cobek-order.js` |
 | `Pensiun` | `modules-calc.js` |
 | `Penyusutan` | `aset.js` |
@@ -766,6 +828,7 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `RECEIPT_NOISE_LINE_RE` | `scan-ocr.js` |
 | `RECEIPT_TOTAL_LABEL_RE` | `scan-ocr.js` |
 | `recentUniqueStrings` | `transaksi.js` |
+| `RecommendationService` | `economic-intelligence/services/recommendation-service.js` |
 | `recordBbmLog` | `tx-bbm.js` |
 | `recordShopSale` | `cobek-tx-cart.js` |
 | `RefAI` | `pajak-pbb-zakat.js` |
@@ -890,6 +953,7 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `reviewServiceComplete` | `lifeos/services/review-service.js` |
 | `reviewServiceStartSession` | `lifeos/services/review-service.js` |
 | `RISKY_OPENER_SPECS` | `features-sheets-pwa-selftest.js` |
+| `RuleEngine` | `economic-intelligence/engine/rule-engine.js` |
 | `runBackup` | `backup-restore.js` |
 | `runDataHealthCheck` | `features-aiwidget-reminder-gdrive-search.js` |
 | `runDataMigrations` | `features-helpers-global-security.js` |
@@ -1064,6 +1128,7 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `toggleCicilanSharedFields` | `cicilan.js` |
 | `toggleDashCardPref` | `modules-render.js` |
 | `toggleDebugConsole` | `debug-console.js` |
+| `toggleEieNotif` | `economic-intelligence/ui/eie-notif-settings.js` |
 | `toggleFavorit` | `dashboard-hub-favorit.js` |
 | `toggleKeuFilter` | `filter-laporan.js` |
 | `toggleMs` | `transaksi.js` |
@@ -1108,11 +1173,14 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `updateTxVehiclePanels` | `transaksi.js` |
 | `updateUsiaPreview` | `profil-pengaturan.js` |
 | `uploadBackupToDrive` | `features-aiwidget-reminder-gdrive-search.js` |
+| `UserFinanceAdapter` | `economic-intelligence/adapters/user-finance-adapter.js` |
 | `validateCicilanFields` | `cicilan.js` |
+| `validateRuleShape` | `economic-intelligence/rules/rule-schema.js` |
 | `VEHICLE_SPEC_DB` | `sparepart-servis.js` |
 | `VEHTAX_INPUT_IDS` | `features-budget-laporan-carnotes-pelanggan.js` |
 | `VEHTAX_ITEMS` | `features-budget-laporan-carnotes-pelanggan.js` |
 | `waShareLink` | `features-aiwidget-reminder-gdrive-search.js` |
+| `WEATHER_META` | `economic-intelligence/domain/weather-classifier.js` |
 | `withSaveGuard` | `features-helpers-global-security.js` |
 | `withSaveGuardAsync` | `features-helpers-global-security.js` |
 | `withTimeout` | `scan-ocr.js` |

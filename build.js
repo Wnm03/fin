@@ -80,7 +80,11 @@ const GROUP_A = [
   'linktx.js',
   'renovasi.js',
   'aset.js',
+  'aset-keluarga.js',
+  'feature-insights.js',
+  'ai-smart-insight.js',
   'invest-ai-widget.js',
+  'penyusutan-ai-widget.js',
   'aset-emas-impor.js',
   'worthit.js',
 ];
@@ -124,6 +128,7 @@ const GROUP_B = [
   'sparepart-servis.js',
   'features-aiwidget-reminder-gdrive-search.js',
   'features-sheets-pwa-selftest.js',
+  'feature-icons.js',
   'dashboard-hub-registry.js',
   'dashboard-hub.js',
   'dashboard-hub-search.js',
@@ -155,6 +160,32 @@ const GROUP_B = [
   'lifeos/ui/projects.js',
   'lifeos/ui/review.js',
   'lifeos/ui/knowledge.js',
+
+  // --- Economic Intelligence Engine (EIE): layer orkestrasi read-only di
+  // atas D + LifeOS (lihat Economic-Intelligence-Engine-Technical-Design.md).
+  // Fase 1 MVP: engine/data saja, TANPA UI/notifikasi aktif ("senyap") —
+  // urutan WAJIB: bus -> store -> domain -> adapters -> rules -> engine ->
+  // services -> scheduler -> registry (paling akhir, lihat eie-registry.js).
+  'economic-intelligence/eie-bus.js',
+  'economic-intelligence/eie-store.js',
+  'economic-intelligence/domain/entities.js',
+  'economic-intelligence/domain/scoring-formulas.js',
+  'economic-intelligence/domain/weather-classifier.js',
+  'economic-intelligence/adapters/user-finance-adapter.js',
+  'economic-intelligence/adapters/macro-data-adapter.js',
+  'economic-intelligence/rules/rule-schema.js',
+  'economic-intelligence/rules/rule-definitions.js',
+  'economic-intelligence/engine/rule-engine.js',
+  'economic-intelligence/engine/scoring-engine.js',
+  'economic-intelligence/engine/insight-generator.js',
+  'economic-intelligence/services/macro-sync-service.js',
+  'economic-intelligence/services/notification-service.js',
+  'economic-intelligence/services/recommendation-service.js',
+  'economic-intelligence/scheduler/eie-scheduler.js',
+  'economic-intelligence/ui/eie-dashboard.js',
+  'economic-intelligence/ui/eie-insight-feed.js',
+  'economic-intelligence/ui/eie-notif-settings.js',
+  'economic-intelligence/eie-registry.js',
 ];
 const ALL_SOURCE = [...GROUP_A, ...GROUP_B];
 const HTML_FILES = ['index.html', 'app_production.html'];
