@@ -1,7 +1,7 @@
 // Fungsi render (85 fungsi) dipisah dari app_production.html untuk pemerataan ukuran file.
 // Semua fungsi ini murni definisi function global (bukan module), jadi tetap bisa dipanggil dari file manapun
 // yang loadnya belakangan (sama seperti modules-calc.js/features-*.js).
-const MODULE_RENDER_VERSION='feature-icons-svg-367';
+const MODULE_RENDER_VERSION='feature-icons-svg-350';
 
 function renderPageContent(name){
 if(name==='dashboard')renderDashboard();
@@ -617,6 +617,10 @@ if(document.getElementById('page-dashboard'))renderDashboard();
 }
 
 function renderDashboard(){
+// Dashboard = halaman default saat boot -- panggil di sini juga (selain di showPage(),
+// modal-navigasi.js) supaya kartu #aiSmartInsightCard (ai-smart-insight.js) sudah terisi
+// SEBELUM user sempat pindah tab pertama kali, bukan cuma nunggu showPage() berikutnya.
+if(typeof AiSmartInsight!=='undefined')AiSmartInsight.render();
 LifeBalance.render();
 // Konteks bulan-berjalan dihitung SEKALI di sini (dulu FinCoach & dashBillCard hitung
 // txM/inc/exp/billStats sendiri-sendiri lagi walau datanya sama persis dengan yang dihitung di
@@ -1208,13 +1212,15 @@ renderStockList();
 renderBillList();
 renderTarget();
 EduFund.render();
+renderMs();
 renderReminder();
 renderNotifSettings();
 if(typeof EIENotifSettings!=='undefined') EIENotifSettings.render();
-const lifeOSVisibleToggleEl=document.getElementById('lifeOSVisibleToggle'); if(lifeOSVisibleToggleEl && typeof LifeOSHome!=='undefined') lifeOSVisibleToggleEl.checked=LifeOSHome.isVisiblePref();
 renderGDriveSettings();
 renderSheetsSettings();
 setImportType(curImportType,document.querySelector('#importChips .chip-btn'));
+const aEl=document.getElementById('anakList');
+aEl.innerHTML=(D.catatan.anak||[]).slice(-3).reverse().map(c=>`<div class="tx-item"><div class="u-flex1"><div class="u-fs12t2">${c.date}</div><div class="u-fs13 u-mt2">${escapeHtml(c.text)}</div></div></div>`).join('');
 renderSelfTestLastResult();
 }
 
@@ -1225,6 +1231,8 @@ return `<div class="chat-bubble ai u-r12" id="chatAction_${actionId}" style="bor
 function renderNotifSettings(){
 const el=document.getElementById('notifEnableToggle');
 if(el) el.checked=!!(D.notifSettings.enabled && 'Notification' in window && Notification.permission==='granted');
+const bd=document.getElementById('notifBillDays'); if(bd) bd.value=D.notifSettings.billDays||3;
+const ld=document.getElementById('notifLdrDays'); if(ld) ld.value=D.notifSettings.ldrDays||3;
 const statusEl=document.getElementById('notifStatus');
 if(statusEl){
 if(!('Notification' in window)) statusEl.textContent='⚠️ Browser ini tidak mendukung notifikasi';

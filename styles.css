@@ -103,6 +103,13 @@ body.has-open-modal .nav { display: none; }
   .page{max-width:1080px;margin-left:auto;margin-right:auto;}
 }
 .page.active { display: block; }
+/* AI Smart Insight — kartu persisten di LUAR .page (lihat ai-smart-insight.js), makanya butuh
+   padding horizontal + max-width sendiri yang sama persis dgn .page supaya sejajar visual dgn
+   konten di bawahnya, tanpa ikut aturan display:none/.page.active (harus tampil di SEMUA tab). */
+#aiSmartInsightWrap { padding: 14px 16px 0; }
+@media (min-width:1024px){
+  #aiSmartInsightWrap{max-width:1080px;margin-left:auto;margin-right:auto;}
+}
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 .card { background: var(--surface2); border-radius: var(--r-2xl); padding: 20px; margin-bottom: 14px; border: 1px solid var(--border); box-shadow: var(--shadow-card, 0 2px 4px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.06)); position: relative; transition: box-shadow var(--dur-moderate) var(--ease-standard), border-color var(--dur-moderate) var(--ease-standard), transform var(--dur-moderate) var(--ease-standard); }
 .card:active { transform: scale(0.995); box-shadow: var(--shadow-sm); }

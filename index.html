@@ -38,9 +38,6 @@
     accounts.google.com -> Google Identity Services (login Google Drive/Sheets).
     api.anthropic.com, generativelanguage.googleapis.com -> panggilan AI
       (fitur AI Asisten, pakai API key milik user sendiri, disimpan lokal).
-    open.er-api.com -> auto-fetch kurs USD/IDR untuk kartu Kondisi Ekonomi
-      (EIE, fase 2), API publik gratis TANPA API key, dipanggil dari
-      MacroDataAdapter._autoFetchUsdIdr().
     www.googleapis.com, sheets.googleapis.com -> integrasi Google Drive & Sheets.
     BUGFIX: cdn.jsdelivr.net & tessdata.projectnaptha.com di connect-src
       (+ cdn.jsdelivr.net di worker-src) -> setelah <script src> tesseract.min.js
@@ -64,7 +61,7 @@
   ini dihosting di server sendiri, sebaiknya arahan ini juga dikirim lewat
   header `Content-Security-Policy` di response, bukan cuma meta tag di sini.
 -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://open.er-api.com https://api.anthropic.com https://generativelanguage.googleapis.com https://www.googleapis.com https://sheets.googleapis.com https://accounts.google.com https://cdn.jsdelivr.net https://tessdata.projectnaptha.com; frame-src https://accounts.google.com; worker-src 'self' blob: https://cdn.jsdelivr.net; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://api.anthropic.com https://generativelanguage.googleapis.com https://www.googleapis.com https://sheets.googleapis.com https://accounts.google.com https://cdn.jsdelivr.net https://tessdata.projectnaptha.com; frame-src https://accounts.google.com; worker-src 'self' blob: https://cdn.jsdelivr.net; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self';">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#08090c">
@@ -79,8 +76,8 @@
 <link rel="preconnect" href="https://accounts.google.com" crossorigin>
 <link rel="dns-prefetch" href="https://accounts.google.com">
 <title>Keluarga W</title>
-<link rel="stylesheet" href="styles.css?v=367">
-<link rel="stylesheet" href="modern-ui-layer.css?v=367">
+<link rel="stylesheet" href="styles.css?v=350">
+<link rel="stylesheet" href="modern-ui-layer.css?v=350">
 <script>
 /* Debug console (Eruda) — aktifkan sekali lewat ?debug=1 di URL, nempel via localStorage.
    Matikan lagi lewat ?debug=0. Tidak aktif buat user biasa. */
@@ -133,8 +130,8 @@ b.appendChild(closeBtn);
 }catch(_e){ console.error('Gagal tampilkan banner error modul:',_e); }
 };
 </script>
-<script src="app-bundle-a.min.js?v=367" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
-<script src="smoke-test.js?v=367" defer></script>
+<script src="app-bundle-a.min.js?v=350" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
+<script src="smoke-test.js?v=350" defer></script>
 <link rel="manifest" id="pwaManifestLink" href="manifest.json">
 </head>
 <body data-theme="fresh">
@@ -197,6 +194,21 @@ b.appendChild(closeBtn);
 
 <div id="mainApp" class="u-dnone">
 
+<!-- AI SMART INSIGHT — di LUAR .page dengan sengaja: showPage() (modal-navigasi.js) cuma
+     toggle class active di elemen .page, elemen ini bukan salah satunya jadi TIDAK pernah
+     ikut disembunyikan/dipindah saat pindah tab -- otomatis selalu tampil di posisi paling
+     atas (tepat di bawah header) di SEMUA tab. Isinya di-refresh tiap showPage() lewat
+     AiSmartInsight.render() (lihat ai-smart-insight.js). -->
+<div id="aiSmartInsightWrap">
+  <div class="card u-mb0" id="aiSmartInsightCard">
+    <div class="card-title">🤖 Insight AI <span class="u-flexc8"><span class="acc-chip" id="aiSmartInsightBadge">–</span><span class="card-collapse-toggle" id="aiSmartInsightCard-chev" data-action="toggleCardCollapse" data-args='["aiSmartInsightCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
+    <div class="card-collapse-body" id="aiSmartInsightCard-cbody">
+      <div class="u-fs12 u-fw700 u-mb6" id="aiSmartInsightHeadline"></div>
+      <div id="aiSmartInsightBody"></div>
+    </div>
+  </div>
+</div>
+
 <!-- DASHBOARD -->
 <div class="page" id="page-dashboard">
   <div class="page-settings-btn">
@@ -249,7 +261,7 @@ b.appendChild(closeBtn);
       <div class="stg-group-chevron">▼</div>
     </div>
     <div class="stg-group-body" id="dashSecondaryGroup-body"><div class="stg-group-body-inner">
-  <div class="card u-mb12 u-dnone u-pointer" id="dashBudgetMiniCard" data-onclick="showPage('keuangan',document.querySelectorAll('.nav-item')[1]);setKeuanganTab('budget',document.querySelectorAll('#page-keuangan .cn-tab')[2])">
+  <div class="card u-mb12 u-dnone u-pointer" id="dashBudgetMiniCard" data-action="showPage" data-args='["keuangan", "$nav:1"]'>
     <div class="card-title">📊 Anggaran Bulan Ini <span class="card-collapse-toggle" id="dashBudgetMiniCard-chev" data-action="toggleCardCollapse" data-args='["dashBudgetMiniCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
     <div class="card-collapse-body" id="dashBudgetMiniCard-cbody">
     <div class="u-flex u-jcb u-aic u-mb6">
@@ -287,7 +299,7 @@ b.appendChild(closeBtn);
     <div class="stat-box clickable" data-action="showFilteredTx" data-args='["dashboard", "all", "\ud83d\udcb0 Saldo Bersih Bulan Ini"]'><div class="stat-label">💰 Saldo Bersih</div><div class="stat-val purple" id="dBalance">Rp 0</div></div>
     <div class="stat-box clickable" data-action="goToList" data-args='["shopList", "shop", 2, "riwayat"]'><div class="stat-label">🪨 Untung Shop</div><div class="stat-val orange" id="dShop">Rp 0</div></div>
   </div>
-  <div class="card u-mb12 u-pointer" id="dashLaporanMiniCard" data-onclick="showPage('keuangan',document.querySelectorAll('.nav-item')[1]);setKeuanganTab('laporan',document.querySelectorAll('#page-keuangan .cn-tab')[3])">
+  <div class="card u-mb12 u-pointer" id="dashLaporanMiniCard" data-onclick="showPage('keuangan',document.querySelectorAll('.nav-item')[1]);setKeuanganTab('laporan',document.querySelectorAll('#page-keuangan .cn-tab')[1])">
     <div class="card-title">📊 Ringkasan Laporan Bulan Ini <span class="u-flexc8"><span class="u-fw400 u-fs12 u-cacc" style="text-transform:none;letter-spacing:0">Lihat Detail →</span><span class="card-collapse-toggle" id="dashLaporanMiniCard-chev" data-action="toggleCardCollapse" data-args='["dashLaporanMiniCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
     <div class="card-collapse-body" id="dashLaporanMiniCard-cbody">
     <div class="u-fs12 u-t2 u-mb10" id="dashLapTrend"></div>
@@ -327,8 +339,6 @@ b.appendChild(closeBtn);
 <div class="page" id="page-keuangan">
   <div class="cn-tabs">
     <button class="cn-tab active" data-action="setKeuanganTab" data-args='["kelola", "$el"]'>💰 Kelola</button>
-    <button class="cn-tab" data-action="setKeuanganTab" data-args='["tagihan", "$el"]'>🔔 Tagihan &amp; Cicilan</button>
-    <button class="cn-tab" data-action="setKeuanganTab" data-args='["budget", "$el"]'>📊 Budget</button>
     <button class="cn-tab" data-action="setKeuanganTab" data-args='["laporan", "$el"]'>📊 Laporan</button>
   </div>
 
@@ -377,6 +387,49 @@ b.appendChild(closeBtn);
         <div class="stat-val green" style="font-size:18px;margin-top:2px" id="keuAbsensiGajiTotal">Rp 0</div>
       </div>
       <button class="btn btn-income btn-sm" data-action="openWeeklyResetManual">💰 Catat</button>
+    </div>
+  </div>
+  <div class="card u-mb12">
+    <div class="card-title">📊 Anggaran
+      <div class="u-flex u-gap6 u-aic">
+        <button class="card-setting-btn" id="budgetTabSettingsBtn" data-action="openBudgetSettings" title="Pengaturan anggaran" aria-label="Pengaturan anggaran">⚙️ Atur</button>
+        <button class="card-setting-btn" id="budgetTabAddBtn" data-action="openBudgetModal" data-args='[null]' title="Tambah anggaran" aria-label="Tambah anggaran">＋ Tambah</button>
+        <span class="card-collapse-toggle" id="keuBudgetCard-chev" data-action="toggleCardCollapse" data-args='["keuBudgetCard","$event"]' aria-label="Buka/tutup bagian">▾</span>
+      </div>
+    </div>
+    <div class="card-collapse-body" id="keuBudgetCard-cbody">
+    <div class="budget-tabbar u-flex u-gap6" style="margin-bottom:14px;background:var(--surface3);border-radius:var(--r-md);padding:3px">
+      <button type="button" class="budget-tab-btn active u-flex1 u-fs12 u-fw700 u-r8 u-pointer u-t2" data-tab="list" data-action="BudgetTabs.switchTo" data-args='["list"]' style="border:none;background:none;padding:8px 6px">📊 Bulan Ini</button>
+      <button type="button" class="budget-tab-btn u-flex1 u-fs12 u-fw700 u-r8 u-pointer u-t2" data-tab="reko" data-action="BudgetTabs.switchTo" data-args='["reko"]' style="border:none;background:none;padding:8px 6px">🎯 Rekomendasi Otomatis</button>
+    </div>
+    <div id="budgetTabPane-list">
+    <div id="budgetSummary" class="u-dnone">
+      <div class="budget-summary-grid">
+        <div class="budget-sum-box"><div class="budget-sum-val green" id="bTotalBudget">Rp 0</div><div class="budget-sum-lbl">Total Anggaran</div></div>
+        <div class="budget-sum-box clickable" data-action="showAllBudgetDrillDown"><div class="budget-sum-val red" id="bTotalUsed">Rp 0</div><div class="budget-sum-lbl">Terpakai</div></div>
+        <div class="budget-sum-box"><div class="budget-sum-val u-cacc" id="bTotalSisa">Rp 0</div><div class="budget-sum-lbl">Sisa</div></div>
+      </div>
+      <div class="budget-bar-track u-mb4" style="height:10px">
+        <div class="budget-bar-fill" id="bOverallBar" style="width:0%"></div>
+      </div>
+      <div class="budget-bar-label"><span id="bOverallPct">0% terpakai</span><span id="bOverallDays" class="u-t2"></span></div>
+      <div class="hr-divider"></div>
+    </div>
+    <div id="budgetList"></div>
+    </div>
+    <div id="budgetTabPane-reko" class="u-dnone">
+    <div class="u-hint10">Dihitung dari rata-rata transaksi asli kamu per kategori (BBM, Pulsa, Tagihan, dst) — bukan tebakan. Tinggal tap "Tetapkan" utk langsung bikin/update anggaran kategori itu.</div>
+    <div class="u-flex u-gap8 u-fwrap u-mb8" id="brMonthChips">
+      <button type="button" class="chip-btn" data-m="3" data-action="BudgetReko.setMonths" data-args='[3]'>3 Bulan Terakhir</button>
+      <button type="button" class="chip-btn" data-m="6" data-action="BudgetReko.setMonths" data-args='[6]'>6 Bulan Terakhir</button>
+    </div>
+    <div class="u-flex u-gap8 u-fwrap u-mb12" id="brBufferChips">
+      <button type="button" class="chip-btn" data-b="0" data-action="BudgetReko.setBuffer" data-args='[0]'>Pas Rata-rata</button>
+      <button type="button" class="chip-btn" data-b="10" data-action="BudgetReko.setBuffer" data-args='[10]'>+10% Buffer</button>
+      <button type="button" class="chip-btn" data-b="20" data-action="BudgetReko.setBuffer" data-args='[20]'>+20% Buffer</button>
+    </div>
+    <div id="budgetRekoResult"></div>
+    </div>
     </div>
   </div>
   <div class="stg-group" id="keuAsetProyekGroup">
@@ -432,6 +485,50 @@ b.appendChild(closeBtn);
     </div>
   </div>
     </div></div>
+  </div>
+  <div class="card u-mb12">
+    <div class="card-title">🔔 Tagihan, Cicilan & Langganan
+      <span class="u-flex u-gap6 u-aic">
+        <button class="card-setting-btn" id="billFilterToggleBtn" data-action="toggleBillFilterPanel" title="Filter" aria-label="Filter">🔍 Filter</button>
+        <button class="card-setting-btn" data-action="openBillCalendar" title="Lihat kalender" aria-label="Lihat kalender">📅 Kalender</button>
+        <button class="card-setting-btn" data-action="openBillModal" title="Tambah tagihan" aria-label="Tambah tagihan">＋ Tambah</button>
+        <span class="card-collapse-toggle" id="keuBillCard-chev" data-action="toggleCardCollapse" data-args='["keuBillCard","$event"]' aria-label="Buka/tutup bagian">▾</span>
+      </span>
+    </div>
+    <div class="card-collapse-body" id="keuBillCard-cbody">
+    <div class="grid3 u-mb10" id="keuBillStatGrid">
+      <div class="stat-box"><div class="stat-label">Bulan Ini</div><div class="stat-val red" id="keuBillMonthTotal">Rp 0</div></div>
+      <div class="stat-box"><div class="stat-label">Jatuh Tempo ≤7 Hari</div><div class="stat-val orange" id="keuBillSoonCount">0</div></div>
+      <div class="stat-box"><div class="stat-label">Sisa Cicilan</div><div class="stat-val purple" id="keuBillOutstanding">Rp 0</div></div>
+    </div>
+    <div class="u-dnone u-mb6" id="billFilterPanel" style="padding-top:2px">
+      <div class="u-gap8 u-mb6 u-grid2-nogap">
+        <select class="fs" id="billFilterStatus" onchange="applyBillFilter()">
+          <option value="all">Semua Status</option>
+          <option value="aktif">Belum Dibayar (Aktif)</option>
+          <option value="lunas">Sudah Lunas</option>
+        </select>
+        <select class="fs" id="billFilterKategori" onchange="applyBillFilter()">
+          <option value="all">Semua Kategori</option>
+        </select>
+        <select class="fs" id="billFilterBulan" onchange="applyBillFilter()">
+          <option value="all">Semua Bulan</option>
+          <option value="0">Januari</option><option value="1">Februari</option><option value="2">Maret</option>
+          <option value="3">April</option><option value="4">Mei</option><option value="5">Juni</option>
+          <option value="6">Juli</option><option value="7">Agustus</option><option value="8">September</option>
+          <option value="9">Oktober</option><option value="10">November</option><option value="11">Desember</option>
+        </select>
+        <select class="fs" id="billFilterTahun" onchange="applyBillFilter()">
+          <option value="all">Semua Tahun</option>
+        </select>
+      </div>
+      <div class="u-flex u-jcb u-aic u-mb2">
+        <div id="billFilterCount" class="u-fs12t2"></div>
+        <button id="billFilterResetBtn" class="card-setting-btn u-dnone" data-action="resetBillFilter">↺ Reset Filter</button>
+      </div>
+    </div>
+    <div id="billListKeu"><div class="empty"><div class="empty-icon">🔔</div><div class="empty-text">Belum ada tagihan terjadwal</div></div></div>
+    </div>
   </div>
   <div class="btn-row3">
     <button class="btn btn-income" data-action="openTxModal" data-args='["income"]' aria-label="Edit/Buka">+ Masuk</button>
@@ -596,101 +693,6 @@ b.appendChild(closeBtn);
     </div>
     </div></div>
     </div>
-  </div>
-
-  <!-- TAGIHAN & CICILAN -->
-  <div id="keuanganTab-tagihan" class="u-dnone">
-  <div class="card u-mb12">
-    <div class="card-title">🔔 Tagihan, Cicilan & Langganan
-      <span class="u-flex u-gap6 u-aic">
-        <button class="card-setting-btn" id="billFilterToggleBtn" data-action="toggleBillFilterPanel" title="Filter" aria-label="Filter">🔍 Filter</button>
-        <button class="card-setting-btn" data-action="openBillCalendar" title="Lihat kalender" aria-label="Lihat kalender">📅 Kalender</button>
-        <button class="card-setting-btn" data-action="openBillModal" title="Tambah tagihan" aria-label="Tambah tagihan">＋ Tambah</button>
-        <span class="card-collapse-toggle" id="keuBillCard-chev" data-action="toggleCardCollapse" data-args='["keuBillCard","$event"]' aria-label="Buka/tutup bagian">▾</span>
-      </span>
-    </div>
-    <div class="card-collapse-body" id="keuBillCard-cbody">
-    <div class="grid3 u-mb10" id="keuBillStatGrid">
-      <div class="stat-box"><div class="stat-label">Bulan Ini</div><div class="stat-val red" id="keuBillMonthTotal">Rp 0</div></div>
-      <div class="stat-box"><div class="stat-label">Jatuh Tempo ≤7 Hari</div><div class="stat-val orange" id="keuBillSoonCount">0</div></div>
-      <div class="stat-box"><div class="stat-label">Sisa Cicilan</div><div class="stat-val purple" id="keuBillOutstanding">Rp 0</div></div>
-    </div>
-    <div class="u-dnone u-mb6" id="billFilterPanel" style="padding-top:2px">
-      <div class="u-gap8 u-mb6 u-grid2-nogap">
-        <select class="fs" id="billFilterStatus" onchange="applyBillFilter()">
-          <option value="all">Semua Status</option>
-          <option value="aktif">Belum Dibayar (Aktif)</option>
-          <option value="lunas">Sudah Lunas</option>
-        </select>
-        <select class="fs" id="billFilterKategori" onchange="applyBillFilter()">
-          <option value="all">Semua Kategori</option>
-        </select>
-        <select class="fs" id="billFilterBulan" onchange="applyBillFilter()">
-          <option value="all">Semua Bulan</option>
-          <option value="0">Januari</option><option value="1">Februari</option><option value="2">Maret</option>
-          <option value="3">April</option><option value="4">Mei</option><option value="5">Juni</option>
-          <option value="6">Juli</option><option value="7">Agustus</option><option value="8">September</option>
-          <option value="9">Oktober</option><option value="10">November</option><option value="11">Desember</option>
-        </select>
-        <select class="fs" id="billFilterTahun" onchange="applyBillFilter()">
-          <option value="all">Semua Tahun</option>
-        </select>
-      </div>
-      <div class="u-flex u-jcb u-aic u-mb2">
-        <div id="billFilterCount" class="u-fs12t2"></div>
-        <button id="billFilterResetBtn" class="card-setting-btn u-dnone" data-action="resetBillFilter">↺ Reset Filter</button>
-      </div>
-    </div>
-    <div id="billListKeu"><div class="empty"><div class="empty-icon">🔔</div><div class="empty-text">Belum ada tagihan terjadwal</div></div></div>
-    </div>
-  </div>
-  </div>
-
-  <!-- BUDGET -->
-  <div id="keuanganTab-budget" class="u-dnone">
-  <div class="card u-mb12">
-    <div class="card-title">📊 Anggaran
-      <div class="u-flex u-gap6 u-aic">
-        <button class="card-setting-btn" id="budgetTabSettingsBtn" data-action="openBudgetSettings" title="Pengaturan anggaran" aria-label="Pengaturan anggaran">⚙️ Atur</button>
-        <button class="card-setting-btn" id="budgetTabAddBtn" data-action="openBudgetModal" data-args='[null]' title="Tambah anggaran" aria-label="Tambah anggaran">＋ Tambah</button>
-        <span class="card-collapse-toggle" id="keuBudgetCard-chev" data-action="toggleCardCollapse" data-args='["keuBudgetCard","$event"]' aria-label="Buka/tutup bagian">▾</span>
-      </div>
-    </div>
-    <div class="card-collapse-body" id="keuBudgetCard-cbody">
-    <div class="budget-tabbar u-flex u-gap6" style="margin-bottom:14px;background:var(--surface3);border-radius:var(--r-md);padding:3px">
-      <button type="button" class="budget-tab-btn active u-flex1 u-fs12 u-fw700 u-r8 u-pointer u-t2" data-tab="list" data-action="BudgetTabs.switchTo" data-args='["list"]' style="border:none;background:none;padding:8px 6px">📊 Bulan Ini</button>
-      <button type="button" class="budget-tab-btn u-flex1 u-fs12 u-fw700 u-r8 u-pointer u-t2" data-tab="reko" data-action="BudgetTabs.switchTo" data-args='["reko"]' style="border:none;background:none;padding:8px 6px">🎯 Rekomendasi Otomatis</button>
-    </div>
-    <div id="budgetTabPane-list">
-    <div id="budgetSummary" class="u-dnone">
-      <div class="budget-summary-grid">
-        <div class="budget-sum-box"><div class="budget-sum-val green" id="bTotalBudget">Rp 0</div><div class="budget-sum-lbl">Total Anggaran</div></div>
-        <div class="budget-sum-box clickable" data-action="showAllBudgetDrillDown"><div class="budget-sum-val red" id="bTotalUsed">Rp 0</div><div class="budget-sum-lbl">Terpakai</div></div>
-        <div class="budget-sum-box"><div class="budget-sum-val u-cacc" id="bTotalSisa">Rp 0</div><div class="budget-sum-lbl">Sisa</div></div>
-      </div>
-      <div class="budget-bar-track u-mb4" style="height:10px">
-        <div class="budget-bar-fill" id="bOverallBar" style="width:0%"></div>
-      </div>
-      <div class="budget-bar-label"><span id="bOverallPct">0% terpakai</span><span id="bOverallDays" class="u-t2"></span></div>
-      <div class="hr-divider"></div>
-    </div>
-    <div id="budgetList"></div>
-    </div>
-    <div id="budgetTabPane-reko" class="u-dnone">
-    <div class="u-hint10">Dihitung dari rata-rata transaksi asli kamu per kategori (BBM, Pulsa, Tagihan, dst) — bukan tebakan. Tinggal tap "Tetapkan" utk langsung bikin/update anggaran kategori itu.</div>
-    <div class="u-flex u-gap8 u-fwrap u-mb8" id="brMonthChips">
-      <button type="button" class="chip-btn" data-m="3" data-action="BudgetReko.setMonths" data-args='[3]'>3 Bulan Terakhir</button>
-      <button type="button" class="chip-btn" data-m="6" data-action="BudgetReko.setMonths" data-args='[6]'>6 Bulan Terakhir</button>
-    </div>
-    <div class="u-flex u-gap8 u-fwrap u-mb12" id="brBufferChips">
-      <button type="button" class="chip-btn" data-b="0" data-action="BudgetReko.setBuffer" data-args='[0]'>Pas Rata-rata</button>
-      <button type="button" class="chip-btn" data-b="10" data-action="BudgetReko.setBuffer" data-args='[10]'>+10% Buffer</button>
-      <button type="button" class="chip-btn" data-b="20" data-action="BudgetReko.setBuffer" data-args='[20]'>+20% Buffer</button>
-    </div>
-    <div id="budgetRekoResult"></div>
-    </div>
-    </div>
-  </div>
   </div>
 
   <!-- LAPORAN -->
@@ -1615,19 +1617,6 @@ b.appendChild(closeBtn);
     </div>
   </div>
 
-  <!-- Toggle tampil/sembunyi section Life OS di Dashboard Hub. Lihat
-       lifeos/ui/lifeos-home.js (LifeOSHome.isVisiblePref()/toggleVisibility()/
-       applyVisibility()) & #lifeOSWrap di bawah — preferensi tampilan murni
-       lewat localStorage, TIDAK menyentuh D atau LifeOSStore. -->
-  <div class="card">
-    <div class="card-title">🌱 Life OS di Dashboard Hub</div>
-    <div class="u-hint10">Section tambahan (Today / Goals / Projects / Review / Knowledge) yang muncul di halaman Dashboard Hub, dibangun di atas data yang sudah ada. Nonaktif secara default — aktifkan kalau mau mencobanya.</div>
-    <div class="setting-item">
-      <div class="setting-label">Tampilkan Life OS</div>
-      <label class="tgl-switch"><input type="checkbox" id="lifeOSVisibleToggle" onchange="LifeOSHome.toggleVisibility(this.checked)"><span class="tgl-track"></span></label>
-    </div>
-  </div>
-
   </div></div>
 </div>
 
@@ -1698,10 +1687,24 @@ b.appendChild(closeBtn);
 
 <div class="stg-group" id="stgGroup3">
   <div class="stg-group-head" data-action="toggleStgGroup" data-args='["stgGroup3"]' role="button" tabindex="0" aria-expanded="false" aria-controls="stgGroup3-body">
-    <div class="stg-group-head-left"><div class="stg-group-icon">⏰</div><div><div class="stg-group-title">Pengingat</div><div class="stg-group-sub">Pengingat umum</div></div></div>
+    <div class="stg-group-head-left"><div class="stg-group-icon">👨‍👩‍👧</div><div><div class="stg-group-title">Keluarga & Anak</div><div class="stg-group-sub">Perkembangan anak, pengingat</div></div></div>
     <div class="stg-group-chevron">▼</div>
   </div>
   <div class="stg-group-body" id="stgGroup3-body"><div class="stg-group-body-inner">
+
+  <div class="card">
+    <div class="card-title">👶 Perkembangan Anak</div>
+    <div id="msList">
+      <div class="ms-item"><div class="ms-check" id="ms0" data-action="toggleMs" data-args='[0]' role="checkbox" aria-checked="false" aria-label="Bisa menyebutkan nama lengkap"></div><div class="u-fs13">Bisa menyebutkan nama lengkap</div></div>
+      <div class="ms-item"><div class="ms-check" id="ms1" data-action="toggleMs" data-args='[1]' role="checkbox" aria-checked="false" aria-label="Bisa berhitung 1–10"></div><div class="u-fs13">Bisa berhitung 1–10</div></div>
+      <div class="ms-item"><div class="ms-check" id="ms2" data-action="toggleMs" data-args='[2]' role="checkbox" aria-checked="false" aria-label="Mengenal huruf A–Z"></div><div class="u-fs13">Mengenal huruf A–Z</div></div>
+      <div class="ms-item"><div class="ms-check" id="ms3" data-action="toggleMs" data-args='[3]' role="checkbox" aria-checked="false" aria-label="Bisa makan sendiri"></div><div class="u-fs13">Bisa makan sendiri</div></div>
+      <div class="ms-item"><div class="ms-check" id="ms4" data-action="toggleMs" data-args='[4]' role="checkbox" aria-checked="false" aria-label="Bisa pakai baju sendiri"></div><div class="u-fs13">Bisa pakai baju sendiri</div></div>
+    </div>
+    <div class="div"></div>
+    <button class="btn btn-ghost btn-full btn-sm" data-action="openCatatan" data-args='["anak"]'>+ Catatan Anak</button>
+    <div class="u-mt10" id="anakList"></div>
+  </div>
 
   <div class="card">
     <div class="card-title">⏰ Pengingat</div>
@@ -1726,6 +1729,10 @@ b.appendChild(closeBtn);
     <div class="setting-item">
       <div><div class="setting-label">Notifikasi Browser</div><div class="setting-sub" id="notifStatus">Belum aktif</div></div>
       <label class="tgl-switch"><input type="checkbox" id="notifEnableToggle" onchange="toggleNotifEnabled(this.checked)"><span class="tgl-track"></span></label>
+    </div>
+    <div class="u-gap8 u-mt10 u-grid2-nogap">
+      <div class="fg u-mb0"><label class="fl">Ingatkan tagihan H-</label><input class="fi" id="notifBillDays" type="number" min="0" max="30" value="3" oninput="saveNotifDays()"></div>
+      <div class="fg u-mb0"><label class="fl">Ingatkan pulang H-</label><input class="fi" id="notifLdrDays" type="number" min="0" max="30" value="3" oninput="saveNotifDays()"></div>
     </div>
     <button class="btn btn-ghost btn-full btn-sm u-mt10" data-action="testNotif">🔔 Tes Notifikasi</button>
     <div class="u-fs12 u-t2 u-lh15 u-mt8">Notifikasi otomatis hanya berjalan selama aplikasi ini dibuka di browser/HP (tidak saat browser ditutup total). Untuk reminder ke WhatsApp, pakai tombol "💬 Kirim ke WA" yang ada di tagihan & jadwal pulang — kamu tinggal pilih kontak & kirim manual (kirim WA otomatis tanpa kamu pencet butuh WhatsApp Business API berbayar, tidak tersedia di aplikasi browser biasa).</div>
@@ -2041,6 +2048,7 @@ b.appendChild(closeBtn);
       <div class="qs-grid2">
         <div class="qs-action" data-onclick="closeQS('qsAI');aiQ('Analisa keuangan bulan ini, boros di mana?')"><div class="qs-action-icon">📊</div><div class="qs-action-label">Analisa Bulan Ini</div></div>
         <div class="qs-action" data-onclick="closeQS('qsAI');aiQ('Kondisi kendaraan saya bagaimana, ada servis yang mendesak?')"><div class="qs-action-icon">🏍️</div><div class="qs-action-label">Cek Kendaraan</div></div>
+        <div class="qs-action" data-onclick="closeQS('qsAI');aiQ('Perkembangan anak bulan ini?')"><div class="qs-action-icon">👶</div><div class="qs-action-label">Keluarga & Anak</div></div>
         <div class="qs-action" data-onclick="closeQS('qsAI');aiQ('Tagihan dan cicilan yang akan jatuh tempo?')"><div class="qs-action-icon">🔔</div><div class="qs-action-label">Tagihan Mendesak</div></div>
         <div class="qs-action" data-onclick="closeQS('qsAI');aiQ('Gimana performa bisnis shop bulan ini, stok mana yang mau habis?')"><div class="qs-action-icon">🪨</div><div class="qs-action-label">Cek Bisnis Shop</div></div>
         <div class="qs-action" data-onclick="closeQS('qsAI');aiQ('Absensi & estimasi gaji bulan ini sudah berapa?')"><div class="qs-action-icon">🧾</div><div class="qs-action-label">Gaji & Absensi</div></div>
@@ -2158,6 +2166,9 @@ b.appendChild(closeBtn);
     <button type="button" class="dashhub-qa-btn" data-onclick="openTxModal('expense')" aria-label="Tambah Transaksi">
       <span class="dashhub-qa-icon">💰</span><span class="dashhub-qa-label">Transaksi</span>
     </button>
+    <button type="button" class="dashhub-qa-btn" data-onclick="openCatatan('anak')" aria-label="Tambah Catatan">
+      <span class="dashhub-qa-icon">📝</span><span class="dashhub-qa-label">Catatan</span>
+    </button>
     <button type="button" class="dashhub-qa-btn" data-onclick="openBackupModal()" aria-label="Backup">
       <span class="dashhub-qa-icon">💾</span><span class="dashhub-qa-label">Backup</span>
     </button>
@@ -2228,18 +2239,6 @@ b.appendChild(closeBtn);
        cardCollapsePrefs sama seperti kartu lain — bukan collapse baru yang
        terpisah. Isi grid (#dashboardHubGrid) & cara diisinya (DashboardHub.
        render() di dashboard-hub.js) TIDAK diubah sama sekali. -->
-  <!-- TAB SWITCHER: "Semua Fitur" & "Pinned Widgets" (dua section yang tadinya
-       ditumpuk berurutan) kini jadi 2 tab sebelah-sebelahan supaya Beranda
-       tidak terlalu panjang. Reuse pola chip-btn tab yang sudah ada di
-       banyak tempat (mis. #advisorTabBtn-coach/#advisorTabBtn-report di
-       bawah, atau #whTabAbsensiBtn di absensiModal) — tidak ada gaya/tab
-       system baru. Diatur oleh DashboardHub.setMainTab()/applyMainTab() di
-       dashboard-hub.js; pilihan diingat lewat localStorage
-       (key: dashHubMainTab), pola sama seperti cardCollapsePrefs. -->
-  <div class="u-flex u-gap6 u-mb10" id="dashHubMainTabsRow">
-    <button type="button" class="chip-btn active u-flex1" id="dashHubMainTabBtn-fitur" data-action="DashboardHub.setMainTab" data-args='["fitur"]'>🗂️ Semua Fitur</button>
-    <button type="button" class="chip-btn u-flex1" id="dashHubMainTabBtn-pinned" data-action="DashboardHub.setMainTab" data-args='["pinned"]'>📌 Pinned Widget</button>
-  </div>
   <div class="card u-mb12" id="dashHubMainGridCard">
     <div class="card-title">
       🗂️ Semua Fitur <span class="u-flexc8"><span class="dashhub-cat-badge" id="dashHubMainGridCount"></span><span class="card-collapse-toggle" id="dashHubMainGrid-chev" data-action="toggleCardCollapse" data-args='["dashHubMainGrid","$event"]' aria-label="Buka/tutup bagian">▾</span></span>
@@ -2257,17 +2256,8 @@ b.appendChild(closeBtn);
        di dashboard-hub.js), yang lalu delegasi ke LifeOSToday/Goals/
        Projects/Review/Knowledge.render() masing-masing. Panel selain yang
        aktif disembunyikan pakai class u-dnone yang sudah ada (bukan CSS
-       baru), ditoggle oleh LifeOSHome.switchPanel().
-       TAMPIL/SEMBUNYI section ini sekarang diatur lewat Setelan → Profil &
-       Tampilan → "🌱 Life OS di Dashboard Hub" (toggle switch, id
-       lifeOSVisibleToggle), disimpan di localStorage (lifeOSVisible) dan
-       diterapkan oleh LifeOSHome.applyVisibility()/render() lewat class
-       u-dnone di div ini — BUKAN lagi hardcoded permanen seperti
-       sebelumnya. Default: tersembunyi (localStorage kosong dianggap '0'),
-       sama seperti perilaku lama, sampai user aktifkan sendiri. Jangan
-       tambah/hapus class u-dnone di div ini secara manual — biarkan
-       LifeOSHome.applyVisibility() yang mengatur. -->
-  <div class="dashhub-wrap u-dnone" id="lifeOSWrap">
+       baru), ditoggle oleh LifeOSHome.switchPanel(). -->
+  <div class="dashhub-wrap" id="lifeOSWrap">
     <div class="dashhub-cat-head">
       <div class="dashhub-cat-icon">🌱</div>
       <div>
@@ -2298,7 +2288,7 @@ b.appendChild(closeBtn);
     <div id="eieWeatherCard" style="padding:8px 2px;font-size:12.5px;opacity:.6;">Memuat kondisi ekonomi…</div>
     <div id="eieInsightFeed"></div>
   </div>
-  <div class="dashhub-pinned-wrap u-dnone" id="dashboardHubPinnedWrap">
+  <div class="dashhub-pinned-wrap" id="dashboardHubPinnedWrap">
     <div class="dashhub-cat-head">
       <div class="dashhub-cat-icon">📌</div>
       <div>
@@ -2690,7 +2680,7 @@ b.appendChild(closeBtn);
 <script>document.write(MODAL_HTML[69]);</script><!-- modal:importShopExcelModal (Import dari Excel Shop) -->
 <script>document.write(MODAL_HTML[70]);</script><!-- modal:mergeProductModal (Gabungkan Harga Produk) -->
 
-<script src="app-bundle-b.min.js?v=367" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
-<script src="tangga-keuangan.js?v=367"></script>
+<script src="app-bundle-b.min.js?v=350" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
+<script src="tangga-keuangan.js?v=350"></script>
 </body>
 </html>

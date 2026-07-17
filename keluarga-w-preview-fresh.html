@@ -2370,11 +2370,14 @@ renderStockList();
 renderBillList();
 renderTarget();
 EduFund.render();
+renderMs();
 renderReminder();
 renderNotifSettings();
 renderGDriveSettings();
 renderSheetsSettings();
 setImportType(curImportType,document.querySelector('#importChips .chip-btn'));
+const aEl=document.getElementById('anakList');
+aEl.innerHTML=(D.catatan.anak||[]).slice(-3).reverse().map(c=>`<div class="tx-item"><div class="u-flex1"><div class="u-fs12t2">${c.date}</div><div class="u-fs13 u-mt2">${escapeHtml(c.text)}</div></div></div>`).join('');
 renderSelfTestLastResult();
 }
 
@@ -2385,6 +2388,8 @@ return `<div class="chat-bubble ai u-r12" id="chatAction_${actionId}" style="bor
 function renderNotifSettings(){
 const el=document.getElementById('notifEnableToggle');
 if(el) el.checked=!!(D.notifSettings.enabled && 'Notification' in window && Notification.permission==='granted');
+const bd=document.getElementById('notifBillDays'); if(bd) bd.value=D.notifSettings.billDays||3;
+const ld=document.getElementById('notifLdrDays'); if(ld) ld.value=D.notifSettings.ldrDays||3;
 const statusEl=document.getElementById('notifStatus');
 if(statusEl){
 if(!('Notification' in window)) statusEl.textContent='⚠️ Browser ini tidak mendukung notifikasi';
@@ -12545,10 +12550,24 @@ if(WorthIt.boughtViewOpen)WorthIt.renderBoughtList();
 
 <div class="stg-group" id="stgGroup3">
   <div class="stg-group-head" data-action="toggleStgGroup" data-args='["stgGroup3"]' role="button" tabindex="0" aria-expanded="false" aria-controls="stgGroup3-body">
-    <div class="stg-group-head-left"><div class="stg-group-icon">⏰</div><div><div class="stg-group-title">Pengingat</div><div class="stg-group-sub">Pengingat umum</div></div></div>
+    <div class="stg-group-head-left"><div class="stg-group-icon">👨‍👩‍👧</div><div><div class="stg-group-title">Keluarga & Anak</div><div class="stg-group-sub">Perkembangan anak, pengingat</div></div></div>
     <div class="stg-group-chevron">▼</div>
   </div>
   <div class="stg-group-body" id="stgGroup3-body"><div class="stg-group-body-inner">
+
+  <div class="card">
+    <div class="card-title">👶 Perkembangan Anak</div>
+    <div id="msList">
+      <div class="ms-item"><div class="ms-check" id="ms0" data-action="toggleMs" data-args='[0]' role="checkbox" aria-checked="false" aria-label="Bisa menyebutkan nama lengkap"></div><div class="u-fs13">Bisa menyebutkan nama lengkap</div></div>
+      <div class="ms-item"><div class="ms-check" id="ms1" data-action="toggleMs" data-args='[1]' role="checkbox" aria-checked="false" aria-label="Bisa berhitung 1–10"></div><div class="u-fs13">Bisa berhitung 1–10</div></div>
+      <div class="ms-item"><div class="ms-check" id="ms2" data-action="toggleMs" data-args='[2]' role="checkbox" aria-checked="false" aria-label="Mengenal huruf A–Z"></div><div class="u-fs13">Mengenal huruf A–Z</div></div>
+      <div class="ms-item"><div class="ms-check" id="ms3" data-action="toggleMs" data-args='[3]' role="checkbox" aria-checked="false" aria-label="Bisa makan sendiri"></div><div class="u-fs13">Bisa makan sendiri</div></div>
+      <div class="ms-item"><div class="ms-check" id="ms4" data-action="toggleMs" data-args='[4]' role="checkbox" aria-checked="false" aria-label="Bisa pakai baju sendiri"></div><div class="u-fs13">Bisa pakai baju sendiri</div></div>
+    </div>
+    <div class="div"></div>
+    <button class="btn btn-ghost btn-full btn-sm" data-action="openCatatan" data-args='["anak"]'>+ Catatan Anak</button>
+    <div class="u-mt10" id="anakList"></div>
+  </div>
 
   <div class="card">
     <div class="card-title">⏰ Pengingat</div>
@@ -12573,6 +12592,10 @@ if(WorthIt.boughtViewOpen)WorthIt.renderBoughtList();
     <div class="setting-item">
       <div><div class="setting-label">Notifikasi Browser</div><div class="setting-sub" id="notifStatus">Belum aktif</div></div>
       <label class="tgl-switch"><input type="checkbox" id="notifEnableToggle" onchange="toggleNotifEnabled(this.checked)"><span class="tgl-track"></span></label>
+    </div>
+    <div class="u-gap8 u-mt10 u-grid2-nogap">
+      <div class="fg u-mb0"><label class="fl">Ingatkan tagihan H-</label><input class="fi" id="notifBillDays" type="number" min="0" max="30" value="3" oninput="saveNotifDays()"></div>
+      <div class="fg u-mb0"><label class="fl">Ingatkan pulang H-</label><input class="fi" id="notifLdrDays" type="number" min="0" max="30" value="3" oninput="saveNotifDays()"></div>
     </div>
     <button class="btn btn-ghost btn-full btn-sm u-mt10" data-action="testNotif">🔔 Tes Notifikasi</button>
     <div class="u-fs12 u-t2 u-lh15 u-mt8">Notifikasi otomatis hanya berjalan selama aplikasi ini dibuka di browser/HP (tidak saat browser ditutup total). Untuk reminder ke WhatsApp, pakai tombol "💬 Kirim ke WA" yang ada di tagihan & jadwal pulang — kamu tinggal pilih kontak & kirim manual (kirim WA otomatis tanpa kamu pencet butuh WhatsApp Business API berbayar, tidak tersedia di aplikasi browser biasa).</div>
@@ -12878,6 +12901,7 @@ if(WorthIt.boughtViewOpen)WorthIt.renderBoughtList();
       <div class="qs-grid2">
         <div class="qs-action" data-onclick="closeQS('qsAI');aiQ('Analisa keuangan bulan ini, boros di mana?')"><div class="qs-action-icon">📊</div><div class="qs-action-label">Analisa Bulan Ini</div></div>
         <div class="qs-action" data-onclick="closeQS('qsAI');aiQ('Kondisi kendaraan saya bagaimana, ada servis yang mendesak?')"><div class="qs-action-icon">🏍️</div><div class="qs-action-label">Cek Kendaraan</div></div>
+        <div class="qs-action" data-onclick="closeQS('qsAI');aiQ('Perkembangan anak bulan ini?')"><div class="qs-action-icon">👶</div><div class="qs-action-label">Keluarga & Anak</div></div>
         <div class="qs-action" data-onclick="closeQS('qsAI');aiQ('Tagihan dan cicilan yang akan jatuh tempo?')"><div class="qs-action-icon">🔔</div><div class="qs-action-label">Tagihan Mendesak</div></div>
         <div class="qs-action" data-onclick="closeQS('qsAI');aiQ('Gimana performa bisnis shop bulan ini, stok mana yang mau habis?')"><div class="qs-action-icon">🪨</div><div class="qs-action-label">Cek Bisnis Shop</div></div>
         <div class="qs-action" data-onclick="closeQS('qsAI');aiQ('Absensi & estimasi gaji bulan ini sudah berapa?')"><div class="qs-action-icon">🧾</div><div class="qs-action-label">Gaji & Absensi</div></div>
@@ -12981,6 +13005,9 @@ if(WorthIt.boughtViewOpen)WorthIt.renderBoughtList();
   <div class="dashhub-qa-row" id="dashHubQuickActions">
     <button type="button" class="dashhub-qa-btn" data-onclick="openTxModal('expense')" aria-label="Tambah Transaksi">
       <span class="dashhub-qa-icon">💰</span><span class="dashhub-qa-label">Transaksi</span>
+    </button>
+    <button type="button" class="dashhub-qa-btn" data-onclick="openCatatan('anak')" aria-label="Tambah Catatan">
+      <span class="dashhub-qa-icon">📝</span><span class="dashhub-qa-label">Catatan</span>
     </button>
     <button type="button" class="dashhub-qa-btn" data-onclick="openBackupModal()" aria-label="Backup">
       <span class="dashhub-qa-icon">💾</span><span class="dashhub-qa-label">Backup</span>
@@ -22380,6 +22407,11 @@ function toggleNotifEnabled(checked){
 if(checked){requestNotifPermission();}
 else{D.notifSettings.enabled=false;save();renderNotifSettings();toast('🔕 Notifikasi dimatikan');}
 }
+function saveNotifDays(){
+D.notifSettings.billDays=parseInt(document.getElementById('notifBillDays').value)||3;
+D.notifSettings.ldrDays=parseInt(document.getElementById('notifLdrDays').value)||3;
+save();toast('✅ Pengaturan reminder disimpan');
+}
 /* moved to modules-render.js: renderNotifSettings */
 function testNotif(){
 if(!('Notification' in window)||Notification.permission!=='granted'){toast('⚠️ Aktifkan notifikasi dulu');return;}
@@ -25850,10 +25882,11 @@ const FEATURE_REGISTRY = [
     features: [
       { key: 'per-absensi', label: 'Absensi Harian & Kalkulator Gaji', icon: '🕒', desc: 'Absensi & estimasi gaji mingguan', target: { page: 'dashboard-hub', dashKey: 'absensi', goTo: 'dashAbsensiCard' } },
       { key: 'per-edufund', label: 'Dana Pendidikan', icon: '🎓', desc: 'Target biaya sekolah/kuliah anak', target: { page: 'settings', group: 'stgGroup2', goTo: 'eduFundList' } },
+      { key: 'per-anak', label: 'Perkembangan Anak', icon: '👶', desc: 'Milestone tumbuh kembang anak', target: { page: 'settings', group: 'stgGroup3', goTo: 'anakList' } },
       { key: 'per-worthit', label: 'Worth It? & Prioritas Belanja', icon: '🤔', desc: 'Cek layak beli & daftar prioritas belanja', target: { action: 'WorthIt.open' } },
       { key: 'per-self-reward', label: 'Self Reward', icon: '🎁', desc: 'Cek kelayakan & level self reward sesuai kondisi finansial', target: { action: 'SelfRewardView.open' } },
       { key: 'per-piutang-utang', label: 'Piutang & Utang', icon: '🤝', desc: 'Catatan piutang, utang, strategi pelunasan', target: { page: 'pajak', tab: 'zakat', goTo: 'piutangList' } },
-      { key: 'per-pengingat', label: 'Pengingat', icon: '🔔', desc: 'Pengingat umum', target: { page: 'settings', group: 'stgGroup3', goTo: 'reminderList' } },
+      { key: 'per-pengingat', label: 'Pengingat', icon: '🔔', desc: 'Pengingat umum keluarga', target: { page: 'settings', group: 'stgGroup3', goTo: 'reminderList' } },
     ],
   },
   {

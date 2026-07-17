@@ -159,6 +159,10 @@ pageEl.classList.add('active');
 const activeBtn=el||document.querySelector(`.nav-item[onclick*="'${name}'"]`);
 if(activeBtn){activeBtn.classList.add('active');activeBtn.setAttribute('aria-current','page');}
 renderPageContent(name);
+// AiSmartInsight (ai-smart-insight.js) kartunya di LUAR .page (lihat index.html) jadi tidak
+// ikut disentuh loop .page di atas -- di-refresh manual di sini tiap pindah tab supaya datanya
+// tetap segar, TANPA elemennya ikut hide/pindah (makanya posisinya konsisten di semua tab).
+if(typeof AiSmartInsight!=='undefined')AiSmartInsight.render();
 const sr=document.getElementById('scrollRoot');
 if(sr)sr.scrollTop=0;
 }

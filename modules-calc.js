@@ -1,5 +1,5 @@
 
-const MODULE_CALC_VERSION='feature-icons-svg-367';
+const MODULE_CALC_VERSION='feature-icons-svg-350';
 const FI={
 assetScopeState:'zakatable',
 investmentAssetValue(){

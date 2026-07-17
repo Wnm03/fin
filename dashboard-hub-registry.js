@@ -43,7 +43,7 @@
 //
 // TAB REFERENSI (diverifikasi lewat data-action="setXxxTab" & pane id di
 // index.html/app_production.html):
-//   page:'keuangan' -> 'kelola' | 'tagihan' | 'budget' | 'laporan' (setKeuanganTab, tx-list-cashflow.js)
+//   page:'keuangan' -> 'kelola' | 'laporan'      (setKeuanganTab, tx-list-cashflow.js)
 //   page:'shop'     -> 'kasir'|'jual'|'etalase'|'produsen'|'riwayat'|'pelanggan' (setShopTab, cobek-io.js)
 //   page:'carnotes' -> 'bbm' | 'servis'           (setCnTab, vehicle-core.js)
 //   page:'pajak'    -> 'zakat' | 'pajak'           (setPajakTab, features-sheets-pwa-selftest.js)
@@ -85,8 +85,8 @@ const FEATURE_REGISTRY = [
     features: [
       { key: 'keu-transaksi', label: 'Transaksi (Masuk/Keluar/Transfer)', icon: '💸', desc: 'Catat pemasukan, pengeluaran, transfer akun', target: { page: 'keuangan', tab: 'kelola', action: 'openTxModal' } },
       { key: 'keu-saldo-akun', label: 'Saldo Akun', icon: '🏦', desc: 'Saldo tiap akun cash/bank/e-wallet', target: { page: 'keuangan', tab: 'laporan', goTo: 'lapAccList' } },
-      { key: 'keu-anggaran', label: 'Anggaran Bulan Ini', icon: '📋', desc: 'Batas & pemakaian anggaran per kategori', target: { page: 'keuangan', tab: 'budget', goTo: 'budgetList' } },
-      { key: 'keu-tagihan', label: 'Tagihan & Cicilan', icon: '🧾', desc: 'Tagihan, cicilan, dan langganan jatuh tempo', target: { page: 'keuangan', tab: 'tagihan', goTo: 'billListKeu' } },
+      { key: 'keu-anggaran', label: 'Anggaran Bulan Ini', icon: '📋', desc: 'Batas & pemakaian anggaran per kategori', target: { page: 'keuangan', tab: 'kelola', goTo: 'budgetList' } },
+      { key: 'keu-tagihan', label: 'Tagihan & Cicilan', icon: '🧾', desc: 'Tagihan, cicilan, dan langganan jatuh tempo', target: { page: 'keuangan', tab: 'kelola', goTo: 'billListKeu' } },
       { key: 'keu-target', label: 'Target Keuangan', icon: '🎯', desc: 'Target tabungan & Dana Darurat', target: { page: 'settings', group: 'stgGroup2', goTo: 'targetList' } },
       { key: 'keu-pensiun', label: 'Dana Pensiun', icon: '👴', desc: 'Proyeksi kebutuhan & tabungan pensiun', target: { page: 'keuangan', tab: 'kelola', goTo: 'pensiunBody' } },
       { key: 'keu-grafik', label: 'Grafik 6 Bulan', icon: '📈', desc: 'Tren income/expense 6 bulan terakhir', target: { page: 'keuangan', tab: 'laporan', goTo: 'grafikBars' } },
@@ -167,10 +167,11 @@ const FEATURE_REGISTRY = [
     features: [
       { key: 'per-absensi', label: 'Absensi Harian & Kalkulator Gaji', icon: '🕒', desc: 'Absensi & estimasi gaji mingguan', target: { page: 'dashboard-hub', dashKey: 'absensi', goTo: 'dashAbsensiCard' } },
       { key: 'per-edufund', label: 'Dana Pendidikan', icon: '🎓', desc: 'Target biaya sekolah/kuliah anak', target: { page: 'settings', group: 'stgGroup2', goTo: 'eduFundList' } },
+      { key: 'per-anak', label: 'Perkembangan Anak', icon: '👶', desc: 'Milestone tumbuh kembang anak', target: { page: 'settings', group: 'stgGroup3', goTo: 'anakList' } },
       { key: 'per-worthit', label: 'Worth It? & Prioritas Belanja', icon: '🤔', desc: 'Cek layak beli & daftar prioritas belanja', target: { action: 'WorthIt.open' } },
       { key: 'per-self-reward', label: 'Self Reward', icon: '🎁', desc: 'Cek kelayakan & level self reward sesuai kondisi finansial', target: { action: 'SelfRewardView.open' } },
       { key: 'per-piutang-utang', label: 'Piutang & Utang', icon: '🤝', desc: 'Catatan piutang, utang, strategi pelunasan', target: { page: 'keuangan', tab: 'kelola', goTo: 'piutangList' } },
-      { key: 'per-pengingat', label: 'Pengingat', icon: '🔔', desc: 'Pengingat umum', target: { page: 'settings', group: 'stgGroup3', goTo: 'reminderList' } },
+      { key: 'per-pengingat', label: 'Pengingat', icon: '🔔', desc: 'Pengingat umum keluarga', target: { page: 'settings', group: 'stgGroup3', goTo: 'reminderList' } },
     ],
   },
   {

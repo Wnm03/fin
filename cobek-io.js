@@ -120,14 +120,13 @@ function openStockRekoWidgetDetail(id,restockQty){return StockRekoWidget.openDet
 function setShopTab(t,el){
 document.querySelectorAll('#page-shop .cn-tab').forEach(b=>b.classList.remove('active'));
 el.classList.add('active');
-['kasir','jual','etalase','produsen','riwayat','pelanggan','laporan'].forEach(x=>{const elx=document.getElementById('shopTab-'+x);if(elx){elx.classList.toggle('u-dnone', x!==t);elx.style.display='';}});
+['kasir','jual','etalase','produsen','riwayat','pelanggan'].forEach(x=>{const elx=document.getElementById('shopTab-'+x);if(elx){elx.classList.toggle('u-dnone', x!==t);elx.style.display='';}});
 if(t==='kasir')Kasir.render();
 if(t==='etalase')renderProductList();
 if(t==='produsen')renderProdusenList();
 if(t==='riwayat'){renderShop();renderShopGrafik();}
 if(t==='jual')renderShopRecent();
 if(t==='pelanggan')renderCustomerList();
-if(t==='laporan')Laporan.renderTab();
 }
 // BUGFIX (2026-07-11): alias kompatibilitas mundur. `setCobekTab` di-rename jadi `setShopTab`
 // saat redesign Etalase (lihat CATATAN-CEK-CLAUDE.md), tapi PWA yang service worker-nya belum
@@ -280,22 +279,10 @@ const rows=[['Nama','No HP','Alamat','Jumlah Order','Total Omzet','Total Untung'
 list.forEach(c=>rows.push([c.name,c.phone||'',c.address||'',c.orders.length,c.totalOmzet||0,c.totalProfit||0,c.orders.length>=3?'Ya':'Tidak']));
 return rows;
 },
-laporanRows(){
-// Ikut periode yang lagi aktif di tab Laporan (Laporan.periodeLap), TERPISAH dari
-// Laporan.periode milik tab Riwayat — lihat catatan di Laporan.periodeLap (cobek-order.js).
-const {from,to}=Laporan.getRangeLap();
-const inRange=(D.cobek||[]).filter(t=>{const d=new Date(t.date);return d>=from&&d<=to;});
-const omzet=inRange.reduce((s,t)=>s+(t.total||0),0);
-const untung=inRange.reduce((s,t)=>s+(t.profit||0),0);
-const ringkasan=[['Ringkasan Periode Ini'],['Jumlah Transaksi',inRange.length],['Total Omzet',omzet],['Total Untung',untung],['Margin Rata-rata (%)',omzet>0?Math.round((untung/omzet)*100):0],[],['🏆 Produk Terlaris'],['Nama Produk','Qty Terjual','Omzet']];
-Laporan.topProdukAgg(inRange).forEach(p=>ringkasan.push([p.name,p.qty,p.omzet]));
-return ringkasan;
-},
 async exportEtalase(){ if(!await this._ensureLib())return; this._download([{name:'Etalase Produk',rows:this.etalaseRows()}],'shop-etalase'); },
 async exportProdusen(){ if(!await this._ensureLib())return; this._download([{name:'Produsen',rows:this.produsenRows()}],'shop-produsen'); },
 async exportRiwayat(){ if(!await this._ensureLib())return; this._download([{name:'Riwayat Transaksi',rows:this.riwayatRows()}],'shop-riwayat'); },
 async exportPelanggan(){ if(!await this._ensureLib())return; this._download([{name:'Pelanggan',rows:this.pelangganRows()}],'shop-pelanggan'); },
-async exportLaporan(){ if(!await this._ensureLib())return; this._download([{name:'Laporan Shop',rows:this.laporanRows()}],'shop-laporan'); },
 async exportSemua(){
 if(!await this._ensureLib())return;
 this._download([
@@ -311,8 +298,6 @@ function exportShopProdusenXLSX(){return ShopExport.exportProdusen();}
 function exportShopRiwayatXLSX(){return ShopExport.exportRiwayat();}
 function exportShopPelangganXLSX(){return ShopExport.exportPelanggan();}
 function exportShopSemuaXLSX(){return ShopExport.exportSemua();}
-function exportLaporanShopXLSX(){return ShopExport.exportLaporan();}
-function setLaporanPeriode(p,el){return Laporan.setPeriodeLap(p,el);}
 
 // ImportShopExcel (kw210-shop-import-xlsx) — kebalikan dari ShopExport: baca file .xlsx yang
 // diupload user (idealnya hasil "Export Excel" dari tab yang sama, sudah diedit/ditambah baris),
