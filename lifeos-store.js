@@ -48,3 +48,14 @@ async function lifeOSSave() {
 function lifeOSGetStore() {
   return LifeOSStore;
 }
+
+/** Invalidate cache "sudah dimuat sekali per sesi" (lihat lifeOSEnsureLoaded()
+ * di atas). SATU-SATUNYA pemanggil yang sah: applyRestoredData()
+ * (backup-restore.js), setelah menulis ulang key 'lifeos:store' di
+ * IndexedDB dari file backup — supaya render berikutnya (LifeOSHome.render())
+ * baca ULANG dari IndexedDB, bukan state lama di memori dari SEBELUM
+ * restore. Dipanggil lewat guard `typeof lifeOSInvalidateCache==='function'`
+ * di pemanggil, pola yang sama dgn cross-module check lain di app ini. */
+function lifeOSInvalidateCache() {
+  _lifeOSLoaded = false;
+}

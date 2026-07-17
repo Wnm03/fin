@@ -40,7 +40,7 @@
  * @property {number} economicExposureScore
  * @property {number} personalEconomicHealthScore
  * @property {number} economicRiskIndex
- * @property {'normal'|'waspada'|'risiko_tinggi'} weather
+ * @property {'normal'|'waspada'|'risiko_tinggi'} status
  * @property {Object} breakdown
  */
 

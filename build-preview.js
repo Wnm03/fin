@@ -15,9 +15,30 @@ const OUT_HTML = path.join(ROOT, 'keluarga-w-preview.html');
 // Urutan HARUS sama dgn urutan <script src=...> di index.html.
 const INLINE_FILES = ['app-bundle-a.min.js', 'smoke-test.js', 'app-bundle-b.min.js', 'tangga-keuangan.js'];
 
+// CSS juga WAJIB di-inline (bukan cuma JS) -- kalau tidak, preview yang
+// dibuka sbg file standalone/artifact (bukan diserver dari folder proyek)
+// tidak bisa fetch "styles.css"/"modern-ui-layer.css" krn tidak ada base
+// path relatif yg valid, jadi tampil polos tanpa styling sama sekali
+// (BUG yg ditemukan manual dari screenshot preview tanpa CSS, 2026-07-17).
+// Urutan HARUS sama dgn urutan <link rel="stylesheet" href=...> di index.html.
+const INLINE_CSS_FILES = ['styles.css', 'modern-ui-layer.css'];
+
 function main() {
   let html = fs.readFileSync(SRC_HTML, 'utf8');
   let count = 0;
+
+  for (const file of INLINE_CSS_FILES) {
+    const cssPath = path.join(ROOT, file);
+    const css = fs.readFileSync(cssPath, 'utf8');
+    // Cocokkan <link rel="stylesheet" href="FILE?v=NNN"> apa pun atribut lainnya/urutan atribut.
+    const re = new RegExp(`<link rel="stylesheet" href="${file.replace(/\./g, '\\.')}\\?v=\\d+">`);
+    if (!re.test(html)) {
+      throw new Error(`build-preview: tag <link rel="stylesheet" href="${file}?v=..."> tidak ditemukan di index.html`);
+    }
+    html = html.replace(re, `<style>\n${css}\n</style>`);
+    count++;
+  }
+
   for (const file of INLINE_FILES) {
     const jsPath = path.join(ROOT, file);
     const js = fs.readFileSync(jsPath, 'utf8');
@@ -30,7 +51,7 @@ function main() {
     count++;
   }
   fs.writeFileSync(OUT_HTML, html, 'utf8');
-  console.log(`✓ ${OUT_HTML} ditulis (${count} file di-inline: ${INLINE_FILES.join(', ')})`);
+  console.log(`✓ ${OUT_HTML} ditulis (${count} file di-inline: ${INLINE_CSS_FILES.concat(INLINE_FILES).join(', ')})`);
 }
 
 main();

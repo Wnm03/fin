@@ -41,7 +41,7 @@ async function eieLoad() {
 let _eieLoaded = false;
 // Dipanggil oleh SATU entry point (services/*) — load dari IDBStore SEKALI
 // per sesi, bukan tiap render, supaya tidak round-trip IndexedDB tiap kali
-// dashboard/economic weather dibuka.
+// dashboard/status ekonomi dibuka.
 async function eieEnsureLoaded() {
   if (!_eieLoaded) {
     await eieLoad();
@@ -56,4 +56,15 @@ async function eieSave() {
 
 function eieGetStore() {
   return EIEStore;
+}
+
+/** Invalidate cache "sudah dimuat sekali per sesi" (lihat eieEnsureLoaded()
+ * di atas). SATU-SATUNYA pemanggil yang sah: applyRestoredData()
+ * (backup-restore.js), setelah menulis ulang key 'eie:store' di IndexedDB
+ * dari file backup — supaya render berikutnya (EIEDashboard.render()) baca
+ * ULANG dari IndexedDB, bukan state lama di memori dari SEBELUM restore.
+ * Dipanggil lewat guard `typeof eieInvalidateCache==='function'` di
+ * pemanggil, pola yang sama dgn cross-module check lain di app ini. */
+function eieInvalidateCache() {
+  _eieLoaded = false;
 }

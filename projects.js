@@ -21,8 +21,15 @@ const LifeOSProjects = {
     const store = lifeOSGetStore();
     const p = projectAdapterFindOne(D, store, projectId);
     if (!p) return;
-    // TODO: modal detail — kalau kind:'renovasi', arahkan ke Renov.open()
-    // existing (renovasi.js), JANGAN duplikasi UI renovasi di sini.
+    // Tidak ada modal detail sendiri di Life OS (sengaja, lihat catatan
+    // project-adapter.js) — langsung arahkan ke referensi aslinya lewat
+    // lifeos-nav.js. kind:'renovasi' -> Renov.openDetail() (modal existing
+    // renovasi.js). kind:'generic' -> belum ada referensi lama (project ini
+    // lahir di Life OS sendiri), lifeOSNavigateToSource() akan kasih tahu
+    // user lewat toast, bukan diam saja.
+    if (typeof lifeOSNavigateToSource === 'function') {
+      lifeOSNavigateToSource(p.kind, p.sourceRef ? p.sourceRef.id : null);
+    }
   },
 
   async createGeneric(name, areaKey) {

@@ -146,14 +146,57 @@ const billsDue=upcoming.reduce((s,b)=>s+b.amount,0);
 const projected=saldoNow+incAvg-expAvg-billsDue;
 return{incAvg,expAvg,saldoNow,billsDue,upcoming,projected,months,avail};
 }
+const KEU_TAB_ORDER=['kelola','tagihan','budget','utangpiutang','asetproyek','laporan'];
 function setKeuanganTab(t,el){
 document.querySelectorAll('#page-keuangan .cn-tab').forEach(b=>b.classList.remove('active'));
 if(el) el.classList.add('active');
-else { const btn=document.querySelectorAll('#page-keuangan .cn-tab')[t==='laporan'?1:0]; if(btn) btn.classList.add('active'); }
+else { const idx=KEU_TAB_ORDER.indexOf(t); const btn=document.querySelectorAll('#page-keuangan .cn-tab')[idx>=0?idx:0]; if(btn) btn.classList.add('active'); }
 document.getElementById('keuanganTab-kelola').classList.toggle('u-dnone', t!=='kelola');
 document.getElementById('keuanganTab-kelola').style.display='';
+document.getElementById('keuanganTab-tagihan').classList.toggle('u-dnone', t!=='tagihan');
+document.getElementById('keuanganTab-tagihan').style.display='';
+document.getElementById('keuanganTab-budget').classList.toggle('u-dnone', t!=='budget');
+document.getElementById('keuanganTab-budget').style.display='';
+document.getElementById('keuanganTab-utangpiutang').classList.toggle('u-dnone', t!=='utangpiutang');
+document.getElementById('keuanganTab-utangpiutang').style.display='';
+document.getElementById('keuanganTab-asetproyek').classList.toggle('u-dnone', t!=='asetproyek');
+document.getElementById('keuanganTab-asetproyek').style.display='';
 document.getElementById('keuanganTab-laporan').classList.toggle('u-dnone', t!=='laporan');
 document.getElementById('keuanganTab-laporan').style.display='';
-if(t==='kelola'){populateKeuFilters();loadKeuFilterPrefsIntoDOM();renderKeuangan();renderBillList();}
+if(t==='kelola'){populateKeuFilters();loadKeuFilterPrefsIntoDOM();renderKeuangan();}
+if(t==='tagihan'){renderBillList();}
+if(t==='budget'){renderBudgets();if(typeof BudgetReko!=='undefined')BudgetReko.init();}
+if(t==='utangpiutang'){if(typeof Piutang!=='undefined')Piutang.renderList();if(typeof Debt!=='undefined')Debt.renderList();}
+if(t==='asetproyek'){if(typeof Pensiun!=='undefined')Pensiun.render();if(typeof Renov!=='undefined')Renov.render();if(typeof SewaKios!=='undefined')SewaKios.render();}
 if(t==='laporan'){populateCatFilter();populateAccFilters();renderLaporan();}
+}
+
+// 2026-07-17: split tab 📊 Laporan jadi 3 sub-tab (Ringkasan / Arus Kas &
+// Kategori / Transaksi & Export) — pola SAMA PERSIS dgn setAsetTab (aset.js),
+// murni toggle DOM, tidak ada logic baru. renderLaporan() (dipanggil sekali
+// saat masuk tab Laporan di atas) tetap mengisi semua kartu di ketiga
+// sub-tab sekaligus, terlepas dari sub-tab mana yang lagi aktif.
+const LAPORAN_SUBTAB_ORDER=['ringkasan','aruskas','transaksi'];
+function setLaporanTab(t,el){
+document.querySelectorAll('#keuanganTab-laporan .lap-subtab').forEach(b=>b.classList.remove('active'));
+if(el) el.classList.add('active');
+else { const idx=LAPORAN_SUBTAB_ORDER.indexOf(t); const btn=document.querySelectorAll('#keuanganTab-laporan .lap-subtab')[idx>=0?idx:0]; if(btn) btn.classList.add('active'); }
+document.getElementById('laporanTab-ringkasan').classList.toggle('u-dnone', t!=='ringkasan');
+document.getElementById('laporanTab-aruskas').classList.toggle('u-dnone', t!=='aruskas');
+document.getElementById('laporanTab-transaksi').classList.toggle('u-dnone', t!=='transaksi');
+}
+
+// 2026-07-17 (bagian ke-3): split tab 💰 Kelola jadi 3 sub-tab (Ringkasan /
+// Transaksi / Kelola Data) — pola SAMA PERSIS dgn setLaporanTab/setAsetTab
+// di atas, murni toggle DOM. renderKeuangan() (dipanggil sekali saat masuk
+// tab Kelola) tetap mengisi semua kartu di ketiga sub-tab sekaligus,
+// terlepas dari sub-tab mana yang lagi aktif.
+const KELOLA_SUBTAB_ORDER=['ringkasan','transaksi','pengaturan'];
+function setKelolaTab(t,el){
+document.querySelectorAll('#keuanganTab-kelola .kel-subtab').forEach(b=>b.classList.remove('active'));
+if(el) el.classList.add('active');
+else { const idx=KELOLA_SUBTAB_ORDER.indexOf(t); const btn=document.querySelectorAll('#keuanganTab-kelola .kel-subtab')[idx>=0?idx:0]; if(btn) btn.classList.add('active'); }
+document.getElementById('kelolaTab-ringkasan').classList.toggle('u-dnone', t!=='ringkasan');
+document.getElementById('kelolaTab-transaksi').classList.toggle('u-dnone', t!=='transaksi');
+document.getElementById('kelolaTab-pengaturan').classList.toggle('u-dnone', t!=='pengaturan');
 }

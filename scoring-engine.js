@@ -1,4 +1,4 @@
-// engine/scoring-engine.js — Orkestrasi EES/PEHS/ERI + Economic Weather
+// engine/scoring-engine.js — Orkestrasi EES/PEHS/ERI + Status Ekonomi
 // (§5-8), memanggil RuleEngine (§9) untuk insight, lalu PERSIST hasil ke
 // eie-store. Ini SATU-SATUNYA tempat yang menulis EIEScoreSnapshot &
 // Insight[] ke store (selaras dgn aturan "services/engine = satu2nya
@@ -6,7 +6,7 @@
 
 const EIEScoringEngine = {
   /**
-   * Hitung EES/PEHS/ERI + Economic Weather dari snapshot yang SUDAH ada
+   * Hitung EES/PEHS/ERI + Status Ekonomi dari snapshot yang SUDAH ada
    * (tidak baca D/adapter sendiri) — dipakai juga oleh ScenarioSimulator
    * (What-If, fase 2) supaya simulasi tidak menulis apa pun.
    */
@@ -14,12 +14,12 @@ const EIEScoringEngine = {
     const ees = calcEES(userSnapshot);
     const pehs = calcPEHS(userSnapshot);
     const eri = calcERI(macroSnapshots);
-    const { weather, impactScore } = classifyWeather(ees.score, pehs.score, eri.score);
+    const { status, impactScore } = classifyEconomicStatus(ees.score, pehs.score, eri.score);
     return {
       economicExposureScore: ees.score,
       personalEconomicHealthScore: pehs.score,
       economicRiskIndex: eri.score,
-      weather,
+      status,
       breakdown: { ees: ees.breakdown, pehs: pehs.breakdown, eri: eri.breakdown, impactScore },
     };
   },

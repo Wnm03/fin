@@ -3037,3 +3037,1375 @@ Tahap 5 SELESAI untuk scope Dashboard Hub. Sidebar responsif (blueprint §6
 `sidebar-nav.js`) belum pernah dibuat sama sekali di codebase ini — di luar
 scope task Tahap 5 kali ini (task hanya minta Dashboard Hub), jadi tidak
 disentuh/tidak dianggap "temuan tertunda" — murni belum sampai gilirannya.
+
+## Catatan kerja — 2026-07-17: Split tab halaman 🏠 Aset (page-aset)
+
+Konteks: dari audit "halaman/tab mana yang kepanjangan ke bawah" (jumlah
+card & baris per tab), `page-aset` adalah SATU-SATUNYA halaman utama yang
+masih scroll panjang tanpa tab/accordion sama sekali — 8 card ditumpuk
+(Insight, Dashboard Aset, Ringkasan Investasi, Penyusutan, Pajak Aset,
+Histori Kekayaan, Buku Aset, Laporan Aset, Rekomendasi Alokasi). Dipecah jadi
+3 tab, pola **SAMA PERSIS** dengan `setKeuanganTab`/`setShopTab`/`setCnTab`/
+`setPajakTab` yang sudah ada (`.cn-tabs` + `.cn-tab[data-action]` + toggle
+`u-dnone` per pane) — TIDAK ADA business logic baru, murni reorganisasi DOM:
+
+- **📊 Ringkasan** (`#asetTab-ringkasan`) — Insight Aset, Dashboard Aset,
+  Ringkasan Performa Investasi, Histori Kekayaan & Growth Rate.
+- **📋 Buku Aset** (`#asetTab-buku`) — kartu Buku Aset (daftar aset +
+  tambah/export/import/impor nota emas).
+- **🧮 Analisis & Pajak** (`#asetTab-analisis`) — Penyusutan Aset, Pajak
+  Aset, Laporan Aset, Rekomendasi Alokasi Aset.
+
+**File yang diubah:**
+1. `index.html` & `app_production.html` — restrukturisasi `#page-aset`:
+   tambah `.cn-tabs` nav (3 tombol, `data-action="setAsetTab"`), bungkus
+   kartu-kartu jadi 3 `<div id="asetTab-xxx">`. Semua `id` kartu/elemen di
+   dalamnya (mis. `assetList`, `wealthSnapshotList`, `aaResult`, dst) TIDAK
+   diubah sama sekali — supaya semua fungsi render yang sudah ada
+   (`Aset.renderList()`, `AlokasiAset.init()`, `renderWealthSnapshots()`,
+   dst, dipanggil dari `renderPageContent('aset')` di `modules-render.js`)
+   tetap jalan apa adanya tanpa modifikasi, terlepas dari tab mana yang lagi
+   aktif (sama seperti pola kartu ber-collapse yang sudah ada — kontennya
+   tetap ke-render, cuma disembunyikan lewat CSS).
+2. `aset.js` — tambah `const ASET_TAB_ORDER` + `function setAsetTab(t,el)`
+   (persis pola `setKeuanganTab` di `tx-list-cashflow.js`), taruh sebelum
+   `Object.assign(window,{...})` di akhir file.
+3. `dashboard-hub.js` — tambah `const ASET_TAB_IDX` + cabang
+   `target.page === 'aset'` di `dashHubNavigateToFeature()` supaya kartu
+   fitur Dashboard Hub kategori "Aset" auto-switch ke tab yang benar
+   sebelum `goTo`/scroll-highlight (pola sama dgn keuangan/shop/carnotes/
+   pajak yang sudah ada).
+4. `dashboard-hub-registry.js` — tambah field `tab` ke 4 entry kategori
+   "Aset" (`aset-buku`→`buku`, `aset-histori`→`ringkasan`,
+   `aset-alokasi`→`analisis`, `aset-emas`→`buku`) + update komentar "TAB
+   REFERENSI" (sebelumnya `page:'aset' -> tanpa tab`, sekarang
+   `'ringkasan'|'buku'|'analisis'`).
+5. `features-sheets-pwa-selftest.js` — daftarkan `page-aset` ke self-test
+   generik "panel tab benar-benar terlihat (computed display) setelah tab
+   diklik" (grup `groups[]` yang sudah ada, cuma nambah 1 entry
+   `{page:'#page-aset', fn:setAsetTab, paneId:t=>'asetTab-'+t}`).
+6. `tests/dashboard-hub-registry.test.js` — tambah `aset: ['ringkasan',
+   'buku', 'analisis']` ke `KNOWN_TABS` (whitelist yang dipakai test
+   cross-check `target.tab` valid).
+
+**Kenapa `index.html` & `app_production.html` diedit terpisah tapi identik
+persis:** kedua file itu memang harus tetap 100% identik (ada test khusus
+"HTML parity" utk ini) — jadi restrukturisasi HTML-nya dikerjakan sekali di
+Python lalu ditempel ke kedua file dengan potongan yang SAMA PERSIS, bukan
+diketik ulang manual dua kali (rawan typo beda antara keduanya).
+
+**Verifikasi:** `node --test tests/*.test.js` → 1712/1712 PASS (termasuk
+test parity index.html/app_production.html & test cross-check
+FEATURE_REGISTRY target.tab). `node scripts/build.js` → sukses, v372→v373,
+`index.html` & `app_production.html` tetap identik setelah build. **Catatan:
+`npm run lint` (eslint) TIDAK dijalankan sesi ini** — `node_modules` belum
+terpasang di environment kerja & tidak ada akses internet buat `npm install`
+saat itu; jalankan `npm run check` penuh (atau minimal `npm run lint`)
+sebelum rilis/PR sungguhan utk sesi ini supaya tetap sesuai alur wajib di
+atas.
+
+Sisa 3 kandidat dari audit yang sama (Keuangan > tab Laporan, Keuangan > tab
+Kelola, Pajak & Zakat > tab 🧾 Pajak) BELUM dikerjakan — di luar scope sesi
+ini, lihat ringkasan prioritas di percakapan sesi ini kalau mau lanjut.
+
+## Catatan kerja — 2026-07-17 (bagian ke-2): split sub-tab 📊 Laporan (dalam page-keuangan)
+
+Konteks: user minta kerjakan 1 saran tab-split paling urgent dari sisa 3
+kandidat di atas. Dipilih **tab Laporan (Keuangan)** — bukan Kelola atau
+Pajak — berdasarkan audit ulang jumlah baris & kartu per kandidat (dicek
+langsung dari `index.html`, bukan tebakan): Laporan ≈136 baris/6 kartu utama
+(Saldo Akun, Aset Keluarga, Grafik 6 Bulan, Proyeksi Arus Kas, Per Kategori,
+Daftar Transaksi + Export) vs Kelola ≈145 baris/~3 kartu besar vs tab Pajak
+(PPh 21) ≈117 baris/2 kartu — Laporan py kartu TERBANYAK & paling beragam
+fungsinya, paling sesuai kriteria split yang sama dipakai utk `page-aset`
+sebelumnya (banyak kartu berbeda fungsi ditumpuk, bukan cuma panjang scroll).
+
+**Sub-tab baru (nested DI DALAM tab Laporan yang sudah ada, pola SAMA PERSIS
+dgn `setAsetTab`/`asetTab-*`):**
+- **📊 Ringkasan** (`#laporanTab-ringkasan`) — Saldo Akun, Aset Keluarga,
+  stat Masuk/Keluar/Bersih, Grafik 6 Bulan.
+- **📅 Arus Kas & Kategori** (`#laporanTab-aruskas`) — Proyeksi Arus Kas 30
+  Hari, Per Kategori.
+- **📋 Transaksi & Export** (`#laporanTab-transaksi`) — kartu jumlah
+  transaksi/rata-rata, Daftar Transaksi, Export.
+
+Filter/FAB/periode di bagian atas tab Laporan (chip periode, custom range,
+select Tipe/Kategori/Sub/Akun/Metode, reset filter) **TETAP di luar
+sub-tab** — satu state filter berlaku ke ketiga sub-tab sekaligus (bukan
+per-sub-tab), karena `renderLaporan()` tetap 1x mengisi semua kartu di
+ketiga sub-tab tiap kali filter berubah, terlepas dari sub-tab mana yang lagi
+kelihatan (sama seperti kartu-kartu Aset yang tetap ke-render semua walau
+disembunyikan CSS).
+
+**Kenapa grouping-nya begini (bukan sekedar 3 kartu/3 kartu/3 kartu rata):**
+ada 2 referensi `goToList(...)` di DALAM tab Laporan sendiri (bukan lewat
+Dashboard Hub) — `lapAccTotal`→`lapAccList` & `lapCount`/`lapAvg`→`lapTx` —
+`goToList()` (filter-laporan.js) TIDAK diberi parameter sub-tab baru (scope
+sengaja dibatasi, lihat di bawah), jadi tiap pasangan goTo-target WAJIB
+berakhir di sub-tab yang SAMA supaya `scrollIntoView` tidak nyasar ke elemen
+yang lagi disembunyikan `u-dnone`. Karena itu "Jumlah transaksi/Rata-rata"
+(goTo `lapTx`) ditaruh di **Transaksi & Export** (bareng `lapTx`), BUKAN di
+Ringkasan seperti pengelompokan pertama yang sempat dipertimbangkan.
+
+**File yang diubah:**
+1. `index.html` & `app_production.html` — restrukturisasi `#keuanganTab-laporan`:
+   tambah `.cn-tabs.lap-subtabs` nav (3 tombol, `data-action="setLaporanTab"`,
+   class tombol **`.lap-subtab`, SENGAJA BUKAN `.cn-tab`**), bungkus 6 kartu
+   jadi 3 `<div id="laporanTab-xxx">`. Semua `id` kartu/elemen di dalamnya
+   (`lapAccList`, `grafikBars`, `cfBody`, `lapKat`, `lapTx`, dst) TIDAK
+   diubah — fungsi render yang sudah ada (`renderLaporan()`,
+   `renderCashflowForecast()`, dst, `modules-render.js`) tetap jalan apa
+   adanya. Direstrukturisasi sekali di Python lalu ditempel SAMA PERSIS ke
+   kedua file (pola sama dgn split Aset kemarin), diverifikasi `diff` 0.
+2. `styles.css` — tambah `.lap-subtabs`/`.lap-subtab`/`.lap-subtab.active`,
+   **class terpisah dari `.cn-tab`** (bukan cuma varian) — supaya query
+   `#page-keuangan .cn-tab` yang dipakai `setKeuanganTab()`, `KEU_TAB_IDX`,
+   & self-test generik TIDAK ikut menangkap tombol sub-tab bersarang ini
+   (kalau ikut ketangkap: index tab top-level Kelola/Tagihan/dst jadi
+   salah hitung & `classList.remove('active')` bakal ikut nge-reset tombol
+   sub-tab). Pola isolasi class ini sudah ada presedennya di app ini
+   (`.budget-tab-btn`, sub-tab Budget List/Rekomendasi) — bukan pola baru.
+3. `tx-list-cashflow.js` — tambah `const LAPORAN_SUBTAB_ORDER` + `function
+   setLaporanTab(t,el)`, persis pola `setAsetTab`, taruh setelah
+   `setKeuanganTab`.
+4. `dashboard-hub.js` — tambah `const LAPORAN_SUBTAB_IDX` + di dalam cabang
+   `target.page === 'keuangan'`: kalau `target.tab==='laporan'` DAN
+   `target.subtab` terisi, panggil `setLaporanTab()` juga (setelah
+   `setKeuanganTab()`) — supaya kartu fitur Dashboard Hub yang nunjuk ke
+   dalam tab Laporan (Saldo Akun, Grafik, Arus Kas, Per Kategori, Export)
+   auto-buka sub-tab yang benar sebelum `goTo`/scroll-highlight, BUKAN
+   nyasar ke sub-tab Ringkasan (default) kalau kontennya sebenarnya ada di
+   sub-tab lain.
+5. `dashboard-hub-registry.js` — tambah field `subtab` ke 4 entry kategori
+   Keuangan yang nunjuk ke dalam tab Laporan (`keu-saldo-akun`→`ringkasan`,
+   `keu-grafik`→`ringkasan`, `keu-cashflow`→`aruskas`,
+   `keu-laporan-kategori`→`aruskas`, `keu-export`→`transaksi`) + update
+   komentar "TAB REFERENSI".
+6. `features-sheets-pwa-selftest.js` — tambah 1 entry ke `groups[]` self-test
+   generik "panel tab benar-benar terlihat setelah tab diklik":
+   `{page:'#keuanganTab-laporan', fn:setLaporanTab, paneId:t=>'laporanTab-'+t,
+   btnClass:'.lap-subtab'}` — reuse harness yang sudah ada (presedennya
+   entry `BudgetTabs.switchTo`/`.budget-tab-btn`), tidak menulis self-test
+   baru dari nol.
+7. `tests/dashboard-hub-registry.test.js` — tambah `KNOWN_SUBTABS =
+   {'keuangan.laporan': ['ringkasan','aruskas','transaksi']}` + test baru
+   cross-check `target.subtab` (valid sesuai whitelist DAN id
+   `laporanTab-<subtab>` nyata ada di DOM), pola sama persis dgn test
+   `target.tab` yang sudah ada.
+
+**Kenapa TIDAK mengubah `goToList()` (filter-laporan.js):** sempat
+dipertimbangkan nambah parameter sub-tab ke `goToList()` biar lebih generik,
+tapi itu fungsi bersama dipakai BANYAK pemanggil lintas halaman (Shop, Car
+Notes, Aset, dst) — mengubah signature-nya menambah risiko regresi di luar
+scope sub-tab Laporan. Sebagai gantinya, 2 pemanggilan `goToList()` yang ada
+DI DALAM tab Laporan sengaja diatur supaya goTo-target-nya selalu di
+sub-tab yang sama dgn kartu pemanggilnya (lihat penjelasan grouping di
+atas) — cukup lewat pengaturan DOM, tanpa nyentuh `goToList()` sama sekali.
+
+**Diverifikasi:**
+- `node --test tests/*.test.js` → **1713/1713 pass, 0 fail** (naik dari 1712
+  sebelum sesi ini, +1 test baru [`target.subtab` cross-check], 0 regresi).
+- `node scripts/build.js kw83-split-laporan-subtab-1` → sukses, v373→v374,
+  kedua bundle lolos `node --check` sintaks, `index.html` &
+  `app_production.html` tetap identik setelah build, `FILE-MAP.md`
+  diregenerasi otomatis.
+- Sanity-check manual (regex hitung tombol dalam blok `#page-keuangan`):
+  6 tombol `.cn-tab` (top-level) vs 3 tombol `.lap-subtab` (nested) —
+  dikonfirmasi TIDAK ada tabrakan class/selector.
+- Smoke-test browser (Playwright) & `npm run lint` **TIDAK dijalankan sesi
+  ini** — sandbox tanpa Chrome/Playwright terpasang & tanpa akses internet
+  utk `npm install`/`eslint`, sama seperti keterbatasan hampir semua sesi
+  sebelumnya di file ini. **Tolong jalankan smoke-test browser manual**
+  (buka `?dev=1`, klik ketiga tombol sub-tab Laporan, pastikan kartu yang
+  benar tampil & konten tetap terisi setelah filter diubah) **+
+  `npm run lint`/`npm run check`** sebelum merge/release.
+
+Sisa 2 kandidat dari audit sebelumnya (Keuangan > tab Kelola, Pajak & Zakat >
+tab 🧾 Pajak) BELUM dikerjakan — di luar scope sesi ini.
+
+## Catatan kerja — 2026-07-17 (bagian ke-3): split sub-tab 💰 Kelola (dalam page-keuangan)
+
+Konteks: user minta lanjut 1 saran tab-split berikutnya. Dari 2 sisa
+kandidat (Kelola, Pajak PPh21), dipilih **Kelola** — audit ulang jumlah
+baris/kartu (dicek langsung dari `index.html`): Kelola ≈145 baris/~18
+elemen bertanda `class="card...` (Insight, Saldo Bersih, Absensi Gaji,
+Semua Transaksi + filter besar, Kelola Kategori, Import Data, Kekayaan
+Bersih) vs tab Pajak (PPh 21) ≈117 baris/~15 — Kelola tetap yang
+terpanjang & terbanyak kartunya dari sisa 2 kandidat.
+
+**Sub-tab baru (nested DI DALAM tab Kelola yang sudah ada, pola SAMA PERSIS
+dgn `setLaporanTab`/`setAsetTab`):**
+- **📊 Ringkasan** (`#kelolaTab-ringkasan`) — Insight Keuangan, header
+  month-nav, stat Pemasukan/Pengeluaran, Saldo Bersih, Gaji dari Absensi,
+  Kekayaan Bersih.
+- **💸 Transaksi** (`#kelolaTab-transaksi`) — tombol cepat Masuk/Keluar/
+  Transfer, Kalkulator Gaji, Absensi Harian, kartu Semua Transaksi
+  (filter+search+list+load more).
+- **🏷️ Kelola Data** (`#kelolaTab-pengaturan`) — Kelola Kategori &
+  Subkategori, Import Data dari Aplikasi Lain (keduanya sudah `<details>`
+  collapse dari awal).
+
+**Kenapa grouping-nya begini:** ada 2 pasangan `goToList()`/aksi DALAM tab
+Kelola sendiri yang WAJIB tetap 1 sub-tab (`goToList()` TIDAK diberi
+parameter sub-tab, sama seperti keputusan di split Laporan kemarin) —
+tapi keduanya kebetulan sudah otomatis aman: `kbPiutang`/`kbTotalAset`/
+`kbSaldoAkun`/`kbInventori` di kartu Kekayaan Bersih semua `goToList()`/
+`showPage()` ke tab/halaman LAIN (bukan balik ke elemen di dalam Kelola
+sendiri), jadi TIDAK ada kasus goTo-target yang kepisah sub-tab kayak
+`lapCount→lapTx` kemarin. Header month-nav (`changeMonth`) sengaja ditaruh
+di **Ringkasan** (bareng stat Pemasukan/Pengeluaran yang dipengaruhinya),
+BUKAN di Transaksi — karena kartu "Semua Transaksi" py filter periode
+sendiri (`txListPeriodeChips`/`setTxListPeriode`), independen dari
+month-nav (`curMonth`/`curYear`, dipakai `mIncome`/`mExpense`/`mNet` saja).
+
+**File yang diubah:**
+1. `index.html` & `app_production.html` — restrukturisasi
+   `#keuanganTab-kelola`: tambah `.cn-tabs.kel-subtabs` nav (3 tombol,
+   `data-action="setKelolaTab"`, class tombol **`.kel-subtab`** — beda lagi
+   dari `.cn-tab` MAUPUN `.lap-subtab`, alasan sama dgn split Laporan:
+   cegah tabrakan query `#page-keuangan .cn-tab`), bungkus kartu-kartu jadi
+   3 `<div id="kelolaTab-xxx">`. Semua `id` elemen di dalamnya TIDAK diubah
+   — `renderKeuangan()` (modules-render.js) tetap mengisi `monthLabel`,
+   `mIncome`/`mExpense`/`mNet`, `allTx`, dst di ketiga sub-tab sekaligus,
+   terlepas dari mana yang aktif. Direstrukturisasi sekali di Python lalu
+   ditempel SAMA PERSIS ke kedua file, `diff` 0.
+2. `styles.css` — tambah `.kel-subtabs`/`.kel-subtab`/`.kel-subtab.active`,
+   class terpisah dari `.cn-tab` & `.lap-subtab` (bukan varian keduanya).
+3. `tx-list-cashflow.js` — tambah `const KELOLA_SUBTAB_ORDER` + `function
+   setKelolaTab(t,el)`, persis pola `setLaporanTab`/`setAsetTab`.
+4. `dashboard-hub.js` — tambah `const KELOLA_SUBTAB_IDX` + cabang baru
+   `target.tab==='kelola' && target.subtab` (else-if setelah cabang
+   `laporan`) yang panggil `setKelolaTab()` sesudah `setKeuanganTab()`.
+5. `dashboard-hub-registry.js` — tambah `subtab: 'transaksi'` ke 3 entry
+   yang nunjuk tab Kelola dgn `action:'openTxModal'` (`keu-transaksi`,
+   `ai-kategorisasi`, `ai-scan-ocr`) — bukan krn goTo butuh (ketiganya
+   modal-only, tidak goTo), tapi supaya konteks tab yang kebuka DI
+   BELAKANG modal sesuai (kartu Semua Transaksi), bukan default Ringkasan.
+   Update juga komentar "TAB REFERENSI".
+6. `features-sheets-pwa-selftest.js` — tambah 1 entry ke `groups[]`:
+   `{page:'#keuanganTab-kelola', fn:setKelolaTab, paneId:t=>'kelolaTab-'+t,
+   btnClass:'.kel-subtab'}`.
+7. `tests/dashboard-hub-registry.test.js` — `KNOWN_SUBTABS` diperluas
+   dgn `'keuangan.kelola': ['ringkasan','transaksi','pengaturan']` + test
+   `target.subtab` yang sudah ada (dari split Laporan) DIGENERALISASI
+   (tambah `SUBTAB_PANE_PREFIX` map, bukan hardcode `laporanTab-`) supaya
+   otomatis ikut cross-check subtab Kelola juga, tanpa duplikasi test.
+
+**Diverifikasi:**
+- `node --test tests/*.test.js` → **1713/1713 pass, 0 fail** (sama dgn
+  sebelum sesi ini — tidak ada test BARU ditambahkan krn test
+  `target.subtab` yang sudah ada digeneralisasi, bukan diduplikasi; 0
+  regresi).
+- `node scripts/build.js kw83-split-kelola-subtab-1` → sukses, v374→v375,
+  kedua bundle lolos `node --check`, `index.html`/`app_production.html`
+  tetap identik, `FILE-MAP.md` diregenerasi otomatis.
+- Sanity-check manual (regex hitung tombol dalam blok `#page-keuangan`):
+  6 `.cn-tab` (top-level) vs 3 `.lap-subtab` (Laporan) vs 3 `.kel-subtab`
+  (Kelola) — dikonfirmasi TIDAK ada tabrakan class/selector antar
+  ketiganya.
+- Smoke-test browser (Playwright) & `npm run lint` **TIDAK dijalankan sesi
+  ini** — sandbox tanpa Chrome/Playwright & tanpa akses internet, sama
+  seperti sesi-sesi sebelumnya. **Tolong jalankan smoke-test browser
+  manual** (buka `?dev=1`, klik ketiga tombol sub-tab Kelola, pastikan
+  kartu yang benar tampil, tombol +Masuk/-Keluar/Transfer masih berfungsi,
+  & filter/search transaksi tetap jalan) **+ `npm run lint`/`npm run
+  check`** sebelum merge/release.
+
+Sisa 1 kandidat dari audit sebelumnya (Pajak & Zakat > tab 🧾 Pajak PPh 21)
+BELUM dikerjakan — di luar scope sesi ini.
+
+## Catatan kerja — 2026-07-17 (bagian ke-4): split sub-tab 🧾 Pajak (PPh 21) (dalam page-pajak)
+
+Konteks: user minta lanjut kandidat TERAKHIR dari daftar tab-split
+(Keuangan > Laporan ✅, Keuangan > Kelola ✅, sisa: Pajak & Zakat > tab 🧾
+Pajak PPh 21). Tab ini SENGAJA cuma dipecah 2 sub-tab (bukan 3 seperti
+Laporan/Kelola/Aset) — audit ulang isi (dicek dari `index.html`) cuma
+ketemu 2 kartu utama (🧾 Estimasi PPh 21, 🏛️ PBB) + 2 `<details>` terkait
+(📖 Tabel Referensi PTKP & Tarif, 🏪 Pajak Bisnis Shop/UMKM), jadi
+dikelompokkan jadi 2 sub-tab bertema, bukan dipaksa 3.
+
+**Sub-tab baru (nested DI DALAM tab 🧾 Pajak yang sudah ada, pola SAMA
+PERSIS dgn `setLaporanTab`/`setKelolaTab`/`setAsetTab`):**
+- **🧾 PPh 21** (`#pjkTab-pph21`) — kartu Estimasi PPh 21 (Orang Pribadi) +
+  `<details>` Tabel Referensi PTKP & Tarif.
+- **🏛️ PBB & UMKM** (`#pjkTab-pbb`) — kartu PBB (Pajak Bumi & Bangunan) +
+  `<details>` Pajak Bisnis Shop (UMKM).
+
+**Kartu `pajakRekomendasiCard` (rekomendasi dinamis berdasar Status
+Pekerjaan di Profil) SENGAJA ditaruh DI LUAR kedua sub-tab**, tetap di atas
+nav sub-tab, persis di bawah `pajakRekomendasiCard` lama — karena isinya
+lintas sub-tab (`renderPajakRekomendasi()` di `modules-render.js` bisa
+merujuk baik kalkulator PPh 21 MAUPUN PPh Final UMKM sekaligus, tergantung
+`D.profile.statusPekerjaan`: karyawan/freelance/keduanya). Kalau kartu ini
+ikut dipindah ke salah satu sub-tab, rekomendasi yang menyebut kalkulator
+di sub-tab LAIN jadi tidak terlihat user tanpa pindah tab dulu.
+
+**Reorganisasi urutan DOM:** sebelumnya urutan kartu di `index.html` adalah
+PPh21 → PBB → Tabel PTKP&Tarif → UMKM (PBB nyempil DI ANTARA PPh21 & tabel
+referensinya). Supaya pengelompokan sub-tab masuk akal, urutan diubah jadi
+PPh21 → Tabel PTKP&Tarif (sub-tab PPh 21) lalu PBB → UMKM (sub-tab PBB &
+UMKM). Semua `id` kartu/elemen di dalamnya (`pjPPh21Card`, `pphResultBox`,
+`pjPBBCard`, `pbbAssetPick`, `umkmDetails`, dst) TIDAK diubah sama sekali —
+`renderPajakZakat()`/`renderPajakRekomendasi()`/`pilihAsetPBB()` dst
+(dipanggil dari `renderPageContent('pajak')` di `modules-render.js`) tetap
+jalan apa adanya, terlepas dari sub-tab mana yang aktif.
+
+**File yang diubah:**
+1. `index.html` & `app_production.html` — restrukturisasi `#pajakTab-pajak`
+   (nested di dalam tab top-level 🧾 Pajak (PPh 21), yang sendiri nested di
+   dalam `#page-pajak`): tambah `.cn-tabs.pjk-subtabs` nav (2 tombol,
+   `data-action="setPjkTab"`, class tombol **`.pjk-subtab`** — beda lagi
+   dari `.cn-tab`/`.lap-subtab`/`.kel-subtab`, alasan sama dgn split
+   Laporan/Kelola: cegah tabrakan query `#page-pajak .cn-tab` yang dipakai
+   `setPajakTab()`/`PAJAK_TAB_IDX`/self-test buat tab Zakat/Pajak
+   tingkat-atas), bungkus & reorder kartu jadi 2 `<div id="pjkTab-xxx">`.
+   Direstrukturisasi sekali di Python lalu ditempel SAMA PERSIS ke kedua
+   file, `diff` 0.
+2. `styles.css` — tambah `.pjk-subtabs`/`.pjk-subtab`/`.pjk-subtab.active`,
+   class terpisah dari `.cn-tab`/`.lap-subtab`/`.kel-subtab` (bukan varian
+   salah satunya).
+3. `features-sheets-pwa-selftest.js` — tambah `const PJK_SUBTAB_ORDER` +
+   `function setPjkTab(t,el)` (persis pola `setLaporanTab`/`setKelolaTab`),
+   ditaruh tepat setelah `setPajakTab()` yang sudah ada di file yang sama
+   (file ini SUDAH jadi rumah `setPajakTab`/`hitungPPh21`/`hitungPBB` dkk
+   dari sesi-sesi lampau — bukan file baru, ikut lokasi yang sudah ada).
+   Juga tambah 1 entry ke `groups[]` self-test generik "panel tab
+   benar-benar terlihat setelah tab diklik": `{page:'#pajakTab-pajak',
+   fn:setPjkTab, paneId:t=>'pjkTab-'+t, btnClass:'.pjk-subtab'}`.
+4. `dashboard-hub.js` — tambah `const PJK_SUBTAB_IDX` + cabang baru di
+   dalam blok `target.page === 'pajak'` yang panggil `setPjkTab()` kalau
+   `target.tab==='pajak' && target.subtab`, sesudah `setPajakTab()` (pola
+   sama dgn cabang `laporan`/`kelola` di dalam blok `keuangan`).
+5. `dashboard-hub-registry.js` — tambah `subtab: 'pph21'` ke entry
+   `pz-pph21` & `subtab: 'pbb'` ke entry `pz-pbb` (2 entry kategori Pajak &
+   Zakat yang nunjuk ke tab `pajak`). Update juga komentar "TAB REFERENSI".
+6. `tests/dashboard-hub-registry.test.js` — `KNOWN_SUBTABS` diperluas dgn
+   `'pajak.pajak': ['pph21','pbb']` + `SUBTAB_PANE_PREFIX` diperluas dgn
+   `'pajak.pajak': 'pjkTab-'` — REUSE test `target.subtab` yang sudah
+   digeneralisasi di split Kelola (bukan test baru, otomatis ikut
+   cross-check sub-tab Pajak juga).
+
+**Kenapa TIDAK mengubah `goToList()`/fungsi navigasi lain:** tidak ada
+pemanggilan `goToList()` DI DALAM tab Pajak yang menunjuk balik ke elemen
+lain di dalam tab Pajak sendiri (beda dari kasus `lapCount→lapTx` di split
+Laporan) — `pbbAssetPick` (dropdown pilih aset) manggil `pilihAsetPBB()`
+murni baca `D.assets`, bukan navigasi; entry registry `pz-*` semua
+`goTo` ke elemen di sub-tab yang SAMA dgn `subtab` barunya sendiri. Jadi
+tidak ada penyesuaian selain menambah field `subtab` di 2 entry di atas.
+
+**Diverifikasi:**
+- `node --test tests/*.test.js` → **1713/1713 pass, 0 fail** (sama dgn
+  sebelum sesi ini — tidak ada test BARU krn test `target.subtab` yang
+  sudah ada di-reuse via `KNOWN_SUBTABS`/`SUBTAB_PANE_PREFIX`, bukan
+  diduplikasi; 0 regresi).
+- `node scripts/build.js kw84-split-pajak-subtab-1` → sukses, v375→v376,
+  kedua bundle lolos `node --check` sintaks, `index.html` &
+  `app_production.html` tetap identik setelah build, `FILE-MAP.md`
+  diregenerasi otomatis.
+- Sanity-check manual (regex hitung tombol dalam `index.html`): 19
+  `.cn-tab` (top-level, semua halaman) vs 3 `.lap-subtab` (Laporan) vs 3
+  `.kel-subtab` (Kelola) vs 2 `.pjk-subtab` (Pajak) — dikonfirmasi TIDAK
+  ada tabrakan class/selector antar keempatnya.
+- Smoke-test browser (Playwright) & `npm run lint`/`npm install` (esbuild)
+  **TIDAK dijalankan sesi ini** — sandbox tanpa Chrome/Playwright terpasang
+  & tanpa akses internet, sama seperti sesi-sesi split sebelumnya (build di
+  atas otomatis fallback ke bundle TANPA minifikasi krn esbuild tidak
+  ketemu, sesuai catatan esbuild di atas — bundle tetap valid & aman
+  dipakai, cuma lebih besar). **Tolong jalankan smoke-test browser manual**
+  (buka `?dev=1`, buka Pajak & Zakat > tab 🧾 Pajak (PPh 21), klik kedua
+  tombol sub-tab, pastikan kartu yang benar tampil, kalkulator PPh 21 & PBB
+  tetap jalan, kartu rekomendasi tetap muncul di kedua sub-tab sesuai
+  Status Pekerjaan) **+ `npm install --save-dev esbuild` lalu `npm run
+  check` penuh (lint + test + build minified)** sebelum merge/release.
+
+Dengan ini SEMUA 4 kandidat dari audit "halaman/tab kepanjangan" (page-aset,
+Keuangan > Laporan, Keuangan > Kelola, Pajak & Zakat > Pajak PPh 21) SUDAH
+selesai dipecah jadi tab/sub-tab. Belum ada audit baru dijalankan setelah
+ini utk cari kandidat split berikutnya (kalau ada) — di luar scope sesi ini.
+
+## AUDIT + RENCANA KERJA BERTAHAP — Split tab 🧭 Dashboard Hub (landing page) — BELUM DIKERJAKAN
+
+Konteks: user minta saran split tab lanjutan utk **Dashboard Hub**
+(`#page-dashboard-hub`), landing page default aplikasi (bukan salah satu
+dari 4 kandidat di atas — itu semua tab DI DALAM page lain, Dashboard Hub
+adalah page-nya sendiri). Sesi ini **HANYA audit + rencana kerja**, TIDAK
+ADA perubahan kode — pengelompokan sub-tab adalah keputusan produk (lihat
+aturan "STOP dan tanya dulu" di bagian atas file ini), jadi ditulis dulu di
+sini utk dikonfirmasi sebelum dieksekusi.
+
+### 1. Temuan audit
+
+`#page-dashboard-hub` (index.html baris 2193–2508, **≈316 baris** — lebih
+panjang dari SEMUA 4 kandidat yang sudah dipecah sebelumnya sebelum
+dipecah: Aset ~? kartu/8, Laporan ≈136 baris, Kelola ≈145 baris, Pajak
+≈117 baris) berisi, urut dari atas:
+
+1. **Hero Card** (`dashHubHeroCard`) — saldo semua akun + pemasukan/
+   pengeluaran bulan ini. Diisi `DashboardHubHero.render()`.
+2. **🪜 Tangga Ternak Uang** (`tanggaKeuanganCard`) — kartu besar
+   background image, diisi script terpisah (`tangga-keuangan.js`, load
+   SETELAH bundle).
+3. **Quick Actions** (`dashHubQuickActions`) — 4 tombol (Transaksi,
+   Backup, Cari, AI). Murni markup, tidak ada modul JS sendiri.
+4. **Summary Cards** (`dashHubSummaryGrid`) — diisi
+   `DashboardHubSummary.render()`.
+5. **Analytics row** (`dashHubAnalyticsRow`) — diisi
+   `DashboardHubAnalytics.render()`.
+6. **🔍 Search fitur** (`dashHubSearchInput` + `dashHubSearchResults`).
+7. **⭐ Favorit** (`dashHubFavoritSection`, `u-dnone` default sampai user
+   nge-favorit sesuatu) — diisi `DashboardHubFavoritView.render()`.
+8. **Tab switcher yang SUDAH ADA**: 🗂️ Semua Fitur ↔ 📌 Pinned Widget
+   (`dashHubMainTabsRow`, pola `chip-btn` + `DashboardHub.setMainTab()`/
+   `applyMainTab()` di `dashboard-hub.js`, preferensi diingat di
+   `localStorage['dashHubMainTab']`, default `'fitur'`). Ini BUKAN pola
+   `.cn-tab`/`.lap-subtab` dkk yang dipakai di 4 split sebelumnya — sistem
+   beda, dibuat sesi lampau (lihat `QUICK-ACTIONS.md`/`PINNED-WIDGETS.md`),
+   TIDAK disentuh sesi ini, murni didata ulang di sini.
+   - Pane **"Semua Fitur"** (`dashHubMainGridCard`) — grid kategori fitur
+     (`dashboardHubGrid`), collapsible sendiri (`card-collapse-toggle`).
+   - Pane **"Pinned Widget"** (`dashboardHubPinnedWrap`) — **6 kartu besar
+     ditumpuk**: 🧭 Penasihat (`advisorCard`), 🎯 Skor Hidup Seimbang
+     (`lifeBalanceCard`), 🌱 Refleksi & Self-Care (`refleksiCard`), 🎯
+     Kebebasan Finansial (`dashFiCard`), 🏖️ Dana Pensiun
+     (`dashPensiunCard`), 📅 Absensi Harian (`dashAbsensiCard`).
+9. **🌱 Life OS** (`lifeOSWrap`, `u-dnone` default, toggle di Setelan) —
+   DI LUAR tab switcher #8, jadi selalu ada di DOM (kadang tersembunyi via
+   toggle setting, BUKAN via tab Fitur/Pinned).
+10. **🌦️ Kondisi Ekonomi / EIE** (`eieWrap`) — DI LUAR tab switcher #8
+    juga, SELALU tampil (tidak ada toggle sembunyi seperti Life OS).
+
+**Kenapa terasa panjang:** item #1–7 SEMUA selalu tampil sebelum user
+sampai ke tab switcher #8, lalu #9–10 (Life OS + EIE) juga selalu tampil
+lagi SETELAH pane #8 — jadi walau sudah ada 1 tab switcher, total ada 3
+"section besar" (item 1-7, pane Pinned Widget yang isinya 6 kartu, lalu
+Life OS+EIE) yang semuanya numpuk berurutan, bukan benar-benar tersembunyi
+lewat tab.
+
+**`DashboardHub.render()` (dashboard-hub.js) memanggil SEMUA render()
+modul di atas tanpa syarat** (LifeOSHome, DashboardHubFavoritView,
+DashboardHubHero, DashboardHubSummary, DashboardHubAnalytics,
+EIEDashboard, dst) — baru di baris PALING BAWAH toggle visibility Fitur/
+Pinned dijalankan (`applyMainTab`). Pola ini match dgn split-split
+sebelumnya (Laporan/Kelola/Aset/Pajak): render tetap isi SEMUA sub-tab
+sekaligus, cuma visibility yang di-toggle — jadi split baru bisa REUSE
+pola yang sama, tidak perlu ubah cara render.
+
+### 2. Kenapa risiko lebih tinggi dari 4 split sebelumnya
+
+- **13 file test** khusus menyentuh `page-dashboard-hub`
+  (`tests/dashboard-hub*.test.js`) — jauh lebih banyak dari test yang
+  disentuh tiap split sebelumnya (Laporan/Kelola cuma nambah ke 1 file
+  `dashboard-hub-registry.test.js`).
+- Ini **landing page default** (`class="page active"` saat startup) —
+  bug di sini langsung kelihatan tiap buka app, beda dari tab yang perlu
+  diklik dulu.
+- Sudah dicek: `tests/dashboard-hub-quickactions.test.js` &
+  `tests/dashboard-hub-pinned-widgets.test.js`/`pinnedwidgets.test.js`
+  TIDAK menuntut struktur DOM parent-child yang kaku — mereka cek (a)
+  **urutan posisi string** (`heroIdx < qaIdx < searchIdx`, aman dilewati
+  asal urutan elemen tidak dibalik) dan (b) **elemen tsb ADA DI DALAM
+  `#page-dashboard-hub`** (aman dilewati asal tetap nested di situ, boleh
+  dibungkus wrapper div baru). Jadi risikonya **bisa dikelola** asal
+  urutan DOM tidak dibalik & tidak ada elemen yang dipindah KELUAR dari
+  `#page-dashboard-hub` — sama seperti prinsip yang sudah dipakai di split
+  Aset/Laporan/Kelola/Pajak (index/id kartu tidak diubah, cuma dibungkus).
+
+### 3. Usulan pengelompokan sub-tab (masih perlu dikonfirmasi user)
+
+Hero Card + Quick Actions + Search **diusulkan TETAP selalu tampil di
+atas** (tidak ikut dipecah) — itu yang paling sering dibutuhkan sekali
+lihat begitu buka app, beda karakter dari kartu2 lain yang sifatnya lebih
+"jelajah fitur".
+
+| Sub-tab baru | Isi |
+|---|---|
+| *(selalu tampil, di atas nav sub-tab)* | Hero Card, Quick Actions, Search |
+| 📊 Ringkasan | Summary Cards, Analytics row, 🪜 Tangga Ternak Uang |
+| 🗂️ Fitur | ⭐ Favorit, lalu switcher **Semua Fitur ↔ Pinned Widget yang SUDAH ADA (tidak diubah)** |
+| 🌦️ Insight | 🌱 Life OS, 🌦️ Kondisi Ekonomi (EIE) |
+
+Opsional tahap lanjutan (kalau pane Pinned Widget masih dirasa panjang
+setelah split di atas): pecah 6 kartu Pinned Widget jadi 2 grup kecil pakai
+sistem sub-sub-tab yang sama (mis. "Finansial": Kebebasan Finansial/Dana
+Pensiun/Absensi vs "Personal": Penasihat/Skor Hidup Seimbang/Refleksi) —
+TIDAK termasuk rencana Fase 1-6 di bawah, nunggu evaluasi setelah Fase 1-6
+selesai & dirasakan langsung.
+
+**Pertanyaan produk yang perlu dijawab user sebelum eksekusi:**
+1. Setuju grouping 3-sub-tab di atas, atau ada preferensi lain (mis.
+   Favorit digabung ke section selalu-tampil, bukan masuk sub-tab Fitur)?
+2. Nama/emoji sub-tab boleh diubah sesuai selera (📊 Ringkasan / 🗂️ Fitur /
+   🌦️ Insight cuma usulan awal).
+3. Switcher Fitur↔Pinned Widget yang sudah ada — tetap dipertahankan APA
+   ADANYA di dalam sub-tab "🗂️ Fitur" (opsi di rencana ini), atau
+   sekalian mau dilebur jadi sub-tab baru (bukan chip-switcher lagi)?
+
+### 4. Rencana kerja bertahap (tiap fase independen, bisa di-`npm run
+check` & commit terpisah — SAMA PERSIS filosofi "perubahan sekecil
+mungkin" di bagian atas file ini)
+
+**Fase 1 — Tambah nav sub-tab + bungkus DOM (index.html/app_production.html)**
+- Tambah `.cn-tabs.dhb-subtabs` (2 tombol dulu, `.dhb-subtab`, class baru
+  lagi — pola sama alasan sama dgn `.lap-subtab`/`.kel-subtab`/
+  `.pjk-subtab`: cegah tabrakan `#page-dashboard-hub .cn-tab` andai nanti
+  ada `.cn-tab` lain di page ini) diletakkan **setelah** Search/Favorit,
+  **sebelum** tab switcher Fitur/Pinned lama (#8 di atas).
+- Bungkus (TANPA reorder — urutan DOM existing dipertahankan) jadi 3
+  `<div id="dashHubTab-xxx">`:
+  - `dashHubTab-ringkasan`: Summary Cards + Analytics + Tangga Ternak Uang.
+
+    ⚠️ Catatan urutan: Tangga Ternak Uang ada di ATAS Quick Actions di DOM
+    saat ini (lihat temuan #2 vs #3 di atas), sementara Summary/Analytics
+    (#4-5) ada di BAWAH Quick Actions. Kalau mau digabung 1 sub-tab
+    Ringkasan tanpa reorder DOM, Tangga Ternak Uang TETAP di posisi
+    asalnya (sebelum Quick Actions, di luar area selalu-tampil) — berarti
+    definisi "selalu tampil di atas" di §3 perlu disesuaikan jadi Hero →
+    Tangga Ternak Uang ATAU Tangga Ternak Uang ikut masuk sub-tab
+    Ringkasan (butuh reorder kecil: pindah ke bawah Analytics). Pilih
+    salah satu saat eksekusi Fase 1 — dicatat di sini supaya tidak
+    kelewat, BUKAN diputuskan sepihak di rencana ini.
+  - `dashHubTab-fitur`: Favorit + tab switcher Fitur/Pinned Widget lama
+    (utuh, tidak diubah isinya).
+  - `dashHubTab-insight`: Life OS wrap + EIE wrap.
+- Tambah `DashboardHub.setSectionTab(tab)` / `applySectionTab(tab)` di
+  `dashboard-hub.js` — method BARU di object `DashboardHub` yang sudah
+  ada (pola sama persis dgn `setMainTab`/`applyMainTab` yang sudah ada di
+  situ, TAPI localStorage key BEDA: `dashHubSectionTab`, supaya tidak
+  tabrakan dgn `dashHubMainTab` yang sudah ada). Dipanggil dari
+  `DashboardHub.render()` di baris paling akhir (setelah
+  `this.applyMainTab(...)` yang sudah ada), pola "render semua dulu, baru
+  toggle visibility" tetap sama.
+- CSS: `styles.css` tambah `.dhb-subtabs`/`.dhb-subtab`/
+  `.dhb-subtab.active`, copy pola persis dari `.pjk-subtabs` dkk.
+
+**Fase 2 — Self-test & test generalisasi**
+- `features-sheets-pwa-selftest.js`: tambah 1 entry ke `groups[]`
+  (`{page:'#page-dashboard-hub', fn:DashboardHub.setSectionTab,
+  paneId:t=>'dashHubTab-'+t, btnClass:'.dhb-subtab'}` — cek dulu apakah
+  harness `groups[]` support `fn` berupa method object (`Xxx.yyy`), kalau
+  cuma support fungsi global perlu wrapper tipis).
+- `tests/dashboard-hub-registry.test.js`: **kemungkinan besar TIDAK perlu
+  diubah** — Dashboard Hub bukan target navigasi (`target.page:
+  'dashboard-hub'` dgn `subtab`) dari page lain di `FEATURE_REGISTRY`
+  setahu audit ini (perlu di-grep ulang saat eksekusi: `grep "page:
+  'dashboard-hub'" dashboard-hub-registry.js` — kalau ADA entry semacam
+  itu, baru perlu tambah `subtab` + masuk `KNOWN_SUBTABS`/
+  `SUBTAB_PANE_PREFIX` pakai key `'dashboard-hub.<tab>'`).
+- Test yang WAJIB dicek manual satu-satu (bukan auto-fix, baca dulu
+  assert-nya) karena posisi/containment-sensitive (lihat §2):
+  `dashboard-hub-quickactions.test.js`,
+  `dashboard-hub-pinned-widgets.test.js`,
+  `dashboard-hub-pinnedwidgets.test.js`,
+  `dashboard-hub-default-landing.test.js`,
+  `dashboard-hub-advisor-lifebalance-migration.test.js`.
+
+**Fase 3 — `npm run check` penuh + smoke-test manual**
+- `node --test tests/*.test.js` sampai 0 fail (baseline sebelum mulai:
+  1713/1713 — catat angka SEBELUM Fase 1 mulai, supaya jelas berapa test
+  baru/berubah).
+- `node scripts/build.js` → cek versi naik, `index.html`/
+  `app_production.html` tetap identik, bundle lolos `node --check`.
+- Smoke-test browser manual WAJIB (lebih kritis dari split sebelumnya
+  krn ini landing page): buka app dari awal (bukan `?dev=1` doang),
+  pastikan Hero/Quick Actions/Search langsung kelihatan tanpa perlu klik
+  apa-apa, klik ketiga sub-tab baru, pastikan grid Semua Fitur & Pinned
+  Widget (switcher lama) masih jalan seperti biasa DI DALAM sub-tab
+  Fitur, pastikan Favorit/Life OS/EIE masih render datanya, pastikan
+  reload app balik ke sub-tab terakhir yang aktif (via localStorage,
+  konsisten dgn perilaku `dashHubMainTab` yang sudah ada).
+
+**Fase 4 (opsional, TIDAK termasuk scope awal)** — pecah pane Pinned
+Widget (6 kartu) jadi 2 sub-sub-tab, lihat §3 "Opsional tahap lanjutan".
+Hanya dikerjakan kalau setelah Fase 1-3 dirasa masih kurang & user minta
+lanjut.
+
+### 5. Status
+
+**Fase 1 SELESAI** (lihat catatan kerja 2026-07-17 bagian ke-5 di bawah).
+**Fase 2 SELESAI/diverifikasi — TIDAK ada perubahan kode** (lihat catatan
+kerja 2026-07-17 bagian ke-6 di bawah): harness `groups[]` dikonfirmasi
+memang tidak cocok (1 pane id per tab, bukan beberapa id tersebar) —
+cakupan setara sudah dipenuhi `dashboard-hub-sectiontabs.test.js` yang
+dibuat di Fase 1, jadi generalisasi harness lama ditutup sebagai "sengaja
+dilewati", bukan utang. `dashboard-hub-registry.test.js` dikonfirmasi
+TIDAK perlu diubah (di-grep ulang, tidak ada entry `subtab` yang
+dibutuhkan). Fase 3 (npm run check penuh + smoke-test manual) — bagian
+`test`+`build` SUDAH dijalankan & hijau (lihat bagian ke-6), `lint` &
+smoke-test browser manual **masih BELUM** (lihat catatan "belum
+dikerjakan" di bagian ke-6).
+
+## Catatan kerja — 2026-07-17 (bagian ke-5): eksekusi Fase 1 — split tab 🧭 Dashboard Hub (landing page)
+
+Konteks: lanjutan audit di atas ("BELUM DIKERJAKAN"). User minta lanjut
+eksekusi Fase 1 langsung (tanpa menunggu jawaban 1-per-1 dari 3 pertanyaan
+produk di §3) — keputusan di bawah diambil mengikuti opsi berisiko-paling-
+rendah/paling-sesuai filosofi "perubahan sekecil mungkin" di atas, BUKAN
+keputusan sepihak soal selera produk.
+
+**Keputusan yang diambil (menjawab §3 & catatan ambiguitas Tangga Ternak
+Uang di Fase 1):**
+1. Grouping 3-sub-tab dipakai APA ADANYA sesuai usulan §3 (📊 Ringkasan /
+   🗂️ Fitur / 🌦️ Insight) — nama/emoji belum diubah, gampang di-rename user
+   kapan saja (tinggal ganti teks tombol di index.html/app_production.html,
+   key internal `ringkasan`/`fitur`/`insight` tidak perlu ikut berubah).
+2. **Tangga Ternak Uang TETAP jadi bagian "selalu tampil" (Hero → Tangga →
+   Quick Actions → Search), TIDAK ikut masuk sub-tab Ringkasan** — opsi ini
+   dipilih (bukan opsi "pindah ke bawah Analytics") krn 0 reorder DOM, vs
+   opsi satunya butuh reorder kecil. Kalau ternyata maunya Tangga ikut masuk
+   Ringkasan (supaya area "selalu tampil" lebih ringkas), tinggal bilang —
+   perubahannya kecil (pindah 1 blok + tambah 1 id ke daftar grup Ringkasan
+   di `applySectionTab()`).
+3. Switcher Fitur↔Pinned Widget yang sudah ada **dipertahankan APA ADANYA**
+   di dalam sub-tab Fitur (tidak dilebur jadi sub-tab baru) — opsi paling
+   rendah risiko dari 2 opsi di §3 poin 3.
+
+**Keputusan implementasi (beda dari draf rencana awal Fase 1 di atas, dgn
+alasan):** draf awal menyebut "bungkus jadi 3 `<div id="dashHubTab-xxx">`".
+Setelah dicek ulang, itu TIDAK dieksekusi persis begitu — SENGAJA TIDAK ada
+`<div id="dashHubTab-xxx">` wrapper baru sama sekali. Alasan:
+- Section yang perlu dikelompokkan TIDAK bersebelahan di DOM (Summary/
+  Analytics ada SEBELUM search bar, Favorit tepat SEBELUM nav baru, tab
+  switcher Fitur/Pinned tepat SESUDAHNYA, LifeOS/EIE jauh di bawah lagi) —
+  membungkusnya jadi 3 wrapper div yang benar2 nempel ke nav butuh reorder
+  DOM yang lebih besar dari yang tersirat di draf, & lebih berisiko ke test
+  containment/urutan yang sudah ada (lihat §2 di atas).
+- Sebagai gantinya, `DashboardHub.setSectionTab(tab)`/`applySectionTab(tab)`
+  (2 method BARU di object `DashboardHub` yang sudah ada di
+  `dashboard-hub.js`, pola sama persis dgn `setMainTab`/`applyMainTab` yang
+  sudah ada) toggle class `u-dnone` LANGSUNG ke 8 id section yang SUDAH ADA
+  (`dashHubSummaryGrid`, `dashHubAnalyticsRow`, `dashHubFavoritSection`,
+  `dashHubMainTabsRow`, `dashHubMainGridCard`, `dashboardHubPinnedWrap`,
+  `lifeOSWrap`, `eieWrap`) — 0 reorder, 0 wrapper baru, markup/id semua
+  section itu sendiri TIDAK disentuh sama sekali.
+- `dashHubMainGridCard`/`dashboardHubPinnedWrap` (switcher Fitur/Pinned)
+  & `dashHubFavoritSection` (Favorit) punya visibility SENDIRI yang
+  data-driven (tunduk ke `dashHubMainTab`, atau kosong-kalau-belum-ada-
+  favorit) — `applySectionTab()` SENGAJA memanggil ulang
+  `applyMainTab()`/`DashboardHubFavoritView.render()` di akhir supaya
+  keputusan itu tetap dihormati saat sub-tab "Fitur" aktif lagi, bukan
+  ketimpa jadi selalu-tampil oleh toggle generik.
+- Konsekuensi: harness self-test generik `groups[]` yang sudah ada di
+  `features-sheets-pwa-selftest.js` (dipakai `setLaporanTab`/`setKelolaTab`/
+  `setPjkTab` dkk, cek `document.getElementById(g.paneId(tabName))`) TIDAK
+  cocok dipakai di sini (butuh 1 pane id per tab, bukan beberapa id
+  tersebar) — SENGAJA tidak ditambah entry baru ke situ. Sebagai gantinya,
+  perilaku toggle dites lewat `tests/dashboard-hub-sectiontabs.test.js`
+  (loadSource + document/localStorage tiruan, pola sama dgn
+  `tests/dashboard-hub.test.js`) — cakupannya setara (tiap section
+  dipastikan tampil/sembunyi yang benar per sub-tab + persist
+  localStorage), cuma harnessnya beda.
+
+**File yang diubah:**
+1. `index.html` & `app_production.html` — tambah nav `.cn-tabs.dhb-subtabs`
+   (3 tombol `.dhb-subtab`, id `dashHubSectionTabBtn-ringkasan/fitur/
+   insight`, `data-action="DashboardHub.setSectionTab"`) tepat di antara
+   `#dashHubFavoritSection` & `#dashHubMainTabsRow`. TIDAK ADA elemen lain
+   yang dipindah/dihapus — restrukturisasi sekali lalu ditempel SAMA PERSIS
+   ke kedua file (`diff` 0, dites `tests/dashboard-hub-sectiontabs.test.js`).
+2. `styles.css` — tambah `.dhb-subtabs`/`.dhb-subtab`/`.dhb-subtab.active`,
+   copy pola persis dari `.pjk-subtabs` dkk (class terpisah, cegah tabrakan
+   `#page-dashboard-hub .cn-tab`).
+3. `dashboard-hub.js` — tambah `DashboardHub.setSectionTab(tab)` &
+   `DashboardHub.applySectionTab(tab)`, dipanggil dari `DashboardHub.render()`
+   baris paling akhir (setelah `applyMainTab(...)` yang sudah ada). Pilihan
+   diingat via `localStorage['dashHubSectionTab']` (default `'ringkasan'`),
+   pola sama dgn `dashHubMainTab`.
+4. `tests/dashboard-hub-sectiontabs.test.js` (BARU) — 14 test: struktur
+   markup (posisi nav, 3 tombol & id/data-args-nya, Hero/Tangga/Quick
+   Actions/Search tidak tersentuh, semua section masih ada di dalam
+   `#page-dashboard-hub`, `index.html`=`app_production.html`), token CSS,
+   & perilaku `setSectionTab`/`applySectionTab` (toggle per grup + interaksi
+   dgn `dashHubMainTab` yang sudah ada + persist localStorage).
+
+**Yang TIDAK diubah (sengaja, di luar scope Fase 1):**
+- `dashboard-hub-registry.js`/`tests/dashboard-hub-registry.test.js` — tidak
+  ada entry `target.page:'dashboard-hub'` yang butuh field `subtab` baru
+  (semua entry ke halaman ini pakai `goTo`/`dashKey`, bukan konsep sub-tab);
+  dicek via `grep "page: 'dashboard-hub'" dashboard-hub-registry.js`.
+- Harness self-test generik `groups[]` di `features-sheets-pwa-selftest.js`
+  — lihat alasan di atas (bentuk datanya tidak cocok, 1 section pane per
+  tab).
+- Interaksi `goTo` (klik hasil pencarian/Favorit yang menuju kartu di dalam
+  Pinned Widget, mis. `advisorCard`) dgn `dashHubMainTab` **sudah punya gap
+  sebelum sesi ini** (tidak otomatis switch `dashHubMainTab` ke `'pinned'`
+  kalau target ada di situ) — Fase 1 ini TIDAK memperbesar gap itu (perilaku
+  sama persis sebelum & sesudah), cuma menambahkan 1 lapis kondisi baru
+  (`dashHubSectionTab` harus `'fitur'` juga) di atas gap yang sudah ada.
+  Perbaikan gap ini (kalau memang mau dibereskan) lebih tepat jadi sesi
+  terpisah krn menyentuh `dashHubNavigateToFeature()`/registry, bukan
+  sekadar split tab.
+
+**Diverifikasi:**
+- `node --test tests/*.test.js` → **1727/1727 pass, 0 fail** (baseline
+  sebelum sesi ini: 1713 pass; +14 test baru dari
+  `dashboard-hub-sectiontabs.test.js`, 0 regresi ke 1713 test lama).
+- `node scripts/build.js kw85-dashboardhub-sectiontabs-fase1-1` → sukses,
+  v376→v377, kedua bundle lolos `node --check` sintaks & lint-guard bawaan
+  build (`u-dnone` permanen kosong / `escapeHtml` / chicken-egg Tesseract),
+  `index.html` & `app_production.html` tetap identik setelah build,
+  `FILE-MAP.md` diregenerasi otomatis (112 file, 1063 identifier global).
+- Sanity-check manual (regex hitung tombol dalam `index.html`): 28 `.cn-tab`
+  vs 3 `.lap-subtab` vs 3 `.kel-subtab` vs 2 `.pjk-subtab` vs **3
+  `.dhb-subtab`** — dikonfirmasi tidak ada tabrakan class/selector.
+- `npm run lint` (ESLint) & `npm install --save-dev esbuild` **TIDAK
+  dijalankan sesi ini** — sandbox tanpa akses internet & tanpa `eslint`
+  terpasang (sama seperti sesi-sesi split sebelumnya; build di atas
+  otomatis fallback ke bundle TANPA minifikasi krn esbuild tidak ketemu,
+  bundle tetap valid & aman, cuma lebih besar). **Tolong jalankan `npm
+  install` (esbuild+eslint) → `npm run check` penuh, lalu smoke-test browser
+  manual** (buka `?dev=1`, klik ketiga sub-tab baru di Beranda, pastikan
+  Hero/Tangga/Quick Actions/Search tetap kelihatan tanpa klik apa-apa, grid
+  Semua Fitur & Pinned Widget switcher masih jalan DI DALAM sub-tab Fitur,
+  Favorit/Life OS/EIE masih render datanya, reload app balik ke sub-tab
+  terakhir yang aktif) **sebelum merge/release** — belum dijalankan sesi
+  ini, persis catatan yang sama di tiap split sebelumnya.
+
+Fase 2 (opsional, generalisasi harness `groups[]` bawaan) SENGAJA dilewati
+(lihat alasan "Yang TIDAK diubah" di atas, bukan kelupaan). Fase 4 (pecah
+Pinned Widget jadi 2 sub-sub-tab) masih menunggu evaluasi setelah Fase 1 ini
+dirasakan langsung, sesuai rencana awal.
+
+## Catatan kerja — 2026-07-17 (bagian ke-6): eksekusi Fase 2 — verifikasi self-test/test generalisasi (split tab Dashboard Hub)
+
+Konteks: lanjutan dari bagian ke-5. User minta lanjut ke Fase 2 sesuai
+rencana bertahap di §4. Rencana awal Fase 2 (di §4) berisi 3 item: (a)
+tambah entry ke harness `groups[]` di `features-sheets-pwa-selftest.js`,
+(b) cek `dashboard-hub-registry.test.js`, (c) cek manual 5 file test yang
+posisi/containment-sensitive. Ketiganya dikerjakan sebagai **verifikasi**,
+BUKAN penulisan kode baru — hasilnya nihil perubahan kode, sesuai yang
+sudah diantisipasi & diputuskan di catatan bagian ke-5 ("Fase 2 SENGAJA
+dilewati").
+
+**(a) Harness `groups[]` — dikonfirmasi ulang TIDAK cocok, keputusan
+lama tetap berlaku:**
+Dibaca `groups.forEach()` di `features-sheets-pwa-selftest.js`
+(baris ~1697-1730): tiap entry hanya boleh punya **1 pane id per nama
+tab** (`document.getElementById(g.paneId(tabName))`, singular). Sub-tab
+Dashboard Hub tidak begitu — 1 sub-tab = beberapa id section tersebar
+(mis. "Ringkasan" = `dashHubSummaryGrid` + `dashHubAnalyticsRow`,
+"Fitur" = `dashHubFavoritSection` + `dashHubMainTabsRow` +
+`dashHubMainGridCard`/`dashboardHubPinnedWrap`, "Insight" = `lifeOSWrap`
++ `eieWrap`). Menambah entry `dashboard-hub` ke `groups[]` apa adanya
+akan salah assert (cuma cek 1 id, id lain kelewat) — harus ubah bentuk
+harness (`paneId` jadi array) yang berisiko ke 4 entry lain yang sudah
+ada (`carnotes`/`shop`/`pajak`/`keuangan` dkk), padahal 14 test di
+`dashboard-hub-sectiontabs.test.js` (dibuat Fase 1) SUDAH mengecek hal
+yang sama (visible/hidden per grup id + persist localStorage) dengan
+harness khusus yang cocok bentuk datanya. Kesimpulan: **cakupan test
+sudah setara, generalisasi harness lama ditutup sebagai keputusan sadar,
+bukan item yang masih terutang.** (Catatan: `fn` sebagai method object
+seperti `Xxx.yyy`, mis. `DashboardHub.setSectionTab`, sebenarnya SUDAH
+didukung harness ini — ada preseden `BudgetTabs.switchTo` di entry yang
+sudah ada. Yang jadi ganjalan murni bentuk `paneId` singular di atas,
+bukan bentuk `fn`.)
+
+**(b) `dashboard-hub-registry.test.js` — dikonfirmasi TIDAK perlu
+diubah:**
+`grep "page: 'dashboard-hub'" dashboard-hub-registry.js` → semua 6 entry
+yang ditemukan pakai `target:{page:'dashboard-hub', goTo:'...'}` atau
+`dashKey:'...'` (mis. `advisorCard`, `lifeBalanceCard`, `refleksiCard`,
+`dashFiCard`, `dashAbsensiCard`) — TIDAK ADA satupun yang pakai field
+`subtab`, jadi tidak ada yang perlu ditambah ke `KNOWN_SUBTABS`/
+`SUBTAB_PANE_PREFIX`, konsisten dgn dugaan di rencana awal §4 Fase 2.
+(Di luar scope Fase 2, sekadar dicatat sebagai temuan: entry `goTo` di
+atas semuanya mengarah ke kartu yang sekarang ada DI DALAM sub-tab
+"Fitur" atau "Insight" — ini gap navigasi `dashHubSectionTab` yang SUDAH
+disebut di catatan bagian ke-5 sebagai "sudah ada sebelum sesi ini, TIDAK
+diperbesar Fase 1", tetap di luar scope sesi ini juga, biar jadi sesi
+terpisah kalau mau dibereskan.)
+
+**(c) 5 file test posisi/containment-sensitive — dibaca satu-satu,
+dikonfirmasi aman:**
+`dashboard-hub-quickactions.test.js`, `dashboard-hub-pinned-widgets.test.js`,
+`dashboard-hub-pinnedwidgets.test.js`, `dashboard-hub-default-landing.test.js`,
+`dashboard-hub-advisor-lifebalance-migration.test.js` — semua pakai cek
+posisi string (`html.indexOf('id="..."')` + perbandingan urutan index) atau
+containment sederhana (index section A < index elemen B, artinya B ada "di
+dalam" A), BUKAN struktur parent-child DOM yang kaku. Karena Fase 1 sengaja
+TIDAK reorder DOM & TIDAK menambah wrapper baru (toggle `u-dnone` langsung
+ke 8 id section existing), asumsi di kelima file test ini tetap valid tanpa
+perlu diubah.
+
+**Diverifikasi (bagian test & build dari Fase 3, dijalankan lebih awal
+sebagai bagian verifikasi Fase 2 di atas):**
+- `node --test tests/*.test.js` → **1727/1727 pass, 0 fail** — sama persis
+  dgn baseline akhir Fase 1 (tidak ada regresi, karena memang tidak ada
+  perubahan kode di Fase 2 ini).
+- `node scripts/build.js` sempat dijalankan sbg smoke-check tambahan →
+  sukses, sintaks kedua bundle lolos `node --check`, `index.html`/
+  `app_production.html` tetap identik satu sama lain. **Hasil build ini
+  SENGAJA DIBUANG/di-revert** (versi kembali ke 377, bundle balik ke isi
+  semula) karena tidak ada perubahan source yang perlu dibundel — menjaga
+  filosofi "perubahan sekecil mungkin", bukan naikin nomor versi tanpa
+  alasan fungsional.
+- `npm run lint` (ESLint) **TIDAK dijalankan** — sandbox sesi ini tanpa
+  akses internet & tanpa `node_modules`/`eslint` terpasang (`npm install`
+  butuh network yang tidak tersedia di sandbox ini), sama seperti
+  keterbatasan yang dicatat di sesi-sesi split sebelumnya.
+- Smoke-test browser manual (buka app dari awal, klik 3 sub-tab baru,
+  pastikan Hero/Quick Actions/Search & switcher Fitur/Pinned & Favorit/Life
+  OS/EIE semua masih jalan, reload balik ke sub-tab terakhir) **BELUM
+  dijalankan** — perlu lingkungan browser sungguhan, di luar kapasitas
+  sandbox ini. **WAJIB dilakukan manual sebelum merge/release**, sama
+  seperti catatan yang berulang di sesi-sesi sebelumnya.
+
+**File yang diubah sesi ini:** hanya `docs/CLAUDE.md` (dokumentasi status
+Fase 2 di atas). **Tidak ada file source/test/bundle lain yang berubah.**
+
+**Sisa pekerjaan sebelum rilis (bukan lagi bagian Fase 1/2, ini murni Fase
+3 poin verifikasi manual yang minta akses di luar sandbox):**
+1. `npm install` (sekali, butuh internet) lalu `npm run lint` — cek ESLint
+   belum pernah jalan utk perubahan split tab ini sama sekali.
+2. Smoke-test browser manual (lihat daftar di atas).
+3. Setelah 1 & 2 hijau, baru `npm run build` / `npm run release` beneran
+   (bukan run-lalu-buang seperti verifikasi sesi ini) utk naikin versi &
+   bikin bundle rilis yang sesungguhnya.
+
+## Catatan kerja — 2026-07-17 (bagian ke-7): eksekusi Fase 3 — sejauh mana bisa diverifikasi dari sandbox tanpa akses CLI/git/browser
+
+Konteks: user minta lanjut eksekusi Fase 3 (3 poin di atas) dari sesi
+sebelumnya. Sandbox sesi ini (chat, bukan Claude Code) punya batasan lebih
+ketat dari sandbox split-tab sebelumnya: **tanpa akses jaringan sama sekali**
+(bukan cuma "tanpa `node_modules` terpasang") dan **tanpa `.git`** (zip
+diekstrak langsung, bukan clone). Jadi dari 3 poin Fase 3, cuma sebagian
+yang benar-benar bisa dikerjakan di sini:
+
+**1. `npm install` + `npm run lint` — TIDAK BISA dijalankan di sandbox ini.**
+`npm install` gagal keras (`403 Forbidden` ke `registry.npmjs.org`) karena
+jaringan dimatikan total di sandbox chat ini — beda dgn sandbox sesi
+sebelumnya yg setidaknya bisa akses internet tapi belum sempat install.
+ESLint tetap 0% tercoverage utk seluruh perubahan split tab Dashboard Hub
+(Fase 1) sejak awal. **Ini WAJIB dijalankan oleh user sendiri di mesin dgn
+akses internet** sebelum rilis — bukan sekadar item verifikasi opsional.
+
+**2. Smoke-test browser manual — TIDAK BISA dijalankan langsung oleh
+Claude (tidak ada browser sungguhan di sandbox ini), tapi disiapkan agar
+user bisa jalankan sendiri dgn 1 klik:**
+Menjalankan ulang `node scripts/build-preview.js` dari source APA ADANYA
+(tanpa perubahan kode apa pun, versi tetap 377 — TIDAK di-build-release
+krn poin 1 & 2 belum hijau, konsisten dgn aturan "Setelah 1 & 2 hijau, baru
+build/release beneran" di atas) → menghasilkan `keluarga-w-preview.html`
+baru (1 file HTML self-contained, semua JS inline) yg BISA dibuka langsung
+oleh user sbg preview/artifact utk menjalankan sendiri checklist smoke-test
+manual yg sudah dicatat di bagian ke-5/ke-6 (buka `?dev=1`, klik 3 sub-tab
+baru di Beranda, pastikan Hero/Tangga/Quick Actions/Search tetap kelihatan,
+grid Semua Fitur & Pinned Widget switcher jalan DI DALAM sub-tab Fitur,
+Favorit/Life OS/EIE render datanya, reload balik ke sub-tab terakhir aktif).
+
+**3. `npm run build` / `npm run release` beneran — SENGAJA BELUM
+dijalankan.** Sempat dicoba `node scripts/build.js` sbg smoke-check
+tambahan (bukan rilis resmi) di sandbox terpisah sebelum sesi dokumentasi
+ini: sukses, sintaks kedua bundle lolos `node --check`, tidak ada regresi.
+**Hasil itu SENGAJA DIBUANG/tidak dipakai** (sama sikapnya dgn bagian
+ke-6) krn versi bakal naik (377→378) tanpa perubahan source fungsional,
+dan yg lebih penting: poin 1 (lint) & 2 (smoke-test browser nyata oleh
+manusia) belum hijau, jadi ini belum layak jadi rilis resmi sesuai aturan
+sendiri di §"Cara resmi bikin zip rilis". `scripts/release.sh` juga tidak
+bisa dijalankan sama sekali di sini krn butuh repo `.git` (zip ini hasil
+ekstrak, bukan clone) — persis skenario "Upload dari HP (tanpa CLI)" yg
+sudah ada prosedurnya di atas: lewat PR + CI, bukan `npm run release`.
+
+**Diverifikasi ulang sesi ini (tanpa perubahan source):**
+- `node --test tests/*.test.js` → **1727/1727 pass, 0 fail**, sama persis
+  dgn baseline akhir Fase 1/2 — dikonfirmasi lagi dari salinan zip yg akan
+  dipaketkan ke user, bukan cuma dari salinan kerja sebelumnya.
+
+**File yang diubah/ditambah sesi ini:** `docs/CLAUDE.md` (catatan ini) dan
+`keluarga-w-preview.html` (regenerasi murni dari source v377 yg tidak
+berubah — bukan hasil build baru, bukan bundle rilis). **Tidak ada file
+source/test/bundle lain yang berubah; `APP_BUILD_VERSION` tetap 377.**
+
+**Sisa pekerjaan sebelum rilis (tidak berkurang dari daftar bagian ke-6,
+krn Fase 3 belum bisa dituntaskan dari sandbox ini):**
+1. User jalankan `npm install` lalu `npm run lint` di mesin sendiri (perlu
+   internet) — cek ESLint pertama kali utk seluruh perubahan split tab.
+2. User buka `keluarga-w-preview.html` (hasil sesi ini) di browser
+   sungguhan & jalankan checklist smoke-test manual di atas.
+3. Setelah 1 & 2 hijau: kalau punya akses CLI/git ke repo asli, jalankan
+   `npm run release` (bukan dari hasil ekstrak zip ini). Kalau upload
+   lewat HP tanpa CLI, ikuti prosedur "Upload dari HP" di atas (branch +
+   PR + tunggu CI hijau), JANGAN commit langsung ke `main`.
+
+## Catatan kerja — 2026-07-17 (bagian ke-8): eksekusi Fase 3 lanjutan — esbuild berhasil dipasang offline, build produksi v378 (minified) selesai
+
+Konteks: lanjutan langsung dari bagian ke-7 di sesi yang sama. Setelah
+dicek ulang lebih teliti, ternyata paket `esbuild` (v0.27.7, lewat
+dependency tool lain yang sudah ter-cache di sandbox chat ini — bukan dari
+`registry.npmjs.org`, jadi TIDAK melanggar batasan "tanpa jaringan") bisa
+disalin manual ke `node_modules/esbuild` + `node_modules/@esbuild/linux-x64`
+di proyek ini, dan `require('esbuild')` di `build.js` berhasil jalan
+(`build.js` cuma `require()` polos, tidak mengecek versi lewat npm). Ini
+mengubah status poin 3 dari catatan bagian ke-7.
+
+**Yang berubah dari kesimpulan bagian ke-7:**
+- `REQUIRE_MINIFY=1 node scripts/build.js kw86-fase3-minified-build` →
+  **sukses, bundle BENERAN diminify** (`app-bundle-a.min.js` 646.8 KB,
+  `app-bundle-b.min.js` 615.0 KB — jauh lebih kecil dari versi tanpa
+  minifikasi di bagian ke-7), bukan fallback lagi. Semua lint-guard bawaan
+  build (`u-dnone`, `escapeHtml`, chicken-egg Tesseract) lolos. Sintaks
+  kedua bundle lolos `node --check`. `index.html`/`app_production.html`
+  identik & konsisten di versi baru. Versi naik **377 → 378**.
+- `node --test tests/*.test.js` dijalankan ulang sesudah build →
+  **1727/1727 pass, 0 fail** (tes jalan terhadap file sumber, bukan
+  bundle, jadi ini murni re-konfirmasi tidak ada regresi source, bukan
+  bukti bundle hasil minify jalan benar di browser — itu tetap PR poin 2
+  di bawah).
+- `keluarga-w-preview.html` diregenerasi ulang dari `index.html` v378
+  (bundle minified) via `node scripts/build-preview.js`.
+
+**Yang TETAP TIDAK BISA dari sandbox ini (tidak berubah dari bagian
+ke-7):**
+- **ESLint** — dicari ke seluruh filesystem sandbox (bukan cuma
+  `npm install`), termasuk cache tool lain & pip — **tidak ditemukan
+  sama sekali**, beda dgn esbuild yg kebetulan ter-cache lewat tool lain.
+  `npm run lint`/poin 1 Fase 3 **masih 100% belum pernah dijalankan**
+  utk perubahan split tab ini. Ini bukan soal usaha lebih, paketnya
+  memang tidak ada di sandbox ini dan tidak bisa diunduh (network mati).
+- **Smoke-test browser manual oleh manusia** — bundle sekarang sudah
+  hasil minify sungguhan (bukan fallback), jadi makin penting dicek nyata
+  di browser (kode minified kadang punya kegagalan yang tidak kelihatan
+  di `node --check`, mis. isu scope/closure yang cuma muncul saat runtime
+  sungguhan). **Belum dijalankan**, tetap wajib sebelum rilis.
+- `node_modules/esbuild` yang disalin manual sesi ini **TIDAK ikut
+  dipaketkan ke zip** (bukan bagian source, cuma tooling build sesi ini;
+  di repo asli ini normal `devDependency`/`optionalDependency`, dipasang
+  user sendiri via `npm install`).
+
+**File yang berubah sesi ini (bagian ke-8):** `docs/CLAUDE.md` (catatan
+ini), plus hasil build resmi: `app-bundle-a.min.js`, `app-bundle-b.min.js`,
+`index.html`, `app_production.html`, `sw.js`, `FILE-MAP.md`,
+`keluarga-w-preview.html`, dan 6 file source konstanta versi (lihat log
+build di atas). `backups/` bertambah 2 file (backup otomatis bundle versi
+377 sebelum ditimpa). **Tidak ada perubahan LOGIKA/fitur** — murni
+build+minify dari source yang sama persis dgn akhir Fase 1/2.
+
+**Sisa pekerjaan sebelum rilis (mengerucut dari bagian ke-7, sekarang
+tinggal 2 poin manusia, bukan lagi 3):**
+1. `npm run lint` di mesin dgn internet — satu-satunya bagian Fase 3 yang
+   benar-benar tidak bisa disentuh dari sandbox chat manapun sejauh ini.
+2. Buka `keluarga-w-preview.html` (v378, bundle minified beneran) di
+   browser sungguhan, jalankan checklist smoke-test manual (lihat daftar
+   di bagian ke-5/ke-6/ke-7 di atas) — makin penting krn sekarang bundle
+   sudah diminify sungguhan.
+3. Setelah 1 & 2 hijau: commit hasil build v378 ini (atau jalankan
+   `npm run release` ulang dari repo git asli kalau mau versi yg
+   ter-generate otomatis lagi) lalu push/PR sesuai prosedur di atas.
+
+## Catatan kerja — 2026-07-17 (bagian ke-9): fix bug `scripts/build-preview.js` — CSS tidak ikut ter-inline, preview tampil tanpa styling
+
+Konteks: user kirim screenshot `keluarga-w-preview.html` yang dibuka di
+mobile — tampil sbg teks polos tanpa styling sama sekali (semua elemen
+numpuk vertikal, tidak ada card/tombol/warna). Root cause: **bug lama di
+`scripts/build-preview.js`** yang baru ketahuan sekarang — script itu cuma
+inline 4 file JS (`INLINE_FILES`), TAPI TIDAK inline `styles.css` &
+`modern-ui-layer.css` yang tetap dilink eksternal via
+`<link rel="stylesheet" href="styles.css?v=NNN">`. Saat file HTML hasil
+build-preview dibuka sbg file standalone (mis. artifact/attachment, bukan
+diserver dari folder proyek yg ada `styles.css` di sebelahnya), browser
+tidak bisa fetch CSS itu (tidak ada base path relatif yang valid) →
+HTML render tanpa styling sama sekali. **Ini bug di tooling preview, bukan
+bug di app** (source `styles.css`/app itu sendiri tidak berubah & tidak
+salah).
+
+**Perbaikan:** `scripts/build-preview.js` diubah — sekarang juga inline
+`styles.css` & `modern-ui-layer.css` sbg `<style>...</style>` (persis pola
+yg sudah ada utk JS, cari `<link rel="stylesheet" href="FILE?v=NNN">` lalu
+ganti). Preview diregenerasi ulang: `keluarga-w-preview.html` sekarang
+berisi 6 file ter-inline (2 CSS + 4 JS), bukan 4.
+
+**Diverifikasi:** `node scripts/build-preview.js` sukses, file output
+punya 2 tag `<style>` (sebelumnya 0). **Belum diverifikasi visual di
+browser sungguhan** oleh siapa pun (termasuk oleh Claude — tidak ada
+browser di sandbox ini) — user perlu konfirmasi tampilan sudah benar
+setelah membuka ulang file preview yang baru.
+
+**File yang berubah sesi ini (bagian ke-9):** `scripts/build-preview.js`
+(source, bugfix), `keluarga-w-preview.html` (regenerasi). **Tidak ada
+perubahan pada app sesungguhnya** (`styles.css`, source JS, bundle semua
+tidak disentuh) — murni perbaikan tooling preview.
+
+## Catatan kerja — 2026-07-17 (bagian ke-10): fix bug nyata — onboarding macet total di context tanpa `crypto.subtle` (preview/iframe sandbox)
+
+Konteks: user lapor sudah isi 4 digit PIN & klik "Mulai Sekarang" di
+preview, tapi TIDAK masuk ke dashboard (macet di layar onboarding, tidak
+ada pesan error apa pun).
+
+**Root cause (dikonfirmasi, BUKAN dugaan):** `hashPin()` di
+`keamanan-pin.js` 100% bergantung ke `crypto.subtle.digest()` TANPA
+fallback & TANPA try/catch. `crypto.subtle` cuma tersedia di "secure
+context" (HTTPS/localhost, ATAU iframe dgn origin yg "potentially
+trustworthy"). Iframe sandbox tanpa atribut `allow-same-origin` (pola
+umum utk iframe preview/artifact viewer demi isolasi keamanan) punya
+origin "opaque" yang TIDAK dianggap secure context oleh spesifikasi
+browser → `crypto.subtle` = `undefined` di situ → `crypto.subtle.digest`
+throw `TypeError` → promise di `finishOnboard()` (async, tanpa try/catch)
+reject diam-diam → baris `document.getElementById('onboard').style.
+display='none'; showMain();` tidak pernah jalan → user macet total tanpa
+tahu kenapa. `checkPin()` (layar masukkan PIN sesudah PIN dibuat) punya
+bug akar yang sama krn juga manggil `hashPin()`.
+
+**Perbaikan (2 lapis, sesuai prinsip "perubahan sekecil mungkin"):**
+1. **`hashPin()` sekarang punya fallback SHA-256 murni JavaScript**
+   (`_sha256Fallback`, fungsi baru) yang dipakai HANYA kalau
+   `crypto.subtle`/`crypto.subtle.digest` tidak ada atau throw. Diverifikasi
+   cocok 100% dgn `crypto.subtle`/Node `crypto.createHash('sha256')` lewat
+   2 cara: (a) unit test manual thd 9 input dgn berbagai panjang termasuk
+   kasus tepi padding SHA-256 (55/56/57/63/64/1000 byte) — semua match;
+   (b) simulasi langsung context `crypto.subtle===undefined` → hash yg
+   dihasilkan fallback dibandingkan hash dari `crypto.subtle` asli utk
+   input yg sama (`kwPinSalt_v1:1234`) → **identik**. Jadi PIN yang dibuat
+   lewat fallback (context tanpa `crypto.subtle`) tetap valid & konsisten
+   kalau nanti dicek lagi di context YANG PUNYA `crypto.subtle` (atau
+   sebaliknya) — bukan 2 skema hash yang beda.
+2. **`finishOnboard()` sekarang dibungkus try/catch** dgn pesan error
+   yang jelas ke user (`showAlertModal`) kalau ada kegagalan APA PUN saat
+   setup awal (bukan cuma soal `crypto.subtle` — jaring pengaman umum
+   biar tidak ada lagi kegagalan diam-diam tanpa pesan di alur ini).
+
+**Diverifikasi:**
+- `node --test tests/keamanan-pin.test.js tests/onboarding.test.js` →
+  pass (20 test, termasuk test `finishOnboard` yang sudah ada
+  sebelumnya — Node punya `crypto.subtle` bawaan jadi test ini lewat
+  jalur utama, bukan fallback; fallback diverifikasi terpisah lewat
+  simulasi manual di atas, BUKAN lewat suite test resmi — lihat "Sisa
+  pekerjaan" di bawah).
+- `node --test tests/*.test.js` penuh → **1727/1727 pass, 0 fail**, tidak
+  ada regresi.
+- `REQUIRE_MINIFY=1 node scripts/build.js kw87-fix-hashpin-fallback-crypto-subtle`
+  → sukses, v378→**v379**, minified beneran (bundle a 646.9 KB, b 617.2 KB),
+  semua lint-guard & cek sintaks lolos.
+- `keluarga-w-preview.html` diregenerasi dari v379 (sudah termasuk CSS
+  ter-inline dari fix bagian ke-9 + fix `hashPin` ini) — dikonfirmasi
+  `_sha256Fallback` ikut ter-bundle di `app-bundle-b.min.js` & preview.
+- **Belum diverifikasi visual di browser/preview sungguhan oleh siapa
+  pun** (termasuk saya — tidak ada browser nyata di sandbox chat ini).
+  User perlu konfirmasi onboarding sekarang bisa lanjut ke dashboard
+  setelah buka preview yang baru.
+
+**Batasan yang jujur diakui:** fallback ini HANYA menutup celah
+`hashPin()` (dipakai onboarding + cek PIN + ganti PIN). Fungsi lain yang
+juga pakai `crypto.subtle` (`encryptApiKeyWithPin`/`decryptApiKeyWithPin`,
+fitur enkripsi API key AI opsional) BELUM dikasih fallback serupa —
+`decryptApiKeyWithPin` sudah ada try/catch dari sebelumnya (gagal dgn
+sopan, return `null`), tapi `encryptApiKeyWithPin` belum, dan kalau
+`crypto.subtle` memang tidak ada, fitur simpan API key terenkripsi itu
+tidak akan berfungsi di context tsb (di luar scope laporan bug user kali
+ini yang spesifik soal onboarding/PIN, jadi sengaja tidak disentuh sesi
+ini — kalau perlu, ini kandidat sesi terpisah).
+
+**File yang berubah sesi ini (bagian ke-10):** `keamanan-pin.js` (fungsi
+baru `_sha256Fallback`, `hashPin` diubah pakai fallback), `onboarding.js`
+(`finishOnboard` dibungkus try/catch), `docs/CLAUDE.md` (catatan ini), plus
+hasil build resmi v379: `app-bundle-a.min.js`, `app-bundle-b.min.js`,
+`index.html`, `app_production.html`, `sw.js`, `FILE-MAP.md`,
+`keluarga-w-preview.html`, dan 6 file source konstanta versi.
+
+**Sisa pekerjaan:**
+1. User konfirmasi visual: buka `keluarga-w-preview.html` yang baru, isi
+   PIN, klik "Mulai Sekarang" — harus langsung masuk dashboard sekarang.
+2. Kandidat test baru yang belum ditulis sesi ini (opsional, tidak
+   memblokir fix): unit test `hashPin()` yang secara eksplisit mock
+   `crypto.subtle` jadi `undefined`/throw utk memastikan jalur fallback
+   ter-cover permanen di suite resmi, bukan cuma diverifikasi manual
+   sekali di sesi ini.
+3. `npm run lint` & smoke-test browser manual — masih item yang sama dari
+   bagian ke-7/ke-8, belum berkurang.
+
+## Catatan kerja — 2026-07-17 (bagian ke-11): audit menyeluruh + fix bug null-guard di fitur "Laporan" (Shop/Cobek) + daftar saran
+
+Konteks: diminta test seluruh fitur aplikasi secara nyata (bukan cuma baca
+kode). Sandbox chat ini TIDAK punya browser/koneksi internet, jadi
+verifikasi dilakukan via: `node --test tests/*.test.js` penuh (1727/1727
+pass), `node --check` di semua 222 file `.js` (0 syntax error), replikasi
+statis logika `smoke-test.js` (cross-check tiap `data-action="Modul.method"`
+& `getElementById("id")` di `index.html` terhadap AST asli
+`app-bundle-a.min.js`/`app-bundle-b.min.js`, pakai `acorn` — bukan regex
+tebak-tebakan) memakai `acorn` yang kebetulan sudah ter-install sbg
+dependency `ts-node` di sandbox.
+
+**Bug yang ditemukan & diperbaiki:** `Laporan.setPeriodeLap()` &
+`Laporan.getRangeLap()` di `cobek-order.js` (fitur "📊 Laporan" dalam modul
+Shop/Cobek) memanggil `document.getElementById('lapCustomRange')`,
+`('lapFrom')`, `('lapTo')` lalu langsung akses `.classList`/`.value` TANPA
+null-check — beda dari pola aman (`el&&...`/`if(!el)return`) yang konsisten
+dipakai di fungsi-fungsi lain persis di sebelahnya (`renderTab()`,
+`renderTopProduk()`, dst). Root cause kenapa baru ketahuan sekarang: tombol
+tab "laporan" itu sendiri **tidak pernah dipasang** di `index.html` (hanya
+`etalase` & `riwayat` yang wired ke `setShopTab()`) — jadi kode ini selama
+ini tidak reachable dari UI produksi manapun, makanya lolos dari testing
+manual biasa. Ditambahkan null-guard di 3 lokasi kode yang sama
+(`cobek-order.js` sumber, `app-bundle-a.min.js`, `keluarga-w-preview.html`)
+memakai optional chaining (`?.`) — perlu 1 iterasi perbaikan krn percobaan
+pertama sempat taruh `const` di tengah comma-expression hasil minify
+(invalid syntax), ketahuan langsung dari `node --check` & diperbaiki.
+
+**Diverifikasi:** `node --test tests/*.test.js` → 1727/1727 pass, 0
+regresi. `node --check` di ketiga file yang diubah → 0 syntax error. Diff
+`keluarga-w-preview.html` vs versi sebelum sesi ini → cuma 1 baris berubah
+(fix ini), tidak ada perubahan tak sengaja lain.
+
+**File yang berubah sesi ini (bagian ke-11):** `cobek-order.js`,
+`app-bundle-a.min.js`, `keluarga-w-preview.html`. **Tidak menjalankan**
+`npm run build`/`node scripts/build.js` (lihat kandidat masalah #3 di
+bawah — build sempat gagal krn format `APP_BUILD_VERSION` saat ini tidak
+diakhiri `-angka`), jadi bundle & preview dipatch manual langsung
+(bukan lewat build step resmi) — **berisiko drift** dari source kalau ada
+build ulang berikutnya yg tidak sengaja menimpa balik tanpa fix ini
+ter-carry; sebaiknya diverifikasi ulang setelah `build.js` bisa jalan
+normal lagi (lihat #3).
+
+**Daftar saran (belum dikerjakan sesi ini, murni catatan untuk sesi
+berikutnya):**
+1. **Selesaikan atau buang fitur "Laporan" di Shop/Cobek.** Logikanya
+   (`setPeriodeLap`, `renderTab`, agregasi top produk/pelanggan) sudah
+   lengkap, tinggal kurang tombol tab + markup chip periode + div
+   `lapCustomRange`/`lapFrom`/`lapTo`/`lapTrip`/`lapOmzet`/`lapUntung`/
+   `lapMargin`/`lapTopProduk`/`lapTopPelanggan` di HTML. Atau hapus kalau
+   memang tidak jadi dipakai, supaya tidak nambah bundle size & maintenance
+   percuma utk kode yang tidak reachable.
+2. **Satukan sumber kebenaran kode.** Fix di atas harus ditempel manual ke
+   3 file (source + 2 salinan hasil build/preview) krn `npm run build`
+   gagal jalan (lihat #3). Kalau build rutin bisa jalan, edit cukup di
+   source lalu build ulang — resiko drift antar file hilang.
+3. **Perbaiki `node scripts/build.js` supaya bisa jalan tanpa argumen
+   manual.** `APP_BUILD_VERSION` saat ini
+   (`"kw87-fix-hashpin-fallback-crypto-subtle"`) tidak diakhiri `-angka`,
+   jadi `computeNextVersion()` throw & `npm run check`/`npm run build`
+   tidak bisa dipakai sbg satu perintah mulus tanpa argumen tambahan.
+4. **Tambah smoke test DOM otomatis di CI, bukan cuma manual `?dev=1`.**
+   1727 unit test yang ada semuanya test logika murni — tidak ada yang
+   menangkap kasus "elemen dipanggil `getElementById` tapi id-nya tidak
+   pernah ada di HTML" (persis bug di atas). `smoke-test.js` yang sudah ada
+   mengecek pola ini tapi cuma jalan manual di browser dev mode. Kalau
+   logikanya dipindah ke test Node (parser statis mirip yang dipakai utk
+   audit sesi ini, atau Playwright kalau nanti tersedia), kelas bug ini bisa
+   ketahuan otomatis sebelum rilis, bukan nunggu laporan user.
+5. **Ukuran bundle cukup besar utk PWA.** `app-bundle-a.min.js` (~648KB) +
+   `app-bundle-b.min.js` (~620KB) + `index.html` (~216KB) ≈1.5MB sebelum
+   kompresi; `keluarga-w-preview.html` standalone sampai ~1.6MB satu file.
+   Worth dicek: lazy-load modul yang jarang dipakai, & pastikan server
+   production pakai gzip/brotli.
+
+## Catatan kerja — 2026-07-17 (bagian ke-12): kerjakan saran #3 (paling ringan) — `build.js` sekarang jalan tanpa argumen manual
+
+Konteks: lanjutan daftar saran bagian ke-11. Dikerjakan yang paling ringan
+dulu (saran #3), bukan #1 (butuh keputusan produk: selesaikan atau buang
+fitur Laporan) atau #4/#5 (butuh kerja lebih besar).
+
+**Akar masalah:** `APP_BUILD_VERSION` sempat ditulis manual jadi
+`'kw87-fix-hashpin-fallback-crypto-subtle'` (bagian ke-10) — tidak diakhiri
+`-angka`, jadi `computeNextVersion()` di `scripts/build.js` selalu `throw`
+kalau dipanggil tanpa argumen versi eksplisit. Direproduksi dulu: `node
+scripts/build.js` (tanpa argumen) → error persis seperti dugaan di saran #3.
+
+**Perbaikan:** jalankan build dengan versi eksplisit yang mengakhiri format
+lama dengan `-angka` (`kw87-fix-hashpin-fallback-crypto-subtle-1`, lalu
+`-2` krn percobaan pertama sempat berhenti di tengah oleh guard
+`--require-minify`, bukan oleh bug versi — lihat "Batasan" di bawah). Ini
+BUKAN keputusan produk, murni format string versi, jadi tidak perlu stop &
+tanya (poin 5 di instruksi tugas default).
+
+**Diverifikasi:**
+- `node --test tests/*.test.js` → 1727/1727 pass, 0 fail, sebelum & sesudah.
+- `node scripts/build.js kw87-fix-hashpin-fallback-crypto-subtle-2` →
+  sukses penuh: versi disamakan di 6 file source, semua konstanta
+  `*_VERSION` terverifikasi sinkron, `app-bundle-a.min.js`/`b.min.js`
+  ditulis, `index.html`/`app_production.html` (`?v=380`) &
+  `sw.js` (`kw-cache-v380`) ter-update, `docs/FILE-MAP.md` diregenerasi
+  (112 file, 1064 identifier global), `node --check` lolos di kedua bundle.
+- `node scripts/build-preview.js` dijalankan ulang supaya
+  `keluarga-w-preview.html` ikut konsisten ke v380 (6 file ter-inline:
+  `styles.css`, `modern-ui-layer.css`, kedua bundle, `smoke-test.js`,
+  `tangga-keuangan.js`).
+- Dicek tidak ada sisa string versi lama (`kw87-fix-hashpin-fallback-crypto-subtle` tanpa akhiran) di file `.js`/`.html` manapun di luar `backups/`.
+
+**Batasan yang jujur diakui:** sandbox sesi ini TIDAK punya akses jaringan
+sama sekali (beda dari bagian ke-8 yang sempat berhasil pasang `esbuild`
+offline) — `npm install` gagal 403 di semua paket, `eslint` & `esbuild`
+TIDAK terpasang. Konsekuensinya:
+- `npm run lint` tidak bisa dijalankan/diverifikasi sesi ini.
+- Bundle hasil build (v380) **TIDAK diminify** — fallback otomatis
+  `build.js` (aman utk dev, lihat catatan esbuild di atas), ukurannya
+  lebih besar dari v379 (798.6 KB + 900.2 KB vs 646.9 KB + 617.2 KB
+  sebelumnya). **Sebelum dipakai sbg rilis produksi**, sebaiknya build
+  ulang di environment yang punya akses `npm install --save-dev esbuild`
+  supaya kembali minified — jangan asumsikan v380 di paket ini sudah final
+  rilis.
+- Sama seperti sesi-sesi sebelumnya: tidak ada browser nyata di sandbox
+  ini, jadi verifikasi visual `keluarga-w-preview.html` v380 belum
+  dilakukan siapa pun.
+
+**File yang berubah sesi ini (bagian ke-12):** versi dibump ke `-2` di 6
+file source (`features-helpers-global-security.js`, `modules-render.js`,
+`modals.js`, `modules-calc.js`,
+`features-budget-laporan-carnotes-pelanggan.js`,
+`features-aiwidget-reminder-gdrive-search.js`), plus hasil build otomatis:
+`app-bundle-a.min.js`, `app-bundle-b.min.js`, `index.html`,
+`app_production.html`, `sw.js`, `docs/FILE-MAP.md`,
+`keluarga-w-preview.html`, `docs/CLAUDE.md` (catatan ini). Saran #1
+("Laporan" Shop/Cobek), #4 (smoke test DOM otomatis di CI), #5 (ukuran
+bundle) dari bagian ke-11 BELUM dikerjakan — sengaja disisakan utk sesi
+berikutnya sesuai urutan "paling ringan dulu".
+
+## Catatan kerja — 2026-07-17 (bagian ke-13): dicoba saran #4 (smoke test DOM otomatis di CI) — DIHENTIKAN, ternyata tidak "ringan" di sandbox ini
+
+Konteks: lanjut ke saran #4 dari daftar bagian ke-11 (setelah #3 selesai di
+bagian ke-12). Sebelum menulis test sungguhan, dicoba dulu prototipe di luar
+repo (`/tmp`, TIDAK menyentuh file apa pun di `tests/`) utk mengukur seberapa
+layak — hasilnya: **tidak layak dikerjakan dengan aman di sandbox ini,
+dihentikan sebelum ada perubahan ke repo.**
+
+**Yang dicoba:** port logika `smoke-test.js` (extract `getElementById()` &
+`data-action="Modul.method"` via regex, lalu cross-check) ke Node/`node:vm`,
+mengikuti saran persis di catatan bagian ke-11 ("parser statis mirip yang
+dipakai utk audit sesi ini"). Untuk cek `data-action`, berhasil: memuat
+`app-bundle-a.min.js` + `app-bundle-b.min.js` + `tangga-keuangan.js` (persis
+urutan yg dimuat `index.html`) ke 1 sandbox `vm` bersama pakai stub permisif
+dari `tests/helpers/loadSource.js` — semua 79 `data-action` yang ditemukan
+resolve ke fungsi asli tanpa false positive (0 `actionMissing`).
+
+**Kenapa dihentikan — bagian `getElementById()` menghasilkan ~660 false
+positive:** banyak modal (mis. `txModal`, `productModal`, dst) disimpan
+sbg array string HTML (`MODAL_HTML` di `modals.js`) yang baru di-inject ke
+DOM sungguhan saat runtime (`innerHTML=...`), BUKAN literal `id="..."` yang
+langsung kebaca teks polos — di source/bundle, tanda kutip di dalam string
+itu ter-escape (`\"`), jadi regex `id=(['"])...` yang sama persis dgn yang
+dipakai `smoke-test.js` TIDAK match. Di browser sungguhan ini bukan masalah
+karena `smoke-test.js` cek `document.getElementById()` di DOM HIDUP
+(setelah modal ter-render), bukan cuma teks statis — static-text check di
+situ cuma fallback sekunder utk elemen lazy-render. Tanpa jsdom (perlu
+render modal ke DOM beneran) atau acorn/AST (perlu install, butuh
+internet), replikasi statis di Node menghasilkan ratusan ID yang SEBENARNYA
+valid tapi dilaporkan "hilang" — persis kelas false-positive yang analisis
+`data-action` versi lama (lihat komentar di `smoke-test.js`) sudah pernah
+diperingatkan bisa terjadi kalau tidak hati-hati.
+
+**Kenapa tidak dipaksa lanjut:** menambah test dgn false-positive rate
+setinggi itu ke `npm test`/CI akan membuatnya PERMANEN merah utk kode yang
+sebenarnya benar — bertentangan dgn tujuan sendiri (CI harus jadi sinyal
+yang bisa dipercaya, bukan nambah noise). Sandbox sesi ini juga tidak ada
+akses internet (`npm install` 403 di semua paket — lihat bagian ke-12),
+jadi tidak bisa pasang `acorn` (dipakai audit manual bagian ke-11) atau
+`jsdom` utk perbaiki ini dengan benar sekarang.
+
+**Yang dibutuhkan utk mengerjakan saran #4 dgn benar (kandidat sesi
+berikutnya, idealnya di environment dgn akses internet):**
+1. `npm install --save-dev jsdom` lalu render `MODAL_HTML`/markup dinamis
+   lain ke DOM beneran sebelum cek `getElementById()`, ATAU
+2. Cari SEMUA tempat markup modal/dinamis di-generate (bukan cuma
+   `MODAL_HTML` di `modals.js` — perlu disurvei, mungkin ada pola serupa di
+   file lain) & tulis ekstraksi id yang sadar akan escaping tsb, ATAU
+3. Cakupan lebih sempit: HANYA cek `data-action` (bagian yang TERBUKTI 0
+   false-positive di percobaan ini) dulu sbg test terpisah, tunda bagian
+   `getElementById()` sampai ada solusi utk masalah escaping di atas.
+
+**File yang berubah sesi ini:** HANYA `docs/CLAUDE.md` (catatan ini). Tidak
+ada file lain yang disentuh — semua eksperimen dilakukan di `/tmp`, tidak
+ada test baru yang masuk ke `tests/`. `npm test` masih 1727/1727 pass persis
+seperti sebelum sesi ini (tidak ada regresi, tidak ada penambahan).
+
+
+
+
+## Catatan kerja — 2026-07-17 (bagian ke-14): kerjakan saran "(BERAT)" yang berulang sejak bagian ke-16 — cakupan test `keamanan-pin.js` lockout PIN + layar PIN interaktif, akhirnya ke 100%
+
+Konteks: dari 2 jalur saran yang masih terbuka (daftar bagian ke-11: fitur
+Laporan/build-source-of-truth/smoke-test-DOM/bundle-size, VS daftar
+`keamanan-pin.js` yang berulang ditandai **(BERAT)** di hampir setiap
+catatan sejak bagian ke-16 sampai ke-25), dipilih yang paling berat &
+paling lama mengendap: **lanjutkan cakupan `keamanan-pin.js` ke 100%** —
+bagian lockout percobaan PIN salah (`_pinLockState`/`_pinLockRemainingMs`/
+`_formatLockDuration`/`updatePinLockUI`) & layar PIN interaktif
+(`showPinScreen`/`pinPress`/`pinBack`/`updatePinDots`/`checkPin`), yang
+sebelumnya 100% NOL test (lihat komentar di kepala `tests/
+keamanan-pin.test.js`: "SENGAJA belum dicakup ... disisakan utk sesi
+lanjutan"). Alasan ini dianggap "paling berat" dibanding saran-saran
+`bagian ke-11`: butuh infra baru (fake `Date.now()`/`setInterval` yang bisa
+dimaju-mundurkan) yang belum pernah ada di `tests/helpers/` — bukan cuma
+nulis test dgn pola yang sudah ada.
+
+**Tidak ada bug ditemukan** — sesi ini murni menambah test yang sebelumnya
+nol utk bagian lockout/interaktif `keamanan-pin.js`, tidak ada perubahan
+kode aplikasi.
+
+**Infra baru: `tests/helpers/fakeTimer.js`.** `Date.now()` +
+`setInterval()`/`clearInterval()` palsu yang jamnya bisa dimaju-mundurkan
+manual lewat `advance(ms)`/`set(ms)`, dan intervalnya TIDAK auto-fire
+sendiri — harus dipicu eksplisit lewat `fireAll()`. Ini reusable utk file
+lain yang butuh pola serupa nanti (bukan cuma `keamanan-pin.js`).
+
+**File baru: `tests/keamanan-pin-lockout.test.js` (33 test).** Mengikuti
+pola `makeCtx()` serupa `keamanan-pin.test.js` (localStorage in-memory
+beneran, bukan stub permisif) + `createFakeDocument` (elemen `onboard`,
+`pinScreen`, `pinScreenTitle`, `pinLockMsg`, `pinPad`, `pd0..pd3`) +
+`fakeTimer` baru di atas. Mencakup: `_pinLockState` (default kosong, parse
+int, fallback nilai rusak → 0 bukan NaN), `_pinLockRemainingMs` (0 kalau
+tidak lock/sudah lewat, selisih persis kalau masih lock),
+`_formatLockDuration` (format detik-saja vs menit+detik, pembulatan ceil),
+`updatePinLockUI` (reset UI saat tidak lock, kunci keypad + pesan
+countdown langsung tampil saat lock TANPA nunggu interval, auto-unlock
+begitu waktu habis lewat interval, tidak menumpuk interval kalau dipanggil
+dobel), `showPinScreen` (sembunyikan onboard, reset buffer, judul pakai
+nama profil/fallback "W"), `pinPress`/`pinBack`/`updatePinDots` (diblokir
+total saat lock, dot terisi persis sepanjang buffer, guard >4 digit,
+genap 4 digit menjadwalkan `checkPin` via `setTimeout(...,120)` — DITANGKAP
+bukan dijalankan otomatis, sama pola dgn `setTimeout` override di
+`keamanan-pin.test.js`), dan `checkPin` (diblokir total saat lock tanpa
+sempat cek hash sama sekali, PIN benar → sesi terisi & lock counter
+direset, PIN salah di bawah batas → fails+1 & toast sisa percobaan, PIN
+salah ke-5 → stage 1 lock 30 detik + fails direset + keypad ikut terlihat
+terkunci lewat `updatePinLockUI` yang dipanggil di dalamnya, stage naik
+mengikuti `PIN_LOCK_DURATIONS_SEC` [30,60,120,300,600] dan di-clamp ke
+durasi terakhir kalau stage sudah lewat index terakhir — bukan
+out-of-range/`undefined`). Ditutup 1 test end-to-end: 5x salah beruntun via
+`pinPress` sampai lock → keypad kebuka otomatis begitu jam dimajukan lewat
+durasi lock → PIN benar via `pinPress` normal lagi setelahnya.
+
+**Catatan teknis — kenapa `assert.deepEqual` gagal utk `_pinLockState()`,
+harus `JSON.stringify` (sama seperti dicatat di `aset.test.js`/
+`onboarding.test.js`):** objek literal `{fails,until,stage}` yang dibuat
+DI DALAM vm context (`_pinLockState()` jalan di realm sandbox) beda
+prototype `Object` dari objek literal yang ditulis di test (realm host
+Node biasa) — `assert.deepEqual`/`deepStrictEqual` menganggap beda
+walau isinya identik. Dibandingkan via `JSON.stringify(...)` sama seperti
+pola yang sudah didokumentasikan di sesi-sesi sebelumnya.
+
+**Catatan teknis lain — `pinBuffer` diinject & dibaca langsung via
+`ctx.pinBuffer`, TANPA trik `expose`:** sama pola dgn `curMonth` dkk di
+`tx-list-cashflow.test.js` (bagian ke-26) — `pinBuffer` diassign langsung
+tanpa `let`/`const` di `keamanan-pin.js` sendiri (dideklarasikan `let
+pinBuffer=''` di `features-helpers-global-security.js`, file yang TIDAK
+dimuat di test ini), jadi assignment `pinBuffer=k` di dalam vm sloppy-mode
+otomatis jadi properti global yang bisa diinject/dibaca balik langsung
+lewat `extraGlobals`/`ctx.pinBuffer`.
+
+**Diverifikasi:**
+- `node --test tests/keamanan-pin-lockout.test.js` → 33/33 pass sendirian.
+- `node --test tests/*.test.js` penuh → **1788/1788 pass, 0 fail**, 0
+  regresi (naik dari 1727 di bagian ke-13 — selisih lebih dari +33 murni
+  krn sesi ke-13 tidak menambah test apa pun, jadi angka dasar sebelumnya
+  memang sudah beda dari yg terakhir tercatat; intinya semua pass, tidak
+  ada yang merah).
+- `node --check tests/keamanan-pin-lockout.test.js` & `node --check tests/
+  helpers/fakeTimer.js` → 0 syntax error.
+- **Tidak menjalankan `node scripts/build.js`** — sesi ini murni menambah
+  file test baru (`tests/keamanan-pin-lockout.test.js`,
+  `tests/helpers/fakeTimer.js`), TIDAK menyentuh kode aplikasi apa pun
+  (`keamanan-pin.js` sumber tidak diubah sama sekali), jadi tidak ada
+  bundle/preview yang perlu diregenerasi kali ini.
+
+**File yang berubah sesi ini (bagian ke-14):** `tests/
+keamanan-pin-lockout.test.js` (baru), `tests/helpers/fakeTimer.js` (baru),
+`docs/CLAUDE.md` (catatan ini). Tidak ada file lain yang disentuh.
+
+**Sisa pekerjaan / kandidat sesi berikutnya:**
+1. `cobek.js` (1261 baris, file fitur terbesar yang masih nol test) — masih
+   disisakan paling akhir seperti dicatat sejak bagian ke-25, butuh sesi
+   tersendiri utk dipetakan strukturnya dulu.
+2. Daftar saran bagian ke-11 yang belum dikerjakan: #1 (selesaikan/buang
+   fitur "Laporan" Shop/Cobek — butuh keputusan produk), #4 (smoke test DOM
+   otomatis di CI — sempat dicoba di bagian ke-13, perlu `jsdom`/akses
+   internet yang tidak tersedia di sandbox ini), #5 (ukuran bundle ~1.5MB).
+3. `npm run lint` masih belum bisa diverifikasi di sandbox manapun sejauh
+   ini (tidak ada akses internet utk `npm install eslint`) — item lama yang
+   belum berkurang dari bagian ke-7/ke-8/ke-11/ke-12.

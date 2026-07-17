@@ -13,6 +13,34 @@
 
 ## SUDAH SELESAI (terverifikasi)
 
+- ✅ **[2026-07-17] Audit integrasi end-to-end LifeOS + EIE (`lifeos-nav-eie-connected`).**
+  Ditemukan 3 hal, 1 sudah diperbaiki di sesi ini (lihat sub-poin), 2 sisanya
+  dipindah ke "BELUM DIKERJAKAN" di bawah.
+  1. **[DIPERBAIKI] `buildBackupPayload()`/`applyRestoredData()` (`backup-restore.js`)
+     tidak pernah menyertakan `lifeos:store`/`eie:store`.** LifeOS
+     (projects/reviewLog/knowledge) & EIE (macroCache/insights/scoreHistory/
+     notificationsEnabled/dst) disimpan terpisah di IndexedDB (lihat
+     `lifeos/lifeos-store.js`/`economic-intelligence/eie-store.js`), TOTAL di
+     luar siklus `D`/localStorage yang di-backup selama ini — walau
+     `{...D}` di `buildBackupPayload()` terlihat lengkap, 2 subsistem baru
+     ini selalu hilang saat backup+restore / pindah HP.
+     **Fix**: `buildBackupPayload()` jadi `async`, baca `IDBStore.get('lifeos:store')`/
+     `IDBStore.get('eie:store')`, taruh sbg `_lifeosStore`/`_eieStore` di
+     payload backup (hanya kalau ada isinya). `applyRestoredData()`: simpan
+     kedua field itu SEBELUM merge ke `D` (bukan properti `D`, jangan sampai
+     nyangkut), lalu `IDBStore.set()` balik ke IndexedDB + panggil
+     `lifeOSInvalidateCache()`/`eieInvalidateCache()` (fungsi baru di
+     `lifeos-store.js`/`eie-store.js`) supaya render berikutnya
+     (`LifeOSHome.render()`/`EIEDashboard.render()`) baca ULANG dari
+     IndexedDB, bukan state lama di memori dari sebelum restore. File
+     backup LAMA (tanpa kedua field ini) tetap ter-restore normal, tidak ada
+     breaking change.
+     **Test baru**: `tests/backup-restore-lifeos-eie.test.js` (5 test) —
+     termasuk dikonfirmasi manual: revert fix -> 1 test gagal, balik ke 0
+     fail setelah fix diterapkan lagi.
+     **Verifikasi**: `node scripts/build.js` (versi 370) lolos semua lint
+     otomatis; `node --test tests/*.test.js` -> **1712/1712 PASS**.
+
 - ✅ **[2026-07-16] Test `feature-icons.js` + `ai-smart-insight.js` (build #350).** Lanjutan
   daftar modul nol-test dari entri `chat-action.js` di atas, 2 file berikutnya urutan
   ringan→berat. **Tidak ada bug ditemukan** — murni menambah cakupan test yang sebelumnya
@@ -878,11 +906,34 @@
 
 ## BELUM DIKERJAKAN (butuh tindak lanjut di sesi berikutnya)
 
-_(kosong — item terakhir yang tersisa, aria-label `loadMoreBbmList`, dikonfirmasi 2026-07-16
-sudah punya `aria-label="Tampilkan lebih banyak riwayat BBM"` di source
-(`features-budget-laporan-carnotes-pelanggan.js`, `BBM.renderList()`); `node --test
-tests/*.test.js` → 1642/1642 pass. Roadmap split `features-tukang-kendaraan-storage.js` sudah
-TUNTAS 5/5 bagian; item lama lain sudah tuntas per 2026-07-13.)_
+- ⏳ **[2026-07-17] `resetApp()` ("Reset Aplikasi", `features-aiwidget-reminder-gdrive-search.js`)
+  cuma `localStorage.clear()`, TIDAK PERNAH menyentuh IndexedDB sama sekali.**
+  Ini bukan cuma soal `lifeos:store`/`eie:store` — bahkan `kw_v4_mirror`
+  (mirror IndexedDB milik `D` sendiri, lihat migrasi storage di
+  `features-helpers-global-security.js`) juga tidak dibersihkan. Karena
+  `load()` cek `kw_v4_mirror` di IndexedDB LEBIH DULU sebelum localStorage,
+  dugaan kuat: user tekan "Reset Aplikasi" → reload → `D` (bukan cuma
+  LifeOS/EIE) kemungkinan besar muncul lagi utuh dari mirror IndexedDB —
+  reset jadi tidak benar-benar mengosongkan data. Nol test coverage untuk
+  `resetApp()` saat ini (`grep -rl resetApp tests/` kosong).
+  **Rencana**: tambahkan `indexedDB.deleteDatabase('kw_idb_v1')` (atau
+  `IDBStore` clear helper baru) ke `resetApp()` sebelum `location.reload()`,
+  lalu tulis test regresi (belum ada sama sekali sebelumnya) yg memverifikasi
+  IndexedDB ikut kebersih — WAJIB diverifikasi manual di browser (Playwright)
+  juga, bukan cuma lewat mock, karena `resetApp()` sendiri belum pernah
+  dites end-to-end.
+- ⏳ **[2026-07-17] `EIEScheduler.start()`/`stop()` (`economic-intelligence/scheduler/eie-scheduler.js`)
+  tidak pernah dipanggil di mana pun di seluruh codebase.** Kemungkinan besar
+  ini SENGAJA (komentar file: "FASE 1 senyap") — sinkronisasi macro saat ini
+  murni terjadi on-demand tiap `EIEDashboard.render()` (maks. 1x/hari via
+  `MacroSyncService.syncAndRecompute()`), bukan bug fungsional. Dicatat di
+  sini murni supaya tidak terlupa saat FASE 2: kalau nanti scheduler
+  background 6-jam ini memang mau diaktifkan, perlu keputusan eksplisit
+  dari mana `EIEScheduler.start()` dipanggil (mis. sekali saat app boot),
+  bukan cuma menambah baris tanpa titik masuk yang jelas.
+- _(item lama: aria-label `loadMoreBbmList` sudah tuntas 2026-07-16; roadmap
+  split `features-tukang-kendaraan-storage.js` TUNTAS 5/5 bagian; item lama
+  lain sudah tuntas per 2026-07-13.)_
 
 ## Cara jalanin pengecekan otomatis lagi (kalau perlu ulang dari nol)
 

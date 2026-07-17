@@ -9,7 +9,7 @@ const LifeOSToday = {
     const items = todayAdapterList(D);
     el.innerHTML = items.length
       ? items.map((it) => `
-        <div class="lifeos-today-item">
+        <div class="lifeos-today-item u-pointer" data-action="lifeOSNavigateToSource" data-args='${escapeHtml(JSON.stringify([it.sourceKind, it.sourceId]))}' title="Buka referensi data">
           <div class="lifeos-today-label">${escapeHtml(it.label || '')}</div>
           ${it.dueDate ? `<div class="lifeos-today-due">${escapeHtml(it.dueDate)}</div>` : ''}
         </div>
