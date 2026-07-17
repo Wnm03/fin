@@ -111,12 +111,12 @@ ditambah `closeModal()` di `modal-navigasi.js` sebelum melepas `.open`,
 ditunda pakai `animationend`+fallback `setTimeout`. Lihat
 `MODAL-EXIT-ANIMATION.md`.
 
-### 5.2 Ripple bukan berbasis koordinat sentuh asli 🔴
-Ripple Tahap 7 berupa pulsa dari tengah elemen (CSS-only), bukan dari
-titik tap/klik sesungguhnya.
-
-**Kenapa belum diperbaiki**: ripple posisi-akurat butuh JavaScript
-untuk membaca posisi klik/tap dan menset custom property `--x`/`--y`.
+### 5.2 ✅ SELESAI — Ripple berbasis koordinat sentuh asli
+Sebelumnya ripple Tahap 7 selalu berupa pulsa dari tengah elemen
+(CSS-only). Sekarang posisi ripple mengikuti titik sentuh/klik asli
+lewat `modules/shared/ripple-position.js` yang men-set custom property
+`--ripple-x`/`--ripple-y` sebelum `:active` menyalakan animasi. Lihat
+`ROADMAP-v1.1.md` item #8.
 
 ### 5.3 Hover/elevation belum menyentuh tap-target sekunder lain 🟢
 `.stat-box.clickable`, `.budget-item.clickable`, dan sejenisnya belum
@@ -130,10 +130,12 @@ tetap minimal.
 
 ## Ringkasan Jumlah Isu
 
-| Kategori risiko | Jumlah |
-|---|---|
-| 🟢 CSS-only, risiko rendah | 6 |
-| 🟡 Token warna, risiko sedang | 1 |
-| 🔴 Butuh JavaScript | 3 |
+| Kategori risiko | Jumlah | Selesai |
+|---|---|---|
+| 🟢 CSS-only, risiko rendah | 6 | 4 (1.2, 2.1, 2.2, 3.1) |
+| 🟡 Token warna, risiko sedang | 1 | 0 |
+| 🔴 Butuh JavaScript | 3 | 2 (4.1, 5.2) |
+
+Status terkini & rencana sisa item: lihat `ROADMAP-v1.1.md`.
 
 Semua item di atas dipetakan ke prioritas backlog di `ROADMAP-v1.1.md`.

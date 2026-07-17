@@ -3,9 +3,10 @@
 // baru). Data-only map + 1 fungsi baca, tidak ada state/I/O.
 //
 // `target` di sini mengikuti pola sama dgn FEATURE_REGISTRY di
-// dashboard-hub-registry.js ({ page, tab?, goTo? }) supaya nanti tinggal
-// dipanggil lewat fungsi navigasi yang sama (fase 2 UI), TIDAK menduplikasi
-// mekanisme navigasi baru.
+// dashboard-hub-registry.js ({ page, tab?, goTo? }) supaya bisa dipanggil
+// lewat fungsi navigasi yang sama, TIDAK menduplikasi mekanisme navigasi
+// baru. Fase 2 UI (klik baris rekomendasi -> dashHubNavigateToFeature())
+// sudah tersambung, lihat ui/eie-insight-feed.js.
 
 const EIE_RECOMMENDATIONS = {
   'REC-REVIEW-BUDGET-IMPORT': {

@@ -1,4 +1,6 @@
 // aset-emas-impor.js — FITUR BARU: GoldImport (impor massal nota emas via paste teks ATAU
+// Dipindah ke modules/asset/aset-emas-impor.js (Sesi 9 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // upload file .xlsx rekap nota) & GoldZakat (rekap emas utk zakat maal + analisa harga/gram
 // & untung-rugi).
 // CARA PASANG (lihat juga INTEGRASI-EMAS.md):

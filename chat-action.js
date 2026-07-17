@@ -1,4 +1,5 @@
 // chat-action.js — Parsing & UI blok [[ACTION]] dari balasan AI Chat (RefAI), murni ekstraksi/format teks,
+// Dipindah ke modules/ai/chat-action.js (Sesi 14 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // TIDAK terkait domain kendaraan/sparepart/storage sama sekali.
 // Dipisah dari tukang-absensi.js (2026-07-12, roadmap split file besar bagian ke-1)
 // murni pengelompokan ulang file, BUKAN perubahan perilaku. Alasan pisah: satu-satunya kaitan file
@@ -8,7 +9,7 @@
 // features-helpers-global-security.js (yang melakukan `chatInited=false;` sebagai reset, assignment
 // biasa BUKAN deklarasi — aman dimuat sebelum `let chatInited` di sini) dan SEBELUM
 // features-aiwidget-reminder-gdrive-search.js (yang baca/tulis chatInited, _pendingChatActions,
-// memanggil chatActionInnerHTML/extractChatAction) serta SEBELUM features-budget-laporan-carnotes-pelanggan.js
+// memanggil chatActionInnerHTML/extractChatAction) serta SEBELUM chat-action-handlers.js
 // jika perlu CHAT_ACTION_LABELS/CHAT_ACTION_HANDLERS (didefinisikan di sana, dipakai lewat referensi lazy
 // saat fungsi di bawah ini dipanggil runtime, bukan saat parse, jadi urutan file itu vs file ini tidak masalah).
 let chatInited=false;

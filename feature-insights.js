@@ -1,4 +1,5 @@
 // feature-insights.js — Kartu "💡 Insight ..." di PALING ATAS/dekat 7 fitur (Keuangan, Pajak &
+// Dipindah ke modules/ai/feature-insights.js (Sesi 14 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Zakat, Piutang & Utang, Sewa Kios & Renovasi, Bisnis Shop, Car Notes, Dana Pendidikan), pola
 // PERSIS SAMA dgn AssetInsight (lihat aset.js): read-only, tidak nyimpen state sendiri, cuma baca
 // ulang D tiap dipanggil. Setiap modul punya compute() yang mengembalikan array item

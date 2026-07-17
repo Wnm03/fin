@@ -11,8 +11,8 @@
 > file tapi lupa `node build.js`), jalankan ulang generatornya, JANGAN diedit
 > tangan — editan manual bakal ketimpa lagi di build berikutnya.
 
-Terakhir digenerate: 2026-07-17T04:40:50.389Z
-Total file source: 112 · Total identifier global: 1065
+Terakhir digenerate: 2026-07-17T09:46:09.851Z
+Total file source: 125 · Total identifier global: 1120
 
 ## 1. Urutan load & ringkasan tiap file
 
@@ -21,118 +21,131 @@ bundler menggabungkan semua file jadi `app-bundle-a.min.js`/`app-bundle-b.min.js
 
 | # | File | Baris | Ringkasan |
 |---|------|------:|-----------|
-| 1 | `modules-render.js` | 1405 | Fungsi render (85 fungsi) dipisah dari app_production.html untuk pemerataan ukuran file. Semua fungsi ini murni definisi function global (bukan module), jadi tetap bisa dipanggil dari file manapun yang loadnya … |
-| 2 | `modals.js` | 7 | Modal HTML dipisah dari app_production.html untuk pemerataan ukuran file. Setiap elemen array persis sama dengan blok <div class="overlay" id="...">...</div> aslinya, di-inject balik ke posisi yang sama persis via … |
-| 3 | `modules-calc.js` | 881 | _(tidak ada komentar header)_ |
-| 4 | `cobek-etalase.js` | 369 | Domain Shop bagian Etalase: katalog produk (tambah/edit/hapus, size-pairing bracket harga, bundle, modal stok tertanam), stok, & produsen terkait produk. Dipecah dari cobek.js (2026-07-12, file lama 1966 baris > 500 … |
-| 5 | `cobek-pricing.js` | 502 | Domain Shop bagian rekomendasi harga & ongkir: PriceReko (kalkulator harga jual AI), OngkirCalc (kalkulator ongkos kirim), PriceRekoWidget & StockRekoWidget (widget dashboard rule-based). Bagian ke-2 dari 5 hasil … |
-| 6 | `cobek-order.js` | 540 | Domain Shop bagian order & pelanggan: Produsen (supplier), SiapPulang (status siap diambil/dikirim), Order (order pelanggan), Laporan (omzet), Pelanggan (data & riwayat pelanggan). Bagian ke-3 dari 5 hasil pemecahan … |
-| 7 | `cobek-tx-cart.js` | 371 | Domain Shop bagian integrasi form Transaksi: cart Stok Masuk & Penjualan Shop pada form Transaksi gabungan (populate/onChange/toggle/add/remove/sync/apply), termasuk applyBundleLinkedStock & recordShopSale. Bagian ke-4 … |
-| 8 | `cobek-io.js` | 474 | Domain Shop bagian impor/ekspor: ImportKatalog (impor massal produk+harga dari teks), wrapper tab/tombol UI ringan, ShopExport (ekspor XLSX), ImportShopExcel (impor dari file Excel). Bagian ke-5 (terakhir) dari 5 hasil … |
-| 9 | `kasir.js` | 331 | Modul "🧠 Kasir AI" (v127, kw81-kasir-ai-pos): Tab checkout BARU utk halaman Bisnis Shop yang lebih cepat dari form "Transaksi Manual" (Order) lama: tap produk langsung dari grid (bukan pilih dari dropdown lalu klik "+ … |
-| 10 | `piutang-utang.js` | 354 | Domain Piutang & Utang: catatan piutang (uang dipinjamkan), utang (uang dipinjam) beserta status lunas/cicilan, dan DebtStrategy (simulasi strategi pelunasan Avalanche/Snowball). Juga berisi Bill (helper hubungkan … |
-| 11 | `pajak-pbb-zakat.js` | 343 | Kalkulator Pajak Bumi & Bangunan (PBB), Zakat (penghasilan, maal, fitrah), Referensi AI (cek harga emas/nisab via AI), Pajak UMKM, dan PPh 21 (Orang Pribadi) Dipisah dari: features-renovasi-pajak-aset-order.js (PBB, … |
-| 12 | `features-budget-laporan-carnotes-pelanggan.js` | 1503 | Budget & laporan keuangan, Car Notes (BBM/servis/torsi baut), aksi AI chat, data pelanggan PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: … |
-| 13 | `edukasi-dana.js` | 175 | Dana Pendidikan (EduFund): kalkulator target biaya sekolah/kuliah & nabung/bulan CATATAN: modul EduFund dipindah ke file baru ini dari features-edukasi-pajak-utang-sewakios.js (v60). EduFund.checkAI() masih memanggil … |
-| 14 | `sewakios.js` | 244 | Domain Sewa Kios: catat unit kios yang disewakan, riwayat tagihan sewa, ROI vs modal renovasi, laporan PDF. Dipisah dari: features-edukasi-pajak-utang-sewakios.js (lanjutan roadmap PEMISAHAN-FILE-ROADMAP.md, v58). … |
-| 15 | `hidup-seimbang.js` | 219 | Domain Skor Hidup Seimbang: skor gabungan dari Dana Darurat, DSR cicilan, No-Spend 30 hari, & keseimbangan kerja-istirahat, plus riwayat snapshot bulanan. Dipisah dari: features-edukasi-pajak-utang-sewakios.js (lanjutan … |
-| 16 | `linktx.js` | 245 | Transaksi tertaut (LinkTx): hubungkan transaksi lama di Keuangan ke Renov/Wishlist/Bill CATATAN: modul LinkTx dipindah ke file baru ini dari features-edukasi-pajak-utang-sewakios.js (v61). File lama … |
-| 17 | `renovasi.js` | 441 | Domain Proyek Renovasi: RenovCalc (kalkulator material), Renov (proyek & item biaya), RenovAI (saran AI kebutuhan/ukuran) CATATAN: modul-modul ini dipindah ke file baru ini dari features-renovasi-pajak-aset-order.js … |
-| 18 | `aset.js` | 1216 | Domain Aset & Kekayaan: ALOKASI_PRESETS/AlokasiAset (rekomendasi alokasi dana), Aset (Buku Aset & Kekayaan Bersih), Penyusutan (estimasi nilai buku aset yg menurun nilainya: Garis Lurus/Saldo Menurun/Manual), PajakAset … |
-| 19 | `aset-keluarga.js` | 85 | Laporan gabungan lintas-modul: 🏠 Aset Keluarga ============================================================================ FITUR BARU: satu kartu ringkasan di tab Laporan yang menyusun ULANG (bukan menduplikasi sumber … |
-| 20 | `feature-insights.js` | 326 | Kartu "💡 Insight ..." di PALING ATAS/dekat 7 fitur (Keuangan, Pajak & Zakat, Piutang & Utang, Sewa Kios & Renovasi, Bisnis Shop, Car Notes, Dana Pendidikan), pola PERSIS SAMA dgn AssetInsight (lihat aset.js): … |
-| 21 | `invest-ai-widget.js` | 178 | Widget "🤖 Rekomendasi AI" otomatis di kartu 🧭 Rekomendasi Alokasi Aset (aset.js: AlokasiAset.renderOne(), target #aaResult, halaman Pajak & Zakat / tab Zakat). MODUL BARU — tidak mengubah satu baris pun logic … |
-| 22 | `penyusutan-ai-widget.js` | 164 | Widget "🤖 Rekomendasi AI" utk kartu 📉 Penyusutan Aset (aset.js: Penyusutan.renderList(), target #assetPenyusutanAI, halaman Aset). MODUL BARU — tidak mengubah satu baris pun logic Penyusutan/Aset yang sudah ada; file … |
-| 23 | `aset-emas-impor.js` | 392 | FITUR BARU: GoldImport (impor massal nota emas via paste teks ATAU upload file .xlsx rekap nota) & GoldZakat (rekap emas utk zakat maal + analisa harga/gram & untung-rugi). CARA PASANG (lihat juga INTEGRASI-EMAS.md): 1. … |
-| 24 | `worthit.js` | 468 | Domain Worth It? & Prioritas Belanja: cek kondisi keuangan sebelum belanja + daftar prioritas barang yang mau dibeli CATATAN: modul WorthIt dipindah ke file baru ini dari features-renovasi-pajak-aset-order.js (v62). … |
-| 25 | `data-default.js` | 36 | Domain Data Default: kategori shop bawaan (DEFAULT_COBEK_KATEGORI), akun keuangan bawaan (DEFAULT_ACCOUNTS), kategori sparepart kendaraan bawaan (DEFAULT_SPAREPARTS). PENTING: file ini HARUS dimuat SEBELUM … |
-| 26 | `features-helpers-global-security.js` | 483 | Helper global (migrasi data, state D, save/load, event dispatcher) CATATAN: 3 konstanta default (DEFAULT_COBEK_KATEGORI/DEFAULT_ACCOUNTS/DEFAULT_SPAREPARTS) dipindah ke data-default.js (v79) — file itu HARUS dimuat … |
-| 27 | `diagnostik-versi.js` | 77 | Domain Diagnostik & Sinkronisasi Versi: snapshot HTML utk self-test (getHtmlSnapshotForSelfTest), cek status sinkron versi produksi vs master (computeProductionSyncStatus), cek status sinkron versi antar file modul … |
-| 28 | `format-tema.js` | 34 | Domain Format Angka & Tema: format rupiah singkat (fmt, mis. "Rp 1.5 jt"), format rupiah penuh (fmtFull/fmtFullSigned), notifikasi toast di bawah layar (toast), dan ganti/terapkan tema warna app termasuk mode "auto" … |
-| 29 | `error-handler.js` | 38 | Domain Error Handler Global: tangkap error tak tertangani (uncaught error & unhandled promise rejection) di seluruh app, catat ke console utk debugging, dan tampilkan toast singkat yang ramah ke pengguna (dibatasi … |
-| 30 | `helper-teks.js` | 25 | Domain Helper Teks & Kalender: escape karakter HTML berbahaya biar aman dimasukkan ke innerHTML (escapeHtml), daftar nama bulan singkat & lengkap dalam Bahasa Indonesia (MONTHS/MONTHS_FULL) utk format tanggal. Dipindah … |
-| 31 | `keamanan-pin.js` | 268 | Domain Keamanan: layar PIN (showPinScreen/checkPin/pinPress/pinBack/updatePinDots), lockout percobaan PIN salah (PIN_MAX_ATTEMPTS/PIN_LOCK_DURATIONS_SEC/updatePinLockUI/dst), ganti PIN (gantiPin), dan enkripsi API key … |
-| 32 | `refleksi-selfcare.js` | 255 | Domain Refleksi & Self-Care: Jurnal Syukur, Checklist Self-Care harian (dgn hitung konsisten berturut-turut), & Catatan Privat terenkripsi (pakai PIN aplikasi, skema kripto sama dgn … |
-| 33 | `modal-navigasi.js` | 318 | Domain Modal Generik & Navigasi Halaman: modal konfirmasi/prompt/pilihan/info/pin (askConfirm/showPromptModal/showChoiceModal/showAlertModal/showPinPromptModal & pasangan _xxxAnswer/_xxxSubmit-nya), buka/tutup modal & … |
-| 34 | `reset-gaji-mingguan.js` | 113 | Domain Reset Gaji Mingguan: hitung rentang minggu berjalan (getWeekRange), deteksi & tawarkan reset absensi tiap Sabtu (checkWeeklySalaryReset), buka modal reset manual (openWeeklyResetManual), dan proses konfirmasi … |
-| 35 | `debug-console.js` | 49 | Domain Debug Console: toggle tombol status (updateDebugConsoleBtn) & aktifkan/matikan panel debug pihak ketiga "eruda" (toggleDebugConsole), termasuk lazy-load skrip eruda dari CDN kalau belum pernah dipakai. Dipindah … |
-| 36 | `pengaturan-search.js` | 73 | Domain Pencarian Pengaturan: buka/tutup grup pengaturan (toggleStgGroup), cari & sorot kartu pengaturan yang cocok teks pencarian (stgSearch), dan dukungan keyboard (Enter/Spasi) utk buka grup pengaturan lewat kepala … |
-| 37 | `onboarding.js` | 46 | Domain Onboarding: preview perkiraan kasar gaji/kiriman saat setup awal (updateOnboardPreview) & proses selesai onboarding — simpan profil awal + PIN (finishOnboard). Dipindah dari features-helpers-global-security.js … |
-| 38 | `kalkulator-input.js` | 141 | Kalkulator ekspresi angka: parser aman (safeCalc), popup kalkulator (openCalc/calcPress/dst), dan preview nilai input jumlah (calcPreviewValue/updateAmtPreview/evalAmtExpr). Dipindah dari … |
-| 39 | `scan-ocr.js` | 804 | Scan struk belanja (OCR): struk belanja, bukti transfer, tanggal dari foto, odometer, portofolio aset, kategori & sparepart otomatis dari struk Domain terakhir hasil pembedahan features-filter-scanstruk-ocr.js (v84-v87 … |
-| 40 | `filter-laporan.js` | 232 | Filter transaksi/keuangan (panel filter Keuangan & Laporan), pencarian, paginasi list transaksi, navigasi antar-list (goToList/showFilteredTx) PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) … |
-| 41 | `akun.js` | 116 | Kelola Akun (Cash/Bank/Ewallet dll): saldo, filter dropdown akun di seluruh app, CRUD akun PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: … |
-| 42 | `gaji-calc.js` | 55 | Kalkulator gaji harian/borongan (Tukang & karyawan lepas), catat sbg pemasukan PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: … |
-| 43 | `cicilan.js` | 113 | logika form Cicilan pada txModal (Tambah/Edit Transaksi Keuangan). Dipisah dari transaksi.js (2026-07-11, lihat CLAUDE.md catatan kerja "split transaksi.js") murni sebagai pengelompokan ulang file, BUKAN perubahan … |
-| 44 | `tx-bbm.js` | 93 | logika panel "Sinkron ke Catatan Mobil (BBM)" pada txModal (Tambah/Edit Transaksi Keuangan). Dipisah dari transaksi.js (2026-07-11, lihat CLAUDE.md catatan kerja "split transaksi.js" bagian ke-6) murni sebagai … |
-| 45 | `tx-stok-sparepart.js` | 73 | logika panel "Tambah ke Stok Sparepart juga?" pada txModal (Tambah/Edit Transaksi Keuangan). Dipisah dari transaksi.js (2026-07-11, lihat CLAUDE.md catatan kerja "split transaksi.js" bagian ke-7) murni sebagai … |
-| 46 | `tx-transfer.js` | 33 | logika modal "⇄ Transfer Antar Akun" (transferModal). Dipisah dari transaksi.js (2026-07-11, lihat CLAUDE.md catatan kerja "split transaksi.js" bagian ke-8) murni sebagai pengelompokan ulang file, BUKAN perubahan … |
-| 47 | `tx-cobek.js` | 29 | domain "Stok/Penjualan Shop (Shop)" pada form Transaksi. Dipindah dari transaksi.js (lihat CLAUDE.md catatan kerja "split transaksi.js" bagian ke-9) -- tetap fungsi global, tetap dipanggil persis sama dari sini … |
-| 48 | `tx-target.js` | 68 | domain "Target Tabungan" (modal tambah target, deteksi Dana Darurat, simpan, lihat transaksi akun terkait, tambah/hapus progres). Dipindah dari transaksi.js (lihat CLAUDE.md catatan kerja "split transaksi.js" bagian … |
-| 49 | `tx-list-cashflow.js` | 203 | domain "List Transaksi (kartu tx, hapus tx), filter periode Keuangan/Laporan, & Cashflow Forecast". Dipindah dari transaksi.js (lihat CLAUDE.md catatan kerja "split transaksi.js" bagian ke-11 -- lanjutan bagian … |
-| 50 | `transaksi.js` | 751 | Form Tambah/Edit Transaksi Keuangan: autocomplete kategori/produk, panel kendaraan (BBM/sparepart/stok shop), target Dana Darurat, catatan/reminder/ transfer, dan simpan transaksi (saveTx) — mesin utama halaman … |
-| 51 | `profil-pengaturan.js` | 82 | Profil pengguna di Pengaturan: auto-save profil, status PTKP (kawin/tanggungan/pekerjaan) utk estimasi PPh21, preview usia, hint API key AI PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena … |
-| 52 | `kategori.js` | 169 | Modal Kategori & Subkategori (tambah/edit/hapus, filter tampilan) PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: data-default.js, … |
-| 53 | `kategorisasi-ai.js` | 186 | AI Auto-Kategorisasi Transaksi dari Catatan Bebas FITUR BARU: saat user mengetik Keterangan transaksi bebas di Input Transaksi (mis. "bayar galon+beras warung"), modul ini menebak Kategori & Subkategori yang paling … |
-| 54 | `tagihan-kalender.js` | 444 | Modul Tagihan/Bill (CRUD, riwayat, filter, arsip) & Kalender Jatuh Tempo PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: data-default.js, … |
-| 55 | `backup-restore.js` | 772 | Export/import/backup data (satu domain penuh: CSV/JSON export laporan, backup terjadwal & manual per-modul, restore dari file backup, import dari Cashew/CSV lain, import Car Notes) (v89): blok "deteksi item checkout … |
-| 56 | `payroll-absensi.js` | 449 | Payroll: Absensi Harian & Kalkulator Gaji Mingguan (const Payroll={...}) (v93): dipindah dari backup-restore.js — domain ini sudah rapi sbg 1 objek modul (mirip LinkTx/Renov/Aset), jadi dipisah jadi file domain sendiri, … |
-| 57 | `tukang-absensi.js` | 678 | Domain Tukang (absensi/payroll harian & borongan) ONLY. CATATAN [2026-07-12]: File ini dulu bernama features-tukang-kendaraan-storage.js dan asalnya campuran 5 domain (lihat riwayat lengkap di … |
-| 58 | `vehicle-core.js` | 454 | Domain Vehicle core: CRUD kendaraan, KM (log & estimasi konsumsi/rp-per-km), Pajak Kendaraan (STNK tahunan/5-tahunan + SPT Tahunan pribadi), SIM, proactive reminders (dashboard), dan Car Notes tab (filter periode, edit … |
-| 59 | `chat-action.js` | 62 | Parsing & UI blok [[ACTION]] dari balasan AI Chat (RefAI), murni ekstraksi/format teks, TIDAK terkait domain kendaraan/sparepart/storage sama sekali. Dipisah dari tukang-absensi.js (2026-07-12, roadmap split file besar … |
-| 60 | `data-archive.js` | 161 | Storage usage estimate & Archive (export lalu hapus data lama per tahun). Dipisah dari tukang-absensi.js (2026-07-12, roadmap split file besar bagian ke-2) murni pengelompokan ulang file, BUKAN perubahan perilaku. … |
-| 61 | `sparepart-servis.js` | 520 | Domain Sparepart & Servis kendaraan: kategori & stok sparepart (Sparepart), catatan servis (wrapper ke Servis di features-budget-laporan-carnotes-pelanggan.js), interval servis per-kategori & override per-kendaraan, … |
-| 62 | `features-aiwidget-reminder-gdrive-search.js` | 1637 | Reminder, hari kerja, kendaraan (pajak/SIM/servis/BBM/sparepart), storage & arsip, skema Google Sheets (SHEETS_SCHEMAS/SHEETS_MODULES) CATATAN: SHEETS_SCHEMAS dipindah dari features-edukasi-pajak-utang-sewakios.js (v57) … |
-| 63 | `features-sheets-pwa-selftest.js` | 2409 | Settings, notifikasi, PWA setup, self-test/smoke-test rendering, pajak/zakat/aset/utang PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: … |
-| 64 | `feature-icons.js` | 104 | Migrasi Icon Emoji -> SVG (KNOWN-ISSUES.md §4.1 / ROADMAP-v1.1.md #3) LATAR: field `icon:` di FEATURE_REGISTRY (dashboard-hub-registry.js) & registry serupa berisi emoji literal, tidak konsisten dengan SVG inline yang … |
-| 65 | `dashboard-hub-registry.js` | 234 | FEATURE_REGISTRY: sumber data tunggal taksonomi Dashboard Feature Hub (blueprint-dashboard-hub.md §1 & §7, Tahap 0). PENTING — file ini MURNI DATA, tidak ada logic render/navigasi apa pun. Tahap 0 blueprint: "Finalisasi … |
-| 66 | `dashboard-hub.js` | 522 | Dashboard Feature Hub (blueprint-dashboard-hub.md §5) STATUS (update v1.0-stabilization, build v234): sejak Tahap 4, halaman ini SUDAH jadi landing page default (satu-satunya class="page active" saat startup, lihat … |
-| 67 | `dashboard-hub-search.js` | 127 | Feature Search: cari FITUR/MENU (bukan data transaksi) lintas kategori FEATURE_REGISTRY (blueprint-dashboard-hub.md §2 & §6). Berbeda tujuan dari Global Search existing (`openGlobalSearch`) yang mencari DATA milik user … |
-| 68 | `dashboard-hub-favorit.js` | 38 | Favorit (Tahap 3, Langkah 6): storage + service MURNI (ADR-001 §3/§4/§5, blueprint Favorit final). Tidak ada DOM/render di file ini — itu ada di dashboard-hub-favorit-view.js (Langkah 7-8, sudah diimplementasikan; lihat … |
-| 69 | `dashboard-hub-favorit-view.js` | 112 | Favorit (Tahap 3, Langkah 7-8): render + toggle button wiring. Sengaja file TERPISAH dari dashboard-hub-favorit.js (storage murni, Langkah 6) supaya guard test "window.DashboardHubFavorit HANYA mengekspos getFavoritKeys … |
-| 70 | `ai-command-center.js` | 141 | Sprint 3 Tahap 3.1: AI Command Center Foundation. SCOPE Tahap 3.1 (Foundation SAJA): Menyediakan satu registry netral tempat modul lain (Tahap 3.2+) MENDAFTARKAN "command" AI (aksi yang bisa dijalankan lewat command … |
-| 71 | `self-reward-engine.js` | 215 | Domain Self Reward Engine: cek kelayakan self reward berdasarkan kondisi finansial (Budget, Cashflow, Dana Darurat, Target Investasi, Utang Macet, Tagihan). MODUL BARU — tidak mengubah API/modul yang sudah ada; hanya … |
-| 72 | `self-reward-view.js` | 219 | UI layer untuk Self Reward Engine. Memisahkan render/DOM dari logic MURNI di self-reward-engine.js (lihat catatan di kepala file itu: "Tidak ada DOM/render di file ini... taruh di file terpisah, pola sama dgn … |
-| 73 | `self-reward-ai-widget.js` | 234 | Widget Rekomendasi AI di dalam modal Self Reward. MODUL BARU — tidak mengubah API/behavior self-reward-engine.js maupun self-reward-view.js yang sudah ada; file ini HANYA menambah satu section baru ("🤖 Rekomendasi AI") … |
-| 74 | `investasi.js` | 307 | Domain Investment: Portfolio, Dividend, Capital Gain/Loss, ROI, Asset Allocation, Watchlist, Riwayat Transaksi. MODUL BARU — tidak mengubah API/modul yang sudah ada; hanya MEMBACA/MENULIS D.investments/D.investmentTx/ … |
-| 75 | `lifeos/lifeos-store.js` | 62 | SATU-SATUNYA tempat Life OS boleh MENULIS. ATURAN WAJIB: - Tidak pernah menyentuh D. Tidak ada property baru di D, tidak ada perubahan struktur D sedikit pun. - Tidak pernah memanggil save() milik D. - Persist lewat … |
-| 76 | `lifeos/lifeos-registry.js` | 55 | taksonomi FUNGSIONAL Life OS (beda dari FEATURE_REGISTRY yang taksonomi NAVIGASI — keduanya sengaja terpisah, lihat personal-life-os-blueprint.md Langkah 1). PENTING: file ini MURNI DATA. Tidak ada logic, tidak ada … |
-| 77 | `lifeos/lifeos-link-registry.js` | 25 | relasi implisit-by-convention di D dibuat eksplisit di SATU tempat (Gap #9, personal-life-os-blueprint.md). PENTING: murni data deklaratif. `match`/lookup di sini hanya MEMBACA D — tidak pernah menulis. Dikonsumsi oleh … |
-| 78 | `lifeos/adapters/goal-adapter.js` | 46 | adapters/goal-adapter.js — READ-ONLY. Menyeragamkan 6 sumber goal lama (D.targets, D.eduFunds, D.pensiun, D.finansialFreedom, D.wishlist, D.debtStrategy) jadi satu bentuk "goal card". Tidak menyimpan apa pun, dihitung … |
-| 79 | `lifeos/adapters/project-adapter.js` | 30 | adapters/project-adapter.js — merge READ-ONLY antara dua sumber: 1. D.renovProjects (legacy, milik renovasi.js — tidak disentuh) 2. LifeOSStore.projects (generic, milik Life OS — lihat services/project-service.js untuk … |
-| 80 | `lifeos/adapters/today-adapter.js` | 34 | adapters/today-adapter.js — READ-ONLY. TODAY bukan penyimpanan sendiri, cuma lensa waktu di atas AREAS/PROJECTS/GOALS (lihat personal-life-os-blueprint.md Langkah 2). Depends on: lifeos-registry.js … |
-| 81 | `lifeos/adapters/review-adapter.js` | 26 | adapters/review-adapter.js — READ-ONLY. Menggabungkan histori pasif existing (D.wealthSnapshots, D.lifeBalanceSnapshots, D.assetAllocation) dengan sesi review Life OS sendiri (LifeOSStore.reviewLog). Tidak pernah … |
-| 82 | `lifeos/adapters/knowledge-adapter.js` | 20 | adapters/knowledge-adapter.js — READ-ONLY. D.catatan (catatan privat manual, milik keamanan-pin.js/refleksi-selfcare.js dll) dibaca sebagai REFERENSI saja — Knowledge base Life OS yang sebenarnya (insight AI tersimpan) … |
-| 83 | `lifeos/services/project-service.js` | 48 | services/project-service.js — SATU-SATUNYA tempat menulis LifeOSStore.projects (generic project). Tidak pernah menulis ke D.renovProjects atau array D.* lain — kalau butuh baca renovasi, pakai … |
-| 84 | `lifeos/services/review-service.js` | 34 | services/review-service.js — SATU-SATUNYA tempat menulis LifeOSStore.reviewLog. Boleh MEMBACA D.wealthSnapshots/ D.lifeBalanceSnapshots (lewat adapters/review-adapter.js) untuk menyimpan referensi id-nya, tapi tidak … |
-| 85 | `lifeos/services/knowledge-service.js` | 29 | services/knowledge-service.js — SATU-SATUNYA tempat menulis LifeOSStore.knowledge. Tidak pernah menulis ke D.catatan — kalau butuh baca catatan lama, pakai adapters/knowledge-adapter.js (knowledgeAdapterCatatanRef). |
-| 86 | `lifeos/ui/lifeos-home.js` | 124 | ui/lifeos-home.js — halaman masuk Life OS. Hanya membaca lewat adapter, menulis (kalau ada aksi) hanya lewat services/*.js. Tidak pernah akses D atau LifeOSStore langsung dari file UI — selalu lewat adapter/service. … |
-| 87 | `lifeos/ui/today.js` | 20 | ui/today.js — render-only lewat todayAdapterList(D). Aksi "selesaikan" tetap dispatch ke fungsi modul LAMA (mis. dismiss bill), Life OS tidak menduplikasi logic itu. |
-| 88 | `lifeos/ui/goals.js` | 23 | ui/goals.js — render-only lewat goalAdapterList(D). Tidak ada goal-service.js karena Goals tidak punya data tulis sendiri di Life OS (murni agregasi 6 sumber lama, lihat Gap #2). Aksi "tambah tabungan" dsb tetap … |
-| 89 | `lifeos/ui/projects.js` | 40 | ui/projects.js — render lewat projectAdapterList(D, store); aksi tulis (create/toggle checklist/dsb) HANYA lewat services/project-service.js. |
-| 90 | `lifeos/ui/review.js` | 32 | ui/review.js — render lewat review-adapter.js; aksi mulai/selesai sesi review HANYA lewat services/review-service.js. |
-| 91 | `lifeos/ui/knowledge.js` | 43 | ui/knowledge.js — render lewat knowledge-adapter.js; aksi simpan/hapus HANYA lewat services/knowledge-service.js. D.catatan ditampilkan sebagai referensi read-only, tidak pernah dimigrasikan ke sini. |
-| 92 | `lifeos/lifeos-nav.js` | 120 | "Jump to source": item Life OS (Today/Goals/Projects) hanyalah LENSA baca di atas data lama (lihat komentar di adapters/today-adapter.js & adapters/goal-adapter.js: tiap item sudah bawa `sourceKind`/`sourceId`). File … |
-| 93 | `economic-intelligence/eie-bus.js` | 41 | Event bus internal Economic Intelligence Engine (EIE). Pola pub/sub sederhana, TIDAK bergantung pada library luar, TIDAK menyentuh IndexedDB/D. Dipakai supaya macro-sync-service/scoring-engine bisa "memancarkan" event … |
-| 94 | `economic-intelligence/eie-store.js` | 71 | SATU-SATUNYA tempat EIE boleh MENULIS/MEMBACA persistensi. ATURAN WAJIB (sama persis dgn pola lifeos-store.js yang sudah terbukti): - Tidak pernah menyentuh D. Tidak ada property baru di D, tidak ada perubahan struktur … |
-| 95 | `economic-intelligence/domain/entities.js` | 70 | domain/entities.js — Definisi bentuk data EIE (JSDoc typedef murni). ATURAN DOMAIN LAYER: file ini TIDAK BOLEH import/reference apa pun dari adapters/ atau eie-store.js. Tidak ada I/O. Tidak ada IndexedDB/API. 100% … |
-| 96 | `economic-intelligence/domain/scoring-formulas.js` | 129 | domain/scoring-formulas.js — Pure function rumus EES/PEHS/ERI. ATURAN DOMAIN LAYER: TIDAK ADA I/O di file ini. Semua fungsi murni menerima UserFinanceSnapshot/MacroSnapshot dan mengembalikan angka — 100% unit-testable … |
-| 97 | `economic-intelligence/domain/status-classifier.js` | 23 | domain/status-classifier.js — Pure function skor -> Economic Status. (Sebelumnya "weather-classifier.js"/istilah "Economic Weather" — diganti ke istilah "status"/"kondisi" ekonomi, konsisten dgn label yang memang sudah … |
-| 98 | `economic-intelligence/adapters/user-finance-adapter.js` | 117 | adapters/user-finance-adapter.js — READ-ONLY. Menerjemahkan D.* (state finance existing app) jadi UserFinanceSnapshot (lihat domain/entities.js). ATURAN (sama seperti adapters/goal-adapter.js LifeOS): tidak menyimpan … |
-| 99 | `economic-intelligence/adapters/macro-data-adapter.js` | 176 | adapters/macro-data-adapter.js — Normalisasi data makro dari berbagai sumber, dgn fallback cache (offline-first, §16 dokumen desain). FASE 1 (MVP, "senyap"): TIDAK ada fetch ke API eksternal apa pun. Nilai makro diisi … |
-| 100 | `economic-intelligence/rules/rule-schema.js` | 19 | rules/rule-schema.js — Validasi struktur Rule (§9.1). Dipakai oleh EIERegistry.registerRule() supaya rule custom (plugin, §20) tidak bisa masuk dalam bentuk yang salah dan mendiamkan error di tengah evaluasi. |
-| 101 | `economic-intelligence/rules/rule-definitions.js` | 287 | rules/rule-definitions.js — rule IF-THEN prioritas tertinggi. 16 rule awal dari fase 1 MVP (§22 dokumen desain) + 7 rule tambahan fase 3 (ditandai FASE 3 di komentar masing-masing, per kategori yang sudah ada — tidak … |
-| 102 | `economic-intelligence/engine/rule-engine.js` | 56 | engine/rule-engine.js — Evaluator IF-THEN generik (§9.2). SATU-SATUNYA tempat yang menjalankan condition/action dari rules/rule-definitions.js + rule custom hasil EIERegistry.registerRule() (§20). Cooldown anti-spam … |
-| 103 | `economic-intelligence/engine/scoring-engine.js` | 69 | engine/scoring-engine.js — Orkestrasi EES/PEHS/ERI + Status Ekonomi (§5-8), memanggil RuleEngine (§9) untuk insight, lalu PERSIST hasil ke eie-store. Ini SATU-SATUNYA tempat yang menulis EIEScoreSnapshot & Insight[] ke … |
-| 104 | `economic-intelligence/engine/insight-generator.js` | 43 | engine/insight-generator.js — Fase 1: template + slot filling SUDAH dilakukan langsung di dalam rule.action() (rules/rule-definitions.js), jadi file ini fokus jadi helper baca/kelola Insight[] tersimpan, dengan … |
-| 105 | `economic-intelligence/services/macro-sync-service.js` | 25 | services/macro-sync-service.js — Orkestrasi refresh macro + recompute skor. Ini titik masuk utama yang dipanggil UI/scheduler (§2: "SATU- SATUNYA tempat menulis ke EIEStore.*" ada di layer services/engine). FASE 1 … |
-| 106 | `economic-intelligence/services/notification-service.js` | 50 | services/notification-service.js — Event listener -> Notification API / in-app toast (§2, §14 dokumen desain). FASE 1 ("senyap", sesuai permintaan implementasi bertahap): service ini TIDAK subscribe ke EIEBus secara … |
-| 107 | `economic-intelligence/services/recommendation-service.js` | 39 | services/recommendation-service.js — mapping recommendationId -> aksi konkret (deep link ke fitur app existing yang SUDAH ada, bukan fitur baru). Data-only map + 1 fungsi baca, tidak ada state/I/O. `target` di sini … |
-| 108 | `economic-intelligence/scheduler/eie-scheduler.js` | 26 | scheduler/eie-scheduler.js — Trigger periodik untuk MacroSyncService (§14). FASE 1 ("senyap"): TIDAK ada setInterval yang otomatis jalan saat file ini dimuat. start()/stop() harus dipanggil eksplisit — supaya … |
-| 109 | `economic-intelligence/ui/eie-dashboard.js` | 104 | ui/eie-dashboard.js — Kartu Status Ekonomi (§19). HANYA render, tidak pernah akses EIEStore/adapter langsung — selalu lewat EIEScoringEngine/ MacroSyncService. Dipanggil dari DashboardHub.render() (pola "tambahan murni" … |
-| 110 | `economic-intelligence/ui/eie-insight-feed.js` | 50 | ui/eie-insight-feed.js — Feed insight & rekomendasi (§3, §19). HANYA render, akses data lewat InsightGenerator/RecommendationService (bukan EIEStore langsung). Baris rekomendasi ("→ ...") DAPAT DIKLIK — fase 2 UI yang … |
-| 111 | `economic-intelligence/ui/eie-notif-settings.js` | 72 | ui/eie-notif-settings.js — Toggle notifikasi EIE di Pengaturan (fase 3). HANYA render + baca/tulis toggle lewat eie-store; tidak pernah menyentuh D (sama seperti ui/eie-dashboard.js & ui/eie-insight-feed.js). Menyalakan … |
-| 112 | `economic-intelligence/eie-registry.js` | 43 | Plugin registry EIE. Dimuat PALING AKHIR (lihat urutan load di scripts/build.js), supaya EIE_RULES bawaan (rules/rule-definitions.js) sudah tersedia untuk diregistrasi sbg default. - registerIndicator(): daftar sumber … |
+| 1 | `modules/shared/modules-render.js` | 1406 | Fungsi render (85 fungsi) dipisah dari app_production.html untuk pemerataan ukuran file. Dipindah ke modules/shared/modules-render.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & … |
+| 2 | `modules/shared/modals.js` | 8 | Modal HTML dipisah dari app_production.html untuk pemerataan ukuran file. Dipindah ke modules/shared/modals.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK … |
+| 3 | `modules/shared/modules-calc.js` | 882 | _(tidak ada komentar header)_ |
+| 4 | `modules/shop/cobek-etalase.js` | 371 | Domain Shop bagian Etalase: katalog produk (tambah/edit/hapus, Dipindah ke modules/shop/cobek-etalase.js (Sesi 10 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
+| 5 | `modules/shop/cobek-pricing.js` | 504 | Domain Shop bagian rekomendasi harga & ongkir: PriceReko (kalkulator Dipindah ke modules/shop/cobek-pricing.js (Sesi 10 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, … |
+| 6 | `modules/shop/cobek-order.js` | 542 | Domain Shop bagian order & pelanggan: Produsen (supplier), SiapPulang Dipindah ke modules/shop/cobek-order.js (Sesi 10 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, … |
+| 7 | `modules/shop/cobek-tx-cart.js` | 373 | Domain Shop bagian integrasi form Transaksi: cart Stok Masuk & Penjualan Dipindah ke modules/shop/cobek-tx-cart.js (Sesi 10 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK … |
+| 8 | `modules/shop/cobek-io.js` | 476 | Domain Shop bagian impor/ekspor: ImportKatalog (impor massal produk+harga Dipindah ke modules/shop/cobek-io.js (Sesi 10 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, … |
+| 9 | `modules/business/kasir.js` | 332 | Modul "🧠 Kasir AI" (v127, kw81-kasir-ai-pos): Dipindah ke modules/business/kasir.js (Sesi 15 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder). Tab … |
+| 10 | `modules/finance/piutang-utang.js` | 355 | Domain Piutang & Utang: catatan piutang (uang dipinjamkan), utang (uang dipinjam) beserta status lunas/cicilan, dan DebtStrategy (simulasi strategi pelunasan Avalanche/Snowball). Dipindah ke … |
+| 11 | `modules/finance/pajak-pbb-zakat.js` | 344 | Kalkulator Pajak Bumi & Bangunan (PBB), Zakat (penghasilan, maal, fitrah), Referensi AI (cek harga emas/nisab via AI), Pajak UMKM, dan PPh 21 (Orang Pribadi) Dipindah ke modules/finance/pajak-pbb-zakat.js (Sesi 16 … |
+| 12 | `budget.js` | 535 | Anggaran Budget (batas pengeluaran per kategori, tab List/Rekomendasi, drill-down transaksi). Dipisah dari features-budget-laporan-carnotes-pelanggan.js (Sesi 6 restrukturisasi folder, bagian budget/laporan — lihat … |
+| 13 | `car-notes.js` | 874 | Catatan Kendaraan (Car Notes): pajak kendaraan (VEHTAX), log BBM, log servis + pengingat interval, kalkulator Torsi baut. Dipisah dari features-budget-laporan-carnotes-pelanggan.js (Sesi 6 restrukturisasi folder, bagian … |
+| 14 | `chat-action-handlers.js` | 107 | Aksi AI Chat/RefAI: label & handler eksekusi usulan aksi dari balasan AI (blok [[ACTION]]). Dipisah dari features-budget-laporan-carnotes-pelanggan.js (Sesi 7 restrukturisasi folder — file lama SELESAI dihapus total, … |
+| 15 | `modules/finance/edukasi-dana.js` | 176 | Dana Pendidikan (EduFund): kalkulator target biaya sekolah/kuliah & nabung/bulan Dipindah ke modules/finance/edukasi-dana.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file … |
+| 16 | `modules/business/sewakios.js` | 245 | Domain Sewa Kios: catat unit kios yang disewakan, riwayat tagihan sewa, ROI vs modal renovasi, laporan PDF. Dipindah ke modules/business/sewakios.js (Sesi 15 restrukturisasi folder — lihat docs/FILE-MAP.md & … |
+| 17 | `modules/home/hidup-seimbang.js` | 220 | Domain Skor Hidup Seimbang: skor gabungan dari Dana Darurat, DSR cicilan, No-Spend 30 hari, & keseimbangan kerja-istirahat, plus riwayat snapshot bulanan. Dipindah ke modules/home/hidup-seimbang.js (Sesi 13 … |
+| 18 | `modules/finance/linktx.js` | 246 | Transaksi tertaut (LinkTx): hubungkan transaksi lama di Keuangan ke Renov/Wishlist/Bill Dipindah ke modules/finance/linktx.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file … |
+| 19 | `modules/home/renovasi.js` | 442 | Domain Proyek Renovasi: RenovCalc (kalkulator material), Renov (proyek & item biaya), RenovAI (saran AI kebutuhan/ukuran) Dipindah ke modules/home/renovasi.js (Sesi 13 restrukturisasi folder — lihat docs/FILE-MAP.md & … |
+| 20 | `modules/asset/aset.js` | 1218 | Domain Aset & Kekayaan: ALOKASI_PRESETS/AlokasiAset (rekomendasi alokasi dana), Aset (Buku Aset & Kekayaan Bersih), Penyusutan (estimasi nilai buku aset yg menurun nilainya: Garis Lurus/Saldo Menurun/Manual), PajakAset … |
+| 21 | `modules/asset/aset-keluarga.js` | 87 | Laporan gabungan lintas-modul: 🏠 Aset Keluarga Dipindah ke modules/asset/aset-keluarga.js (Sesi 9 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder). … |
+| 22 | `modules/ai/feature-insights.js` | 327 | Kartu "💡 Insight ..." di PALING ATAS/dekat 7 fitur (Keuangan, Pajak & Dipindah ke modules/ai/feature-insights.js (Sesi 14 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK … |
+| 23 | `modules/asset/invest-ai-widget.js` | 180 | Widget "🤖 Rekomendasi AI" otomatis di kartu 🧭 Dipindah ke modules/asset/invest-ai-widget.js (Sesi 9 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi … |
+| 24 | `modules/asset/penyusutan-ai-widget.js` | 166 | Widget "🤖 Rekomendasi AI" utk kartu 📉 Penyusutan Dipindah ke modules/asset/penyusutan-ai-widget.js (Sesi 9 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi … |
+| 25 | `modules/asset/aset-emas-impor.js` | 394 | FITUR BARU: GoldImport (impor massal nota emas via paste teks ATAU Dipindah ke modules/asset/aset-emas-impor.js (Sesi 9 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, … |
+| 26 | `modules/finance/worthit.js` | 469 | Domain Worth It? & Prioritas Belanja: cek kondisi keuangan sebelum belanja + daftar prioritas barang yang mau dibeli Dipindah ke modules/finance/worthit.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & … |
+| 27 | `modules/shared/ripple-position.js` | 64 | ROADMAP-v1.1.md item #8 (KNOWN-ISSUES.md §5.2): ripple berbasis koordinat sentuh/klik ASLI, bukan selalu pulsa dari tengah elemen. Murni aditif: CSS ripple Tahap 7 (styles.css, radial-gradient via ::after) sebelumnya … |
+| 28 | `modules/shared/data-default.js` | 37 | Domain Data Default: kategori shop bawaan (DEFAULT_COBEK_KATEGORI), Dipindah ke modules/shared/data-default.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK … |
+| 29 | `modules/shared/features-helpers-global-security.js` | 484 | Helper global (migrasi data, state D, save/load, event dispatcher) Dipindah ke modules/shared/features-helpers-global-security.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama … |
+| 30 | `diagnostik-versi.js` | 77 | Domain Diagnostik & Sinkronisasi Versi: snapshot HTML utk self-test (getHtmlSnapshotForSelfTest), cek status sinkron versi produksi vs master (computeProductionSyncStatus), cek status sinkron versi antar file modul … |
+| 31 | `modules/shared/format-tema.js` | 35 | Domain Format Angka & Tema: format rupiah singkat (fmt, mis. "Rp 1.5 jt"), Dipindah ke modules/shared/format-tema.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK … |
+| 32 | `modules/shared/error-handler.js` | 39 | Domain Error Handler Global: tangkap error tak tertangani (uncaught error & Dipindah ke modules/shared/error-handler.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file … |
+| 33 | `modules/shared/helper-teks.js` | 26 | Domain Helper Teks & Kalender: escape karakter HTML berbahaya biar aman Dipindah ke modules/shared/helper-teks.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK … |
+| 34 | `modules/shared/keamanan-pin.js` | 269 | Domain Keamanan: layar PIN (showPinScreen/checkPin/pinPress/pinBack/updatePinDots), Dipindah ke modules/shared/keamanan-pin.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama … |
+| 35 | `modules/home/refleksi-selfcare.js` | 256 | Domain Refleksi & Self-Care: Jurnal Syukur, Checklist Self-Care harian Dipindah ke modules/home/refleksi-selfcare.js (Sesi 13 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK … |
+| 36 | `modules/shared/modal-navigasi.js` | 319 | Domain Modal Generik & Navigasi Halaman: modal konfirmasi/prompt/pilihan/info/pin Dipindah ke modules/shared/modal-navigasi.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama … |
+| 37 | `modules/business/reset-gaji-mingguan.js` | 114 | Domain Reset Gaji Mingguan: hitung rentang minggu berjalan (getWeekRange), Dipindah ke modules/business/reset-gaji-mingguan.js (Sesi 15 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file … |
+| 38 | `modules/shared/debug-console.js` | 50 | Domain Debug Console: toggle tombol status (updateDebugConsoleBtn) & aktifkan/matikan Dipindah ke modules/shared/debug-console.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama … |
+| 39 | `modules/shared/pengaturan-search.js` | 89 | Domain Pencarian Pengaturan: buka/tutup grup pengaturan (toggleStgGroup), cari Dipindah ke modules/shared/pengaturan-search.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama … |
+| 40 | `modules/shared/onboarding.js` | 47 | Domain Onboarding: preview perkiraan kasar gaji/kiriman saat setup awal Dipindah ke modules/shared/onboarding.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK … |
+| 41 | `modules/shared/kalkulator-input.js` | 142 | Kalkulator ekspresi angka: parser aman (safeCalc), popup kalkulator (openCalc/calcPress/dst), Dipindah ke modules/shared/kalkulator-input.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; … |
+| 42 | `modules/shared/scan-ocr.js` | 824 | Scan struk belanja (OCR): struk belanja, bukti transfer, tanggal dari foto, odometer, portofolio aset, kategori & sparepart otomatis dari struk Dipindah ke modules/shared/scan-ocr.js (Sesi 17-18 restrukturisasi folder — … |
+| 43 | `modules/finance/filter-laporan.js` | 233 | Filter transaksi/keuangan (panel filter Keuangan & Laporan), pencarian, paginasi list transaksi, navigasi antar-list (goToList/showFilteredTx) Dipindah ke modules/finance/filter-laporan.js (Sesi 16 restrukturisasi … |
+| 44 | `modules/finance/akun.js` | 117 | Kelola Akun (Cash/Bank/Ewallet dll): saldo, filter dropdown akun di seluruh app, CRUD akun Dipindah ke modules/finance/akun.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file … |
+| 45 | `modules/business/gaji-calc.js` | 56 | Kalkulator gaji harian/borongan (Tukang & karyawan lepas), catat sbg pemasukan Dipindah ke modules/business/gaji-calc.js (Sesi 15 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK … |
+| 46 | `modules/finance/cicilan.js` | 114 | logika form Cicilan pada txModal (Tambah/Edit Transaksi Keuangan). Dipindah ke modules/finance/cicilan.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
+| 47 | `modules/finance/tx-bbm.js` | 94 | logika panel "Sinkron ke Catatan Mobil (BBM)" pada txModal Dipindah ke modules/finance/tx-bbm.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi … |
+| 48 | `modules/finance/tx-stok-sparepart.js` | 74 | logika panel "Tambah ke Stok Sparepart juga?" pada Dipindah ke modules/finance/tx-stok-sparepart.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi … |
+| 49 | `modules/finance/tx-transfer.js` | 34 | logika modal "⇄ Transfer Antar Akun" (transferModal). Dipindah ke modules/finance/tx-transfer.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi … |
+| 50 | `modules/finance/tx-cobek.js` | 30 | domain "Stok/Penjualan Shop (Shop)" pada form Transaksi. Dipindah ke modules/finance/tx-cobek.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi … |
+| 51 | `modules/finance/tx-target.js` | 69 | domain "Target Tabungan" (modal tambah target, deteksi Dana Dipindah ke modules/finance/tx-target.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi … |
+| 52 | `modules/finance/tx-list-cashflow.js` | 204 | domain "List Transaksi (kartu tx, hapus tx), filter Dipindah ke modules/finance/tx-list-cashflow.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi … |
+| 53 | `modules/finance/transaksi.js` | 752 | Form Tambah/Edit Transaksi Keuangan: autocomplete kategori/produk, Dipindah ke modules/finance/transaksi.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
+| 54 | `modules/shared/profil-pengaturan.js` | 83 | Profil pengguna di Pengaturan: auto-save profil, status Dipindah ke modules/shared/profil-pengaturan.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
+| 55 | `modules/finance/kategori.js` | 170 | Modal Kategori & Subkategori (tambah/edit/hapus, filter tampilan) Dipindah ke modules/finance/kategori.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
+| 56 | `modules/ai/kategorisasi-ai.js` | 187 | AI Auto-Kategorisasi Transaksi dari Catatan Bebas Dipindah ke modules/ai/kategorisasi-ai.js (Sesi 14 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder). … |
+| 57 | `modules/finance/tagihan-kalender.js` | 445 | Modul Tagihan/Bill (CRUD, riwayat, filter, arsip) & Kalender Jatuh Tempo Dipindah ke modules/finance/tagihan-kalender.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK … |
+| 58 | `modules/shared/backup-restore.js` | 773 | Export/import/backup data (satu domain penuh: CSV/JSON export laporan, backup Dipindah ke modules/shared/backup-restore.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file … |
+| 59 | `modules/business/payroll-absensi.js` | 450 | Payroll: Absensi Harian & Kalkulator Gaji Mingguan (const Payroll={...}) Dipindah ke modules/business/payroll-absensi.js (Sesi 15 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK … |
+| 60 | `modules/business/tukang-absensi.js` | 679 | Domain Tukang (absensi/payroll harian & borongan) ONLY. Dipindah ke modules/business/tukang-absensi.js (Sesi 15 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
+| 61 | `modules/vehicle/vehicle-core.js` | 456 | Domain Vehicle core: CRUD kendaraan, KM (log & estimasi konsumsi/rp-per-km), Pajak Kendaraan (STNK tahunan/5-tahunan + SPT Tahunan pribadi), SIM, proactive reminders (dashboard), dan Car Notes tab (filter periode, edit … |
+| 62 | `modules/ai/chat-action.js` | 63 | Parsing & UI blok [[ACTION]] dari balasan AI Chat (RefAI), murni ekstraksi/format teks, Dipindah ke modules/ai/chat-action.js (Sesi 14 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file … |
+| 63 | `modules/shared/data-archive.js` | 162 | Storage usage estimate & Archive (export lalu hapus data lama per tahun). Dipindah ke modules/shared/data-archive.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK … |
+| 64 | `modules/vehicle/sparepart-servis.js` | 522 | Domain Sparepart & Servis kendaraan: kategori & stok sparepart (Sparepart), catatan servis (wrapper ke Servis di car-notes.js), interval servis per-kategori & override per-kendaraan, katalog referensi … |
+| 65 | `ai-chat.js` | 648 | Chat AI (RefAI): UI edit aksi chat, kirim pesan ke provider AI (sendChat/ callAIProviderRaw), Advisor (rule-based tips) & AIWidget (widget rekomendasi AI generik dipakai modul lain). Dipisah dari … |
+| 66 | `reminder-notif.js` | 134 | resetApp (reset total data, disatukan di sini krn tidak ada domain lain yang cocok & cuma 1 fungsi kecil), share ke WhatsApp (phoneToWaId/waShareLink/openWaShare), notifikasi browser … |
+| 67 | `laporan-export.js` | 146 | Ekspor Laporan Keuangan ke PDF (exportLaporanPDF) & gambar (exportLaporanImage), plus builder data laporan (buildLaporanExportData: filter periode, total income/expense, breakdown per kategori). Dipisah dari … |
+| 68 | `gdrive-backup.js` | 284 | Integrasi Google Drive: OAuth connect/disconnect, backup manual/otomatis (uploadBackupToDrive), restore (gdriveDownloadBackup). Dipisah dari features-aiwidget-reminder-gdrive-search.js (Sesi 5 restrukturisasi folder, … |
+| 69 | `data-health-check.js` | 200 | Cek integritas data lintas-domain (runDataHealthCheck): transaksi dengan akun/tanggal/jumlah tidak valid, ID duplikat, tagihan/aset/BBM dengan tautan akun atau kendaraan yang sudah dihapus, dll. Dipisah dari … |
+| 70 | `global-search.js` | 54 | Pencarian DATA milik user lintas halaman (openGlobalSearch/runGlobalSearch), beda tujuan dari Feature Search (dashboard-hub-search.js) yang cari FITUR/MENU. Dipisah dari features-aiwidget-reminder-gdrive-search.js (Sesi … |
+| 71 | `sheets-schema.js` | 224 | Skema kolom Google Sheets per modul (SHEETS_SCHEMAS/SHEETS_MODULES) & helper konversi item<->baris (sheetsHeaderFor/sheetsItemToCells/sheetsCellsToItem dst), dipakai oleh sheets-sync.js. Dipisah dari … |
+| 72 | `sheets-sync.js` | 239 | Integrasi Google Sheets: koneksi OAuth, sinkronisasi push/pull data D.* ke/dari Google Spreadsheet. Dipisah dari features-sheets-pwa-selftest.js (Sesi 2 restrukturisasi folder, blok 1/5 — lihat … |
+| 73 | `pwa-setup.js` | 49 | Setup PWA: registrasi manifest (via Blob kalau tidak di-hosting https) & service worker (sw.js, fallback inline Blob). Dipisah dari features-sheets-pwa-selftest.js (Sesi 2 restrukturisasi folder, blok 2/5 — lihat … |
+| 74 | `self-test.js` | 1992 | Runtime & daftar test case self-test/smoke-test aplikasi (Diagnostik): getSelfTestCases() (daftar besar test case), helper _selfTestAssert/findMissingAriaLabels, badge status, tes navigasi halaman … |
+| 75 | `pajak-aset-ui-wrappers.js` | 157 | Wrapper UI tipis: parser angka (parsePzNum/parseDecStr/ normalizeOcrNumber), ganti tab pajak/zakat (setPajakTab/setPjkTab/savePajakSettings), dan delegasi tipis ke modul … |
+| 76 | `app-bootstrap.js` | 15 | Titik bootstrap utama app: expose modul-modul ke window (Object.assign) lalu panggil init(). Dipisah dari features-sheets-pwa-selftest.js (Sesi 3 restrukturisasi folder, blok 5 — lihat … |
+| 77 | `modules/shared/feature-icons.js` | 105 | Migrasi Icon Emoji -> SVG (KNOWN-ISSUES.md §4.1 / ROADMAP-v1.1.md #3) Dipindah ke modules/shared/feature-icons.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK … |
+| 78 | `modules/dashboard-hub/dashboard-hub-registry.js` | 236 | FEATURE_REGISTRY: sumber data tunggal taksonomi Dipindah ke modules/dashboard-hub/dashboard-hub-registry.js (Sesi 11 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
+| 79 | `modules/dashboard-hub/dashboard-hub.js` | 509 | Dashboard Feature Hub (blueprint-dashboard-hub.md §5) Dipindah ke modules/dashboard-hub/dashboard-hub.js (Sesi 11 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
+| 80 | `modules/dashboard-hub/dashboard-hub-search.js` | 129 | Feature Search: cari FITUR/MENU (bukan data Dipindah ke modules/dashboard-hub/dashboard-hub-search.js (Sesi 11 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
+| 81 | `modules/dashboard-hub/dashboard-hub-favorit.js` | 40 | Favorit (Tahap 3, Langkah 6): storage + service Dipindah ke modules/dashboard-hub/dashboard-hub-favorit.js (Sesi 11 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
+| 82 | `modules/dashboard-hub/dashboard-hub-favorit-view.js` | 114 | Favorit (Tahap 3, Langkah 7-8): render + Dipindah ke modules/dashboard-hub/dashboard-hub-favorit-view.js (Sesi 11 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
+| 83 | `modules/ai/ai-command-center.js` | 142 | Sprint 3 Tahap 3.1: AI Command Center Foundation. Dipindah ke modules/ai/ai-command-center.js (Sesi 14 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi … |
+| 84 | `modules/self-reward/self-reward-engine.js` | 217 | Domain Self Reward Engine: cek kelayakan self reward Dipindah ke modules/self-reward/self-reward-engine.js (Sesi 12 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
+| 85 | `modules/self-reward/self-reward-view.js` | 221 | UI layer untuk Self Reward Engine. Memisahkan render/DOM Dipindah ke modules/self-reward/self-reward-view.js (Sesi 12 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, … |
+| 86 | `modules/self-reward/self-reward-ai-widget.js` | 236 | Widget Rekomendasi AI di dalam modal Self Reward. Dipindah ke modules/self-reward/self-reward-ai-widget.js (Sesi 12 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
+| 87 | `modules/asset/investasi.js` | 309 | Domain Investment: Portfolio, Dividend, Capital Gain/Loss, ROI, Dipindah ke modules/asset/investasi.js (Sesi 9 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
+| 88 | `lifeos/lifeos-store.js` | 62 | SATU-SATUNYA tempat Life OS boleh MENULIS. ATURAN WAJIB: - Tidak pernah menyentuh D. Tidak ada property baru di D, tidak ada perubahan struktur D sedikit pun. - Tidak pernah memanggil save() milik D. - Persist lewat … |
+| 89 | `lifeos/lifeos-registry.js` | 55 | taksonomi FUNGSIONAL Life OS (beda dari FEATURE_REGISTRY yang taksonomi NAVIGASI — keduanya sengaja terpisah, lihat personal-life-os-blueprint.md Langkah 1). PENTING: file ini MURNI DATA. Tidak ada logic, tidak ada … |
+| 90 | `lifeos/lifeos-link-registry.js` | 25 | relasi implisit-by-convention di D dibuat eksplisit di SATU tempat (Gap #9, personal-life-os-blueprint.md). PENTING: murni data deklaratif. `match`/lookup di sini hanya MEMBACA D — tidak pernah menulis. Dikonsumsi oleh … |
+| 91 | `lifeos/adapters/goal-adapter.js` | 46 | adapters/goal-adapter.js — READ-ONLY. Menyeragamkan 6 sumber goal lama (D.targets, D.eduFunds, D.pensiun, D.finansialFreedom, D.wishlist, D.debtStrategy) jadi satu bentuk "goal card". Tidak menyimpan apa pun, dihitung … |
+| 92 | `lifeos/adapters/project-adapter.js` | 30 | adapters/project-adapter.js — merge READ-ONLY antara dua sumber: 1. D.renovProjects (legacy, milik renovasi.js — tidak disentuh) 2. LifeOSStore.projects (generic, milik Life OS — lihat services/project-service.js untuk … |
+| 93 | `lifeos/adapters/today-adapter.js` | 34 | adapters/today-adapter.js — READ-ONLY. TODAY bukan penyimpanan sendiri, cuma lensa waktu di atas AREAS/PROJECTS/GOALS (lihat personal-life-os-blueprint.md Langkah 2). Depends on: lifeos-registry.js … |
+| 94 | `lifeos/adapters/review-adapter.js` | 26 | adapters/review-adapter.js — READ-ONLY. Menggabungkan histori pasif existing (D.wealthSnapshots, D.lifeBalanceSnapshots, D.assetAllocation) dengan sesi review Life OS sendiri (LifeOSStore.reviewLog). Tidak pernah … |
+| 95 | `lifeos/adapters/knowledge-adapter.js` | 20 | adapters/knowledge-adapter.js — READ-ONLY. D.catatan (catatan privat manual, milik keamanan-pin.js/refleksi-selfcare.js dll) dibaca sebagai REFERENSI saja — Knowledge base Life OS yang sebenarnya (insight AI tersimpan) … |
+| 96 | `lifeos/services/project-service.js` | 48 | services/project-service.js — SATU-SATUNYA tempat menulis LifeOSStore.projects (generic project). Tidak pernah menulis ke D.renovProjects atau array D.* lain — kalau butuh baca renovasi, pakai … |
+| 97 | `lifeos/services/review-service.js` | 34 | services/review-service.js — SATU-SATUNYA tempat menulis LifeOSStore.reviewLog. Boleh MEMBACA D.wealthSnapshots/ D.lifeBalanceSnapshots (lewat adapters/review-adapter.js) untuk menyimpan referensi id-nya, tapi tidak … |
+| 98 | `lifeos/services/knowledge-service.js` | 29 | services/knowledge-service.js — SATU-SATUNYA tempat menulis LifeOSStore.knowledge. Tidak pernah menulis ke D.catatan — kalau butuh baca catatan lama, pakai adapters/knowledge-adapter.js (knowledgeAdapterCatatanRef). |
+| 99 | `lifeos/ui/lifeos-home.js` | 124 | ui/lifeos-home.js — halaman masuk Life OS. Hanya membaca lewat adapter, menulis (kalau ada aksi) hanya lewat services/*.js. Tidak pernah akses D atau LifeOSStore langsung dari file UI — selalu lewat adapter/service. … |
+| 100 | `lifeos/ui/today.js` | 20 | ui/today.js — render-only lewat todayAdapterList(D). Aksi "selesaikan" tetap dispatch ke fungsi modul LAMA (mis. dismiss bill), Life OS tidak menduplikasi logic itu. |
+| 101 | `lifeos/ui/goals.js` | 23 | ui/goals.js — render-only lewat goalAdapterList(D). Tidak ada goal-service.js karena Goals tidak punya data tulis sendiri di Life OS (murni agregasi 6 sumber lama, lihat Gap #2). Aksi "tambah tabungan" dsb tetap … |
+| 102 | `lifeos/ui/projects.js` | 40 | ui/projects.js — render lewat projectAdapterList(D, store); aksi tulis (create/toggle checklist/dsb) HANYA lewat services/project-service.js. |
+| 103 | `lifeos/ui/review.js` | 32 | ui/review.js — render lewat review-adapter.js; aksi mulai/selesai sesi review HANYA lewat services/review-service.js. |
+| 104 | `lifeos/ui/knowledge.js` | 43 | ui/knowledge.js — render lewat knowledge-adapter.js; aksi simpan/hapus HANYA lewat services/knowledge-service.js. D.catatan ditampilkan sebagai referensi read-only, tidak pernah dimigrasikan ke sini. |
+| 105 | `lifeos/lifeos-nav.js` | 124 | "Jump to source": item Life OS (Today/Goals/Projects) hanyalah LENSA baca di atas data lama (lihat komentar di adapters/today-adapter.js & adapters/goal-adapter.js: tiap item sudah bawa `sourceKind`/`sourceId`). File … |
+| 106 | `economic-intelligence/eie-bus.js` | 41 | Event bus internal Economic Intelligence Engine (EIE). Pola pub/sub sederhana, TIDAK bergantung pada library luar, TIDAK menyentuh IndexedDB/D. Dipakai supaya macro-sync-service/scoring-engine bisa "memancarkan" event … |
+| 107 | `economic-intelligence/eie-store.js` | 71 | SATU-SATUNYA tempat EIE boleh MENULIS/MEMBACA persistensi. ATURAN WAJIB (sama persis dgn pola lifeos-store.js yang sudah terbukti): - Tidak pernah menyentuh D. Tidak ada property baru di D, tidak ada perubahan struktur … |
+| 108 | `economic-intelligence/domain/entities.js` | 70 | domain/entities.js — Definisi bentuk data EIE (JSDoc typedef murni). ATURAN DOMAIN LAYER: file ini TIDAK BOLEH import/reference apa pun dari adapters/ atau eie-store.js. Tidak ada I/O. Tidak ada IndexedDB/API. 100% … |
+| 109 | `economic-intelligence/domain/scoring-formulas.js` | 129 | domain/scoring-formulas.js — Pure function rumus EES/PEHS/ERI. ATURAN DOMAIN LAYER: TIDAK ADA I/O di file ini. Semua fungsi murni menerima UserFinanceSnapshot/MacroSnapshot dan mengembalikan angka — 100% unit-testable … |
+| 110 | `economic-intelligence/domain/status-classifier.js` | 23 | domain/status-classifier.js — Pure function skor -> Economic Status. (Sebelumnya "weather-classifier.js"/istilah "Economic Weather" — diganti ke istilah "status"/"kondisi" ekonomi, konsisten dgn label yang memang sudah … |
+| 111 | `economic-intelligence/adapters/user-finance-adapter.js` | 117 | adapters/user-finance-adapter.js — READ-ONLY. Menerjemahkan D.* (state finance existing app) jadi UserFinanceSnapshot (lihat domain/entities.js). ATURAN (sama seperti adapters/goal-adapter.js LifeOS): tidak menyimpan … |
+| 112 | `economic-intelligence/adapters/macro-data-adapter.js` | 176 | adapters/macro-data-adapter.js — Normalisasi data makro dari berbagai sumber, dgn fallback cache (offline-first, §16 dokumen desain). FASE 1 (MVP, "senyap"): TIDAK ada fetch ke API eksternal apa pun. Nilai makro diisi … |
+| 113 | `economic-intelligence/rules/rule-schema.js` | 19 | rules/rule-schema.js — Validasi struktur Rule (§9.1). Dipakai oleh EIERegistry.registerRule() supaya rule custom (plugin, §20) tidak bisa masuk dalam bentuk yang salah dan mendiamkan error di tengah evaluasi. |
+| 114 | `economic-intelligence/rules/rule-definitions.js` | 287 | rules/rule-definitions.js — rule IF-THEN prioritas tertinggi. 16 rule awal dari fase 1 MVP (§22 dokumen desain) + 7 rule tambahan fase 3 (ditandai FASE 3 di komentar masing-masing, per kategori yang sudah ada — tidak … |
+| 115 | `economic-intelligence/engine/rule-engine.js` | 56 | engine/rule-engine.js — Evaluator IF-THEN generik (§9.2). SATU-SATUNYA tempat yang menjalankan condition/action dari rules/rule-definitions.js + rule custom hasil EIERegistry.registerRule() (§20). Cooldown anti-spam … |
+| 116 | `economic-intelligence/engine/scoring-engine.js` | 69 | engine/scoring-engine.js — Orkestrasi EES/PEHS/ERI + Status Ekonomi (§5-8), memanggil RuleEngine (§9) untuk insight, lalu PERSIST hasil ke eie-store. Ini SATU-SATUNYA tempat yang menulis EIEScoreSnapshot & Insight[] ke … |
+| 117 | `economic-intelligence/engine/insight-generator.js` | 43 | engine/insight-generator.js — Fase 1: template + slot filling SUDAH dilakukan langsung di dalam rule.action() (rules/rule-definitions.js), jadi file ini fokus jadi helper baca/kelola Insight[] tersimpan, dengan … |
+| 118 | `economic-intelligence/services/macro-sync-service.js` | 25 | services/macro-sync-service.js — Orkestrasi refresh macro + recompute skor. Ini titik masuk utama yang dipanggil UI/scheduler (§2: "SATU- SATUNYA tempat menulis ke EIEStore.*" ada di layer services/engine). FASE 1 … |
+| 119 | `economic-intelligence/services/notification-service.js` | 50 | services/notification-service.js — Event listener -> Notification API / in-app toast (§2, §14 dokumen desain). FASE 1 ("senyap", sesuai permintaan implementasi bertahap): service ini TIDAK subscribe ke EIEBus secara … |
+| 120 | `economic-intelligence/services/recommendation-service.js` | 39 | services/recommendation-service.js — mapping recommendationId -> aksi konkret (deep link ke fitur app existing yang SUDAH ada, bukan fitur baru). Data-only map + 1 fungsi baca, tidak ada state/I/O. `target` di sini … |
+| 121 | `economic-intelligence/scheduler/eie-scheduler.js` | 26 | scheduler/eie-scheduler.js — Trigger periodik untuk MacroSyncService (§14). FASE 1 ("senyap"): TIDAK ada setInterval yang otomatis jalan saat file ini dimuat. start()/stop() harus dipanggil eksplisit — supaya … |
+| 122 | `economic-intelligence/ui/eie-dashboard.js` | 104 | ui/eie-dashboard.js — Kartu Status Ekonomi (§19). HANYA render, tidak pernah akses EIEStore/adapter langsung — selalu lewat EIEScoringEngine/ MacroSyncService. Dipanggil dari DashboardHub.render() (pola "tambahan murni" … |
+| 123 | `economic-intelligence/ui/eie-insight-feed.js` | 50 | ui/eie-insight-feed.js — Feed insight & rekomendasi (§3, §19). HANYA render, akses data lewat InsightGenerator/RecommendationService (bukan EIEStore langsung). Baris rekomendasi ("→ ...") DAPAT DIKLIK — fase 2 UI yang … |
+| 124 | `economic-intelligence/ui/eie-notif-settings.js` | 72 | ui/eie-notif-settings.js — Toggle notifikasi EIE di Pengaturan (fase 3). HANYA render + baca/tulis toggle lewat eie-store; tidak pernah menyentuh D (sama seperti ui/eie-dashboard.js & ui/eie-insight-feed.js). Menyalakan … |
+| 125 | `economic-intelligence/eie-registry.js` | 43 | Plugin registry EIE. Dimuat PALING AKHIR (lihat urutan load di scripts/build.js), supaya EIE_RULES bawaan (rules/rule-definitions.js) sudah tersedia untuk diregistrasi sbg default. - registerIndicator(): daftar sumber … |
 
 ## 2. Index fungsi/variabel global → file (urut abjad)
 
@@ -142,23 +155,23 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 
 | Nama | File |
 |------|------|
-| `_apiKeyEncSaveTimer` | `keamanan-pin.js` |
-| `_b64FromBuf` | `keamanan-pin.js` |
-| `_bigDataWarnShown` | `features-helpers-global-security.js` |
-| `_bufFromB64` | `keamanan-pin.js` |
-| `_buildSaveJson` | `features-helpers-global-security.js` |
-| `_bulanIndoMap` | `scan-ocr.js` |
-| `_choiceModalAnswer` | `modal-navigasi.js` |
-| `_choiceModalResolve` | `modal-navigasi.js` |
-| `_confirmModalAnswer` | `modal-navigasi.js` |
-| `_confirmResolve` | `modal-navigasi.js` |
-| `_dashHubAnalyticsMonthTx` | `dashboard-hub.js` |
-| `_dashHubCallAction` | `dashboard-hub.js` |
-| `_dashHubHeroMonthTx` | `dashboard-hub.js` |
-| `_dashHubIsFav` | `dashboard-hub.js` |
-| `_dashHubMonthTxShared` | `dashboard-hub.js` |
-| `_dashHubSummaryMonthTx` | `dashboard-hub.js` |
-| `_deriveApiKeyCryptoKey` | `keamanan-pin.js` |
+| `_apiKeyEncSaveTimer` | `modules/shared/keamanan-pin.js` |
+| `_b64FromBuf` | `modules/shared/keamanan-pin.js` |
+| `_bigDataWarnShown` | `modules/shared/features-helpers-global-security.js` |
+| `_bufFromB64` | `modules/shared/keamanan-pin.js` |
+| `_buildSaveJson` | `modules/shared/features-helpers-global-security.js` |
+| `_bulanIndoMap` | `modules/shared/scan-ocr.js` |
+| `_choiceModalAnswer` | `modules/shared/modal-navigasi.js` |
+| `_choiceModalResolve` | `modules/shared/modal-navigasi.js` |
+| `_confirmModalAnswer` | `modules/shared/modal-navigasi.js` |
+| `_confirmResolve` | `modules/shared/modal-navigasi.js` |
+| `_dashHubAnalyticsMonthTx` | `modules/dashboard-hub/dashboard-hub.js` |
+| `_dashHubCallAction` | `modules/dashboard-hub/dashboard-hub.js` |
+| `_dashHubHeroMonthTx` | `modules/dashboard-hub/dashboard-hub.js` |
+| `_dashHubIsFav` | `modules/dashboard-hub/dashboard-hub.js` |
+| `_dashHubMonthTxShared` | `modules/dashboard-hub/dashboard-hub.js` |
+| `_dashHubSummaryMonthTx` | `modules/dashboard-hub/dashboard-hub.js` |
+| `_deriveApiKeyCryptoKey` | `modules/shared/keamanan-pin.js` |
 | `_eieComputeTrend` | `economic-intelligence/adapters/macro-data-adapter.js` |
 | `_eieDebtStats` | `economic-intelligence/adapters/user-finance-adapter.js` |
 | `_eieEmergencyFundMonths` | `economic-intelligence/adapters/user-finance-adapter.js` |
@@ -168,294 +181,309 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `_eieLoaded` | `economic-intelligence/eie-store.js` |
 | `_eieMonthsBack` | `economic-intelligence/adapters/user-finance-adapter.js` |
 | `_eieSeedMacro` | `economic-intelligence/adapters/macro-data-adapter.js` |
-| `_formatLockDuration` | `keamanan-pin.js` |
-| `_friendlyErrorNotice` | `error-handler.js` |
-| `_gcLastTotal` | `gaji-calc.js` |
-| `_gdriveDownloadBackupInner` | `features-aiwidget-reminder-gdrive-search.js` |
-| `_gdriveFindExistingBackupFileId` | `features-aiwidget-reminder-gdrive-search.js` |
-| `_gdriveLocalDataLooksEmpty` | `features-aiwidget-reminder-gdrive-search.js` |
-| `_gdriveSilentReconnectInProgress` | `features-aiwidget-reminder-gdrive-search.js` |
-| `_globalSearchDebounce` | `features-aiwidget-reminder-gdrive-search.js` |
-| `_iaEsc` | `invest-ai-widget.js` |
-| `_iaFmtRp` | `invest-ai-widget.js` |
-| `_infoModalAnswer` | `modal-navigasi.js` |
-| `_infoModalResolve` | `modal-navigasi.js` |
-| `_invSave` | `investasi.js` |
-| `_invToday` | `investasi.js` |
-| `_invUid` | `investasi.js` |
-| `_keuFilterPrefsLoaded` | `filter-laporan.js` |
-| `_lapLastFilterSig` | `filter-laporan.js` |
-| `_lastErrorToastAt` | `error-handler.js` |
-| `_lastModalSweepData` | `features-sheets-pwa-selftest.js` |
-| `_lastNavSmokeData` | `features-sheets-pwa-selftest.js` |
-| `_lastSelfTestData` | `features-sheets-pwa-selftest.js` |
-| `_lastUid` | `features-helpers-global-security.js` |
+| `_formatLockDuration` | `modules/shared/keamanan-pin.js` |
+| `_friendlyErrorNotice` | `modules/shared/error-handler.js` |
+| `_gcLastTotal` | `modules/business/gaji-calc.js` |
+| `_gdriveDownloadBackupInner` | `gdrive-backup.js` |
+| `_gdriveFindExistingBackupFileId` | `gdrive-backup.js` |
+| `_gdriveLocalDataLooksEmpty` | `gdrive-backup.js` |
+| `_gdriveSilentReconnectInProgress` | `gdrive-backup.js` |
+| `_globalSearchDebounce` | `global-search.js` |
+| `_iaEsc` | `modules/asset/invest-ai-widget.js` |
+| `_iaFmtRp` | `modules/asset/invest-ai-widget.js` |
+| `_infoModalAnswer` | `modules/shared/modal-navigasi.js` |
+| `_infoModalResolve` | `modules/shared/modal-navigasi.js` |
+| `_invSave` | `modules/asset/investasi.js` |
+| `_invToday` | `modules/asset/investasi.js` |
+| `_invUid` | `modules/asset/investasi.js` |
+| `_keuFilterPrefsLoaded` | `modules/finance/filter-laporan.js` |
+| `_lapLastFilterSig` | `modules/finance/filter-laporan.js` |
+| `_lastErrorToastAt` | `modules/shared/error-handler.js` |
+| `_lastModalSweepData` | `self-test.js` |
+| `_lastNavSmokeData` | `self-test.js` |
+| `_lastSelfTestData` | `self-test.js` |
+| `_lastUid` | `modules/shared/features-helpers-global-security.js` |
 | `_lifeOSHighlightSettingsCard` | `lifeos/lifeos-nav.js` |
 | `_lifeOSLoaded` | `lifeos/lifeos-store.js` |
 | `_magnitudeScore` | `economic-intelligence/domain/scoring-formulas.js` |
-| `_ocrWorkerPromise` | `scan-ocr.js` |
-| `_paEsc` | `penyusutan-ai-widget.js` |
-| `_paFmtRp` | `penyusutan-ai-widget.js` |
-| `_pendingChatActions` | `chat-action.js` |
-| `_pinLockRemainingMs` | `keamanan-pin.js` |
-| `_pinLockState` | `keamanan-pin.js` |
-| `_pinLockTimer` | `keamanan-pin.js` |
-| `_pinPromptAnswer` | `modal-navigasi.js` |
-| `_pinPromptResolve` | `modal-navigasi.js` |
-| `_pinPromptSubmit` | `modal-navigasi.js` |
-| `_promptModalAnswer` | `modal-navigasi.js` |
-| `_promptModalResolve` | `modal-navigasi.js` |
-| `_promptModalSubmit` | `modal-navigasi.js` |
-| `_repairLooseJson` | `chat-action.js` |
-| `_saveAccInner` | `akun.js` |
-| `_saveBillInner` | `tagihan-kalender.js` |
-| `_saveDebounceTimer` | `features-helpers-global-security.js` |
-| `_saveErrorShown` | `features-helpers-global-security.js` |
-| `_saveGuards` | `features-helpers-global-security.js` |
-| `_saveImmediate` | `features-helpers-global-security.js` |
-| `_saveTxInner` | `transaksi.js` |
-| `_selfTestAssert` | `features-sheets-pwa-selftest.js` |
-| `_sendChatInner` | `features-aiwidget-reminder-gdrive-search.js` |
-| `_sessionRawPin` | `keamanan-pin.js` |
-| `_sha256Fallback` | `keamanan-pin.js` |
-| `_sheetsPullInner` | `features-sheets-pwa-selftest.js` |
-| `_sheetsSyncInner` | `features-sheets-pwa-selftest.js` |
-| `_sraiEsc` | `self-reward-ai-widget.js` |
-| `_sraiFmtRp` | `self-reward-ai-widget.js` |
-| `_srEsc` | `self-reward-view.js` |
-| `_srFmtRp` | `self-reward-view.js` |
-| `_stgSearchHighlighted` | `pengaturan-search.js` |
-| `_syncNavVisibilityForModals` | `modal-navigasi.js` |
-| `_txAccManuallySet` | `features-helpers-global-security.js` |
-| `_txCatLearnSource` | `features-helpers-global-security.js` |
-| `_txSaving` | `features-helpers-global-security.js` |
-| `_uploadBackupToDriveInner` | `features-aiwidget-reminder-gdrive-search.js` |
-| `_writeLocalSnapshot` | `features-helpers-global-security.js` |
-| `_wrLastTotal` | `reset-gaji-mingguan.js` |
-| `acBillNames` | `transaksi.js` |
-| `acProductNames` | `transaksi.js` |
-| `acProdusenNames` | `transaksi.js` |
-| `acShopCustomers` | `cobek-tx-cart.js` |
-| `acSparepartCatCodes` | `transaksi.js` |
-| `acSparepartCatNames` | `transaksi.js` |
-| `acSpbuNames` | `transaksi.js` |
-| `acStockCodes` | `transaksi.js` |
-| `acStockNames` | `transaksi.js` |
-| `acTxNotes` | `transaksi.js` |
-| `addNewCatFromInput` | `transaksi.js` |
-| `addOrderItem` | `cobek-io.js` |
-| `addShopStockCartItem` | `cobek-tx-cart.js` |
-| `addTarget` | `tx-target.js` |
-| `addTxShopSaleCartItem` | `cobek-tx-cart.js` |
-| `addWorkDay` | `payroll-absensi.js` |
-| `Advisor` | `features-aiwidget-reminder-gdrive-search.js` |
-| `aggregateCustomers` | `cobek-io.js` |
-| `AICommandCenter` | `ai-command-center.js` |
-| `aiErrorHint` | `features-aiwidget-reminder-gdrive-search.js` |
-| `aiQ` | `features-aiwidget-reminder-gdrive-search.js` |
-| `AIWidget` | `features-aiwidget-reminder-gdrive-search.js` |
-| `ALOKASI_PRESETS` | `aset.js` |
-| `AlokasiAset` | `aset.js` |
-| `API_KEY_ENC_STORAGE_KEY` | `keamanan-pin.js` |
-| `API_KEY_PBKDF2_ITER` | `keamanan-pin.js` |
-| `APP_BUILD_VERSION` | `features-helpers-global-security.js` |
-| `applyBillFilter` | `tagihan-kalender.js` |
-| `applyBundleLinkedStock` | `cobek-tx-cart.js` |
-| `applyCardCollapsePrefs` | `modal-navigasi.js` |
-| `applyDashHubMainGridDefaultCollapse` | `features-helpers-global-security.js` |
-| `applyEffectiveTheme` | `format-tema.js` |
-| `applyLastAccForCat` | `transaksi.js` |
-| `applyOneCardCollapsePref` | `modal-navigasi.js` |
-| `applyPriceRekoWidgetOne` | `cobek-io.js` |
-| `applyQuickScan` | `scan-ocr.js` |
-| `applyStockUsage` | `sparepart-servis.js` |
-| `applyTxBbmFromTx` | `tx-bbm.js` |
-| `applyTxShopSaleFromTx` | `cobek-tx-cart.js` |
-| `applyTxShopStockFromTx` | `cobek-tx-cart.js` |
-| `applyTxStockFromTx` | `tx-stok-sparepart.js` |
-| `ARCHIVE_MODULES` | `data-archive.js` |
-| `archiveAvailableYears` | `data-archive.js` |
-| `archiveCollectByYears` | `data-archive.js` |
-| `archiveExportedYears` | `data-archive.js` |
-| `archiveExportStep` | `data-archive.js` |
-| `archiveGetYear` | `data-archive.js` |
-| `archiveSelectedYears` | `data-archive.js` |
-| `Aset` | `aset.js` |
-| `ASET_TAB_IDX` | `dashboard-hub.js` |
-| `ASET_TAB_ORDER` | `aset.js` |
-| `AsetKeluarga` | `aset-keluarga.js` |
-| `askConfirm` | `modal-navigasi.js` |
-| `ASSET_JENIS_KEYWORDS` | `scan-ocr.js` |
-| `ASSET_NAME_EXCLUDE_RE` | `scan-ocr.js` |
-| `ASSET_NAME_LABEL_RE` | `scan-ocr.js` |
-| `AssetInsight` | `aset.js` |
-| `autoBudgetName` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `autoFillSparepartCode` | `sparepart-servis.js` |
-| `autoFillStockCode` | `sparepart-servis.js` |
-| `AutoKat` | `kategorisasi-ai.js` |
-| `autoSaveProfile` | `profil-pengaturan.js` |
-| `BACKUP_REMINDER_DATA_THRESHOLD` | `modules-render.js` |
-| `BACKUP_REMINDER_DISMISS_KEY` | `modules-render.js` |
-| `backupModules` | `backup-restore.js` |
-| `bayarPajakKendaraan` | `vehicle-core.js` |
-| `BBM` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `Bill` | `piutang-utang.js` |
-| `BILL_ANOMALY_THRESHOLD_PCT` | `tagihan-kalender.js` |
-| `BILLCAL_MAX_ITER` | `tagihan-kalender.js` |
-| `billCalYear` | `tagihan-kalender.js` |
-| `billFilterStatus` | `tagihan-kalender.js` |
-| `Budget` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `budgetMatchesTx` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `BudgetReko` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `BudgetTabs` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `buildBackupPayload` | `backup-restore.js` |
-| `buildEvaluationView` | `self-reward-view.js` |
-| `buildLaporanExportData` | `features-aiwidget-reminder-gdrive-search.js` |
-| `buildModalBodyHtml` | `self-reward-view.js` |
-| `buildSettingsFormHtml` | `self-reward-view.js` |
-| `byteSize` | `data-archive.js` |
-| `calcBackspace` | `kalkulator-input.js` |
-| `calcCicilanPerBulanFromTotal` | `cicilan.js` |
-| `calcCicilanTotalFromPerBulan` | `cicilan.js` |
-| `calcClear` | `kalkulator-input.js` |
+| `_ocrWorkerPromise` | `modules/shared/scan-ocr.js` |
+| `_paEsc` | `modules/asset/penyusutan-ai-widget.js` |
+| `_paFmtRp` | `modules/asset/penyusutan-ai-widget.js` |
+| `_pajakZakatRenderedOnce` | `pajak-aset-ui-wrappers.js` |
+| `_pendingChatActions` | `modules/ai/chat-action.js` |
+| `_pinLockRemainingMs` | `modules/shared/keamanan-pin.js` |
+| `_pinLockState` | `modules/shared/keamanan-pin.js` |
+| `_pinLockTimer` | `modules/shared/keamanan-pin.js` |
+| `_pinPromptAnswer` | `modules/shared/modal-navigasi.js` |
+| `_pinPromptResolve` | `modules/shared/modal-navigasi.js` |
+| `_pinPromptSubmit` | `modules/shared/modal-navigasi.js` |
+| `_promptModalAnswer` | `modules/shared/modal-navigasi.js` |
+| `_promptModalResolve` | `modules/shared/modal-navigasi.js` |
+| `_promptModalSubmit` | `modules/shared/modal-navigasi.js` |
+| `_repairLooseJson` | `modules/ai/chat-action.js` |
+| `_saveAccInner` | `modules/finance/akun.js` |
+| `_saveBillInner` | `modules/finance/tagihan-kalender.js` |
+| `_saveDebounceTimer` | `modules/shared/features-helpers-global-security.js` |
+| `_saveErrorShown` | `modules/shared/features-helpers-global-security.js` |
+| `_saveGuards` | `modules/shared/features-helpers-global-security.js` |
+| `_saveImmediate` | `modules/shared/features-helpers-global-security.js` |
+| `_saveTxInner` | `modules/finance/transaksi.js` |
+| `_selfTestAssert` | `self-test.js` |
+| `_sendChatInner` | `ai-chat.js` |
+| `_sessionRawPin` | `modules/shared/keamanan-pin.js` |
+| `_sha256Fallback` | `modules/shared/keamanan-pin.js` |
+| `_sheetsPullInner` | `sheets-sync.js` |
+| `_sheetsSyncInner` | `sheets-sync.js` |
+| `_sraiEsc` | `modules/self-reward/self-reward-ai-widget.js` |
+| `_sraiFmtRp` | `modules/self-reward/self-reward-ai-widget.js` |
+| `_srEsc` | `modules/self-reward/self-reward-view.js` |
+| `_srFmtRp` | `modules/self-reward/self-reward-view.js` |
+| `_stgSearchHighlighted` | `modules/shared/pengaturan-search.js` |
+| `_syncNavVisibilityForModals` | `modules/shared/modal-navigasi.js` |
+| `_txAccManuallySet` | `modules/shared/features-helpers-global-security.js` |
+| `_txCatLearnSource` | `modules/shared/features-helpers-global-security.js` |
+| `_txSaving` | `modules/shared/features-helpers-global-security.js` |
+| `_uploadBackupToDriveInner` | `gdrive-backup.js` |
+| `_writeLocalSnapshot` | `modules/shared/features-helpers-global-security.js` |
+| `_wrLastTotal` | `modules/business/reset-gaji-mingguan.js` |
+| `acBillNames` | `modules/finance/transaksi.js` |
+| `acProductNames` | `modules/finance/transaksi.js` |
+| `acProdusenNames` | `modules/finance/transaksi.js` |
+| `acShopCustomers` | `modules/shop/cobek-tx-cart.js` |
+| `acSparepartCatCodes` | `modules/finance/transaksi.js` |
+| `acSparepartCatNames` | `modules/finance/transaksi.js` |
+| `acSpbuNames` | `modules/finance/transaksi.js` |
+| `acStockCodes` | `modules/finance/transaksi.js` |
+| `acStockNames` | `modules/finance/transaksi.js` |
+| `actualWealthCAGR` | `pajak-aset-ui-wrappers.js` |
+| `acTxNotes` | `modules/finance/transaksi.js` |
+| `addNewCatFromInput` | `modules/finance/transaksi.js` |
+| `addOrderItem` | `modules/shop/cobek-io.js` |
+| `addShopStockCartItem` | `modules/shop/cobek-tx-cart.js` |
+| `addTarget` | `modules/finance/tx-target.js` |
+| `addTxShopSaleCartItem` | `modules/shop/cobek-tx-cart.js` |
+| `addWorkDay` | `modules/business/payroll-absensi.js` |
+| `Advisor` | `ai-chat.js` |
+| `aggregateCustomers` | `modules/shop/cobek-io.js` |
+| `AICommandCenter` | `modules/ai/ai-command-center.js` |
+| `aiErrorHint` | `ai-chat.js` |
+| `aiQ` | `ai-chat.js` |
+| `AIWidget` | `ai-chat.js` |
+| `ALOKASI_PRESETS` | `modules/asset/aset.js` |
+| `AlokasiAset` | `modules/asset/aset.js` |
+| `API_KEY_ENC_STORAGE_KEY` | `modules/shared/keamanan-pin.js` |
+| `API_KEY_PBKDF2_ITER` | `modules/shared/keamanan-pin.js` |
+| `APP_BUILD_VERSION` | `modules/shared/features-helpers-global-security.js` |
+| `applyBillFilter` | `modules/finance/tagihan-kalender.js` |
+| `applyBundleLinkedStock` | `modules/shop/cobek-tx-cart.js` |
+| `applyCardCollapsePrefs` | `modules/shared/modal-navigasi.js` |
+| `applyDashHubMainGridDefaultCollapse` | `modules/shared/features-helpers-global-security.js` |
+| `applyEffectiveTheme` | `modules/shared/format-tema.js` |
+| `applyLastAccForCat` | `modules/finance/transaksi.js` |
+| `applyOneCardCollapsePref` | `modules/shared/modal-navigasi.js` |
+| `applyPriceRekoWidgetOne` | `modules/shop/cobek-io.js` |
+| `applyQuickScan` | `modules/shared/scan-ocr.js` |
+| `applyRipplePosition` | `modules/shared/ripple-position.js` |
+| `applyStockUsage` | `modules/vehicle/sparepart-servis.js` |
+| `applyTxBbmFromTx` | `modules/finance/tx-bbm.js` |
+| `applyTxShopSaleFromTx` | `modules/shop/cobek-tx-cart.js` |
+| `applyTxShopStockFromTx` | `modules/shop/cobek-tx-cart.js` |
+| `applyTxStockFromTx` | `modules/finance/tx-stok-sparepart.js` |
+| `ARCHIVE_MODULES` | `modules/shared/data-archive.js` |
+| `archiveAvailableYears` | `modules/shared/data-archive.js` |
+| `archiveCollectByYears` | `modules/shared/data-archive.js` |
+| `archiveExportedYears` | `modules/shared/data-archive.js` |
+| `archiveExportStep` | `modules/shared/data-archive.js` |
+| `archiveGetYear` | `modules/shared/data-archive.js` |
+| `archiveSelectedYears` | `modules/shared/data-archive.js` |
+| `Aset` | `modules/asset/aset.js` |
+| `ASET_TAB_IDX` | `modules/dashboard-hub/dashboard-hub.js` |
+| `ASET_TAB_ORDER` | `modules/asset/aset.js` |
+| `AsetKeluarga` | `modules/asset/aset-keluarga.js` |
+| `askConfirm` | `modules/shared/modal-navigasi.js` |
+| `ASSET_JENIS_KEYWORDS` | `modules/shared/scan-ocr.js` |
+| `ASSET_NAME_EXCLUDE_RE` | `modules/shared/scan-ocr.js` |
+| `ASSET_NAME_LABEL_RE` | `modules/shared/scan-ocr.js` |
+| `AssetInsight` | `modules/asset/aset.js` |
+| `autoBudgetName` | `budget.js` |
+| `autoFillSparepartCode` | `modules/vehicle/sparepart-servis.js` |
+| `autoFillStockCode` | `modules/vehicle/sparepart-servis.js` |
+| `AutoKat` | `modules/ai/kategorisasi-ai.js` |
+| `autoSaveProfile` | `modules/shared/profil-pengaturan.js` |
+| `autoSnapshotLifeBalanceIfNeeded` | `pajak-aset-ui-wrappers.js` |
+| `autoSnapshotWealthIfNeeded` | `pajak-aset-ui-wrappers.js` |
+| `BACKUP_REMINDER_DATA_THRESHOLD` | `modules/shared/modules-render.js` |
+| `BACKUP_REMINDER_DISMISS_KEY` | `modules/shared/modules-render.js` |
+| `backupModules` | `modules/shared/backup-restore.js` |
+| `bayarPajakKendaraan` | `modules/vehicle/vehicle-core.js` |
+| `BBM` | `car-notes.js` |
+| `Bill` | `modules/finance/piutang-utang.js` |
+| `BILL_ANOMALY_THRESHOLD_PCT` | `modules/finance/tagihan-kalender.js` |
+| `BILLCAL_MAX_ITER` | `modules/finance/tagihan-kalender.js` |
+| `billCalYear` | `modules/finance/tagihan-kalender.js` |
+| `billFilterStatus` | `modules/finance/tagihan-kalender.js` |
+| `Budget` | `budget.js` |
+| `budgetMatchesTx` | `budget.js` |
+| `BudgetReko` | `budget.js` |
+| `BudgetTabs` | `budget.js` |
+| `buildBackupPayload` | `modules/shared/backup-restore.js` |
+| `buildEvaluationView` | `modules/self-reward/self-reward-view.js` |
+| `buildLaporanExportData` | `laporan-export.js` |
+| `buildModalBodyHtml` | `modules/self-reward/self-reward-view.js` |
+| `buildSettingsFormHtml` | `modules/self-reward/self-reward-view.js` |
+| `byteSize` | `modules/shared/data-archive.js` |
+| `calcBackspace` | `modules/shared/kalkulator-input.js` |
+| `calcCicilanPerBulanFromTotal` | `modules/finance/cicilan.js` |
+| `calcCicilanTotalFromPerBulan` | `modules/finance/cicilan.js` |
+| `calcClear` | `modules/shared/kalkulator-input.js` |
 | `calcEES` | `economic-intelligence/domain/scoring-formulas.js` |
-| `calcEquals` | `kalkulator-input.js` |
+| `calcEquals` | `modules/shared/kalkulator-input.js` |
 | `calcERI` | `economic-intelligence/domain/scoring-formulas.js` |
-| `calcGaji` | `gaji-calc.js` |
+| `calcGaji` | `modules/business/gaji-calc.js` |
 | `calcPEHS` | `economic-intelligence/domain/scoring-formulas.js` |
-| `calcPress` | `kalkulator-input.js` |
-| `calcPreviewValue` | `kalkulator-input.js` |
-| `calcRenderDisplay` | `kalkulator-input.js` |
-| `calcTargetId` | `kalkulator-input.js` |
-| `calcUseResult` | `kalkulator-input.js` |
-| `callAIProviderRaw` | `features-aiwidget-reminder-gdrive-search.js` |
-| `cancelChatAction` | `features-aiwidget-reminder-gdrive-search.js` |
-| `cancelChatActionEdit` | `features-aiwidget-reminder-gdrive-search.js` |
-| `cancelEditWorkDay` | `payroll-absensi.js` |
-| `cashflowActionSuggestion` | `tagihan-kalender.js` |
-| `catLearnKey` | `scan-ocr.js` |
-| `changeAbsensiWeek` | `gaji-calc.js` |
-| `changeMonth` | `tx-list-cashflow.js` |
-| `changeOrderQty` | `cobek-io.js` |
-| `CHAT_ACTION_EDIT_FIELDS` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `CHAT_ACTION_HANDLERS` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `CHAT_ACTION_LABELS` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `chatActionEditFormHTML` | `features-aiwidget-reminder-gdrive-search.js` |
-| `chatActionSummary` | `chat-action.js` |
-| `chatInited` | `chat-action.js` |
-| `checkAndFireReminders` | `features-aiwidget-reminder-gdrive-search.js` |
-| `checkBills` | `tagihan-kalender.js` |
-| `CHECKOUT_ADDR_RE` | `scan-ocr.js` |
-| `CHECKOUT_PRICE_CUT_RE` | `scan-ocr.js` |
-| `CHECKOUT_RATING_PREFIX_RE` | `scan-ocr.js` |
-| `CHECKOUT_TOTAL_FALLBACK_RE` | `scan-ocr.js` |
-| `CHECKOUT_TOTAL_RE` | `scan-ocr.js` |
-| `CHECKOUT_UI_EXCLUDE_RE` | `scan-ocr.js` |
-| `checkPin` | `keamanan-pin.js` |
-| `checkWeeklySalaryReset` | `reset-gaji-mingguan.js` |
-| `CICILAN_PATTERNS` | `scan-ocr.js` |
-| `cicilanDateLinked` | `features-helpers-global-security.js` |
-| `cicilanLastInput` | `features-helpers-global-security.js` |
-| `cicilanSharedLastInput` | `features-helpers-global-security.js` |
+| `calcPress` | `modules/shared/kalkulator-input.js` |
+| `calcPreviewValue` | `modules/shared/kalkulator-input.js` |
+| `calcRenderDisplay` | `modules/shared/kalkulator-input.js` |
+| `calcTargetId` | `modules/shared/kalkulator-input.js` |
+| `calcUseResult` | `modules/shared/kalkulator-input.js` |
+| `callAIProviderRaw` | `ai-chat.js` |
+| `cancelChatAction` | `ai-chat.js` |
+| `cancelChatActionEdit` | `ai-chat.js` |
+| `cancelEditWorkDay` | `modules/business/payroll-absensi.js` |
+| `cashflowActionSuggestion` | `modules/finance/tagihan-kalender.js` |
+| `CAT_LEARN_KEY_BLOCKLIST` | `modules/shared/scan-ocr.js` |
+| `catatZakatDibayar` | `pajak-aset-ui-wrappers.js` |
+| `catLearnKey` | `modules/shared/scan-ocr.js` |
+| `changeAbsensiWeek` | `modules/business/gaji-calc.js` |
+| `changeMonth` | `modules/finance/tx-list-cashflow.js` |
+| `changeOrderQty` | `modules/shop/cobek-io.js` |
+| `CHAT_ACTION_EDIT_FIELDS` | `chat-action-handlers.js` |
+| `CHAT_ACTION_HANDLERS` | `chat-action-handlers.js` |
+| `CHAT_ACTION_LABELS` | `chat-action-handlers.js` |
+| `chatActionEditFormHTML` | `ai-chat.js` |
+| `chatActionSummary` | `modules/ai/chat-action.js` |
+| `chatInited` | `modules/ai/chat-action.js` |
+| `checkAndFireReminders` | `reminder-notif.js` |
+| `checkBills` | `modules/finance/tagihan-kalender.js` |
+| `CHECKOUT_ADDR_RE` | `modules/shared/scan-ocr.js` |
+| `CHECKOUT_PRICE_CUT_RE` | `modules/shared/scan-ocr.js` |
+| `CHECKOUT_RATING_PREFIX_RE` | `modules/shared/scan-ocr.js` |
+| `CHECKOUT_TOTAL_FALLBACK_RE` | `modules/shared/scan-ocr.js` |
+| `CHECKOUT_TOTAL_RE` | `modules/shared/scan-ocr.js` |
+| `CHECKOUT_UI_EXCLUDE_RE` | `modules/shared/scan-ocr.js` |
+| `checkPin` | `modules/shared/keamanan-pin.js` |
+| `checkWeeklySalaryReset` | `modules/business/reset-gaji-mingguan.js` |
+| `CICILAN_PATTERNS` | `modules/shared/scan-ocr.js` |
+| `cicilanDateLinked` | `modules/shared/features-helpers-global-security.js` |
+| `cicilanLastInput` | `modules/shared/features-helpers-global-security.js` |
+| `cicilanSharedLastInput` | `modules/shared/features-helpers-global-security.js` |
 | `clamp` | `economic-intelligence/domain/scoring-formulas.js` |
 | `classifyEconomicStatus` | `economic-intelligence/domain/status-classifier.js` |
-| `cleanCatOptText` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `clearChat` | `features-helpers-global-security.js` |
-| `closeCalc` | `kalkulator-input.js` |
-| `closeModal` | `modal-navigasi.js` |
-| `closeQS` | `modal-navigasi.js` |
-| `CN_TAB_IDX` | `dashboard-hub.js` |
-| `codeFromName` | `sparepart-servis.js` |
-| `commitCurKmEdit` | `vehicle-core.js` |
-| `commitGoldImport` | `aset-emas-impor.js` |
-| `commitImportKatalog` | `cobek-io.js` |
-| `commitImportShopExcel` | `cobek-io.js` |
-| `computeCashflowForecast` | `tx-list-cashflow.js` |
+| `cleanCatOptText` | `budget.js` |
+| `clearChat` | `modules/shared/features-helpers-global-security.js` |
+| `closeCalc` | `modules/shared/kalkulator-input.js` |
+| `closeModal` | `modules/shared/modal-navigasi.js` |
+| `closeQS` | `modules/shared/modal-navigasi.js` |
+| `CN_TAB_IDX` | `modules/dashboard-hub/dashboard-hub.js` |
+| `codeFromName` | `modules/vehicle/sparepart-servis.js` |
+| `commitCurKmEdit` | `modules/vehicle/vehicle-core.js` |
+| `commitGoldImport` | `modules/asset/aset-emas-impor.js` |
+| `commitImportKatalog` | `modules/shop/cobek-io.js` |
+| `commitImportShopExcel` | `modules/shop/cobek-io.js` |
+| `computeCashflowForecast` | `modules/finance/tx-list-cashflow.js` |
 | `computeFileSizeStatus` | `diagnostik-versi.js` |
-| `computeModalSweepFnNames` | `features-sheets-pwa-selftest.js` |
+| `computeModalSweepFnNames` | `self-test.js` |
 | `computeModuleSyncStatus` | `diagnostik-versi.js` |
-| `computeNavSmokePageNames` | `features-sheets-pwa-selftest.js` |
-| `computeNavSmokeTestResults` | `features-sheets-pwa-selftest.js` |
-| `computeOrderTotals` | `cobek-io.js` |
+| `computeNavSmokePageNames` | `self-test.js` |
+| `computeNavSmokeTestResults` | `self-test.js` |
+| `computeNoSpendLast30` | `pajak-aset-ui-wrappers.js` |
+| `computeOrderTotals` | `modules/shop/cobek-io.js` |
 | `computeProductionSyncStatus` | `diagnostik-versi.js` |
-| `computeSelfTestResults` | `features-sheets-pwa-selftest.js` |
-| `computeTxShopSaleTotals` | `cobek-tx-cart.js` |
-| `confirmChatAction` | `features-aiwidget-reminder-gdrive-search.js` |
-| `confirmWeeklyReset` | `reset-gaji-mingguan.js` |
-| `copyNavSmokeResults` | `features-sheets-pwa-selftest.js` |
-| `copySelfTestResults` | `features-sheets-pwa-selftest.js` |
-| `curBillHistoryId` | `tagihan-kalender.js` |
-| `curBillType` | `features-helpers-global-security.js` |
-| `curCatFilter` | `features-helpers-global-security.js` |
-| `curMonth` | `features-helpers-global-security.js` |
-| `curPayMethod` | `features-helpers-global-security.js` |
-| `curShopStockCart` | `cobek-tx-cart.js` |
-| `curTxShopSaleCart` | `cobek-tx-cart.js` |
-| `curTxType` | `features-helpers-global-security.js` |
-| `curVehicleId` | `features-helpers-global-security.js` |
-| `customerKey` | `cobek-io.js` |
-| `D` | `features-helpers-global-security.js` |
-| `DanaDaruratAI` | `modules-calc.js` |
-| `DASH_CARD_BY_KEY` | `modules-render.js` |
-| `DASH_CARD_DEFS` | `modules-render.js` |
-| `DASH_RENDER_ORDER` | `modules-render.js` |
-| `DashboardHub` | `dashboard-hub.js` |
-| `DashboardHubAnalytics` | `dashboard-hub.js` |
-| `DashboardHubFavoritView` | `dashboard-hub-favorit-view.js` |
-| `DashboardHubHero` | `dashboard-hub.js` |
-| `DashboardHubSearch` | `dashboard-hub-search.js` |
-| `DashboardHubSummary` | `dashboard-hub.js` |
-| `dashHubNavigateToFeature` | `dashboard-hub.js` |
-| `dashHubSearchFeatures` | `dashboard-hub-search.js` |
-| `dashServisVehFilter` | `sparepart-servis.js` |
-| `DATA_MIGRATIONS` | `features-helpers-global-security.js` |
-| `dateStatusBadge` | `vehicle-core.js` |
-| `dateToISO` | `helper-teks.js` |
-| `daysUntilDate` | `vehicle-core.js` |
-| `Debt` | `piutang-utang.js` |
-| `DebtStrategy` | `piutang-utang.js` |
-| `decryptApiKeyWithPin` | `keamanan-pin.js` |
-| `DEFAULT_ACCOUNTS` | `data-default.js` |
-| `DEFAULT_CATS` | `renovasi.js` |
-| `DEFAULT_COBEK_KATEGORI` | `data-default.js` |
-| `DEFAULT_SPAREPARTS` | `data-default.js` |
-| `delAcc` | `akun.js` |
-| `delBbm` | `vehicle-core.js` |
-| `delBill` | `tagihan-kalender.js` |
-| `delCat` | `kategori.js` |
-| `delCatFromModal` | `kategori.js` |
-| `deleteBbmFromModal` | `vehicle-core.js` |
-| `deleteBillHistoryTx` | `tagihan-kalender.js` |
-| `deleteBudget` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `deleteServisFromModal` | `sparepart-servis.js` |
-| `deleteTxFromModal` | `transaksi.js` |
-| `delProduct` | `cobek-tx-cart.js` |
-| `delProdusen` | `cobek-io.js` |
-| `delReminder` | `transaksi.js` |
-| `delServis` | `sparepart-servis.js` |
-| `delShop` | `cobek-io.js` |
-| `delSim` | `vehicle-core.js` |
-| `delSparepart` | `sparepart-servis.js` |
-| `delStock` | `sparepart-servis.js` |
-| `delSubCat` | `kategori.js` |
-| `delTarget` | `tx-target.js` |
-| `delTx` | `tx-list-cashflow.js` |
-| `delVehicle` | `vehicle-core.js` |
-| `delWorkDay` | `payroll-absensi.js` |
-| `detectPaylaterDueNextMonth` | `scan-ocr.js` |
-| `dismissBackupReminder` | `modules-render.js` |
-| `downscaleImage` | `scan-ocr.js` |
-| `editAccIdx` | `akun.js` |
-| `editBillHistoryTx` | `tagihan-kalender.js` |
-| `editChatAction` | `features-aiwidget-reminder-gdrive-search.js` |
-| `editSimId` | `vehicle-core.js` |
-| `editSparepartFromReminder` | `sparepart-servis.js` |
-| `editTx` | `transaksi.js` |
-| `editVehicleInterval` | `vehicle-core.js` |
-| `editVehicleIntervalOverride` | `sparepart-servis.js` |
-| `editWorkDay` | `payroll-absensi.js` |
-| `EduFund` | `edukasi-dana.js` |
-| `EduFundInsight` | `feature-insights.js` |
+| `computeRipplePercent` | `modules/shared/ripple-position.js` |
+| `computeSelfTestResults` | `self-test.js` |
+| `computeTxShopSaleTotals` | `modules/shop/cobek-tx-cart.js` |
+| `confirmChatAction` | `ai-chat.js` |
+| `confirmWeeklyReset` | `modules/business/reset-gaji-mingguan.js` |
+| `copyNavSmokeResults` | `self-test.js` |
+| `copySelfTestResults` | `self-test.js` |
+| `curBillHistoryId` | `modules/finance/tagihan-kalender.js` |
+| `curBillType` | `modules/shared/features-helpers-global-security.js` |
+| `curCatFilter` | `modules/shared/features-helpers-global-security.js` |
+| `curMonth` | `modules/shared/features-helpers-global-security.js` |
+| `curPayMethod` | `modules/shared/features-helpers-global-security.js` |
+| `currentNetWorthValue` | `pajak-aset-ui-wrappers.js` |
+| `curShopStockCart` | `modules/shop/cobek-tx-cart.js` |
+| `curTxShopSaleCart` | `modules/shop/cobek-tx-cart.js` |
+| `curTxType` | `modules/shared/features-helpers-global-security.js` |
+| `curVehicleId` | `modules/shared/features-helpers-global-security.js` |
+| `customerKey` | `modules/shop/cobek-io.js` |
+| `D` | `modules/shared/features-helpers-global-security.js` |
+| `DanaDaruratAI` | `modules/shared/modules-calc.js` |
+| `DASH_CARD_BY_KEY` | `modules/shared/modules-render.js` |
+| `DASH_CARD_DEFS` | `modules/shared/modules-render.js` |
+| `DASH_RENDER_ORDER` | `modules/shared/modules-render.js` |
+| `DashboardHub` | `modules/dashboard-hub/dashboard-hub.js` |
+| `DashboardHubAnalytics` | `modules/dashboard-hub/dashboard-hub.js` |
+| `DashboardHubFavoritView` | `modules/dashboard-hub/dashboard-hub-favorit-view.js` |
+| `DashboardHubHero` | `modules/dashboard-hub/dashboard-hub.js` |
+| `DashboardHubSearch` | `modules/dashboard-hub/dashboard-hub-search.js` |
+| `DashboardHubSummary` | `modules/dashboard-hub/dashboard-hub.js` |
+| `dashHubNavigateToFeature` | `modules/dashboard-hub/dashboard-hub.js` |
+| `dashHubSearchFeatures` | `modules/dashboard-hub/dashboard-hub-search.js` |
+| `dashServisVehFilter` | `modules/vehicle/sparepart-servis.js` |
+| `DATA_MIGRATIONS` | `modules/shared/features-helpers-global-security.js` |
+| `dateStatusBadge` | `modules/vehicle/vehicle-core.js` |
+| `dateToISO` | `modules/shared/helper-teks.js` |
+| `daysUntilDate` | `modules/vehicle/vehicle-core.js` |
+| `Debt` | `modules/finance/piutang-utang.js` |
+| `DebtStrategy` | `modules/finance/piutang-utang.js` |
+| `decryptApiKeyWithPin` | `modules/shared/keamanan-pin.js` |
+| `DEFAULT_ACCOUNTS` | `modules/shared/data-default.js` |
+| `DEFAULT_CATS` | `modules/home/renovasi.js` |
+| `DEFAULT_COBEK_KATEGORI` | `modules/shared/data-default.js` |
+| `DEFAULT_SPAREPARTS` | `modules/shared/data-default.js` |
+| `delAcc` | `modules/finance/akun.js` |
+| `delAsset` | `pajak-aset-ui-wrappers.js` |
+| `delBbm` | `modules/vehicle/vehicle-core.js` |
+| `delBill` | `modules/finance/tagihan-kalender.js` |
+| `delCat` | `modules/finance/kategori.js` |
+| `delCatFromModal` | `modules/finance/kategori.js` |
+| `delDebt` | `pajak-aset-ui-wrappers.js` |
+| `deleteBbmFromModal` | `modules/vehicle/vehicle-core.js` |
+| `deleteBillHistoryTx` | `modules/finance/tagihan-kalender.js` |
+| `deleteBudget` | `budget.js` |
+| `deleteServisFromModal` | `modules/vehicle/sparepart-servis.js` |
+| `deleteTxFromModal` | `modules/finance/transaksi.js` |
+| `delPiutang` | `pajak-aset-ui-wrappers.js` |
+| `delProduct` | `modules/shop/cobek-tx-cart.js` |
+| `delProdusen` | `modules/shop/cobek-io.js` |
+| `delReminder` | `modules/finance/transaksi.js` |
+| `delServis` | `modules/vehicle/sparepart-servis.js` |
+| `delShop` | `modules/shop/cobek-io.js` |
+| `delSim` | `modules/vehicle/vehicle-core.js` |
+| `delSparepart` | `modules/vehicle/sparepart-servis.js` |
+| `delStock` | `modules/vehicle/sparepart-servis.js` |
+| `delSubCat` | `modules/finance/kategori.js` |
+| `delTarget` | `modules/finance/tx-target.js` |
+| `delTx` | `modules/finance/tx-list-cashflow.js` |
+| `delVehicle` | `modules/vehicle/vehicle-core.js` |
+| `delWealthSnapshot` | `pajak-aset-ui-wrappers.js` |
+| `delWorkDay` | `modules/business/payroll-absensi.js` |
+| `delZakatLog` | `pajak-aset-ui-wrappers.js` |
+| `detectPaylaterDueNextMonth` | `modules/shared/scan-ocr.js` |
+| `dismissBackupReminder` | `modules/shared/modules-render.js` |
+| `downscaleImage` | `modules/shared/scan-ocr.js` |
+| `editAccIdx` | `modules/finance/akun.js` |
+| `editBillHistoryTx` | `modules/finance/tagihan-kalender.js` |
+| `editChatAction` | `ai-chat.js` |
+| `editSimId` | `modules/vehicle/vehicle-core.js` |
+| `editSparepartFromReminder` | `modules/vehicle/sparepart-servis.js` |
+| `editTx` | `modules/finance/transaksi.js` |
+| `editVehicleInterval` | `modules/vehicle/vehicle-core.js` |
+| `editVehicleIntervalOverride` | `modules/vehicle/sparepart-servis.js` |
+| `editWorkDay` | `modules/business/payroll-absensi.js` |
+| `EduFund` | `modules/finance/edukasi-dana.js` |
+| `EduFundInsight` | `modules/ai/feature-insights.js` |
 | `EES_WEIGHTS` | `economic-intelligence/domain/scoring-formulas.js` |
 | `EIE_IMPORT_KEYWORDS` | `economic-intelligence/adapters/user-finance-adapter.js` |
 | `EIE_MACRO_INDICATORS` | `economic-intelligence/adapters/macro-data-adapter.js` |
@@ -479,184 +507,194 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `EIEScheduler` | `economic-intelligence/scheduler/eie-scheduler.js` |
 | `EIEScoringEngine` | `economic-intelligence/engine/scoring-engine.js` |
 | `EIEStore` | `economic-intelligence/eie-store.js` |
-| `enableSwipeToDismiss` | `modal-navigasi.js` |
-| `encryptApiKeyWithPin` | `keamanan-pin.js` |
-| `escapeHtml` | `helper-teks.js` |
-| `estimateKmPerDay` | `vehicle-core.js` |
-| `estimateRpPerKm` | `vehicle-core.js` |
-| `estimateServiceDateISO` | `vehicle-core.js` |
-| `Etalase` | `cobek-etalase.js` |
-| `evalAmtExpr` | `kalkulator-input.js` |
-| `exportCSV` | `backup-restore.js` |
-| `exportData` | `backup-restore.js` |
-| `exportJSON` | `backup-restore.js` |
-| `exportLaporanImage` | `features-aiwidget-reminder-gdrive-search.js` |
-| `exportLaporanPDF` | `features-aiwidget-reminder-gdrive-search.js` |
-| `exportLaporanShopXLSX` | `cobek-io.js` |
-| `exportShopEtalaseXLSX` | `cobek-io.js` |
-| `exportShopPelangganXLSX` | `cobek-io.js` |
-| `exportShopProdusenXLSX` | `cobek-io.js` |
-| `exportShopRiwayatXLSX` | `cobek-io.js` |
-| `exportShopSemuaXLSX` | `cobek-io.js` |
-| `EXTRA_MODAL_SWEEP_SPECS` | `features-sheets-pwa-selftest.js` |
-| `extractBitgetFields` | `scan-ocr.js` |
-| `extractDateFromText` | `scan-ocr.js` |
-| `extractLabeledAmount` | `scan-ocr.js` |
-| `extractOdometerKm` | `scan-ocr.js` |
-| `extractPortfolioFields` | `scan-ocr.js` |
-| `FEATURE_REGISTRY` | `dashboard-hub-registry.js` |
-| `FeatureIcons` | `feature-icons.js` |
-| `FeatureInsightUI` | `feature-insights.js` |
-| `FI` | `modules-calc.js` |
-| `fiAnnualExpense` | `modules-calc.js` |
-| `fiAssetFund` | `modules-calc.js` |
-| `fiCalcAge` | `modules-calc.js` |
-| `fiEffectiveMonths` | `modules-calc.js` |
-| `fiEstimateMonthsToTarget` | `modules-calc.js` |
-| `fiFormatMonths` | `modules-calc.js` |
-| `fiGetAssumptions` | `modules-calc.js` |
-| `fiInvestmentAssetValue` | `modules-calc.js` |
+| `enableSwipeToDismiss` | `modules/shared/modal-navigasi.js` |
+| `encryptApiKeyWithPin` | `modules/shared/keamanan-pin.js` |
+| `escapeHtml` | `modules/shared/helper-teks.js` |
+| `estimateKmPerDay` | `modules/vehicle/vehicle-core.js` |
+| `estimateRpPerKm` | `modules/vehicle/vehicle-core.js` |
+| `estimateServiceDateISO` | `modules/vehicle/vehicle-core.js` |
+| `Etalase` | `modules/shop/cobek-etalase.js` |
+| `evalAmtExpr` | `modules/shared/kalkulator-input.js` |
+| `exportCSV` | `modules/shared/backup-restore.js` |
+| `exportData` | `modules/shared/backup-restore.js` |
+| `exportJSON` | `modules/shared/backup-restore.js` |
+| `exportLaporanImage` | `laporan-export.js` |
+| `exportLaporanPDF` | `laporan-export.js` |
+| `exportLaporanShopXLSX` | `modules/shop/cobek-io.js` |
+| `exportShopEtalaseXLSX` | `modules/shop/cobek-io.js` |
+| `exportShopPelangganXLSX` | `modules/shop/cobek-io.js` |
+| `exportShopProdusenXLSX` | `modules/shop/cobek-io.js` |
+| `exportShopRiwayatXLSX` | `modules/shop/cobek-io.js` |
+| `exportShopSemuaXLSX` | `modules/shop/cobek-io.js` |
+| `EXTRA_MODAL_SWEEP_SPECS` | `self-test.js` |
+| `extractBitgetFields` | `modules/shared/scan-ocr.js` |
+| `extractDateFromText` | `modules/shared/scan-ocr.js` |
+| `extractLabeledAmount` | `modules/shared/scan-ocr.js` |
+| `extractOdometerKm` | `modules/shared/scan-ocr.js` |
+| `extractPortfolioFields` | `modules/shared/scan-ocr.js` |
+| `FEATURE_REGISTRY` | `modules/dashboard-hub/dashboard-hub-registry.js` |
+| `FeatureIcons` | `modules/shared/feature-icons.js` |
+| `FeatureInsightUI` | `modules/ai/feature-insights.js` |
+| `FI` | `modules/shared/modules-calc.js` |
+| `fiAnnualExpense` | `modules/shared/modules-calc.js` |
+| `fiAssetFund` | `modules/shared/modules-calc.js` |
+| `fiCalcAge` | `modules/shared/modules-calc.js` |
+| `fiEffectiveMonths` | `modules/shared/modules-calc.js` |
+| `fiEstimateMonthsToTarget` | `modules/shared/modules-calc.js` |
+| `fiFormatMonths` | `modules/shared/modules-calc.js` |
+| `fiGetAssumptions` | `modules/shared/modules-calc.js` |
+| `fiInvestmentAssetValue` | `modules/shared/modules-calc.js` |
 | `FILE_SIZE_ACTION_BYTES` | `diagnostik-versi.js` |
 | `FILE_SIZE_WARN_BYTES` | `diagnostik-versi.js` |
-| `filterCat` | `kategori.js` |
-| `fiMonthlySurplus` | `modules-calc.js` |
-| `fiMonthsOfDataAvailable` | `modules-calc.js` |
-| `FinCoach` | `modules-calc.js` |
-| `findMissingAriaLabels` | `features-sheets-pwa-selftest.js` |
-| `findPossibleDuplicateTx` | `scan-ocr.js` |
-| `findTorsiDb` | `sparepart-servis.js` |
-| `findVehicleSpec` | `sparepart-servis.js` |
-| `fiNetAssetFund` | `modules-calc.js` |
-| `finishOnboard` | `onboarding.js` |
-| `fireNotif` | `features-aiwidget-reminder-gdrive-search.js` |
-| `fiTargetNominal` | `modules-calc.js` |
-| `fiTotalDebt` | `modules-calc.js` |
-| `fmt` | `format-tema.js` |
-| `fmtBytes` | `data-archive.js` |
-| `fmtDateID` | `vehicle-core.js` |
-| `fmtFull` | `format-tema.js` |
-| `fmtFullSigned` | `format-tema.js` |
+| `filterCat` | `modules/finance/kategori.js` |
+| `fiMonthlySurplus` | `modules/shared/modules-calc.js` |
+| `fiMonthsOfDataAvailable` | `modules/shared/modules-calc.js` |
+| `FinCoach` | `modules/shared/modules-calc.js` |
+| `findMissingAriaLabels` | `self-test.js` |
+| `findPossibleDuplicateTx` | `modules/shared/scan-ocr.js` |
+| `findTorsiDb` | `modules/vehicle/sparepart-servis.js` |
+| `findVehicleSpec` | `modules/vehicle/sparepart-servis.js` |
+| `fiNetAssetFund` | `modules/shared/modules-calc.js` |
+| `finishOnboard` | `modules/shared/onboarding.js` |
+| `fireNotif` | `reminder-notif.js` |
+| `fiTargetNominal` | `modules/shared/modules-calc.js` |
+| `fiTotalDebt` | `modules/shared/modules-calc.js` |
+| `fmt` | `modules/shared/format-tema.js` |
+| `fmtBytes` | `modules/shared/data-archive.js` |
+| `fmtDateID` | `modules/vehicle/vehicle-core.js` |
+| `fmtFull` | `modules/shared/format-tema.js` |
+| `fmtFullSigned` | `modules/shared/format-tema.js` |
 | `fmtIDR` | `economic-intelligence/rules/rule-definitions.js` |
-| `gantiPin` | `keamanan-pin.js` |
-| `GDRIVE_EMAIL_SCOPE` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdriveAccessToken` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdriveBackupNow` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdriveConnectOnly` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdriveConnStatusLabel` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdriveDisconnect` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdriveDownloadBackup` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdriveEnsureAuth` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdriveFetchUserInfo` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdriveHandleAuthSuccess` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdriveInitTokenClient` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdrivePendingAfterAuth` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdriveResetTokenState` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdriveRestoreNow` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdriveSaveClientId` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdriveThrowForFailedRes` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdriveToggleAutoSync` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdriveTokenClient` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdriveTokenExpiresAt` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdriveTokenScope` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdriveTrySilentReconnectOnLoad` | `features-aiwidget-reminder-gdrive-search.js` |
-| `gdriveUserEmail` | `features-aiwidget-reminder-gdrive-search.js` |
-| `getAllCats` | `kategori.js` |
-| `getBackupRange` | `backup-restore.js` |
-| `getBillAnomalyInfo` | `tagihan-kalender.js` |
-| `getBillOccurrencesInMonth` | `tagihan-kalender.js` |
-| `getBillOccurrencesInRange` | `tagihan-kalender.js` |
-| `getBillStats` | `tagihan-kalender.js` |
-| `getBudgetEffectiveLimit` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `getBudgetSettings` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `getBudgetUsed` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `getCat` | `kategori.js` |
-| `getCatByType` | `kategori.js` |
-| `getCatInfoById` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `getCatNameById` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `getCatsByType` | `kategori.js` |
-| `getCicilanSharedMine` | `cicilan.js` |
-| `getCnRange` | `vehicle-core.js` |
-| `getCustomerOrders` | `cobek-io.js` |
-| `getEffectiveIntervalKm` | `sparepart-servis.js` |
-| `getFavoritKeys` | `dashboard-hub-favorit.js` |
+| `gantiPin` | `modules/shared/keamanan-pin.js` |
+| `GDRIVE_EMAIL_SCOPE` | `gdrive-backup.js` |
+| `gdriveAccessToken` | `laporan-export.js` |
+| `gdriveBackupNow` | `gdrive-backup.js` |
+| `gdriveConnectOnly` | `gdrive-backup.js` |
+| `gdriveConnStatusLabel` | `gdrive-backup.js` |
+| `gdriveDisconnect` | `gdrive-backup.js` |
+| `gdriveDownloadBackup` | `gdrive-backup.js` |
+| `gdriveEnsureAuth` | `gdrive-backup.js` |
+| `gdriveFetchUserInfo` | `gdrive-backup.js` |
+| `gdriveHandleAuthSuccess` | `gdrive-backup.js` |
+| `gdriveInitTokenClient` | `gdrive-backup.js` |
+| `gdrivePendingAfterAuth` | `laporan-export.js` |
+| `gdriveResetTokenState` | `gdrive-backup.js` |
+| `gdriveRestoreNow` | `gdrive-backup.js` |
+| `gdriveSaveClientId` | `gdrive-backup.js` |
+| `gdriveThrowForFailedRes` | `gdrive-backup.js` |
+| `gdriveToggleAutoSync` | `gdrive-backup.js` |
+| `gdriveTokenClient` | `laporan-export.js` |
+| `gdriveTokenExpiresAt` | `laporan-export.js` |
+| `gdriveTokenScope` | `laporan-export.js` |
+| `gdriveTrySilentReconnectOnLoad` | `gdrive-backup.js` |
+| `gdriveUserEmail` | `laporan-export.js` |
+| `getAllCats` | `modules/finance/kategori.js` |
+| `getBackupRange` | `modules/shared/backup-restore.js` |
+| `getBillAnomalyInfo` | `modules/finance/tagihan-kalender.js` |
+| `getBillOccurrencesInMonth` | `modules/finance/tagihan-kalender.js` |
+| `getBillOccurrencesInRange` | `modules/finance/tagihan-kalender.js` |
+| `getBillStats` | `modules/finance/tagihan-kalender.js` |
+| `getBudgetEffectiveLimit` | `budget.js` |
+| `getBudgetSettings` | `budget.js` |
+| `getBudgetUsed` | `budget.js` |
+| `getCat` | `modules/finance/kategori.js` |
+| `getCatByType` | `modules/finance/kategori.js` |
+| `getCatInfoById` | `budget.js` |
+| `getCatNameById` | `budget.js` |
+| `getCatsByType` | `modules/finance/kategori.js` |
+| `getCicilanSharedMine` | `modules/finance/cicilan.js` |
+| `getCnRange` | `modules/vehicle/vehicle-core.js` |
+| `getCustomerOrders` | `modules/shop/cobek-io.js` |
+| `getEffectiveIntervalKm` | `modules/vehicle/sparepart-servis.js` |
+| `getFavoritKeys` | `modules/dashboard-hub/dashboard-hub-favorit.js` |
 | `getHtmlSnapshotForSelfTest` | `diagnostik-versi.js` |
-| `getKeuFilters` | `filter-laporan.js` |
-| `getLaporanFilters` | `filter-laporan.js` |
-| `getLastServiceKm` | `sparepart-servis.js` |
-| `getLastServiceKmForCat` | `sparepart-servis.js` |
-| `getOcrWorker` | `scan-ocr.js` |
-| `getProactiveReminders` | `vehicle-core.js` |
-| `getRange` | `tx-list-cashflow.js` |
-| `getSelectedBudgetCatIds` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `getSelectedFiCatIds` | `modules-calc.js` |
-| `getSelfTestCases` | `features-sheets-pwa-selftest.js` |
-| `getShopRange` | `cobek-io.js` |
-| `getTxListRange` | `tx-list-cashflow.js` |
-| `getVehicleKm` | `vehicle-core.js` |
-| `getWeekRange` | `reset-gaji-mingguan.js` |
+| `getKeuFilters` | `modules/finance/filter-laporan.js` |
+| `getLaporanFilters` | `modules/finance/filter-laporan.js` |
+| `getLastServiceKm` | `modules/vehicle/sparepart-servis.js` |
+| `getLastServiceKmForCat` | `modules/vehicle/sparepart-servis.js` |
+| `getOcrWorker` | `modules/shared/scan-ocr.js` |
+| `getProactiveReminders` | `modules/vehicle/vehicle-core.js` |
+| `getPTKP` | `pajak-aset-ui-wrappers.js` |
+| `getRange` | `modules/finance/tx-list-cashflow.js` |
+| `getSelectedBudgetCatIds` | `budget.js` |
+| `getSelectedFiCatIds` | `modules/shared/modules-calc.js` |
+| `getSelfTestCases` | `self-test.js` |
+| `getShopRange` | `modules/shop/cobek-io.js` |
+| `getTxListRange` | `modules/finance/tx-list-cashflow.js` |
+| `getVehicleKm` | `modules/vehicle/vehicle-core.js` |
+| `getWeekRange` | `modules/business/reset-gaji-mingguan.js` |
 | `goalAdapterFindOne` | `lifeos/adapters/goal-adapter.js` |
 | `goalAdapterList` | `lifeos/adapters/goal-adapter.js` |
-| `GoldImport` | `aset-emas-impor.js` |
-| `GoldZakat` | `aset-emas-impor.js` |
-| `goToList` | `filter-laporan.js` |
-| `goToPageAndClose` | `features-aiwidget-reminder-gdrive-search.js` |
-| `goToServisFromDash` | `sparepart-servis.js` |
-| `guessAssetJenisFromText` | `scan-ocr.js` |
-| `guessAssetNameFromText` | `scan-ocr.js` |
-| `guessCategoryFromReceiptText` | `scan-ocr.js` |
-| `guessCheckoutCicilan` | `scan-ocr.js` |
-| `guessCheckoutItemName` | `scan-ocr.js` |
-| `guessCheckoutPrices` | `scan-ocr.js` |
-| `guessCheckoutTotalTagihan` | `scan-ocr.js` |
-| `guessCryptoSymbolFromText` | `scan-ocr.js` |
-| `guessSparepartFromReceiptText` | `scan-ocr.js` |
-| `guessTransferNameFromText` | `scan-ocr.js` |
-| `guessWorthItCategory` | `scan-ocr.js` |
-| `hashPin` | `keamanan-pin.js` |
-| `hasIntervalOverride` | `sparepart-servis.js` |
-| `hideDashCardEl` | `modules-render.js` |
-| `hideSuggestBox` | `transaksi.js` |
-| `IDBStore` | `aset.js` |
-| `ikatSimTagihan` | `vehicle-core.js` |
-| `ikatSptTagihan` | `vehicle-core.js` |
-| `ikatVehTaxTagihan` | `vehicle-core.js` |
-| `ImportKatalog` | `cobek-io.js` |
-| `ImportShopExcel` | `cobek-io.js` |
-| `initChat` | `features-aiwidget-reminder-gdrive-search.js` |
-| `inRange` | `backup-restore.js` |
+| `GoldImport` | `modules/asset/aset-emas-impor.js` |
+| `GoldZakat` | `modules/asset/aset-emas-impor.js` |
+| `goToList` | `modules/finance/filter-laporan.js` |
+| `goToPageAndClose` | `global-search.js` |
+| `goToServisFromDash` | `modules/vehicle/sparepart-servis.js` |
+| `guessAssetJenisFromText` | `modules/shared/scan-ocr.js` |
+| `guessAssetNameFromText` | `modules/shared/scan-ocr.js` |
+| `guessCategoryFromReceiptText` | `modules/shared/scan-ocr.js` |
+| `guessCheckoutCicilan` | `modules/shared/scan-ocr.js` |
+| `guessCheckoutItemName` | `modules/shared/scan-ocr.js` |
+| `guessCheckoutPrices` | `modules/shared/scan-ocr.js` |
+| `guessCheckoutTotalTagihan` | `modules/shared/scan-ocr.js` |
+| `guessCryptoSymbolFromText` | `modules/shared/scan-ocr.js` |
+| `guessSparepartFromReceiptText` | `modules/shared/scan-ocr.js` |
+| `guessTransferNameFromText` | `modules/shared/scan-ocr.js` |
+| `guessWorthItCategory` | `modules/shared/scan-ocr.js` |
+| `hashPin` | `modules/shared/keamanan-pin.js` |
+| `hasIntervalOverride` | `modules/vehicle/sparepart-servis.js` |
+| `hideDashCardEl` | `modules/shared/modules-render.js` |
+| `hideSuggestBox` | `modules/finance/transaksi.js` |
+| `hitungPBB` | `pajak-aset-ui-wrappers.js` |
+| `hitungPPh21` | `pajak-aset-ui-wrappers.js` |
+| `hitungPPh21Progresif` | `pajak-aset-ui-wrappers.js` |
+| `hitungZakatFitrah` | `pajak-aset-ui-wrappers.js` |
+| `hitungZakatMaal` | `pajak-aset-ui-wrappers.js` |
+| `hitungZakatPenghasilan` | `pajak-aset-ui-wrappers.js` |
+| `IDBStore` | `modules/asset/aset.js` |
+| `ikatPBBTagihan` | `pajak-aset-ui-wrappers.js` |
+| `ikatSimTagihan` | `modules/vehicle/vehicle-core.js` |
+| `ikatSptTagihan` | `modules/vehicle/vehicle-core.js` |
+| `ikatVehTaxTagihan` | `modules/vehicle/vehicle-core.js` |
+| `ImportKatalog` | `modules/shop/cobek-io.js` |
+| `ImportShopExcel` | `modules/shop/cobek-io.js` |
+| `initChat` | `ai-chat.js` |
+| `inRange` | `modules/shared/backup-restore.js` |
 | `InsightGenerator` | `economic-intelligence/engine/insight-generator.js` |
-| `InvestAI` | `invest-ai-widget.js` |
-| `Investment` | `investasi.js` |
-| `INVESTMENT_TYPES` | `investasi.js` |
-| `isAccLinkedToAsset` | `akun.js` |
-| `isBensinSubName` | `transaksi.js` |
-| `isDashCardOn` | `modules-render.js` |
-| `isDevMode` | `features-helpers-global-security.js` |
+| `InvestAI` | `modules/asset/invest-ai-widget.js` |
+| `Investment` | `modules/asset/investasi.js` |
+| `INVESTMENT_TYPES` | `modules/asset/investasi.js` |
+| `isAccLinkedToAsset` | `modules/finance/akun.js` |
+| `isBensinSubName` | `modules/finance/transaksi.js` |
+| `isDashCardOn` | `modules/shared/modules-render.js` |
+| `isDevMode` | `modules/shared/features-helpers-global-security.js` |
 | `isDueSoon` | `lifeos/adapters/today-adapter.js` |
-| `isKendaraanCatName` | `transaksi.js` |
-| `isShopStockCatName` | `tx-cobek.js` |
-| `isSparepartSubName` | `transaksi.js` |
-| `jsAttrEscape` | `transaksi.js` |
-| `Kasir` | `kasir.js` |
-| `Kekayaan` | `modules-calc.js` |
-| `KELOLA_SUBTAB_IDX` | `dashboard-hub.js` |
-| `KELOLA_SUBTAB_ORDER` | `tx-list-cashflow.js` |
-| `KEU_TAB_IDX` | `dashboard-hub.js` |
-| `KEU_TAB_ORDER` | `tx-list-cashflow.js` |
-| `KeuanganInsight` | `feature-insights.js` |
+| `isiPPhDariTransaksi` | `pajak-aset-ui-wrappers.js` |
+| `isKendaraanCatName` | `modules/finance/transaksi.js` |
+| `isNoSpendDay` | `pajak-aset-ui-wrappers.js` |
+| `isShopStockCatName` | `modules/finance/tx-cobek.js` |
+| `isSparepartSubName` | `modules/finance/transaksi.js` |
+| `jsAttrEscape` | `modules/finance/transaksi.js` |
+| `Kasir` | `modules/business/kasir.js` |
+| `Kekayaan` | `modules/shared/modules-calc.js` |
+| `KELOLA_SUBTAB_IDX` | `modules/dashboard-hub/dashboard-hub.js` |
+| `KELOLA_SUBTAB_ORDER` | `modules/finance/tx-list-cashflow.js` |
+| `KEU_TAB_IDX` | `modules/dashboard-hub/dashboard-hub.js` |
+| `KEU_TAB_ORDER` | `modules/finance/tx-list-cashflow.js` |
+| `KeuanganInsight` | `modules/ai/feature-insights.js` |
 | `knowledgeAdapterByTag` | `lifeos/adapters/knowledge-adapter.js` |
 | `knowledgeAdapterCatatanRef` | `lifeos/adapters/knowledge-adapter.js` |
 | `knowledgeAdapterList` | `lifeos/adapters/knowledge-adapter.js` |
 | `knowledgeServiceDelete` | `lifeos/services/knowledge-service.js` |
 | `knowledgeServiceSave` | `lifeos/services/knowledge-service.js` |
 | `knowledgeServiceUpdateTags` | `lifeos/services/knowledge-service.js` |
-| `Laporan` | `cobek-order.js` |
-| `LAPORAN_SUBTAB_IDX` | `dashboard-hub.js` |
-| `LAPORAN_SUBTAB_ORDER` | `tx-list-cashflow.js` |
-| `LaporanAset` | `aset.js` |
-| `lapTxPage` | `filter-laporan.js` |
-| `learnCatFromItemName` | `scan-ocr.js` |
-| `LifeBalance` | `hidup-seimbang.js` |
+| `Laporan` | `modules/shop/cobek-order.js` |
+| `LAPORAN_SUBTAB_IDX` | `modules/dashboard-hub/dashboard-hub.js` |
+| `LAPORAN_SUBTAB_ORDER` | `modules/finance/tx-list-cashflow.js` |
+| `LaporanAset` | `modules/asset/aset.js` |
+| `lapTxPage` | `modules/finance/filter-laporan.js` |
+| `learnCatFromItemName` | `modules/shared/scan-ocr.js` |
+| `LifeBalance` | `modules/home/hidup-seimbang.js` |
 | `LIFEOS_AREAS` | `lifeos/lifeos-registry.js` |
 | `LIFEOS_GOAL_SOURCES` | `lifeos/lifeos-registry.js` |
 | `LIFEOS_KNOWLEDGE_REF_SOURCE` | `lifeos/lifeos-registry.js` |
@@ -682,155 +720,164 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `lifeOSSave` | `lifeos/lifeos-store.js` |
 | `LifeOSStore` | `lifeos/lifeos-store.js` |
 | `LifeOSToday` | `lifeos/ui/today.js` |
-| `linkedAssetAccountIds` | `akun.js` |
-| `LinkTx` | `linktx.js` |
-| `load` | `features-helpers-global-security.js` |
-| `loadAndMigrateApiKeyOnUnlock` | `keamanan-pin.js` |
-| `loadKeuFilterPrefsIntoDOM` | `filter-laporan.js` |
-| `loadMoreBbmList` | `vehicle-core.js` |
-| `loadMoreLapTx` | `filter-laporan.js` |
-| `loadMoreServisList` | `sparepart-servis.js` |
-| `loadMoreTx` | `filter-laporan.js` |
+| `linkedAssetAccountIds` | `modules/finance/akun.js` |
+| `LinkTx` | `modules/finance/linktx.js` |
+| `load` | `modules/shared/features-helpers-global-security.js` |
+| `loadAndMigrateApiKeyOnUnlock` | `modules/shared/keamanan-pin.js` |
+| `loadKeuFilterPrefsIntoDOM` | `modules/finance/filter-laporan.js` |
+| `loadMoreBbmList` | `modules/vehicle/vehicle-core.js` |
+| `loadMoreLapTx` | `modules/finance/filter-laporan.js` |
+| `loadMoreServisList` | `modules/vehicle/sparepart-servis.js` |
+| `loadMoreTx` | `modules/finance/filter-laporan.js` |
 | `MacroDataAdapter` | `economic-intelligence/adapters/macro-data-adapter.js` |
 | `MacroSyncService` | `economic-intelligence/services/macro-sync-service.js` |
-| `markBillPaid` | `tagihan-kalender.js` |
-| `markShopDelivered` | `cobek-io.js` |
-| `markSparepartServiced` | `sparepart-servis.js` |
-| `matchingVehicleName` | `sparepart-servis.js` |
-| `maybeOfferPaylaterReminder` | `scan-ocr.js` |
-| `migrateShopCategory` | `features-helpers-global-security.js` |
-| `MobilInsight` | `feature-insights.js` |
-| `MODAL_HTML` | `modals.js` |
-| `MODAL_VERSION` | `modals.js` |
-| `MODULE_CALC_VERSION` | `modules-calc.js` |
-| `MODULE_FEATURES_VERSION` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `MODULE_RENDER_VERSION` | `modules-render.js` |
-| `MONTHS` | `helper-teks.js` |
-| `MONTHS_FULL` | `helper-teks.js` |
-| `MY_WRENCH` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `MY_WRENCH_SCALE` | `sparepart-servis.js` |
-| `navBillCalendar` | `tagihan-kalender.js` |
-| `normalizeAmtToken` | `kalkulator-input.js` |
+| `markBillPaid` | `modules/finance/tagihan-kalender.js` |
+| `markShopDelivered` | `modules/shop/cobek-io.js` |
+| `markSparepartServiced` | `modules/vehicle/sparepart-servis.js` |
+| `matchingVehicleName` | `modules/vehicle/sparepart-servis.js` |
+| `maybeOfferPaylaterReminder` | `modules/shared/scan-ocr.js` |
+| `migrateShopCategory` | `modules/shared/features-helpers-global-security.js` |
+| `MobilInsight` | `modules/ai/feature-insights.js` |
+| `MODAL_HTML` | `modules/shared/modals.js` |
+| `MODAL_VERSION` | `modules/shared/modals.js` |
+| `MODULE_CALC_VERSION` | `modules/shared/modules-calc.js` |
+| `MODULE_FEATURES_VERSION` | `chat-action-handlers.js` |
+| `MODULE_RENDER_VERSION` | `modules/shared/modules-render.js` |
+| `MONTHS` | `modules/shared/helper-teks.js` |
+| `MONTHS_FULL` | `modules/shared/helper-teks.js` |
+| `MY_WRENCH` | `car-notes.js` |
+| `MY_WRENCH_SCALE` | `modules/vehicle/sparepart-servis.js` |
+| `navBillCalendar` | `modules/finance/tagihan-kalender.js` |
+| `normalizeAmtToken` | `modules/shared/kalkulator-input.js` |
+| `normalizeOcrNumber` | `pajak-aset-ui-wrappers.js` |
 | `NotificationService` | `economic-intelligence/services/notification-service.js` |
-| `ocrRecognize` | `scan-ocr.js` |
-| `onBackupPeriodeChange` | `backup-restore.js` |
-| `onBudgetCatChildToggle` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `onBudgetCatTotalToggle` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `onCustomerInputChange` | `cobek-io.js` |
-| `onFiCatTotalToggle` | `modules-calc.js` |
-| `onFKatChange` | `filter-laporan.js` |
-| `OngkirCalc` | `cobek-pricing.js` |
-| `onGlobalSearchInput` | `features-aiwidget-reminder-gdrive-search.js` |
-| `onImportShopExcelFileChange` | `cobek-io.js` |
-| `onKfKatChange` | `filter-laporan.js` |
-| `onKfSearchInput` | `filter-laporan.js` |
-| `onKmVehicleChange` | `vehicle-core.js` |
-| `onPProdusenChange` | `cobek-tx-cart.js` |
-| `onServisItemAutofillInterval` | `sparepart-servis.js` |
-| `onServisPartChange` | `sparepart-servis.js` |
-| `onShopCustFieldInput` | `cobek-tx-cart.js` |
-| `onTargetAccChange` | `tx-target.js` |
-| `onTargetDanaDaruratToggle` | `tx-target.js` |
-| `onTxCatInput` | `transaksi.js` |
-| `onTxShopSaleItemChange` | `cobek-tx-cart.js` |
-| `onTxShopStockItemChange` | `cobek-tx-cart.js` |
-| `onTxShopStockProdusenChange` | `cobek-tx-cart.js` |
-| `onTxStockItemChange` | `tx-stok-sparepart.js` |
-| `onTxSubCatInput` | `transaksi.js` |
-| `openAbsensiModal` | `gaji-calc.js` |
-| `openAccModal` | `akun.js` |
-| `openArchiveModal` | `data-archive.js` |
-| `openBackupModal` | `backup-restore.js` |
-| `openBbmModal` | `vehicle-core.js` |
-| `openBillActionsMenu` | `tagihan-kalender.js` |
-| `openBillArchive` | `tagihan-kalender.js` |
-| `openBillCalendar` | `tagihan-kalender.js` |
-| `openBillHistory` | `tagihan-kalender.js` |
-| `openBillModal` | `tagihan-kalender.js` |
-| `openBudgetModal` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `openBudgetSettings` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `openCalc` | `kalkulator-input.js` |
-| `openCatatan` | `transaksi.js` |
-| `openCatModal` | `kategori.js` |
-| `openCicilanHistoryFromTx` | `cicilan.js` |
-| `openCustomerDetail` | `cobek-io.js` |
-| `openFiSettingsModal` | `modules-calc.js` |
-| `openGajiCalc` | `gaji-calc.js` |
-| `openGlobalSearch` | `features-aiwidget-reminder-gdrive-search.js` |
-| `openImportKatalogModal` | `cobek-io.js` |
-| `openImportShopExcelModal` | `cobek-io.js` |
-| `openKmModal` | `vehicle-core.js` |
-| `openModal` | `modal-navigasi.js` |
-| `openOrderModal` | `cobek-io.js` |
-| `openPriceRekoWidgetDetail` | `cobek-io.js` |
-| `openProductModal` | `cobek-tx-cart.js` |
-| `openProdusenHargaModal` | `cobek-io.js` |
-| `openProdusenModal` | `cobek-io.js` |
-| `openQS` | `modal-navigasi.js` |
-| `openReminderModal` | `transaksi.js` |
-| `openServisModal` | `sparepart-servis.js` |
-| `openSimModal` | `vehicle-core.js` |
-| `openSparepartModal` | `sparepart-servis.js` |
-| `openStockModal` | `sparepart-servis.js` |
-| `openStockRekoWidgetDetail` | `cobek-io.js` |
-| `openSubCatModal` | `kategori.js` |
-| `openTargetModal` | `tx-target.js` |
-| `openTransferModal` | `tx-transfer.js` |
-| `openTxModal` | `transaksi.js` |
-| `openVehicleModal` | `vehicle-core.js` |
-| `openVehTaxModal` | `vehicle-core.js` |
-| `openWaShare` | `features-aiwidget-reminder-gdrive-search.js` |
-| `openWeeklyResetManual` | `reset-gaji-mingguan.js` |
-| `Order` | `cobek-order.js` |
-| `PAGE_NAV_IDX` | `dashboard-hub.js` |
-| `PAJAK_TAB_IDX` | `dashboard-hub.js` |
-| `PajakAset` | `aset.js` |
-| `PajakInsight` | `feature-insights.js` |
-| `PAYLATER_DUE_NEXT_MONTH_RE` | `scan-ocr.js` |
-| `Payroll` | `payroll-absensi.js` |
-| `PBB` | `pajak-pbb-zakat.js` |
+| `ocrRecognize` | `modules/shared/scan-ocr.js` |
+| `onBackupPeriodeChange` | `modules/shared/backup-restore.js` |
+| `onBudgetCatChildToggle` | `budget.js` |
+| `onBudgetCatTotalToggle` | `budget.js` |
+| `onCustomerInputChange` | `modules/shop/cobek-io.js` |
+| `onDsExtraInput` | `pajak-aset-ui-wrappers.js` |
+| `onFiCatTotalToggle` | `modules/shared/modules-calc.js` |
+| `onFKatChange` | `modules/finance/filter-laporan.js` |
+| `OngkirCalc` | `modules/shop/cobek-pricing.js` |
+| `onGlobalSearchInput` | `global-search.js` |
+| `onImportShopExcelFileChange` | `modules/shop/cobek-io.js` |
+| `onKfKatChange` | `modules/finance/filter-laporan.js` |
+| `onKfSearchInput` | `modules/finance/filter-laporan.js` |
+| `onKmVehicleChange` | `modules/vehicle/vehicle-core.js` |
+| `onPProdusenChange` | `modules/shop/cobek-tx-cart.js` |
+| `onServisItemAutofillInterval` | `modules/vehicle/sparepart-servis.js` |
+| `onServisPartChange` | `modules/vehicle/sparepart-servis.js` |
+| `onShopCustFieldInput` | `modules/shop/cobek-tx-cart.js` |
+| `onTargetAccChange` | `modules/finance/tx-target.js` |
+| `onTargetDanaDaruratToggle` | `modules/finance/tx-target.js` |
+| `onTxCatInput` | `modules/finance/transaksi.js` |
+| `onTxShopSaleItemChange` | `modules/shop/cobek-tx-cart.js` |
+| `onTxShopStockItemChange` | `modules/shop/cobek-tx-cart.js` |
+| `onTxShopStockProdusenChange` | `modules/shop/cobek-tx-cart.js` |
+| `onTxStockItemChange` | `modules/finance/tx-stok-sparepart.js` |
+| `onTxSubCatInput` | `modules/finance/transaksi.js` |
+| `openAbsensiModal` | `modules/business/gaji-calc.js` |
+| `openAccModal` | `modules/finance/akun.js` |
+| `openArchiveModal` | `modules/shared/data-archive.js` |
+| `openAssetModal` | `pajak-aset-ui-wrappers.js` |
+| `openBackupModal` | `modules/shared/backup-restore.js` |
+| `openBbmModal` | `modules/vehicle/vehicle-core.js` |
+| `openBillActionsMenu` | `modules/finance/tagihan-kalender.js` |
+| `openBillArchive` | `modules/finance/tagihan-kalender.js` |
+| `openBillCalendar` | `modules/finance/tagihan-kalender.js` |
+| `openBillHistory` | `modules/finance/tagihan-kalender.js` |
+| `openBillModal` | `modules/finance/tagihan-kalender.js` |
+| `openBudgetModal` | `budget.js` |
+| `openBudgetSettings` | `budget.js` |
+| `openCalc` | `modules/shared/kalkulator-input.js` |
+| `openCatatan` | `modules/finance/transaksi.js` |
+| `openCatModal` | `modules/finance/kategori.js` |
+| `openCicilanHistoryFromTx` | `modules/finance/cicilan.js` |
+| `openCustomerDetail` | `modules/shop/cobek-io.js` |
+| `openDebtModal` | `pajak-aset-ui-wrappers.js` |
+| `openFiSettingsModal` | `modules/shared/modules-calc.js` |
+| `openGajiCalc` | `modules/business/gaji-calc.js` |
+| `openGlobalSearch` | `global-search.js` |
+| `openImportKatalogModal` | `modules/shop/cobek-io.js` |
+| `openImportShopExcelModal` | `modules/shop/cobek-io.js` |
+| `openKmModal` | `modules/vehicle/vehicle-core.js` |
+| `openModal` | `modules/shared/modal-navigasi.js` |
+| `openOrderModal` | `modules/shop/cobek-io.js` |
+| `openPiutangModal` | `pajak-aset-ui-wrappers.js` |
+| `openPriceRekoWidgetDetail` | `modules/shop/cobek-io.js` |
+| `openProductModal` | `modules/shop/cobek-tx-cart.js` |
+| `openProdusenHargaModal` | `modules/shop/cobek-io.js` |
+| `openProdusenModal` | `modules/shop/cobek-io.js` |
+| `openQS` | `modules/shared/modal-navigasi.js` |
+| `openReminderModal` | `modules/finance/transaksi.js` |
+| `openServisModal` | `modules/vehicle/sparepart-servis.js` |
+| `openSimModal` | `modules/vehicle/vehicle-core.js` |
+| `openSparepartModal` | `modules/vehicle/sparepart-servis.js` |
+| `openStockModal` | `modules/vehicle/sparepart-servis.js` |
+| `openStockRekoWidgetDetail` | `modules/shop/cobek-io.js` |
+| `openSubCatModal` | `modules/finance/kategori.js` |
+| `openTargetModal` | `modules/finance/tx-target.js` |
+| `openTransferModal` | `modules/finance/tx-transfer.js` |
+| `openTxModal` | `modules/finance/transaksi.js` |
+| `openVehicleModal` | `modules/vehicle/vehicle-core.js` |
+| `openVehTaxModal` | `modules/vehicle/vehicle-core.js` |
+| `openWaShare` | `reminder-notif.js` |
+| `openWeeklyResetManual` | `modules/business/reset-gaji-mingguan.js` |
+| `Order` | `modules/shop/cobek-order.js` |
+| `PAGE_NAV_IDX` | `modules/dashboard-hub/dashboard-hub.js` |
+| `PAJAK_TAB_IDX` | `modules/dashboard-hub/dashboard-hub.js` |
+| `PajakAset` | `modules/asset/aset.js` |
+| `PajakInsight` | `modules/ai/feature-insights.js` |
+| `parseDecStr` | `pajak-aset-ui-wrappers.js` |
+| `parsePzNum` | `pajak-aset-ui-wrappers.js` |
+| `PAYLATER_DUE_NEXT_MONTH_RE` | `modules/shared/scan-ocr.js` |
+| `Payroll` | `modules/business/payroll-absensi.js` |
+| `PBB` | `modules/finance/pajak-pbb-zakat.js` |
 | `PEHS_WEIGHTS` | `economic-intelligence/domain/scoring-formulas.js` |
-| `Pelanggan` | `cobek-order.js` |
-| `Pensiun` | `modules-calc.js` |
-| `Penyusutan` | `aset.js` |
-| `PENYUSUTAN_AI_JENIS_MENURUN` | `penyusutan-ai-widget.js` |
-| `PENYUSUTAN_AI_JENIS_TIDAK_SUSUT` | `penyusutan-ai-widget.js` |
-| `PenyusutanAI` | `penyusutan-ai-widget.js` |
-| `persistApiKeyEncrypted` | `keamanan-pin.js` |
-| `phoneToWaId` | `features-aiwidget-reminder-gdrive-search.js` |
-| `pickAssetScanCandidate` | `scan-ocr.js` |
-| `PIN_LOCK_DURATIONS_SEC` | `keamanan-pin.js` |
-| `PIN_MAX_ATTEMPTS` | `keamanan-pin.js` |
-| `pinBack` | `keamanan-pin.js` |
-| `pinBuffer` | `features-helpers-global-security.js` |
-| `pinPress` | `keamanan-pin.js` |
-| `Piutang` | `piutang-utang.js` |
-| `PiutangUtangInsight` | `feature-insights.js` |
-| `PJK_SUBTAB_IDX` | `dashboard-hub.js` |
-| `populateAccFilters` | `akun.js` |
-| `populateBillFilterOptions` | `tagihan-kalender.js` |
-| `populateCatFilter` | `filter-laporan.js` |
-| `populateCatSelect` | `kategori.js` |
-| `populateKeuFilters` | `filter-laporan.js` |
-| `populateKmVehicleSelect` | `vehicle-core.js` |
-| `populateOrderProductSelect` | `cobek-io.js` |
-| `populateServisPartSelect` | `sparepart-servis.js` |
-| `populateSparepartDatalist` | `sparepart-servis.js` |
-| `populateStockCatSelect` | `sparepart-servis.js` |
-| `populateSubSelect` | `kategori.js` |
-| `populateTxBbmVehicleSelect` | `tx-bbm.js` |
-| `populateTxShopSaleSelect` | `cobek-tx-cart.js` |
-| `populateTxShopStockSelect` | `cobek-tx-cart.js` |
-| `populateTxStockSelect` | `tx-stok-sparepart.js` |
-| `PORTFOLIO_LABELS` | `aset.js` |
-| `previewGoldImport` | `aset-emas-impor.js` |
-| `previewImportKatalog` | `cobek-io.js` |
-| `PriceReko` | `cobek-pricing.js` |
-| `PriceRekoWidget` | `cobek-pricing.js` |
-| `PRODUCTION_BUILD_SYNCED_VERSION` | `features-helpers-global-security.js` |
-| `Produsen` | `cobek-order.js` |
-| `profileJiwaKeluarga` | `profil-pengaturan.js` |
-| `profilePTKPStatus` | `profil-pengaturan.js` |
+| `Pelanggan` | `modules/shop/cobek-order.js` |
+| `Pensiun` | `modules/shared/modules-calc.js` |
+| `Penyusutan` | `modules/asset/aset.js` |
+| `PENYUSUTAN_AI_JENIS_MENURUN` | `modules/asset/penyusutan-ai-widget.js` |
+| `PENYUSUTAN_AI_JENIS_TIDAK_SUSUT` | `modules/asset/penyusutan-ai-widget.js` |
+| `PenyusutanAI` | `modules/asset/penyusutan-ai-widget.js` |
+| `persistApiKeyEncrypted` | `modules/shared/keamanan-pin.js` |
+| `phoneToWaId` | `reminder-notif.js` |
+| `pickAssetScanCandidate` | `modules/shared/scan-ocr.js` |
+| `pilihAsetPBB` | `pajak-aset-ui-wrappers.js` |
+| `PIN_LOCK_DURATIONS_SEC` | `modules/shared/keamanan-pin.js` |
+| `PIN_MAX_ATTEMPTS` | `modules/shared/keamanan-pin.js` |
+| `pinBack` | `modules/shared/keamanan-pin.js` |
+| `pinBuffer` | `modules/shared/features-helpers-global-security.js` |
+| `pinPress` | `modules/shared/keamanan-pin.js` |
+| `Piutang` | `modules/finance/piutang-utang.js` |
+| `PiutangUtangInsight` | `modules/ai/feature-insights.js` |
+| `PJK_SUBTAB_IDX` | `modules/dashboard-hub/dashboard-hub.js` |
+| `PJK_SUBTAB_ORDER` | `pajak-aset-ui-wrappers.js` |
+| `populateAccFilters` | `modules/finance/akun.js` |
+| `populateBillFilterOptions` | `modules/finance/tagihan-kalender.js` |
+| `populateCatFilter` | `modules/finance/filter-laporan.js` |
+| `populateCatSelect` | `modules/finance/kategori.js` |
+| `populateKeuFilters` | `modules/finance/filter-laporan.js` |
+| `populateKmVehicleSelect` | `modules/vehicle/vehicle-core.js` |
+| `populateOrderProductSelect` | `modules/shop/cobek-io.js` |
+| `populateServisPartSelect` | `modules/vehicle/sparepart-servis.js` |
+| `populateSparepartDatalist` | `modules/vehicle/sparepart-servis.js` |
+| `populateStockCatSelect` | `modules/vehicle/sparepart-servis.js` |
+| `populateSubSelect` | `modules/finance/kategori.js` |
+| `populateTxBbmVehicleSelect` | `modules/finance/tx-bbm.js` |
+| `populateTxShopSaleSelect` | `modules/shop/cobek-tx-cart.js` |
+| `populateTxShopStockSelect` | `modules/shop/cobek-tx-cart.js` |
+| `populateTxStockSelect` | `modules/finance/tx-stok-sparepart.js` |
+| `PORTFOLIO_LABELS` | `modules/asset/aset.js` |
+| `previewGoldImport` | `modules/asset/aset-emas-impor.js` |
+| `previewImportKatalog` | `modules/shop/cobek-io.js` |
+| `PriceReko` | `modules/shop/cobek-pricing.js` |
+| `PriceRekoWidget` | `modules/shop/cobek-pricing.js` |
+| `PRODUCTION_BUILD_SYNCED_VERSION` | `modules/shared/features-helpers-global-security.js` |
+| `Produsen` | `modules/shop/cobek-order.js` |
+| `profileJiwaKeluarga` | `modules/shared/profil-pengaturan.js` |
+| `profilePTKPStatus` | `modules/shared/profil-pengaturan.js` |
 | `projectAdapterFindOne` | `lifeos/adapters/project-adapter.js` |
 | `projectAdapterList` | `lifeos/adapters/project-adapter.js` |
 | `projectServiceAddChecklistItem` | `lifeos/services/project-service.js` |
@@ -838,372 +885,393 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `projectServiceDelete` | `lifeos/services/project-service.js` |
 | `projectServiceSetStatus` | `lifeos/services/project-service.js` |
 | `projectServiceToggleChecklistItem` | `lifeos/services/project-service.js` |
-| `quickScanAsset` | `scan-ocr.js` |
-| `quickToggleInclude` | `akun.js` |
-| `recalcAccBalance` | `akun.js` |
-| `RECEIPT_NOISE_LINE_RE` | `scan-ocr.js` |
-| `RECEIPT_TOTAL_LABEL_RE` | `scan-ocr.js` |
-| `recentUniqueStrings` | `transaksi.js` |
+| `quickScanAsset` | `modules/shared/scan-ocr.js` |
+| `quickToggleInclude` | `modules/finance/akun.js` |
+| `recalcAccBalance` | `modules/finance/akun.js` |
+| `RECEIPT_NOISE_LINE_RE` | `modules/shared/scan-ocr.js` |
+| `RECEIPT_TOTAL_LABEL_RE` | `modules/shared/scan-ocr.js` |
+| `recentUniqueStrings` | `modules/finance/transaksi.js` |
 | `RecommendationService` | `economic-intelligence/services/recommendation-service.js` |
-| `recordBbmLog` | `tx-bbm.js` |
-| `recordShopSale` | `cobek-tx-cart.js` |
-| `RefAI` | `pajak-pbb-zakat.js` |
-| `Refleksi` | `refleksi-selfcare.js` |
-| `REFLEKSI_SELFCARE_ITEMS` | `refleksi-selfcare.js` |
-| `refreshBillEverywhere` | `tagihan-kalender.js` |
-| `refreshCurrentPage` | `modal-navigasi.js` |
-| `refreshTxCatIfOpen` | `kategori.js` |
-| `rememberLastAccForCat` | `scan-ocr.js` |
-| `removeOrderItem` | `cobek-io.js` |
-| `removeShopStockCartItem` | `cobek-tx-cart.js` |
-| `removeTxShopSaleCartItem` | `cobek-tx-cart.js` |
-| `renderAccGrid` | `modules-render.js` |
-| `renderActualStorageQuota` | `modules-render.js` |
-| `renderArchiveHistory` | `modules-render.js` |
-| `renderArchiveSuggestHint` | `modules-render.js` |
-| `renderAssetList` | `modules-render.js` |
-| `renderBbmList` | `modules-render.js` |
-| `renderBillArchive` | `modules-render.js` |
-| `renderBillCalendar` | `modules-render.js` |
-| `renderBillHistory` | `modules-render.js` |
-| `renderBillList` | `modules-render.js` |
-| `renderBudgetCatOptions` | `modules-render.js` |
-| `renderBudgets` | `modules-render.js` |
-| `renderCarImportVehicleSelect` | `modules-render.js` |
-| `renderCashflowForecast` | `modules-render.js` |
-| `renderCatList` | `modules-render.js` |
-| `renderChatActionBubble` | `modules-render.js` |
-| `renderCnTab` | `modules-render.js` |
-| `renderCustomerList` | `cobek-io.js` |
-| `renderDashAccList` | `modules-render.js` |
-| `renderDashboard` | `modules-render.js` |
-| `renderDashboardBackupReminder` | `modules-render.js` |
-| `renderDashboardBills` | `modules-render.js` |
-| `renderDashboardServisReminder` | `modules-render.js` |
-| `renderDashboardSewaKiosReminder` | `modules-render.js` |
-| `renderDashBudgetMini` | `modules-render.js` |
-| `renderDashCardPrefsUI` | `modules-render.js` |
-| `renderDashCashflowForecast` | `modules-render.js` |
-| `renderDashDanaDarurat` | `modules-render.js` |
-| `renderDashLaporanMini` | `modules-render.js` |
-| `renderDashServisVehChips` | `modules-render.js` |
-| `renderDashZakatMini` | `modules-render.js` |
-| `renderDebtList` | `modules-render.js` |
-| `renderFiCatOptions` | `modules-render.js` |
-| `renderFinancialFreedom` | `modules-render.js` |
-| `renderFiScenarios` | `modules-render.js` |
-| `renderGDriveSettings` | `modules-render.js` |
-| `renderGrafik` | `modules-render.js` |
-| `renderKekayaanBersih` | `modules-render.js` |
-| `renderKeuAbsensiGajiCard` | `modules-render.js` |
-| `renderKeuangan` | `modules-render.js` |
-| `renderLapAccList` | `modules-render.js` |
-| `renderLaporan` | `modules-render.js` |
-| `renderLDR` | `modules-render.js` |
-| `renderModalSweepResults` | `modules-render.js` |
-| `renderMs` | `modules-render.js` |
-| `renderNavSmokeResults` | `modules-render.js` |
-| `renderNotifSettings` | `modules-render.js` |
-| `renderOrderItems` | `cobek-io.js` |
-| `renderPageContent` | `modules-render.js` |
-| `renderPajakRekomendasi` | `modules-render.js` |
-| `renderPajakZakat` | `modules-render.js` |
-| `renderPBB` | `modules-render.js` |
-| `renderPBBBillStatus` | `modules-render.js` |
-| `renderPiutangList` | `modules-render.js` |
-| `renderProductList` | `cobek-io.js` |
-| `renderProdusenList` | `cobek-io.js` |
-| `renderReceiptInsight` | `modules-render.js` |
-| `renderRefCheckReminder` | `modules-render.js` |
-| `renderReminder` | `modules-render.js` |
-| `renderSelfTestLastResult` | `modules-render.js` |
-| `renderSelfTestResults` | `modules-render.js` |
-| `renderServisList` | `modules-render.js` |
-| `renderServisReminder` | `modules-render.js` |
-| `renderSettings` | `modules-render.js` |
-| `renderSheetsSettings` | `modules-render.js` |
-| `renderShop` | `cobek-io.js` |
-| `renderShopGrafik` | `cobek-io.js` |
-| `renderShopLaporan` | `cobek-io.js` |
-| `renderShopRecent` | `cobek-io.js` |
-| `renderShopStockCartList` | `cobek-io.js` |
-| `renderSiapPulang` | `cobek-io.js` |
-| `renderSimLinkStatus` | `modules-render.js` |
-| `renderSimList` | `modules-render.js` |
-| `renderSparepartCatList` | `modules-render.js` |
-| `renderSptLinkStatus` | `modules-render.js` |
-| `renderStockList` | `modules-render.js` |
-| `renderStorageUsage` | `modules-render.js` |
-| `renderTarget` | `modules-render.js` |
-| `renderTxShopSaleCartList` | `cobek-io.js` |
-| `renderUMKMPajak` | `modules-render.js` |
-| `renderVehicleManageList` | `modules-render.js` |
-| `renderVehicleSelect` | `modules-render.js` |
-| `renderVehicleSpecCard` | `modules-render.js` |
-| `renderVehTaxLinkStatus` | `modules-render.js` |
-| `renderVehTaxList` | `modules-render.js` |
-| `renderVehTaxSim` | `modules-render.js` |
-| `renderWealthSnapshots` | `modules-render.js` |
-| `renderWorkDays` | `modules-render.js` |
-| `renderZakatLog` | `modules-render.js` |
-| `Renov` | `renovasi.js` |
-| `RenovAI` | `renovasi.js` |
-| `RenovCalc` | `renovasi.js` |
-| `requestNotifPermission` | `features-aiwidget-reminder-gdrive-search.js` |
-| `resetApp` | `features-aiwidget-reminder-gdrive-search.js` |
-| `resetBillFilter` | `tagihan-kalender.js` |
-| `resetKeuFilter` | `filter-laporan.js` |
-| `resetLaporanFilter` | `filter-laporan.js` |
-| `resetOcrWorker` | `scan-ocr.js` |
-| `resetPayMethodLock` | `transaksi.js` |
-| `resetShopStockCart` | `cobek-tx-cart.js` |
-| `resetTxPageAndRender` | `filter-laporan.js` |
-| `resetTxShopSaleCart` | `cobek-tx-cart.js` |
-| `resolveFavoritEntries` | `dashboard-hub-favorit-view.js` |
-| `resolveShopKategori` | `cobek-tx-cart.js` |
-| `resolveVehicleTxCategory` | `transaksi.js` |
-| `revertStockUsage` | `sparepart-servis.js` |
+| `recordBbmLog` | `modules/finance/tx-bbm.js` |
+| `recordShopSale` | `modules/shop/cobek-tx-cart.js` |
+| `RefAI` | `modules/finance/pajak-pbb-zakat.js` |
+| `Refleksi` | `modules/home/refleksi-selfcare.js` |
+| `REFLEKSI_SELFCARE_ITEMS` | `modules/home/refleksi-selfcare.js` |
+| `refreshBillEverywhere` | `modules/finance/tagihan-kalender.js` |
+| `refreshCurrentPage` | `modules/shared/modal-navigasi.js` |
+| `refreshTxCatIfOpen` | `modules/finance/kategori.js` |
+| `rememberLastAccForCat` | `modules/shared/scan-ocr.js` |
+| `removeOrderItem` | `modules/shop/cobek-io.js` |
+| `removeShopStockCartItem` | `modules/shop/cobek-tx-cart.js` |
+| `removeTxShopSaleCartItem` | `modules/shop/cobek-tx-cart.js` |
+| `renderAccGrid` | `modules/shared/modules-render.js` |
+| `renderActualStorageQuota` | `modules/shared/modules-render.js` |
+| `renderArchiveHistory` | `modules/shared/modules-render.js` |
+| `renderArchiveSuggestHint` | `modules/shared/modules-render.js` |
+| `renderAssetList` | `modules/shared/modules-render.js` |
+| `renderBbmList` | `modules/shared/modules-render.js` |
+| `renderBillArchive` | `modules/shared/modules-render.js` |
+| `renderBillCalendar` | `modules/shared/modules-render.js` |
+| `renderBillHistory` | `modules/shared/modules-render.js` |
+| `renderBillList` | `modules/shared/modules-render.js` |
+| `renderBudgetCatOptions` | `modules/shared/modules-render.js` |
+| `renderBudgets` | `modules/shared/modules-render.js` |
+| `renderCarImportVehicleSelect` | `modules/shared/modules-render.js` |
+| `renderCashflowForecast` | `modules/shared/modules-render.js` |
+| `renderCatList` | `modules/shared/modules-render.js` |
+| `renderChatActionBubble` | `modules/shared/modules-render.js` |
+| `renderCnTab` | `modules/shared/modules-render.js` |
+| `renderCustomerList` | `modules/shop/cobek-io.js` |
+| `renderDashAccList` | `modules/shared/modules-render.js` |
+| `renderDashboard` | `modules/shared/modules-render.js` |
+| `renderDashboardBackupReminder` | `modules/shared/modules-render.js` |
+| `renderDashboardBills` | `modules/shared/modules-render.js` |
+| `renderDashboardServisReminder` | `modules/shared/modules-render.js` |
+| `renderDashboardSewaKiosReminder` | `modules/shared/modules-render.js` |
+| `renderDashBudgetMini` | `modules/shared/modules-render.js` |
+| `renderDashCardPrefsUI` | `modules/shared/modules-render.js` |
+| `renderDashCashflowForecast` | `modules/shared/modules-render.js` |
+| `renderDashDanaDarurat` | `modules/shared/modules-render.js` |
+| `renderDashLaporanMini` | `modules/shared/modules-render.js` |
+| `renderDashServisVehChips` | `modules/shared/modules-render.js` |
+| `renderDashZakatMini` | `modules/shared/modules-render.js` |
+| `renderDebtList` | `modules/shared/modules-render.js` |
+| `renderFiCatOptions` | `modules/shared/modules-render.js` |
+| `renderFinancialFreedom` | `modules/shared/modules-render.js` |
+| `renderFiScenarios` | `modules/shared/modules-render.js` |
+| `renderGDriveSettings` | `modules/shared/modules-render.js` |
+| `renderGrafik` | `modules/shared/modules-render.js` |
+| `renderKekayaanBersih` | `modules/shared/modules-render.js` |
+| `renderKeuAbsensiGajiCard` | `modules/shared/modules-render.js` |
+| `renderKeuangan` | `modules/shared/modules-render.js` |
+| `renderLapAccList` | `modules/shared/modules-render.js` |
+| `renderLaporan` | `modules/shared/modules-render.js` |
+| `renderLDR` | `modules/shared/modules-render.js` |
+| `renderModalSweepResults` | `modules/shared/modules-render.js` |
+| `renderMs` | `modules/shared/modules-render.js` |
+| `renderNavSmokeResults` | `modules/shared/modules-render.js` |
+| `renderNotifSettings` | `modules/shared/modules-render.js` |
+| `renderOrderItems` | `modules/shop/cobek-io.js` |
+| `renderPageContent` | `modules/shared/modules-render.js` |
+| `renderPajakRekomendasi` | `modules/shared/modules-render.js` |
+| `renderPajakZakat` | `modules/shared/modules-render.js` |
+| `renderPBB` | `modules/shared/modules-render.js` |
+| `renderPBBBillStatus` | `modules/shared/modules-render.js` |
+| `renderPiutangList` | `modules/shared/modules-render.js` |
+| `renderProductList` | `modules/shop/cobek-io.js` |
+| `renderProdusenList` | `modules/shop/cobek-io.js` |
+| `renderReceiptInsight` | `modules/shared/modules-render.js` |
+| `renderRefCheckReminder` | `modules/shared/modules-render.js` |
+| `renderReminder` | `modules/shared/modules-render.js` |
+| `renderSelfTestLastResult` | `modules/shared/modules-render.js` |
+| `renderSelfTestResults` | `modules/shared/modules-render.js` |
+| `renderServisList` | `modules/shared/modules-render.js` |
+| `renderServisReminder` | `modules/shared/modules-render.js` |
+| `renderSettings` | `modules/shared/modules-render.js` |
+| `renderSheetsSettings` | `modules/shared/modules-render.js` |
+| `renderShop` | `modules/shop/cobek-io.js` |
+| `renderShopGrafik` | `modules/shop/cobek-io.js` |
+| `renderShopLaporan` | `modules/shop/cobek-io.js` |
+| `renderShopRecent` | `modules/shop/cobek-io.js` |
+| `renderShopStockCartList` | `modules/shop/cobek-io.js` |
+| `renderSiapPulang` | `modules/shop/cobek-io.js` |
+| `renderSimLinkStatus` | `modules/shared/modules-render.js` |
+| `renderSimList` | `modules/shared/modules-render.js` |
+| `renderSparepartCatList` | `modules/shared/modules-render.js` |
+| `renderSptLinkStatus` | `modules/shared/modules-render.js` |
+| `renderStockList` | `modules/shared/modules-render.js` |
+| `renderStorageUsage` | `modules/shared/modules-render.js` |
+| `renderTarget` | `modules/shared/modules-render.js` |
+| `renderTxShopSaleCartList` | `modules/shop/cobek-io.js` |
+| `renderUMKMPajak` | `modules/shared/modules-render.js` |
+| `renderVehicleManageList` | `modules/shared/modules-render.js` |
+| `renderVehicleSelect` | `modules/shared/modules-render.js` |
+| `renderVehicleSpecCard` | `modules/shared/modules-render.js` |
+| `renderVehTaxLinkStatus` | `modules/shared/modules-render.js` |
+| `renderVehTaxList` | `modules/shared/modules-render.js` |
+| `renderVehTaxSim` | `modules/shared/modules-render.js` |
+| `renderWealthSnapshots` | `modules/shared/modules-render.js` |
+| `renderWorkDays` | `modules/shared/modules-render.js` |
+| `renderZakatLog` | `modules/shared/modules-render.js` |
+| `Renov` | `modules/home/renovasi.js` |
+| `RenovAI` | `modules/home/renovasi.js` |
+| `RenovCalc` | `modules/home/renovasi.js` |
+| `requestNotifPermission` | `reminder-notif.js` |
+| `resetApp` | `reminder-notif.js` |
+| `resetBillFilter` | `modules/finance/tagihan-kalender.js` |
+| `resetKeuFilter` | `modules/finance/filter-laporan.js` |
+| `resetLaporanFilter` | `modules/finance/filter-laporan.js` |
+| `resetOcrWorker` | `modules/shared/scan-ocr.js` |
+| `resetPayMethodLock` | `modules/finance/transaksi.js` |
+| `resetShopStockCart` | `modules/shop/cobek-tx-cart.js` |
+| `resetTxPageAndRender` | `modules/finance/filter-laporan.js` |
+| `resetTxShopSaleCart` | `modules/shop/cobek-tx-cart.js` |
+| `resolveFavoritEntries` | `modules/dashboard-hub/dashboard-hub-favorit-view.js` |
+| `resolveShopKategori` | `modules/shop/cobek-tx-cart.js` |
+| `resolveVehicleTxCategory` | `modules/finance/transaksi.js` |
+| `revertStockUsage` | `modules/vehicle/sparepart-servis.js` |
 | `reviewAdapterIsOverdue` | `lifeos/adapters/review-adapter.js` |
 | `reviewAdapterLatestSnapshots` | `lifeos/adapters/review-adapter.js` |
 | `reviewAdapterLogFor` | `lifeos/adapters/review-adapter.js` |
 | `reviewServiceAddActionItem` | `lifeos/services/review-service.js` |
 | `reviewServiceComplete` | `lifeos/services/review-service.js` |
 | `reviewServiceStartSession` | `lifeos/services/review-service.js` |
-| `RISKY_OPENER_SPECS` | `features-sheets-pwa-selftest.js` |
+| `RIPPLE_SELECTOR` | `modules/shared/ripple-position.js` |
+| `RISKY_OPENER_SPECS` | `self-test.js` |
 | `RuleEngine` | `economic-intelligence/engine/rule-engine.js` |
-| `runBackup` | `backup-restore.js` |
-| `runDataHealthCheck` | `features-aiwidget-reminder-gdrive-search.js` |
-| `runDataMigrations` | `features-helpers-global-security.js` |
-| `runFullBackup` | `backup-restore.js` |
-| `runGlobalSearch` | `features-aiwidget-reminder-gdrive-search.js` |
-| `runNavSmokeTest` | `features-sheets-pwa-selftest.js` |
-| `runSelfTest` | `features-sheets-pwa-selftest.js` |
-| `safeCalc` | `kalkulator-input.js` |
-| `safeSetItem` | `features-helpers-global-security.js` |
-| `sameId` | `features-helpers-global-security.js` |
-| `save` | `features-helpers-global-security.js` |
-| `saveAcc` | `akun.js` |
-| `saveBbm` | `vehicle-core.js` |
-| `saveBill` | `tagihan-kalender.js` |
-| `saveBillHistoryEdit` | `tagihan-kalender.js` |
-| `saveBudget` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `saveBudgetSettings` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `saveCat` | `kategori.js` |
-| `saveCatatan` | `transaksi.js` |
-| `saveChatActionEdit` | `features-aiwidget-reminder-gdrive-search.js` |
-| `saveFiSettings` | `modules-calc.js` |
-| `saveFlush` | `features-helpers-global-security.js` |
-| `saveGajiAsIncome` | `gaji-calc.js` |
-| `saveKeuFilterPrefs` | `filter-laporan.js` |
-| `saveKm` | `vehicle-core.js` |
-| `saveLDR` | `transaksi.js` |
-| `saveOrder` | `cobek-io.js` |
-| `saveProduct` | `cobek-tx-cart.js` |
-| `saveProdusen` | `cobek-io.js` |
-| `saveProdusenHarga` | `cobek-io.js` |
-| `saveReminder` | `transaksi.js` |
-| `saveSelfTestState` | `features-sheets-pwa-selftest.js` |
-| `saveServis` | `sparepart-servis.js` |
-| `saveSim` | `vehicle-core.js` |
-| `saveSparepart` | `sparepart-servis.js` |
-| `saveStock` | `sparepart-servis.js` |
-| `saveSubCat` | `kategori.js` |
-| `saveTarget` | `tx-target.js` |
-| `saveTransfer` | `tx-transfer.js` |
-| `saveTx` | `transaksi.js` |
-| `saveVehicle` | `vehicle-core.js` |
-| `saveVehTax` | `vehicle-core.js` |
-| `scanAssetPortfolio` | `scan-ocr.js` |
-| `scanBuktiTransfer` | `scan-ocr.js` |
-| `scanErrorMessage` | `scan-ocr.js` |
-| `scanKmOdometer` | `scan-ocr.js` |
-| `scanReceipt` | `scan-ocr.js` |
-| `scanReceiptBelanja` | `scan-ocr.js` |
-| `scanTanggalDariFoto` | `scan-ocr.js` |
-| `scanWorthItCheckout` | `scan-ocr.js` |
-| `SCHEMA_VERSION` | `features-helpers-global-security.js` |
-| `selectBillCalDay` | `tagihan-kalender.js` |
-| `selectBudgetIcon` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `selectBudgetPeriod` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `selectFiAssetScope` | `modules-calc.js` |
-| `selectShopCustomer` | `cobek-tx-cart.js` |
-| `selectSimpleAutocomplete` | `transaksi.js` |
-| `selectStatusKawin` | `profil-pengaturan.js` |
-| `selectStatusPekerjaan` | `profil-pengaturan.js` |
-| `selectTanggungan` | `profil-pengaturan.js` |
-| `selectTxCat` | `transaksi.js` |
-| `selectTxSubCat` | `transaksi.js` |
-| `selectTxSubCatWithCat` | `transaksi.js` |
-| `selectVehicle` | `vehicle-core.js` |
-| `SELF_REWARD_LEVEL_LABEL` | `self-reward-view.js` |
-| `SelfCareReko` | `refleksi-selfcare.js` |
-| `SelfReward` | `self-reward-engine.js` |
-| `SelfRewardAI` | `self-reward-ai-widget.js` |
-| `SelfRewardDefaults` | `self-reward-engine.js` |
-| `SelfRewardView` | `self-reward-view.js` |
-| `sendChat` | `features-aiwidget-reminder-gdrive-search.js` |
-| `Servis` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `servisLogMatchesCat` | `sparepart-servis.js` |
-| `setAllDashCardPrefs` | `modules-render.js` |
-| `setAsetTab` | `aset.js` |
-| `setBillType` | `tagihan-kalender.js` |
-| `setCatModalType` | `kategori.js` |
-| `setCnPeriode` | `vehicle-core.js` |
-| `setCnTab` | `vehicle-core.js` |
-| `setCobekTab` | `cobek-io.js` |
-| `setDashServisVehFilter` | `sparepart-servis.js` |
-| `setImportKatalogTarget` | `cobek-io.js` |
-| `setImportShopExcelTarget` | `cobek-io.js` |
-| `setKelolaTab` | `tx-list-cashflow.js` |
-| `setKeuanganTab` | `tx-list-cashflow.js` |
-| `setLaporanPeriode` | `cobek-io.js` |
-| `setLaporanTab` | `tx-list-cashflow.js` |
-| `setPayMethod` | `transaksi.js` |
-| `setPeriode` | `tx-list-cashflow.js` |
-| `setShopPeriode` | `cobek-io.js` |
-| `setShopTab` | `cobek-io.js` |
-| `setTheme` | `format-tema.js` |
-| `setTxListPeriode` | `tx-list-cashflow.js` |
-| `setTxType` | `transaksi.js` |
-| `setupPWA` | `features-sheets-pwa-selftest.js` |
-| `SewaKios` | `sewakios.js` |
-| `SewaKiosRenovInsight` | `feature-insights.js` |
-| `shareBillWA` | `features-aiwidget-reminder-gdrive-search.js` |
-| `shareLDRWA` | `features-aiwidget-reminder-gdrive-search.js` |
-| `SHEETS_MODULES` | `features-aiwidget-reminder-gdrive-search.js` |
-| `SHEETS_ROW_BUFFER` | `features-sheets-pwa-selftest.js` |
-| `SHEETS_SCHEMAS` | `features-aiwidget-reminder-gdrive-search.js` |
-| `SHEETS_WRITE_CHUNK` | `features-sheets-pwa-selftest.js` |
-| `sheetsCellsToItem` | `features-aiwidget-reminder-gdrive-search.js` |
-| `sheetsColLetter` | `features-aiwidget-reminder-gdrive-search.js` |
-| `sheetsConnectOnly` | `features-sheets-pwa-selftest.js` |
-| `sheetsEnsureAuth` | `features-sheets-pwa-selftest.js` |
-| `sheetsEnsureTabs` | `features-sheets-pwa-selftest.js` |
-| `sheetsFetch` | `features-sheets-pwa-selftest.js` |
-| `sheetsGetOrCreateSpreadsheet` | `features-sheets-pwa-selftest.js` |
-| `sheetsHeaderFor` | `features-aiwidget-reminder-gdrive-search.js` |
-| `sheetsInitTokenClient` | `features-sheets-pwa-selftest.js` |
-| `sheetsItemToCells` | `features-aiwidget-reminder-gdrive-search.js` |
-| `sheetsLastColFor` | `features-aiwidget-reminder-gdrive-search.js` |
-| `sheetsPendingAfterAuth` | `features-sheets-pwa-selftest.js` |
-| `sheetsPullNow` | `features-sheets-pwa-selftest.js` |
-| `sheetsSaveSpreadsheetId` | `features-aiwidget-reminder-gdrive-search.js` |
-| `sheetsSyncNow` | `features-sheets-pwa-selftest.js` |
-| `sheetsTokenClient` | `features-sheets-pwa-selftest.js` |
-| `SHOP_TAB_IDX` | `dashboard-hub.js` |
-| `ShopExport` | `cobek-io.js` |
-| `ShopInsight` | `feature-insights.js` |
-| `shopKategoriName` | `cobek-tx-cart.js` |
-| `shopOrderRowHTML` | `cobek-io.js` |
-| `showAlertModal` | `modal-navigasi.js` |
-| `showAllBudgetDrillDown` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `showBudgetDrillDown` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `showChoiceModal` | `modal-navigasi.js` |
-| `showFilteredTx` | `filter-laporan.js` |
-| `showMain` | `features-helpers-global-security.js` |
-| `showPage` | `modal-navigasi.js` |
-| `showPinPromptModal` | `modal-navigasi.js` |
-| `showPinScreen` | `keamanan-pin.js` |
-| `showPromptModal` | `modal-navigasi.js` |
-| `showQuickScanPicker` | `scan-ocr.js` |
-| `showTargetAccountTx` | `tx-target.js` |
-| `SiapPulang` | `cobek-order.js` |
-| `simpleAutocompleteInput` | `transaksi.js` |
-| `Sparepart` | `sparepart-servis.js` |
-| `SPAREPART_LINE_KEYWORDS` | `scan-ocr.js` |
-| `sptStatusBadge` | `vehicle-core.js` |
-| `sptTahunanDueDate` | `vehicle-core.js` |
-| `startEditCurKm` | `vehicle-core.js` |
-| `STATUS_BAR_LINE_RE` | `scan-ocr.js` |
+| `runBackup` | `modules/shared/backup-restore.js` |
+| `runDataHealthCheck` | `data-health-check.js` |
+| `runDataMigrations` | `modules/shared/features-helpers-global-security.js` |
+| `runFullBackup` | `modules/shared/backup-restore.js` |
+| `runGlobalSearch` | `global-search.js` |
+| `runNavSmokeTest` | `self-test.js` |
+| `runSelfTest` | `self-test.js` |
+| `safeCalc` | `modules/shared/kalkulator-input.js` |
+| `safeSetItem` | `modules/shared/features-helpers-global-security.js` |
+| `sameId` | `modules/shared/features-helpers-global-security.js` |
+| `save` | `modules/shared/features-helpers-global-security.js` |
+| `saveAcc` | `modules/finance/akun.js` |
+| `saveAsset` | `pajak-aset-ui-wrappers.js` |
+| `saveBbm` | `modules/vehicle/vehicle-core.js` |
+| `saveBill` | `modules/finance/tagihan-kalender.js` |
+| `saveBillHistoryEdit` | `modules/finance/tagihan-kalender.js` |
+| `saveBudget` | `budget.js` |
+| `saveBudgetSettings` | `budget.js` |
+| `saveCat` | `modules/finance/kategori.js` |
+| `saveCatatan` | `modules/finance/transaksi.js` |
+| `saveChatActionEdit` | `ai-chat.js` |
+| `saveDebt` | `pajak-aset-ui-wrappers.js` |
+| `saveFiSettings` | `modules/shared/modules-calc.js` |
+| `saveFlush` | `modules/shared/features-helpers-global-security.js` |
+| `saveGajiAsIncome` | `modules/business/gaji-calc.js` |
+| `saveKeuFilterPrefs` | `modules/finance/filter-laporan.js` |
+| `saveKm` | `modules/vehicle/vehicle-core.js` |
+| `saveLDR` | `modules/finance/transaksi.js` |
+| `saveOrder` | `modules/shop/cobek-io.js` |
+| `savePajakSettings` | `pajak-aset-ui-wrappers.js` |
+| `savePiutang` | `pajak-aset-ui-wrappers.js` |
+| `saveProduct` | `modules/shop/cobek-tx-cart.js` |
+| `saveProdusen` | `modules/shop/cobek-io.js` |
+| `saveProdusenHarga` | `modules/shop/cobek-io.js` |
+| `saveReminder` | `modules/finance/transaksi.js` |
+| `saveSelfTestState` | `self-test.js` |
+| `saveServis` | `modules/vehicle/sparepart-servis.js` |
+| `saveSim` | `modules/vehicle/vehicle-core.js` |
+| `saveSparepart` | `modules/vehicle/sparepart-servis.js` |
+| `saveStock` | `modules/vehicle/sparepart-servis.js` |
+| `saveSubCat` | `modules/finance/kategori.js` |
+| `saveTarget` | `modules/finance/tx-target.js` |
+| `saveTransfer` | `modules/finance/tx-transfer.js` |
+| `saveTx` | `modules/finance/transaksi.js` |
+| `saveVehicle` | `modules/vehicle/vehicle-core.js` |
+| `saveVehTax` | `modules/vehicle/vehicle-core.js` |
+| `saveWealthSnapshot` | `pajak-aset-ui-wrappers.js` |
+| `scanAssetPortfolio` | `modules/shared/scan-ocr.js` |
+| `scanBuktiTransfer` | `modules/shared/scan-ocr.js` |
+| `scanErrorMessage` | `modules/shared/scan-ocr.js` |
+| `scanKmOdometer` | `modules/shared/scan-ocr.js` |
+| `scanReceipt` | `modules/shared/scan-ocr.js` |
+| `scanReceiptBelanja` | `modules/shared/scan-ocr.js` |
+| `scanTanggalDariFoto` | `modules/shared/scan-ocr.js` |
+| `scanWorthItCheckout` | `modules/shared/scan-ocr.js` |
+| `SCHEMA_VERSION` | `modules/shared/features-helpers-global-security.js` |
+| `selectBillCalDay` | `modules/finance/tagihan-kalender.js` |
+| `selectBudgetIcon` | `budget.js` |
+| `selectBudgetPeriod` | `budget.js` |
+| `selectFiAssetScope` | `modules/shared/modules-calc.js` |
+| `selectShopCustomer` | `modules/shop/cobek-tx-cart.js` |
+| `selectSimpleAutocomplete` | `modules/finance/transaksi.js` |
+| `selectStatusKawin` | `modules/shared/profil-pengaturan.js` |
+| `selectStatusPekerjaan` | `modules/shared/profil-pengaturan.js` |
+| `selectTanggungan` | `modules/shared/profil-pengaturan.js` |
+| `selectTxCat` | `modules/finance/transaksi.js` |
+| `selectTxSubCat` | `modules/finance/transaksi.js` |
+| `selectTxSubCatWithCat` | `modules/finance/transaksi.js` |
+| `selectVehicle` | `modules/vehicle/vehicle-core.js` |
+| `SELF_REWARD_LEVEL_LABEL` | `modules/self-reward/self-reward-view.js` |
+| `SelfCareReko` | `modules/home/refleksi-selfcare.js` |
+| `SelfReward` | `modules/self-reward/self-reward-engine.js` |
+| `SelfRewardAI` | `modules/self-reward/self-reward-ai-widget.js` |
+| `SelfRewardDefaults` | `modules/self-reward/self-reward-engine.js` |
+| `SelfRewardView` | `modules/self-reward/self-reward-view.js` |
+| `sendChat` | `ai-chat.js` |
+| `Servis` | `car-notes.js` |
+| `servisLogMatchesCat` | `modules/vehicle/sparepart-servis.js` |
+| `setAllDashCardPrefs` | `modules/shared/modules-render.js` |
+| `setAsetTab` | `modules/asset/aset.js` |
+| `setBillType` | `modules/finance/tagihan-kalender.js` |
+| `setCatModalType` | `modules/finance/kategori.js` |
+| `setCnPeriode` | `modules/vehicle/vehicle-core.js` |
+| `setCnTab` | `modules/vehicle/vehicle-core.js` |
+| `setCobekTab` | `modules/shop/cobek-io.js` |
+| `setDashServisVehFilter` | `modules/vehicle/sparepart-servis.js` |
+| `setDebtStrategyMethod` | `pajak-aset-ui-wrappers.js` |
+| `setImportKatalogTarget` | `modules/shop/cobek-io.js` |
+| `setImportShopExcelTarget` | `modules/shop/cobek-io.js` |
+| `setKelolaTab` | `modules/finance/tx-list-cashflow.js` |
+| `setKeuanganTab` | `modules/finance/tx-list-cashflow.js` |
+| `setLaporanPeriode` | `modules/shop/cobek-io.js` |
+| `setLaporanTab` | `modules/finance/tx-list-cashflow.js` |
+| `setPajakTab` | `pajak-aset-ui-wrappers.js` |
+| `setPayMethod` | `modules/finance/transaksi.js` |
+| `setPeriode` | `modules/finance/tx-list-cashflow.js` |
+| `setPjkTab` | `pajak-aset-ui-wrappers.js` |
+| `setSettingsTab` | `modules/shared/pengaturan-search.js` |
+| `setShopPeriode` | `modules/shop/cobek-io.js` |
+| `setShopTab` | `modules/shop/cobek-io.js` |
+| `setTheme` | `modules/shared/format-tema.js` |
+| `SETTINGS_TAB_ORDER` | `modules/shared/pengaturan-search.js` |
+| `setTxListPeriode` | `modules/finance/tx-list-cashflow.js` |
+| `setTxType` | `modules/finance/transaksi.js` |
+| `setupPWA` | `pwa-setup.js` |
+| `setupRipplePositionTracking` | `modules/shared/ripple-position.js` |
+| `SewaKios` | `modules/business/sewakios.js` |
+| `SewaKiosRenovInsight` | `modules/ai/feature-insights.js` |
+| `shareBillWA` | `reminder-notif.js` |
+| `shareLDRWA` | `reminder-notif.js` |
+| `SHEETS_MODULES` | `sheets-schema.js` |
+| `SHEETS_ROW_BUFFER` | `sheets-sync.js` |
+| `SHEETS_SCHEMAS` | `sheets-schema.js` |
+| `SHEETS_WRITE_CHUNK` | `sheets-sync.js` |
+| `sheetsCellsToItem` | `sheets-schema.js` |
+| `sheetsColLetter` | `sheets-schema.js` |
+| `sheetsConnectOnly` | `sheets-sync.js` |
+| `sheetsEnsureAuth` | `sheets-sync.js` |
+| `sheetsEnsureTabs` | `sheets-sync.js` |
+| `sheetsFetch` | `sheets-sync.js` |
+| `sheetsGetOrCreateSpreadsheet` | `sheets-sync.js` |
+| `sheetsHeaderFor` | `sheets-schema.js` |
+| `sheetsInitTokenClient` | `sheets-sync.js` |
+| `sheetsItemToCells` | `sheets-schema.js` |
+| `sheetsLastColFor` | `sheets-schema.js` |
+| `sheetsPendingAfterAuth` | `sheets-sync.js` |
+| `sheetsPullNow` | `sheets-sync.js` |
+| `sheetsSaveSpreadsheetId` | `sheets-schema.js` |
+| `sheetsSyncNow` | `sheets-sync.js` |
+| `sheetsTokenClient` | `sheets-sync.js` |
+| `SHOP_TAB_IDX` | `modules/dashboard-hub/dashboard-hub.js` |
+| `ShopExport` | `modules/shop/cobek-io.js` |
+| `ShopInsight` | `modules/ai/feature-insights.js` |
+| `shopKategoriName` | `modules/shop/cobek-tx-cart.js` |
+| `shopOrderRowHTML` | `modules/shop/cobek-io.js` |
+| `showAlertModal` | `modules/shared/modal-navigasi.js` |
+| `showAllBudgetDrillDown` | `budget.js` |
+| `showBudgetDrillDown` | `budget.js` |
+| `showChoiceModal` | `modules/shared/modal-navigasi.js` |
+| `showFilteredTx` | `modules/finance/filter-laporan.js` |
+| `showMain` | `modules/shared/features-helpers-global-security.js` |
+| `showPage` | `modules/shared/modal-navigasi.js` |
+| `showPinPromptModal` | `modules/shared/modal-navigasi.js` |
+| `showPinScreen` | `modules/shared/keamanan-pin.js` |
+| `showPromptModal` | `modules/shared/modal-navigasi.js` |
+| `showQuickScanPicker` | `modules/shared/scan-ocr.js` |
+| `showTargetAccountTx` | `modules/finance/tx-target.js` |
+| `SiapPulang` | `modules/shop/cobek-order.js` |
+| `simpleAutocompleteInput` | `modules/finance/transaksi.js` |
+| `Sparepart` | `modules/vehicle/sparepart-servis.js` |
+| `SPAREPART_LINE_KEYWORDS` | `modules/shared/scan-ocr.js` |
+| `sptStatusBadge` | `modules/vehicle/vehicle-core.js` |
+| `sptTahunanDueDate` | `modules/vehicle/vehicle-core.js` |
+| `startEditCurKm` | `modules/vehicle/vehicle-core.js` |
+| `STATUS_BAR_LINE_RE` | `modules/shared/scan-ocr.js` |
 | `STATUS_META` | `economic-intelligence/domain/status-classifier.js` |
-| `stgSearch` | `pengaturan-search.js` |
-| `StockRekoWidget` | `cobek-pricing.js` |
-| `STORAGE_BIG_MODULES` | `data-archive.js` |
-| `STORAGE_QUOTA_ESTIMATE` | `data-archive.js` |
-| `subCatParentId` | `features-helpers-global-security.js` |
-| `subNamesForCat` | `kategori.js` |
-| `syncBbmCost` | `vehicle-core.js` |
-| `syncBbmHargaChanged` | `vehicle-core.js` |
-| `syncBbmLiterFromCost` | `vehicle-core.js` |
-| `syncCicilanDate` | `cicilan.js` |
-| `syncCicilanPreview` | `cicilan.js` |
-| `syncTxAmtToLiter` | `tx-bbm.js` |
-| `syncTxAmtToLiterForce` | `tx-bbm.js` |
-| `syncTxBbmAmt` | `tx-bbm.js` |
-| `syncTxShopSaleAmt` | `cobek-tx-cart.js` |
-| `syncTxShopStockAmt` | `cobek-tx-cart.js` |
-| `testNotif` | `features-aiwidget-reminder-gdrive-search.js` |
-| `TimelineW` | `aset.js` |
-| `timeToMinutes` | `payroll-absensi.js` |
-| `toast` | `format-tema.js` |
+| `stgSearch` | `modules/shared/pengaturan-search.js` |
+| `StockRekoWidget` | `modules/shop/cobek-pricing.js` |
+| `STORAGE_BIG_MODULES` | `modules/shared/data-archive.js` |
+| `STORAGE_QUOTA_ESTIMATE` | `modules/shared/data-archive.js` |
+| `subCatParentId` | `modules/shared/features-helpers-global-security.js` |
+| `subNamesForCat` | `modules/finance/kategori.js` |
+| `syncBbmCost` | `modules/vehicle/vehicle-core.js` |
+| `syncBbmHargaChanged` | `modules/vehicle/vehicle-core.js` |
+| `syncBbmLiterFromCost` | `modules/vehicle/vehicle-core.js` |
+| `syncCicilanDate` | `modules/finance/cicilan.js` |
+| `syncCicilanPreview` | `modules/finance/cicilan.js` |
+| `syncTxAmtToLiter` | `modules/finance/tx-bbm.js` |
+| `syncTxAmtToLiterForce` | `modules/finance/tx-bbm.js` |
+| `syncTxBbmAmt` | `modules/finance/tx-bbm.js` |
+| `syncTxShopSaleAmt` | `modules/shop/cobek-tx-cart.js` |
+| `syncTxShopStockAmt` | `modules/shop/cobek-tx-cart.js` |
+| `testNotif` | `reminder-notif.js` |
+| `TimelineW` | `modules/asset/aset.js` |
+| `timeToMinutes` | `modules/business/payroll-absensi.js` |
+| `toast` | `modules/shared/format-tema.js` |
 | `todayAdapterList` | `lifeos/adapters/today-adapter.js` |
-| `todayStr` | `features-helpers-global-security.js` |
-| `toggleAccInclude` | `akun.js` |
-| `toggleApiKeyHint` | `profil-pengaturan.js` |
-| `toggleArchiveYear` | `data-archive.js` |
-| `toggleBackupModule` | `backup-restore.js` |
-| `toggleBillFilterPanel` | `tagihan-kalender.js` |
-| `toggleBillSharedFields` | `tagihan-kalender.js` |
-| `toggleCardCollapse` | `modal-navigasi.js` |
-| `toggleCatGroup` | `kategori.js` |
-| `toggleCicilanSharedFields` | `cicilan.js` |
-| `toggleDashCardPref` | `modules-render.js` |
-| `toggleDebugConsole` | `debug-console.js` |
+| `todayStr` | `modules/shared/features-helpers-global-security.js` |
+| `toggleAccInclude` | `modules/finance/akun.js` |
+| `toggleApiKeyHint` | `modules/shared/profil-pengaturan.js` |
+| `toggleArchiveYear` | `modules/shared/data-archive.js` |
+| `toggleAssetZakatable` | `pajak-aset-ui-wrappers.js` |
+| `toggleBackupModule` | `modules/shared/backup-restore.js` |
+| `toggleBillFilterPanel` | `modules/finance/tagihan-kalender.js` |
+| `toggleBillSharedFields` | `modules/finance/tagihan-kalender.js` |
+| `toggleCardCollapse` | `modules/shared/modal-navigasi.js` |
+| `toggleCatGroup` | `modules/finance/kategori.js` |
+| `toggleCicilanSharedFields` | `modules/finance/cicilan.js` |
+| `toggleDashCardPref` | `modules/shared/modules-render.js` |
+| `toggleDebtLunas` | `pajak-aset-ui-wrappers.js` |
+| `toggleDebugConsole` | `modules/shared/debug-console.js` |
 | `toggleEieNotif` | `economic-intelligence/ui/eie-notif-settings.js` |
-| `toggleFavorit` | `dashboard-hub-favorit.js` |
-| `toggleKeuFilter` | `filter-laporan.js` |
-| `toggleMs` | `transaksi.js` |
-| `toggleNotifEnabled` | `features-aiwidget-reminder-gdrive-search.js` |
-| `toggleOrderDeliveredField` | `cobek-io.js` |
-| `toggleSingleCardCollapse` | `pengaturan-search.js` |
-| `toggleStgGroup` | `pengaturan-search.js` |
-| `toggleTxBbmFields` | `tx-bbm.js` |
-| `toggleTxShopSaleFields` | `cobek-tx-cart.js` |
-| `toggleTxShopStockFields` | `cobek-tx-cart.js` |
-| `toggleTxStockFields` | `tx-stok-sparepart.js` |
-| `Torsi` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `TORSI_DB` | `sparepart-servis.js` |
-| `TORSI_NM_PER_KGF` | `sparepart-servis.js` |
-| `TORSI_STANDARD_CAT` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `totalSaldoAkun` | `akun.js` |
-| `Tukang` | `tukang-absensi.js` |
-| `TX_PAGE_SIZE` | `filter-laporan.js` |
-| `txEditId` | `features-helpers-global-security.js` |
-| `txHTML` | `tx-list-cashflow.js` |
-| `txListPage` | `filter-laporan.js` |
-| `txListPeriode` | `tx-list-cashflow.js` |
-| `txMatchesFilters` | `filter-laporan.js` |
-| `txMatchesSearch` | `filter-laporan.js` |
-| `uid` | `features-helpers-global-security.js` |
-| `uniqueCatList` | `kategori.js` |
-| `updateAccIncludeBtn` | `akun.js` |
-| `updateAmtPreview` | `kalkulator-input.js` |
-| `updateArchivePreview` | `data-archive.js` |
-| `updateBillSharedPreview` | `tagihan-kalender.js` |
-| `updateBillStatGrid` | `tagihan-kalender.js` |
-| `updateBillSubCatOptions` | `tagihan-kalender.js` |
-| `updateDebugConsoleBtn` | `debug-console.js` |
-| `updateKfBadge` | `filter-laporan.js` |
-| `updateOnboardPreview` | `onboarding.js` |
-| `updateOrderItemHarga` | `cobek-io.js` |
-| `updatePinDots` | `keamanan-pin.js` |
-| `updatePinLockUI` | `keamanan-pin.js` |
-| `updateProfilPTKPPreview` | `profil-pengaturan.js` |
-| `updateSelfTestBadge` | `features-sheets-pwa-selftest.js` |
-| `updateSubCatOptions` | `transaksi.js` |
-| `updateTxVehiclePanels` | `transaksi.js` |
-| `updateUsiaPreview` | `profil-pengaturan.js` |
-| `uploadBackupToDrive` | `features-aiwidget-reminder-gdrive-search.js` |
+| `toggleFavorit` | `modules/dashboard-hub/dashboard-hub-favorit.js` |
+| `toggleKeuFilter` | `modules/finance/filter-laporan.js` |
+| `toggleMs` | `modules/finance/transaksi.js` |
+| `toggleNotifEnabled` | `reminder-notif.js` |
+| `toggleOrderDeliveredField` | `modules/shop/cobek-io.js` |
+| `togglePiutangLunas` | `pajak-aset-ui-wrappers.js` |
+| `toggleSingleCardCollapse` | `modules/shared/pengaturan-search.js` |
+| `toggleStgGroup` | `modules/shared/pengaturan-search.js` |
+| `toggleTxBbmFields` | `modules/finance/tx-bbm.js` |
+| `toggleTxShopSaleFields` | `modules/shop/cobek-tx-cart.js` |
+| `toggleTxShopStockFields` | `modules/shop/cobek-tx-cart.js` |
+| `toggleTxStockFields` | `modules/finance/tx-stok-sparepart.js` |
+| `Torsi` | `car-notes.js` |
+| `TORSI_DB` | `modules/vehicle/sparepart-servis.js` |
+| `TORSI_NM_PER_KGF` | `modules/vehicle/sparepart-servis.js` |
+| `TORSI_STANDARD_CAT` | `car-notes.js` |
+| `totalAssetValue` | `pajak-aset-ui-wrappers.js` |
+| `totalCicilanOutstanding` | `pajak-aset-ui-wrappers.js` |
+| `totalDebtCicilanBulanan` | `pajak-aset-ui-wrappers.js` |
+| `totalDebtValue` | `pajak-aset-ui-wrappers.js` |
+| `totalInventoriBisnisValue` | `pajak-aset-ui-wrappers.js` |
+| `totalPiutangValue` | `pajak-aset-ui-wrappers.js` |
+| `totalSaldoAkun` | `modules/finance/akun.js` |
+| `Tukang` | `modules/business/tukang-absensi.js` |
+| `TX_PAGE_SIZE` | `modules/finance/filter-laporan.js` |
+| `txEditId` | `modules/shared/features-helpers-global-security.js` |
+| `txHTML` | `modules/finance/tx-list-cashflow.js` |
+| `txListPage` | `modules/finance/filter-laporan.js` |
+| `txListPeriode` | `modules/finance/tx-list-cashflow.js` |
+| `txMatchesFilters` | `modules/finance/filter-laporan.js` |
+| `txMatchesSearch` | `modules/finance/filter-laporan.js` |
+| `uid` | `modules/shared/features-helpers-global-security.js` |
+| `uniqueCatList` | `modules/finance/kategori.js` |
+| `updateAccIncludeBtn` | `modules/finance/akun.js` |
+| `updateAmtPreview` | `modules/shared/kalkulator-input.js` |
+| `updateArchivePreview` | `modules/shared/data-archive.js` |
+| `updateBillSharedPreview` | `modules/finance/tagihan-kalender.js` |
+| `updateBillStatGrid` | `modules/finance/tagihan-kalender.js` |
+| `updateBillSubCatOptions` | `modules/finance/tagihan-kalender.js` |
+| `updateDebugConsoleBtn` | `modules/shared/debug-console.js` |
+| `updateKfBadge` | `modules/finance/filter-laporan.js` |
+| `updateOnboardPreview` | `modules/shared/onboarding.js` |
+| `updateOrderItemHarga` | `modules/shop/cobek-io.js` |
+| `updatePinDots` | `modules/shared/keamanan-pin.js` |
+| `updatePinLockUI` | `modules/shared/keamanan-pin.js` |
+| `updateProfilPTKPPreview` | `modules/shared/profil-pengaturan.js` |
+| `updateSelfTestBadge` | `self-test.js` |
+| `updateSubCatOptions` | `modules/finance/transaksi.js` |
+| `updateTxVehiclePanels` | `modules/finance/transaksi.js` |
+| `updateUsiaPreview` | `modules/shared/profil-pengaturan.js` |
+| `uploadBackupToDrive` | `gdrive-backup.js` |
 | `UserFinanceAdapter` | `economic-intelligence/adapters/user-finance-adapter.js` |
-| `validateCicilanFields` | `cicilan.js` |
+| `validateCicilanFields` | `modules/finance/cicilan.js` |
 | `validateRuleShape` | `economic-intelligence/rules/rule-schema.js` |
-| `VEHICLE_SPEC_DB` | `sparepart-servis.js` |
-| `VEHTAX_INPUT_IDS` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `VEHTAX_ITEMS` | `features-budget-laporan-carnotes-pelanggan.js` |
-| `waShareLink` | `features-aiwidget-reminder-gdrive-search.js` |
-| `withSaveGuard` | `features-helpers-global-security.js` |
-| `withSaveGuardAsync` | `features-helpers-global-security.js` |
-| `withTimeout` | `scan-ocr.js` |
-| `WorthIt` | `worthit.js` |
-| `WORTHIT_KEBUTUHAN_KEYWORDS` | `scan-ocr.js` |
-| `Zakat` | `pajak-pbb-zakat.js` |
+| `VEHICLE_SPEC_DB` | `modules/vehicle/sparepart-servis.js` |
+| `VEHTAX_INPUT_IDS` | `car-notes.js` |
+| `VEHTAX_ITEMS` | `car-notes.js` |
+| `waShareLink` | `reminder-notif.js` |
+| `withSaveGuard` | `modules/shared/features-helpers-global-security.js` |
+| `withSaveGuardAsync` | `modules/shared/features-helpers-global-security.js` |
+| `withTimeout` | `modules/shared/scan-ocr.js` |
+| `WorthIt` | `modules/finance/worthit.js` |
+| `WORTHIT_KEBUTUHAN_KEYWORDS` | `modules/shared/scan-ocr.js` |
+| `Zakat` | `modules/finance/pajak-pbb-zakat.js` |

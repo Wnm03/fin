@@ -15,7 +15,7 @@
 // runtime (pola yang sama seperti akses MODULE_CALC_VERSION/MODAL_VERSION/dst dari file lain).
 // PENTING soal urutan: IIFE `_checkModuleVersionSync` di bawah jalan OTOMATIS begitu file ini
 // dimuat (bukan cuma deklarasi function) & butuh APP_BUILD_VERSION, MODULE_CALC_VERSION (GROUP_A:
-// modules-calc.js), MODULE_FEATURES_VERSION (GROUP_A: features-budget-laporan-carnotes-pelanggan.js),
+// modules-calc.js), MODULE_FEATURES_VERSION (GROUP_A: chat-action-handlers.js),
 // MODAL_VERSION (GROUP_A: modals.js), MODULE_RENDER_VERSION (GROUP_A: modules-render.js) — semua
 // SUDAH tersedia karena app-bundle-a.min.js (GROUP_A) dimuat lebih dulu di index.html/
 // app_production.html sebelum app-bundle-b.min.js (GROUP_B). File ini juga HARUS dimuat SETELAH

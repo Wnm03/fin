@@ -4409,3 +4409,238 @@ keamanan-pin-lockout.test.js` (baru), `tests/helpers/fakeTimer.js` (baru),
 3. `npm run lint` masih belum bisa diverifikasi di sandbox manapun sejauh
    ini (tidak ada akses internet utk `npm install eslint`) — item lama yang
    belum berkurang dari bagian ke-7/ke-8/ke-11/ke-12.
+
+## Catatan kerja — 2026-07-17 (bagian ke-15): kerjakan saran #1 bagian ke-11 — pasang markup tab "📊 Laporan" di Shop/Cobek (opsi "selesaikan", bukan "buang")
+
+Konteks: dari 2 opsi saran #1 bagian ke-11 ("selesaikan atau buang fitur
+Laporan Shop/Cobek"), dipilih **selesaikan** — logika (`Laporan.renderTab()`/
+`topProdukAgg()`/`renderTopProduk()`/`renderTopPelanggan()`/`setPeriodeLap()`/
+`getRangeLap()` di `cobek-order.js`, `exportLaporanShopXLSX()` di
+`cobek-io.js`, cabang `t==='laporan'` di `setShopTab()`) sudah lengkap sejak
+lama tapi TIDAK PERNAH bisa diakses user krn tidak ada tombol tab & tidak ada
+elemen `#lapTrip`/`#lapOmzet`/dst di HTML — persis akar masalah kenapa bug
+null-guard di bagian ke-11 baru ketahuan sekarang (kode tidak reachable dari
+UI produksi manapun). *(Catatan: entri ini ditulis belakangan di sesi
+berikutnya krn kuota chat sesi asli habis sebelum sempat dicatat — pekerjaan
+kode & test-nya sendiri sudah selesai & terverifikasi sebelum kuota habis.)*
+
+**Perubahan HANYA markup, TIDAK ADA business logic baru** kecuali 1 wrapper
+tipis `renderShopLaporan()` di `cobek-io.js` (pola sama dgn `renderShop()`/
+`renderShopGrafik()` yang sudah ada) supaya input tanggal custom range bisa
+memanggil `Laporan.renderTab()`:
+1. `index.html` & `app_production.html` — 1 tombol tab baru
+   (`data-action="setShopTab" data-args='["laporan","$el"]'`) di deretan tab
+   Shop (setelah Pelanggan, sebelum `#shopFab`), 1 div `#shopTab-laporan`
+   (filter periode + 4 kartu stat + grafik + top produk + top pelanggan), 1
+   FAB kontekstual `#shopLaporanFab` (pola sama persis dgn `#laporanFab` di
+   tab Laporan Keuangan/`REPORTS-2.0.md`) dgn 2 aksi (`exportLaporanShopXLSX()`,
+   `exportShopSemuaXLSX()` — keduanya sudah ada di `cobek-io.js`/`ShopExport`).
+2. `cobek-io.js` — tambah `renderShopLaporan(){return Laporan.renderTab();}`,
+   dipanggil dari `onchange` input `#lapFrom`/`#lapTo` di markup baru.
+
+**File baru: `tests/shop-laporan-tab.test.js` (17 test).** Mengecek struktur
+markup (posisi tombol tab, isi `#shopTab-laporan`, isi blok FAB) di kedua
+file HTML, token CSS terkait, dan bahwa TIDAK ADA fungsi/logic baru selain
+`renderShopLaporan()` wrapper (business logic yang dipanggil tetap fungsi
+lama yang sudah ada).
+
+**Diverifikasi (dikonfirmasi ulang di sesi ini dari salinan zip yg sama):**
+- `node --test tests/*.test.js` → **1788/1788 pass, 0 fail** (naik dari 1727
+  di bagian ke-14 — mencakup +17 test `shop-laporan-tab.test.js` ini plus
+  test lain yg juga ditambah antara bagian ke-14 & sesi ini).
+- `node --test tests/shop-laporan-tab.test.js` sendirian → 17/17 pass.
+- Markup dicek manual: tombol tab, `#shopTab-laporan`, `#shopLaporanFab`
+  semua ada & konsisten di `index.html` maupun `app_production.html`.
+
+**Yang TIDAK diverifikasi (sama keterbatasan sesi-sesi lain):** `npm run
+lint` (tidak ada internet), smoke-test browser manual (tidak ada browser di
+sandbox), `npm run build`/`release` resmi (tidak dijalankan sesi ini krn
+murni dokumentasi, tidak ada perubahan source lanjutan).
+
+**File yang berubah sesi ini (bagian ke-15):** HANYA `docs/CLAUDE.md`
+(catatan susulan ini). Kode fitur Laporan Shop (`index.html`,
+`app_production.html`, `cobek-io.js`, `tests/shop-laporan-tab.test.js`)
+sudah ada duluan di paket zip sebelum sesi ini, tidak disentuh lagi di sini.
+
+**Sisa pekerjaan / kandidat sesi berikutnya (mengerucut, saran #1 bagian
+ke-11 sekarang SELESAI):**
+1. `cobek.js` (1261 baris, file fitur terbesar yang masih nol test).
+2. Saran #4 bagian ke-11 (smoke test DOM otomatis di CI) — perlu
+   `jsdom`/akses internet, sudah dicoba & dihentikan di bagian ke-13.
+3. Saran #5 bagian ke-11 (ukuran bundle) — lihat audit ringan di bagian
+   ke-16 di bawah: bukan murni soal kode, sebagian besar terkait
+   ketersediaan `esbuild`/gzip di environment rilis, bukan sesuatu yang
+   bisa "diperbaiki" lewat perubahan source.
+4. `npm run lint` masih belum bisa diverifikasi di sandbox manapun.
+
+## Catatan kerja — 2026-07-17 (bagian ke-16): audit ringan saran #5 bagian ke-11 (ukuran bundle) — kesimpulan: bukan kandidat perbaikan kode "ringan"
+
+Konteks: diminta lanjut saran ringan lain setelah Fase 1–3 split tab
+Dashboard Hub (bagian ke-5/6/7/8) dikonfirmasi selesai/mentok di batas
+sandbox. Ditelusuri juga `KNOWN-ISSUES.md`/`ROADMAP-v1.1.md` (jalur CSS
+terpisah dari saran bagian ke-11) utk kandidat "ringan" lain — hasilnya
+**7 dari 11 item roadmap CSS SUDAH selesai** (border-radius/box-shadow/
+touch-target/container max-width/hover tap-target sekunder), sisa 4 item
+(kontras `--text3`, konsolidasi durasi transition, ripple berbasis
+koordinat, font-size kecil→token) SEMUANYA sengaja belum disentuh krn
+masing-masing butuh review visual lintas tema/komponen (bukan
+value-preserving) atau perubahan JS di luar mandat — bukan "belum sempat",
+jadi TIDAK masuk kategori ringan.
+
+**Audit ukuran bundle (saran #5 bagian ke-11):**
+- Ukuran saat ini di zip: `app-bundle-a.min.js` ≈798.6 KB, `b.min.js`
+  ≈900.1 KB (**TANPA minifikasi** — fallback `build.js` krn `esbuild` tidak
+  terpasang di sandbox manapun sejauh ini kecuali sempat berhasil disalin
+  manual sekali di bagian ke-8).
+- Perbandingan: build ber-minifikasi asli (bagian ke-8, `esbuild` v0.27.7)
+  menghasilkan `a.min.js` 646.8 KB + `b.min.js` 615.0 KB — **~440KB lebih
+  kecil total** dari versi tanpa-minifikasi di zip ini. Artinya sebagian
+  besar "masalah" ukuran bundle saat ini adalah **konsekuensi sandbox tanpa
+  esbuild**, bukan bug source yang perlu di-lazy-load.
+- `sw.js` sudah precache semua file inti (network-first + cache fallback),
+  tidak ada indikasi gzip/brotli disebut di manapun di repo (`sw.js`,
+  `manifest.json`, `README.md`) — itu wajar utk PWA client-side tanpa
+  backend: kompresi transport ada di lapisan hosting/CDN (mis. GitHub
+  Pages/Netlify/Cloudflare otomatis gzip/brotli response), bukan sesuatu
+  yang dikonfigurasi di source repo ini.
+- `ci.yml`/`release.sh` sudah punya guard `--require-minify`/`REQUIRE_MINIFY=1`
+  (dicatat sejak bagian ke-8) yang bikin build GAGAL KERAS kalau `esbuild`
+  ternyata tidak terpasang saat rilis resmi — jadi risiko "bundle besar
+  ke-ship diam-diam tanpa minify" **sudah ada pagarnya**, tidak perlu
+  perbaikan kode tambahan.
+- Kandidat lazy-load nyata (modul jarang dipakai spt `scan-ocr.js` 42.8KB,
+  `backup-restore.js` 40.8KB) **belum diaudit lebih dalam** — ini pekerjaan
+  BERAT (butuh peta dependency antar modul & mungkin ubah strategi load di
+  `index.html`/`build.js`), bukan sekadar konfigurasi ringan, jadi sengaja
+  TIDAK dieksekusi sesi ini tanpa instruksi lebih lanjut.
+
+**Kesimpulan:** tidak ada perubahan kode yang dibuat sesi ini utk saran #5
+— audit menyimpulkan ini BUKAN item "ringan" (baik dieksekusi penuh sbg
+lazy-load, maupun dianggap selesai sbg konfigurasi), jadi disisakan apa
+adanya utk sesi mendatang kalau memang mau dikerjakan penuh sbg fitur
+tersendiri.
+
+**Diverifikasi:** `node --test tests/*.test.js` → 1788/1788 pass, 0 fail
+(tidak ada regresi, tidak ada file source yang diubah sesi ini selain
+`docs/CLAUDE.md`).
+
+**File yang berubah sesi ini (bagian ke-16):** HANYA `docs/CLAUDE.md`
+(catatan bagian ke-15 & ke-16 ini). Tidak ada file source/test/bundle lain
+yang disentuh.
+
+**Kesimpulan menyeluruh sesi ini — tidak ada lagi item "ringan" tersisa:**
+Setelah menelusuri 2 jalur saran (bagian ke-11 JS/dashboard, dan
+`ROADMAP-v1.1.md` CSS), SEMUA item yang murni mekanis/tanpa-keputusan sudah
+selesai. Sisa pekerjaan yang ada semuanya butuh salah satu dari: (a)
+keputusan produk, (b) verifikasi visual di browser sungguhan, (c) akses
+internet (lint/esbuild), atau (d) kerja struktural besar (`cobek.js` test,
+lazy-load bundle). Kandidat sesi berikutnya kalau user mau lanjut salah
+satu dari yang "berat": `cobek.js` (test), lazy-load bundle (#5), atau
+konsolidasi durasi transition/font-size (butuh review visual per komponen).
+
+## Catatan kerja — 2026-07-17 (bagian ke-17): mulai test `cobek.js` (BERAT, dikerjakan bertahap) — Stage 1: `ImportKatalog`, `ShopExport` (row-builder), `ImportShopExcel`
+
+Konteks: lanjutan item "berat" (`cobek.js` — sekarang sudah terpecah jadi 5
+file: `cobek-etalase.js`/`cobek-pricing.js`/`cobek-order.js`/
+`cobek-tx-cart.js`/`cobek-io.js`, 2251 baris total) yang disisakan di
+bagian ke-16. **Ternyata BUKAN benar2 nol test** — `tests/cobek.test.js`
+(1750 baris, 141 test, header komentarnya masih menyebut nama lama
+"cobek.js (1262 baris)") sudah mencakup SEBAGIAN BESAR namespace (Etalase,
+PriceReko, PriceRekoWidget, StockRekoWidget, Produsen, SiapPulang, Order,
+Laporan, Pelanggan). Diaudit ulang fungsi per fungsi (cross-check tiap
+nama fungsi top-level di 5 file vs disebut/tidak di `cobek.test.js`) —
+ketemu celah nyata: 3 namespace `const` top-level di `cobek-io.js`
+(`ImportKatalog`, `ShopExport`, `ImportShopExcel`) **0% tercakup**, karena
+`makeCtx()` di `cobek.test.js` cuma expose 10 namespace lain lewat
+parameter ke-3 `loadSource()` — 3 namespace ini tidak ikut di-expose (lihat
+catatan `loadSource.js`: `const`/`let` top-level butuh expose eksplisit,
+beda dari `function` yang otomatis nempel ke context vm). Selain 3
+namespace itu, sisa fungsi yang tadinya kelihatan "tidak disebut di test"
+ternyata SEMUANYA thin wrapper 1-baris ke method namespace yang SUDAH
+dites langsung (mis. `delProdusen(id){return Produsen.delete(id);}`,
+`Produsen.delete` sudah dites) — pola yang sama persis dgn `Order.save`/
+`_saveInner` yang sudah didokumentasikan sebelumnya, jadi SENGAJA tidak
+ditambah test terpisah utk wrapper-wrapper itu.
+
+**Cakupan Stage 1 (dipilih krn 3 namespace ini paling besar celahnya &
+punya logika murni yang bisa dites tanpa DOM/browser sungguhan):**
+1. **`ImportKatalog`** (impor massal produk dari teks tempel harga) — FULL:
+   `_parsePrice` (angka polos/`rb`/`ribu`/`k`), `_parse` (baris tanpa harga
+   jadi nama kategori, baris kosong/harga 0 dibuang), `preview` (teks
+   kosong → toast, tidak ada baris valid → pesan kosong, valid → hitung
+   baru/update), `commit` (belum preview → toast, target
+   reseller/beli menentukan field harga yg ke-update, produk baru vs
+   existing, reset `parsed` setelahnya), `open`/`setTarget`.
+2. **`ShopExport`** — HANYA bagian row-builder murni (`etalaseRows`,
+   `produsenRows`, `riwayatRows`, `pelangganRows`, `laporanRows`):
+   margin Rp/% (termasuk fallback 0 saat `hargaBeli`=0, bukan NaN),
+   jumlah produk terhubung per produsen, filter by range
+   `Laporan.getRange()` (tab Riwayat) vs `Laporan.getRangeLap()` (tab
+   Laporan — **2 sumber periode terpisah**, dikonfirmasi lewat test),
+   fallback baris data lama (`.sets` tanpa `.items`). **`exportXxx()`/
+   `_download()`/`_ensureLib()` SENGAJA TIDAK dites** (bergantung
+   `XLSX`/download file nyata, di luar cakupan harness `loadSource` vm
+   murni — sama alasan `Order.save`/`withSaveGuard` tidak dites).
+3. **`ImportShopExcel`** — HANYA `_parse` (map header Excel kolom
+   Indonesia → field object, target etalase vs produsen, baris tanpa nama
+   dibuang), `commit` (match by name case-insensitive → update, tidak ada
+   → buat baru, field kosong string tidak menimpa field lama produsen),
+   `setTarget`/`open`. **`onFileSelected` SENGAJA TIDAK dites** (butuh
+   stub `File`/`XLSX.read()` nyata, kandidat Stage berikutnya kalau
+   dianggap perlu).
+
+**File baru: `tests/cobek-import-export.test.js` (26 test).**
+
+**Catatan teknis — kenapa awalnya 9 test gagal dgn `assert.deepEqual`
+(lalu diperbaiki ke `JSON.stringify`/cek `.length`):** sama persis pola yg
+sudah didokumentasikan di `aset.test.js`/`onboarding.test.js`/bagian
+ke-14 — array/object yg dibuat DI DALAM vm context (`_parse()`/`parsed`/
+`parsedRows`/`laporanRows()` jalan di realm sandbox) beda prototype
+`Array`/`Object` dari literal yang ditulis di test (realm host Node biasa),
+`assert.deepEqual` menganggap beda walau isinya identik. Semua diganti ke
+`assert.equal(JSON.stringify(a), JSON.stringify(b))` (utk isi) atau
+`assert.equal(arr.length, 0)` (utk cek kosong).
+
+**Catatan teknis lain — `renderProductList` bukan stub yg diinject
+sengaja tidak jalan:** sempat coba assert
+`calls.render.some(r=>r[0]==='renderProductList')` dgn meng-inject stub
+`renderProductList` lewat `extraGlobals`, TAPI `cobek-io.js` sendiri
+punya `function renderProductList(){...}` beneran (baris 205) — deklarasi
+`function` di vm HOISTING & menimpa binding global apa pun yg diinject
+duluan lewat `extraGlobals` (beda dari `const`/`let` yg butuh expose
+manual). Assersi itu dihapus (redundan — behavior `renderProductList`
+sendiri, yaitu `Etalase.renderList()`/`PriceRekoWidget.render()` dst,
+sudah dites lewat jalur lain di `cobek.test.js`), diganti fokus ke
+verifikasi `D.products`/`save`/`closeModal`/`toast` saja.
+
+**Diverifikasi:**
+- `node --test tests/cobek-import-export.test.js` → 26/26 pass sendirian.
+- `node --test tests/*.test.js` penuh → **1814/1814 pass, 0 fail** (naik
+  dari 1788 di bagian ke-16, +26 murni dari file baru, 0 regresi).
+- `node --check tests/cobek-import-export.test.js` → 0 syntax error.
+- **Tidak menjalankan `node scripts/build.js`** — sesi ini murni menambah
+  file test baru, tidak menyentuh kode aplikasi (`cobek-io.js` dkk sumber
+  TIDAK diubah sama sekali), jadi tidak ada bundle yang perlu diregenerasi.
+
+**File yang berubah sesi ini (bagian ke-17):** `tests/
+cobek-import-export.test.js` (baru), `docs/CLAUDE.md` (catatan ini). Tidak
+ada file lain yang disentuh.
+
+**Sisa pekerjaan `cobek.js` utk Stage berikutnya (dipersempit dari
+"1261 baris nol test" jadi celah spesifik yang tersisa):**
+1. `cobek-tx-cart.js` — fungsi cart Stok/Jual dari form Transaksi gabungan
+   yang BUKAN thin-wrapper (`populateTxShopStockSelect`,
+   `onTxShopStockItemChange`, `removeShopStockCartItem`,
+   `populateTxShopSaleSelect`, `onTxShopSaleItemChange`,
+   `removeTxShopSaleCartItem`, `applyBundleLinkedStock`,
+   `applyTxShopStockFromTx`, `applyTxShopSaleFromTx`,
+   `computeTxShopSaleTotals`) — belum diaudit isi & ditest sama sekali,
+   kemungkinan kandidat celah terbesar yg tersisa.
+2. `ImportShopExcel.onFileSelected` (butuh stub `File`/`XLSX.read()`).
+3. `Order.removeItem` — dicek 0 occurrence di `cobek.test.js` (beda dari
+   `addItem`/`changeQty` yang sudah dites), perlu dikonfirmasi apakah
+   benar celah atau tertes tidak langsung.
+4. `Laporan.renderTab` — fungsi render utama tab "📊 Laporan" Shop (dipakai
+   oleh `renderShopLaporan()` yg dipasang di bagian ke-15) — 0 occurrence
+   di `cobek.test.js`, kandidat test lanjutan yg relevan langsung dgn
+   fitur yg baru diaktifkan.

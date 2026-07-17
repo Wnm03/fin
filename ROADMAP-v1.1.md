@@ -80,9 +80,17 @@ perilaku yang terlihat pengguna.
    efektif.
    *Sumber: `KNOWN-ISSUES.md` §1.2.*
 
-8. **🔴 Ripple berbasis koordinat sentuh asli** (bukan pulsa dari
-   tengah) — butuh JS untuk membaca posisi klik/tap dan set custom
-   property `--x`/`--y` pada elemen ripple.
+8. ~~🔴 Ripple berbasis koordinat sentuh asli~~ (bukan pulsa dari
+   tengah). **✅ Selesai** — `modules/shared/ripple-position.js`
+   (`computeRipplePercent()`/`applyRipplePosition()`) memasang listener
+   `pointerdown` (fallback `mousedown`+`touchstart` untuk browser tanpa
+   Pointer Events) yang men-set custom property `--ripple-x`/`--ripple-y`
+   pada elemen sesaat sebelum `:active` menyalakan animasi. `styles.css`
+   diubah minimal: `center/0% 0%` → `var(--ripple-x,50%) var(--ripple-y,50%)/0% 0%`
+   (fallback tengah dipertahankan untuk aktivasi keyboard). Lihat
+   `tests/ripple-position.test.js` (8 test, termasuk guard agar
+   `RIPPLE_SELECTOR` selalu sinkron dengan daftar selector `::after` ripple
+   di `styles.css`).
    *Sumber: `KNOWN-ISSUES.md` §5.2.*
 
 ---
@@ -121,12 +129,11 @@ Nice-to-have, dampak kecil terhadap pengguna akhir.
 | 5 | Box-shadow → token 🟢 | ✅ Selesai |
 | 6 | Konsolidasi durasi transition 🟢 | ⏳ Belum — bukan value-preserving, butuh review visual |
 | 7 | Touch target chip-btn/qs-btn 🟢 | ✅ Selesai |
-| 8 | Ripple berbasis koordinat 🔴 | ⏳ Belum — butuh JS |
+| 8 | Ripple berbasis koordinat 🔴 | ✅ Selesai |
 | 9 | Font-size kecil → token 🟢 | ⏳ Belum — beberapa nilai (8.5/10.5/11.5px) tidak match token manapun |
 | 10 | Container max-width konsisten 🟢 | ✅ Selesai (Sprint 2 Tahap 15) |
 | 11 | Hover/elevation tap-target sekunder 🟢 | ✅ Selesai |
 
-**7 dari 11 item sudah selesai.** Sisa 4 item (1, 6, 8, 9) sengaja
+**8 dari 11 item sudah selesai.** Sisa 3 item (1, 6, 9) sengaja
 belum disentuh karena masing-masing butuh keputusan/verifikasi visual
-(1, 6, 9) atau perubahan JavaScript di luar mandat CSS-only (8) —
-bukan sekadar belum sempat dikerjakan.
+lintas tema/komponen — bukan sekadar belum sempat dikerjakan.

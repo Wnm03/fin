@@ -102,6 +102,10 @@ function _lifeOSHighlightSettingsCard(selector) {
   const card = anchor ? anchor.closest('.card, .card-collapse') : null;
   if (!card) return;
 
+  const tabPanel = card.closest('.stg-tabpanel');
+  if (tabPanel && tabPanel.classList.contains('u-dnone') && typeof setSettingsTab === 'function') {
+    setSettingsTab(tabPanel.dataset.tab);
+  }
   const grp = card.closest('.stg-group');
   if (grp && !grp.classList.contains('open') && typeof toggleStgGroup === 'function') toggleStgGroup(grp.id);
   if (card.classList.contains('card-collapse') && !card.classList.contains('open') && typeof toggleSingleCardCollapse === 'function') {

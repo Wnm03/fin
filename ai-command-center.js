@@ -1,4 +1,5 @@
 // ai-command-center.js — Sprint 3 Tahap 3.1: AI Command Center Foundation.
+// Dipindah ke modules/ai/ai-command-center.js (Sesi 14 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 //
 // SCOPE Tahap 3.1 (Foundation SAJA):
 //   Menyediakan satu registry netral tempat modul lain (Tahap 3.2+)

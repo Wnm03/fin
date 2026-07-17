@@ -13,6 +13,271 @@
 
 ## SUDAH SELESAI (terverifikasi)
 
+- ✅ **[2026-07-17] Restrukturisasi folder — Sesi 17+18 (FASE 4, TERAKHIR): bersihkan referensi basi + regresi penuh.**
+  Lanjutan Sesi 15–18. Dibersihkan 12 komentar "Urutan grup ini: ..." yang masih menyebut
+  `features-aiwidget-reminder-gdrive-search.js`/`features-sheets-pwa-selftest.js` di ekor
+  daftarnya (god-file itu sendiri sudah DIHAPUS total sejak Sesi 3–5, jadi menyesatkan kalau
+  masih disebut seolah bagian urutan bundle saat ini) — file terdampak: `backup-restore.js`,
+  `features-helpers-global-security.js`, `profil-pengaturan.js`, `scan-ocr.js`, `gaji-calc.js`,
+  `tukang-absensi.js`, `payroll-absensi.js`, `kategori.js`, `akun.js`, `filter-laporan.js`,
+  `tagihan-kalender.js`, `transaksi.js` (semua di `modules/*` sekarang).
+  **Sengaja TIDAK disentuh:** komentar riwayat/provenance ("Dipisah dari
+  features-sheets-pwa-selftest.js, Sesi X...") di ~30 file lain — itu catatan sejarah asal-usul
+  kode yang valid (pola sama dgn `vehicle-core.js` yang tetap menyebut asalnya dari
+  `tukang-absensi.js`), bukan klaim "urutan saat ini" yang keliru.
+  **Diverifikasi:** `node --test tests/*.test.js` → **1896/1896 pass**. `node scripts/build.js
+  kw96-sesi17-cleanup-referensi-basi` → sukses build #411, `node --check` kedua bundle lolos,
+  `FILE-MAP.md` diregenerasi, `index.html`/`app_production.html` identik.
+  **`RENCANA-SESI.md` (18 sesi, restrukturisasi folder Keluarga W) RESMI SELESAI 100%.**
+  Semua domain (vehicle/asset/shop/dashboard-hub/self-reward/home/ai/business/finance/shared)
+  ada di `/modules/*`, tidak ada lagi god-file/file campur-domain di root.
+
+- ✅ **[2026-07-17] Restrukturisasi folder — Sesi 15–18 (FASE 3 selesai + regresi, digabung ringkas): pindah `/modules/business` (sisa), `/modules/finance`, `/modules/shared`.**
+  Lanjutan Sesi 13+14. Dipindah 6 file sisa Business (`kasir.js`, `sewakios.js`,
+  `payroll-absensi.js`, `tukang-absensi.js`, `gaji-calc.js`, `reset-gaji-mingguan.js`) →
+  `modules/business/`; 18 file Finance (`transaksi.js`, `cicilan.js`, 6× `tx-*.js`,
+  `filter-laporan.js`, `akun.js`, `kategori.js`, `tagihan-kalender.js`, `piutang-utang.js`,
+  `pajak-pbb-zakat.js`, `edukasi-dana.js`, `linktx.js`, `worthit.js`, `tangga-keuangan.js`) →
+  `modules/finance/`; 20 file Shared (`modules-render.js`, `modules-calc.js`, `modals.js`,
+  `data-default.js`, `features-helpers-global-security.js`, `format-tema.js`,
+  `error-handler.js`, `helper-teks.js`, `keamanan-pin.js`, `modal-navigasi.js`,
+  `debug-console.js`, `pengaturan-search.js`, `onboarding.js`, `kalkulator-input.js`,
+  `scan-ocr.js`, `backup-restore.js`, `data-archive.js`, `feature-icons.js`,
+  `profil-pengaturan.js`, `smoke-test.js`) → `modules/shared/`. Isi/nama file & urutan load
+  TIDAK berubah. (`pajak-aset-ui-wrappers.js` sengaja TIDAK dipindah — di luar daftar
+  `RENCANA-SESI.md`.)
+  **Kasus khusus ditangani:** `tangga-keuangan.js` & `smoke-test.js` dimuat lewat `<script>`
+  langsung di HTML (bukan lewat `GROUP_A`/`GROUP_B` bundle) — `index.html` &
+  `app_production.html` diupdate manual, plus `scripts/build-preview.js` (`INLINE_FILES`).
+  `features-helpers-global-security.js` dirujuk khusus di 3 tempat lain di `scripts/build.js`
+  (`readFile()` pendeteksi versi + 2 entri `VERSION_CONSTANTS_TO_VERIFY`, plus entri
+  `modules-render.js`/`modals.js`/`modules-calc.js` di situ) — semua diupdate ke path baru.
+  **File yang diupdate:** `scripts/build.js` (44 entri path + 6 ref khusus), `scripts/build-preview.js`
+  (2 entri `INLINE_FILES`), ~40 file test (`loadSource`/`readFileSync` ke path baru), header
+  komentar di ke-44 file pindahan.
+  **Diverifikasi:** `node --test tests/*.test.js` → **1896/1896 pass**, 0 regresi (2 kali,
+  setelah business+finance & setelah shared). `node scripts/build.js` → sukses build #409 lalu
+  #410, `node --check` kedua bundle lolos tiap kali, `FILE-MAP.md` diregenerasi (125 file),
+  `index.html`/`app_production.html` tetap identik.
+  **FASE 2 & FASE 3 restrukturisasi folder (`RENCANA-SESI.md`) resmi SELESAI** — semua domain
+  kecil/besar sudah pindah ke `/modules/*`. Sisa cuma FASE 4 (Sesi 17: masih ada referensi
+  komentar basi ke god-file lama `features-aiwidget-reminder-gdrive-search.js`/
+  `features-sheets-pwa-selftest.js` di puluhan file — kosmetik, tidak fungsional, sengaja
+  BELUM disentuh sesi ini biar tidak melebar; Sesi 18 regresi penuh sudah tercakup di atas).
+
+- ✅ **[2026-07-17] Restrukturisasi folder — Sesi 13+14 (FASE 2 lanjut, digabung ringkas): pindah `/modules/home` & `/modules/ai`.**
+  Lanjutan Sesi 8–12. Dipindah 7 file: **`renovasi.js`**, **`hidup-seimbang.js`** (`GROUP_A`),
+  **`refleksi-selfcare.js`** (`GROUP_B`) → `modules/home/*.js`; **`kategorisasi-ai.js`**,
+  **`chat-action.js`**, **`ai-command-center.js`** (`GROUP_B`), **`feature-insights.js`**
+  (`GROUP_A`) → `modules/ai/*.js`. Posisi urutan load TIDAK berubah, isi/nama file TIDAK berubah.
+  **File yang diupdate:** `scripts/build.js` (7 entri path), 8 file test (`loadSource` →
+  path baru): `hidup-seimbang`, `refleksi-catatan-privat`, `refleksi-selfcare`,
+  `kategori-migrasi-investasi-sedekah`, `kategorisasi-ai`, `ai-command-center`, `chat-action`,
+  `feature-insights`. Header komentar di ke-7 file pindahan.
+  **Diverifikasi:** `node --test tests/*.test.js` → **1896/1896 pass**, 0 regresi. `node
+  scripts/build.js kw93-move-modules-home-ai-1` → sukses build #408, `node --check` kedua bundle
+  lolos, `FILE-MAP.md` diregenerasi, `index.html`/`app_production.html` tetap identik.
+  **Untuk sesi berikutnya (sesuai `RENCANA-SESI.md`):** Fase 3 belum dikerjakan sama sekali —
+  Sesi 12 rencana (`modules/business` sisa: kasir, sewakios, payroll-absensi, tukang-absensi,
+  gaji-calc, reset-gaji-mingguan — cobek sudah duluan pindah ke `modules/shop`), Sesi 13–14
+  rencana (`modules/finance`, 2 bagian), Sesi 15–16 rencana (`modules/shared`, 2 bagian), lalu
+  Fase 4 (Sesi 17–18: rapi-rapi `FILE-MAP.md`/referensi basi + regresi penuh).
+
+- ✅ **[2026-07-17] Restrukturisasi folder — Sesi 12 (FASE 2 lanjut): pindah `/modules/self-reward` + fix bug laten `allSourceJsText()` non-recursive.**
+  Lanjutan Sesi 8/9/10/11 (pola sama: pindah lokasi folder saja, isi & nama file TIDAK berubah).
+  Dipindah 3 file domain Self-Reward: **`self-reward-engine.js`**, **`self-reward-view.js`**,
+  **`self-reward-ai-widget.js`** → `modules/self-reward/*.js`. Semua tetap di `GROUP_B`, posisi
+  urutan load TIDAK berubah.
+  **Bug ditemukan & diperbaiki saat verifikasi:** test `FEATURE_REGISTRY — target.action mengacu
+  ke fungsi/data-action yang nyata ada` (`tests/dashboard-hub-registry.test.js`) sempat MERAH
+  sesudah pemindahan — root cause: helper `allSourceJsText()` di file test itu pakai
+  `fs.readdirSync(ROOT)` **non-recursive** (cuma file level-root), jadi sejak Sesi 8 sebenarnya
+  SUDAH tidak melihat isi `modules/vehicle|asset|shop|dashboard-hub/*.js` sama sekali — cuma baru
+  ketahuan sekarang karena kebetulan ada `target.action` di registry yang function-nya HANYA
+  dideklarasikan di salah satu file `self-reward-*.js` yang baru dipindah (tidak ada juga sbg
+  `data-action` di HTML). Diperbaiki dgn reuse `getAllSourceFiles()` (sudah diexport dari
+  `scripts/collect-app-globals.js`, dipakai `eslint.config.js`/`generate-file-map.js` — SATU
+  sumber kebenaran turunan `GROUP_A`+`GROUP_B` di `build.js`) alih-alih `readdirSync` manual —
+  otomatis ikut path `modules/*`/`lifeos/**`/`economic-intelligence/**` ke depannya, tidak akan
+  basi lagi kalau ada pemindahan folder susulan.
+  **File yang diupdate:** `scripts/build.js` (3 entri), `tests/self-reward-engine.test.js` (2
+  `loadSource`), `tests/self-reward-view.test.js` (1 `loadSource`), `tests/dashboard-hub-registry.test.js`
+  (import `getAllSourceFiles` + `allSourceJsText()` diperbaiki — lihat di atas), header komentar
+  di ke-3 file pindahan. `self-reward-ai-widget.js` sendiri tidak punya test khusus (0% coverage
+  sejak awal, di luar scope sesi ini).
+  **Diverifikasi:** `node --test tests/*.test.js` → **1818/1818 pass**, 0 regresi (setelah fix
+  `allSourceJsText`). `node scripts/build.js kw91-move-modules-selfreward-1` → sukses build #400,
+  `node --check` kedua bundle & ketiga file pindahan lolos, `FILE-MAP.md` diregenerasi (125 file,
+  path `modules/self-reward/...` benar), `index.html`/`app_production.html` tetap identik. `npm
+  run lint`/minifikasi esbuild masih belum bisa dijalankan di sandbox ini — jalankan `npm run
+  check` penuh sebelum lanjut ke Sesi 13.
+  **Untuk sesi berikutnya:** kandidat domain kecil di root yang masih tersisa & bisa jadi folder
+  `/modules/*` berikutnya kalau mau lanjut Fase 2: `pajak-pbb-zakat.js` + `pajak-aset-ui-wrappers.js`
+  (2 file, domain Pajak) — sisanya kebanyakan file besar/tunggal yang tidak part of grup kecil.
+
+- ✅ **[2026-07-17] Restrukturisasi folder — Sesi 11 (FASE 2 lanjut): pindah `/modules/dashboard-hub`.**
+  Lanjutan Sesi 8/9/10 (pola sama: pindah lokasi folder saja, isi & nama file TIDAK berubah).
+  Dipindah 5 file domain Dashboard Hub: **`dashboard-hub-registry.js`**, **`dashboard-hub.js`**,
+  **`dashboard-hub-search.js`**, **`dashboard-hub-favorit.js`**, **`dashboard-hub-favorit-view.js`**
+  → `modules/dashboard-hub/*.js`. Semua tetap di `GROUP_B`, posisi urutan load TIDAK berubah.
+  **File yang diupdate:** `scripts/build.js` (5 entri), 14 file test yang memuat file-file ini
+  lewat `loadSource([...])`/`fs.readFileSync(path.join(...))` (`car-notes-fab`,
+  `dashboard-hub-analytics`, `dashboard-hub-favorit-view`, `dashboard-hub-favorit`,
+  `dashboard-hub-hero`, `dashboard-hub-registry`, `dashboard-hub-search-integration`,
+  `dashboard-hub-sectiontabs`, `dashboard-hub-summary`, `dashboard-hub`, `finance-2.0-fab`,
+  `laporan-fab`, `lifeos-nav`, `shop-fab`, `shop-laporan-tab`), termasuk 1 guard test khusus di
+  `dashboard-hub-favorit.test.js` yang men-scan seluruh file `.js` project via `path.relative` —
+  string pembanding `rel === 'dashboard-hub-favorit.js'` diupdate jadi
+  `'modules/dashboard-hub/dashboard-hub-favorit.js'` (kalau tidak diupdate, guard ini bakal
+  salah lapor file-nya sendiri sbg "pelanggaran"). Header komentar di ke-5 file pindahan.
+  **Diverifikasi:** `node --test tests/*.test.js` → **1818/1818 pass**, 0 regresi (termasuk guard
+  `D.favoritKeys` & test Sprint 2 Tahap 1-4 yang cross-check file ini tidak tersentuh). `node
+  scripts/build.js kw90-move-modules-dashboardhub-1` → sukses build #399, `node --check` kedua
+  bundle & kelima file pindahan lolos, `FILE-MAP.md` diregenerasi (125 file, path
+  `modules/dashboard-hub/...` benar), `index.html`/`app_production.html` tetap identik. `npm run
+  lint`/minifikasi esbuild masih belum bisa dijalankan di sandbox ini — jalankan `npm run check`
+  penuh sebelum lanjut ke Sesi 12 (kandidat berikutnya: `self-reward-*.js`, 3 file).
+
+- ✅ **[2026-07-17] Restrukturisasi folder — Sesi 10 (FASE 2 lanjut): pindah `/modules/shop`.**
+  Lanjutan Sesi 8/9 (pola sama: pindah lokasi folder saja, isi & nama file TIDAK berubah).
+  Dipindah 5 file domain Shop/Cobek: **`cobek-etalase.js`**, **`cobek-pricing.js`**,
+  **`cobek-order.js`**, **`cobek-tx-cart.js`**, **`cobek-io.js`** → `modules/shop/*.js`. Semua
+  tetap di `GROUP_A`, posisi urutan load TIDAK berubah, cuma path-nya diganti.
+  **File yang diupdate:** `scripts/build.js` (`GROUP_A`: 5 entri), `tests/cobek-import-export.test.js`
+  & `tests/cobek.test.js` (`loadSource([...])`), `tests/ongkir-window-expose.test.js` &
+  `tests/pricereko-widget-window-expose.test.js` (`readFileSync` ke `cobek-pricing.js`),
+  `tests/shop-fab.test.js` (`cobek-io.js`/`cobek-tx-cart.js`), `tests/shop-laporan-tab.test.js`
+  (`cobek-order.js`/`cobek-io.js`), header komentar di ke-5 file pindahan.
+  **Tidak diubah:** HTML, `eslint.config.js`, `collect-app-globals.js`/`generate-file-map.js`
+  (parse `GROUP_A`/`GROUP_B` dari `build.js` dinamis).
+  **Diverifikasi:** `node --test tests/*.test.js` → **1818/1818 pass**, 0 regresi. `node
+  scripts/build.js kw89-move-modules-shop-1` → sukses build #398, `node --check` kedua bundle &
+  kelima file pindahan lolos, `FILE-MAP.md` diregenerasi (125 file, path `modules/shop/...`
+  benar), `index.html`/`app_production.html` tetap identik. `npm run lint`/minifikasi esbuild
+  masih belum bisa dijalankan di sandbox ini — jalankan `npm run check` penuh sebelum lanjut ke
+  Sesi 11.
+
+- ✅ **[2026-07-17] Restrukturisasi folder — Sesi 9 (FASE 2 lanjut): pindah `/modules/asset`.**
+  Lanjutan Sesi 8 (pola sama: pindah lokasi folder saja, isi & nama file TIDAK berubah, risiko
+  rendah). Dipindah 6 file domain Aset: **`aset.js`** (1218 baris), **`aset-keluarga.js`** (87
+  baris), **`invest-ai-widget.js`** (180 baris), **`penyusutan-ai-widget.js`** (166 baris),
+  **`aset-emas-impor.js`** (394 baris), dan **`investasi.js`** (309 baris) →
+  `modules/asset/*.js`. 5 file pertama tetap di `GROUP_A` (posisi urutan load TIDAK berubah,
+  cuma path-nya diganti jadi `modules/asset/...`), `investasi.js` tetap di `GROUP_B` (posisi
+  sesudah `self-reward-ai-widget.js`, sebelum blok LifeOS — juga tidak berubah urutannya).
+  **File yang diupdate:** `scripts/build.js` (`GROUP_A`: 5 entri, `GROUP_B`: 1 entri, semua
+  diganti jadi path `modules/asset/...`), `tests/gold-emas-zakat.test.js`,
+  `tests/aset-keluarga.test.js`, `tests/idb-store.test.js`, `tests/aset.test.js` (2 pemanggilan
+  `loadSource`), `tests/investasi.test.js`, `tests/penyusutan-ai-widget.test.js` (semua
+  `loadSource([...])` disesuaikan ke path baru), header komentar di ke-6 file pindahan (ditambah
+  1 baris catatan lokasi baru, sisa isi file tidak disentuh). `invest-ai-widget.js` sendiri tidak
+  punya test khusus (0% coverage sejak awal, di luar scope sesi ini) jadi tidak ada file test yang
+  perlu disesuaikan untuk file itu.
+  **Tidak diubah:** HTML (`index.html`/`app_production.html`) — tidak ada `<script src=...>`
+  langsung ke file-file ini (semua JS dimuat lewat 2 bundle gabungan), `eslint.config.js`
+  (tidak ada path hardcode ke file-file ini), `scripts/collect-app-globals.js`/
+  `scripts/generate-file-map.js` (keduanya parse `GROUP_A`/`GROUP_B` dari `build.js` secara
+  dinamis, jadi otomatis ikut path baru tanpa perlu diedit).
+  **Diverifikasi:** `node --test tests/*.test.js` → **1818/1818 pass**, 0 regresi (sebelum & sesudah
+  build). `node scripts/build.js kw88-move-modules-asset-1` → sukses build #397, `node --check`
+  kedua bundle & keenam file pindahan lolos, `FILE-MAP.md` diregenerasi (125 file, 1119 identifier
+  global — keenam file muncul dgn path `modules/asset/...` & identifier benar), `index.html`/
+  `app_production.html` tetap identik. Catatan sama seperti sesi-sesi sebelumnya: `npm run
+  lint`/minifikasi esbuild belum bisa dijalankan di sandbox ini (tanpa internet) — tolong jalankan
+  `npm run check` penuh sebelum lanjut ke Sesi 10.
+
+- ✅ **[2026-07-17] Restrukturisasi folder — Sesi 8 (FASE 2 mulai): pindah `/modules/vehicle`.**
+  Lanjutan Fase 1 (Sesi 1–7, pecah god-file, SELESAI). Fase 2 memindah domain-domain kecil ke
+  struktur folder `/modules/*` (risiko rendah, isi & nama file TIDAK berubah — cuma lokasi).
+  Dipindah: **`vehicle-core.js`** (456 baris) dan **`sparepart-servis.js`** (522 baris) →
+  `modules/vehicle/vehicle-core.js` & `modules/vehicle/sparepart-servis.js`. Pola path
+  bersubfolder ini sudah dipakai sebelumnya di `economic-intelligence/*` & `lifeos/*`, jadi
+  `scripts/build.js`/`generate-file-map.js`/harness test `loadSource.js` semuanya SUDAH
+  mendukung tanpa perlu perubahan tooling — cuma perlu update daftar path-nya.
+  **File yang diupdate:** `scripts/build.js` (`GROUP_B`: 2 entri diganti jadi path
+  `modules/vehicle/...`, posisi urutan load TIDAK berubah), `tests/car-notes-fab.test.js`
+  (2 `fs.readFileSync(path.join(ROOT, ...))`), `tests/servis-calc.test.js` &
+  `tests/estimate-rp-per-km.test.js` (`loadSource([...])`), header komentar di kedua file
+  pindahan (ditambah 1 baris catatan lokasi baru, sisa isi file tidak disentuh).
+  **Tidak diubah:** HTML (`index.html`/`app_production.html`) — cuma menyebut nama file di
+  komentar biasa, bukan path/script src (semua JS tetap dimuat lewat 2 bundle gabungan).
+  **Diverifikasi:** `node --test tests/*.test.js` → **1818/1818 pass**, 0 regresi. `node
+  scripts/build.js` → sukses build #396, `node --check` kedua bundle lolos, `FILE-MAP.md`
+  diregenerasi (`modules/vehicle/vehicle-core.js`/`modules/vehicle/sparepart-servis.js` muncul
+  dgn path & identifier benar), `index.html`/`app_production.html` tetap identik. Catatan sama
+  seperti sesi-sesi sebelumnya: `npm run lint`/minifikasi esbuild belum bisa dijalankan di
+  sandbox ini (tanpa internet) — tolong jalankan `npm run check` penuh sebelum lanjut ke Sesi 9.
+
+- ✅ **[2026-07-17] Restrukturisasi folder — Sesi 7: potong sisa `features-budget-laporan-carnotes-pelanggan.js`, file lama DIHAPUS. FASE 1 (pecah 3 god-file) SELESAI.**
+  Lanjutan Sesi 6. Sisa file lama (106 baris: `MODULE_FEATURES_VERSION` + `CHAT_ACTION_LABELS`/
+  `CHAT_ACTION_HANDLERS`/`CHAT_ACTION_EDIT_FIELDS`) dipindah utuh ke file baru **`chat-action-handlers.js`**,
+  lalu `features-budget-laporan-carnotes-pelanggan.js` **dihapus total** — sesuai rencana `RENCANA-SESI.md`
+  Sesi 7 (tugas "data pelanggan" ternyata sudah tidak relevan sejak Sesi 6, lihat catatan Sesi 6 di atas).
+  **File lain yang diupdate:** `scripts/build.js` (`GROUP_A`: entri lama → `chat-action-handlers.js`,
+  posisi tetap persis sama; `VERSION_CONSTANTS_TO_VERIFY`: entri `MODULE_FEATURES_VERSION` diarahkan ke
+  `chat-action-handlers.js`), komentar "Urutan grup ini: ..." di 6 file yg sama seperti Sesi 6
+  (`aset.js`/`edukasi-dana.js`/`linktx.js`/`pajak-pbb-zakat.js`/`renovasi.js`/`worthit.js`),
+  `tests/chat-action.test.js` & `tests/fi-calc.test.js` (komentar lokasi `CHAT_ACTION_*`/`Budget.matchesTx`),
+  `diagnostik-versi.js` & `chat-action.js` (komentar lokasi `MODULE_FEATURES_VERSION`/`CHAT_ACTION_*`).
+  **Catatan (di luar scope, TIDAK disentuh sesi ini):** beberapa file GROUP_B (`akun.js`, `filter-laporan.js`,
+  `gaji-calc.js`, `kategori.js`, `payroll-absensi.js`, `profil-pengaturan.js`, `scan-ocr.js`,
+  `tagihan-kalender.js`, `transaksi.js`, `tukang-absensi.js`, `backup-restore.js`,
+  `features-helpers-global-security.js`, `sparepart-servis.js`, `vehicle-core.js`, `chat-action.js`,
+  `dashboard-hub.js`, `modules-calc.js`, `cobek-etalase.js`, `kategorisasi-ai.js`, `data-health-check.js`,
+  `sheets-schema.js`, `gdrive-backup.js`, `global-search.js`, `laporan-export.js`, `reminder-notif.js`)
+  masih menyebut `features-aiwidget-reminder-gdrive-search.js`/`features-sheets-pwa-selftest.js` (dihapus
+  Sesi 3–5) di komentar "Urutan grup ini"/catatan lintas-file — ini debt lama dari sesi-sesi sebelumnya,
+  bukan dari god-file yang dikerjakan Sesi 6/7. Sesuai `RENCANA-SESI.md` Sesi 17 ("Bersihkan referensi
+  basi"), rapikan semua ini sekaligus nanti, bukan dicicil per sesi supaya tidak bolak-balik file yang sama.
+  **Diverifikasi:** `node --test tests/*.test.js` → **1818/1818 pass**, 0 regresi. `node scripts/build.js`
+  → sukses build #395 (`MODULE_FEATURES_VERSION` terkonfirmasi sinkron dari lokasi baru), `node --check`
+  kedua bundle lolos, `FILE-MAP.md` diregenerasi (`chat-action-handlers.js` muncul dgn identifier benar,
+  `features-budget-laporan-carnotes-pelanggan.js` sudah hilang total dari peta), `index.html`/
+  `app_production.html` tetap identik. **Catatan sama seperti Sesi 6:** `npm run lint`/minifikasi esbuild
+  belum bisa dijalankan di sandbox ini (tidak ada akses internet utk `npm install`) — tolong jalankan
+  `npm run check` penuh di mesin/CI dengan internet sebelum lanjut ke Fase 2 (Sesi 8).
+  **FASE 1 restrukturisasi folder (pecah 3 god-file, Sesi 1–7) resmi SELESAI** — tidak ada lagi god-file
+  campur-domain di root. Lanjut Fase 2 (`RENCANA-SESI.md` Sesi 8: pindah `/modules/vehicle`).
+
+- ✅ **[2026-07-17] Restrukturisasi folder — Sesi 6: potong `features-budget-laporan-carnotes-pelanggan.js`
+  bagian 1 (budget/laporan vs Car Notes).** Lanjutan Sesi 1–5 (lihat `RENCANA-SESI.md` &
+  `docs/AUDIT-SESI-1-features-sheets-pwa-selftest.md` utk pola yg sama dipakai di god-file lain).
+  God-file (1502 baris, 3 domain campur: Budget, Car Notes, aksi AI chat) dipecah jadi:
+  1. **`budget.js`** (534 baris, baru) — `const Budget` (CRUD anggaran, hitung pemakaian/limit
+     efektif termasuk rollover, kartu ringkasan Beranda) + wrapper global tipis
+     (`getBudgetSettings`/`saveBudget`/dst, dipakai HTML `data-action` & `modules-render.js`) +
+     `BudgetTabs` (switch tab List/Rekomendasi) + `BudgetReko` (rekomendasi anggaran otomatis dari
+     rata-rata transaksi N bulan terakhir).
+  2. **`car-notes.js`** (873 baris, baru) — `VEHTAX_ITEMS`/`VEHTAX_INPUT_IDS` (jadwal pajak STNK/
+     ganti plat/uji kelayakan) + `const BBM` (catat isi BBM, km/L, grafik tren) + `const Servis`
+     (catat servis, pemakaian stok sparepart, pengingat interval per kategori) +
+     `TORSI_STANDARD_CAT`/`MY_WRENCH` + `const Torsi` (kalkulator & gauge visual torsi baut).
+  3. **`features-budget-laporan-carnotes-pelanggan.js`** (106 baris, TERSISA utk Sesi 7) — cuma
+     `MODULE_FEATURES_VERSION` + `CHAT_ACTION_LABELS`/`CHAT_ACTION_HANDLERS`/
+     `CHAT_ACTION_EDIT_FIELDS`. **Catatan:** deskripsi lama "data pelanggan" di header file ini
+     ternyata sudah basi/tidak ada isinya sama sekali (data pelanggan Shop sudah lama ada di
+     `cobek-order.js`) — jadi Sesi 7 tinggal pindahkan sisa `CHAT_ACTION_*` ke file baru lalu
+     file ini DIHAPUS total (termasuk update entri `MODULE_FEATURES_VERSION` di
+     `scripts/build.js` → `VERSION_FILES`, saat ini masih menunjuk ke file ini apa adanya).
+  Tidak ada dependensi silang kode antara Budget dan Car Notes (dicek manual, 0 pemanggilan
+  `Budget.*`/`BudgetTabs.*`/`BudgetReko.*` dari blok BBM/Servis/Torsi maupun sebaliknya) — aman
+  dipecah dalam 1 sesi, bukan 2 sesi audit+eksekusi terpisah seperti god-file pertama.
+  **File lain yang diupdate:** `scripts/build.js` (`GROUP_A`: 1 entri lama → `budget.js` +
+  `car-notes.js` + sisa `features-budget-laporan-carnotes-pelanggan.js`, urutan load tetap persis
+  sama; entri `VERSION_FILES` SENGAJA belum diubah krn `MODULE_FEATURES_VERSION` masih di file
+  lama), `tests/bbm-renderlist.test.js`/`bbm-saveinner.test.js`/`servis-calc.test.js`/
+  `torsi-calc.test.js` (`loadSource([...])` diarahkan ke `car-notes.js`), komentar "Urutan grup
+  ini: ..." di 6 file lain (`aset.js`/`edukasi-dana.js`/`linktx.js`/`pajak-pbb-zakat.js`/
+  `renovasi.js`/`worthit.js`) + 3 komentar lokasi fungsi lintas-file (`sparepart-servis.js`,
+  `tx-bbm.js`, `transaksi.js` — referensi ke `Servis`/`BBM._saveInner` diarahkan ke `car-notes.js`).
+  **Diverifikasi:** `node --test tests/*.test.js` → **1818/1818 pass**, 0 regresi. `node
+  scripts/build.js` → sukses build #394 (esbuild TIDAK terpasang di sandbox ini — jaringan
+  dimatikan, jadi bundle belum diminify, tapi `node --check` kedua bundle tetap lolos & valid;
+  `npm install`/`npm run lint` tidak bisa jalan di sandbox ini krn eslint juga belum terpasang —
+  **belum diverifikasi via `npm run check` penuh di CI/mesin dengan internet**, tolong jalankan
+  itu sebelum merge kalau memungkinkan). `FILE-MAP.md` diregenerasi otomatis, `budget.js`/
+  `car-notes.js` muncul dgn identifier yg benar, `index.html`/`app_production.html` tetap identik.
+
 - ✅ **[2026-07-17] Audit integrasi end-to-end LifeOS + EIE (`lifeos-nav-eie-connected`).**
   Ditemukan 3 hal, 1 sudah diperbaiki di sesi ini (lihat sub-poin), 2 sisanya
   dipindah ke "BELUM DIKERJAKAN" di bawah.

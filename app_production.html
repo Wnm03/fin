@@ -79,8 +79,8 @@
 <link rel="preconnect" href="https://accounts.google.com" crossorigin>
 <link rel="dns-prefetch" href="https://accounts.google.com">
 <title>Keluarga W</title>
-<link rel="stylesheet" href="styles.css?v=383">
-<link rel="stylesheet" href="modern-ui-layer.css?v=383">
+<link rel="stylesheet" href="styles.css?v=418">
+<link rel="stylesheet" href="modern-ui-layer.css?v=418">
 <script>
 /* Debug console (Eruda) — aktifkan sekali lewat ?debug=1 di URL, nempel via localStorage.
    Matikan lagi lewat ?debug=0. Tidak aktif buat user biasa. */
@@ -133,8 +133,8 @@ b.appendChild(closeBtn);
 }catch(_e){ console.error('Gagal tampilkan banner error modul:',_e); }
 };
 </script>
-<script src="app-bundle-a.min.js?v=383" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
-<script src="smoke-test.js?v=383" defer></script>
+<script src="app-bundle-a.min.js?v=418" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
+<script src="modules/shared/smoke-test.js?v=418" defer></script>
 <link rel="manifest" id="pwaManifestLink" href="manifest.json">
 </head>
 <body data-theme="fresh">
@@ -191,6 +191,7 @@ b.appendChild(closeBtn);
   <div><div class="header-brand">Keluarga <span id="hNama">W</span></div><div class="header-sub" id="headerDate"></div></div>
   <div class="u-flexc8">
     <div class="header-badge" data-action="openGlobalSearch" aria-label="Buka pencarian" role="button">🔎</div>
+    <div class="header-badge u-rel" data-action="showPage" data-args='["settings"]' aria-label="Buka Pengaturan" role="button">⚙️<span class="u-dnone u-abs" id="selfTestNavBadge" style="top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:var(--accent2);border:1.5px solid var(--header-bg)" title="Ada tes diagnostik yang gagal"></span></div>
     <div class="header-badge" id="backupBadge" data-action="runFullBackup">💾 Backup</div>
   </div>
 </div>
@@ -216,7 +217,7 @@ b.appendChild(closeBtn);
   <div id="billBanner" class="bill-banner hidden">
     <span style="font-size:20px">🔔</span>
     <div class="u-flex1"><div class="u-fs12 u-fw700 u-cacc2" id="billBannerTitle">Tagihan jatuh tempo</div><div id="billBannerSub" class="u-fs12t2">-</div></div>
-    <button class="btn btn-sm u-cacc2 u-fs12" style="background:var(--accent2-soft);border:1px solid var(--accent2)" data-onclick="showPage('settings',document.querySelector('[onclick*=settings]'))">Lihat</button>
+    <button class="btn btn-sm u-cacc2 u-fs12" style="background:var(--accent2-soft);border:1px solid var(--accent2)" data-onclick="showPage('settings')">Lihat</button>
   </div>
   <div class="card u-mb12 u-dnone u-pointer" id="dashBillCard" data-action="showPage" data-args='["keuangan", "$nav:1"]'>
     <div class="card-title">🔔 Tagihan & Cicilan <span class="u-flexc8"><span id="dashBillOverdueBadge" class="acc-chip u-dnone u-cacc2" style="border-color:var(--accent2)">Terlambat</span><span class="card-collapse-toggle" id="dashBillCard-chev" data-action="toggleCardCollapse" data-args='["dashBillCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
@@ -1686,12 +1687,17 @@ b.appendChild(closeBtn);
   <div class="u-fs12 u-t2 u-mt8 u-dnone" id="stgSearchResult"></div>
 </div>
 
-<div class="stg-group open" id="stgGroup1">
-  <div class="stg-group-head" data-action="toggleStgGroup" data-args='["stgGroup1"]' role="button" tabindex="0" aria-expanded="true" aria-controls="stgGroup1-body">
-    <div class="stg-group-head-left"><div class="stg-group-icon">👤</div><div><div class="stg-group-title">Profil & Tampilan</div><div class="stg-group-sub">Profil, AI Asisten, Tema</div></div></div>
-    <div class="stg-group-chevron">▼</div>
-  </div>
-  <div class="stg-group-body" id="stgGroup1-body"><div class="stg-group-body-inner">
+<div class="cn-tabs" style="overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch">
+  <button class="cn-tab active tab-fixed-pad" data-action="setSettingsTab" data-args='["profil", "$el"]'>👤 Profil</button>
+  <button class="cn-tab tab-fixed-pad" data-action="setSettingsTab" data-args='["keuangan", "$el"]'>💰 Keuangan</button>
+  <button class="cn-tab tab-fixed-pad" data-action="setSettingsTab" data-args='["pengingat", "$el"]'>⏰ Pengingat</button>
+  <button class="cn-tab tab-fixed-pad" data-action="setSettingsTab" data-args='["notifbackup", "$el"]'>🔔 Notif&amp;Backup</button>
+  <button class="cn-tab tab-fixed-pad" data-action="setSettingsTab" data-args='["keamanan", "$el"]'>🔒 Keamanan</button>
+  <button class="cn-tab tab-fixed-pad" data-action="setSettingsTab" data-args='["diagnostik", "$el"]'>🧪 Diagnostik</button>
+</div>
+
+<div class="stg-tabpanel" id="stgGroup1" data-tab="profil">
+  <div class="stg-group-body-inner">
 
   <div class="card">
     <div class="card-title">👤 Profil</div>
@@ -1789,15 +1795,11 @@ b.appendChild(closeBtn);
     </div>
   </div>
 
-  </div></div>
+  </div>
 </div>
 
-<div class="stg-group" id="stgGroup2">
-  <div class="stg-group-head" data-action="toggleStgGroup" data-args='["stgGroup2"]' role="button" tabindex="0" aria-expanded="false" aria-controls="stgGroup2-body">
-    <div class="stg-group-head-left"><div class="stg-group-icon">💰</div><div><div class="stg-group-title">Keuangan</div><div class="stg-group-sub">Akun, tagihan, target, aset, absensi & gaji</div></div></div>
-    <div class="stg-group-chevron">▼</div>
-  </div>
-  <div class="stg-group-body" id="stgGroup2-body"><div class="stg-group-body-inner">
+<div class="stg-tabpanel u-dnone" id="stgGroup2" data-tab="keuangan">
+  <div class="stg-group-body-inner">
 
   <!-- AKUN / METODE PEMBAYARAN -->
   <div class="card">
@@ -1854,15 +1856,11 @@ b.appendChild(closeBtn);
     <button class="btn btn-primary btn-full btn-sm" data-action="openAbsensiModal" aria-label="Edit/Buka">📅 Buka Absensi & Gaji</button>
   </div>
 
-  </div></div>
+  </div>
 </div>
 
-<div class="stg-group" id="stgGroup3">
-  <div class="stg-group-head" data-action="toggleStgGroup" data-args='["stgGroup3"]' role="button" tabindex="0" aria-expanded="false" aria-controls="stgGroup3-body">
-    <div class="stg-group-head-left"><div class="stg-group-icon">⏰</div><div><div class="stg-group-title">Pengingat</div><div class="stg-group-sub">Pengingat umum</div></div></div>
-    <div class="stg-group-chevron">▼</div>
-  </div>
-  <div class="stg-group-body" id="stgGroup3-body"><div class="stg-group-body-inner">
+<div class="stg-tabpanel u-dnone" id="stgGroup3" data-tab="pengingat">
+  <div class="stg-group-body-inner">
 
   <div class="card">
     <div class="card-title">⏰ Pengingat</div>
@@ -1871,15 +1869,11 @@ b.appendChild(closeBtn);
     <button class="btn btn-ghost btn-full btn-sm" data-action="openReminderModal" aria-label="Edit/Buka">+ Tambah Pengingat</button>
   </div>
 
-  </div></div>
+  </div>
 </div>
 
-<div class="stg-group" id="stgGroup4">
-  <div class="stg-group-head" data-action="toggleStgGroup" data-args='["stgGroup4"]' role="button" tabindex="0" aria-expanded="false" aria-controls="stgGroup4-body">
-    <div class="stg-group-head-left"><div class="stg-group-icon">🔔</div><div><div class="stg-group-title">Notifikasi & Backup</div><div class="stg-group-sub">Reminder, Google Drive, backup data</div></div></div>
-    <div class="stg-group-chevron">▼</div>
-  </div>
-  <div class="stg-group-body" id="stgGroup4-body"><div class="stg-group-body-inner">
+<div class="stg-tabpanel u-dnone" id="stgGroup4" data-tab="notifbackup">
+  <div class="stg-group-body-inner">
 
   <!-- REMINDER NOTIFIKASI & WHATSAPP -->
   <div class="card">
@@ -1956,15 +1950,11 @@ b.appendChild(closeBtn);
     <div class="u-fs12 u-ctext3 u-tac u-mt4">Terakhir backup: <span id="lastBackup">Belum pernah</span></div>
   </div>
 
-  </div></div>
+  </div>
 </div>
 
-<div class="stg-group" id="stgGroup5">
-  <div class="stg-group-head" data-action="toggleStgGroup" data-args='["stgGroup5"]' role="button" tabindex="0" aria-expanded="false" aria-controls="stgGroup5-body">
-    <div class="stg-group-head-left"><div class="stg-group-icon">🔒</div><div><div class="stg-group-title">Keamanan</div><div class="stg-group-sub">PIN & reset aplikasi</div></div></div>
-    <div class="stg-group-chevron">▼</div>
-  </div>
-  <div class="stg-group-body" id="stgGroup5-body"><div class="stg-group-body-inner">
+<div class="stg-tabpanel u-dnone" id="stgGroup5" data-tab="keamanan">
+  <div class="stg-group-body-inner">
 
   <div class="card">
     <div class="card-title">⚙️ Keamanan & Lainnya</div>
@@ -1972,15 +1962,11 @@ b.appendChild(closeBtn);
     <div class="setting-item"><div><div class="setting-label">Reset Aplikasi</div><div class="setting-sub">Hapus semua data</div></div><button class="btn btn-sm btn-danger" data-action="resetApp">Reset</button></div>
   </div>
 
-  </div></div>
+  </div>
 </div>
 
-<div class="stg-group" id="stgGroup6">
-  <div class="stg-group-head" data-action="toggleStgGroup" data-args='["stgGroup6"]' role="button" tabindex="0" aria-expanded="false" aria-controls="stgGroup6-body">
-    <div class="stg-group-head-left"><div class="stg-group-icon">🧪</div><div><div class="stg-group-title">Diagnostik</div><div class="stg-group-sub">Tes fungsi aplikasi & cek kesehatan data</div></div></div>
-    <div class="stg-group-chevron">▼</div>
-  </div>
-  <div class="stg-group-body" id="stgGroup6-body"><div class="stg-group-body-inner">
+<div class="stg-tabpanel u-dnone" id="stgGroup6" data-tab="diagnostik">
+  <div class="stg-group-body-inner">
 
   <div class="card">
     <div class="card-title">🧭 Dashboard Hub</div>
@@ -2050,7 +2036,6 @@ b.appendChild(closeBtn);
   </div>
 
   </div></div>
-</div>
 
 <div class="card u-mt4">
   <div class="card-title">ℹ️ Tentang Aplikasi</div>
@@ -2086,7 +2071,7 @@ b.appendChild(closeBtn);
       <div class="qs-section-title">🔔 Tagihan & Cicilan</div>
       <div class="qs-grid2">
         <div class="qs-action" data-onclick="closeQS('qsKeuangan');openBillModal()"><div class="qs-action-icon">➕</div><div class="qs-action-label">Tambah Tagihan</div></div>
-        <div class="qs-action" data-onclick="closeQS('qsKeuangan');showPage('settings',document.querySelectorAll('.nav-item')[6])"><div class="qs-action-icon">📋</div><div class="qs-action-label">Lihat Semua</div></div>
+        <div class="qs-action" data-onclick="closeQS('qsKeuangan');showPage('settings')"><div class="qs-action-icon">📋</div><div class="qs-action-label">Lihat Semua</div></div>
       </div>
     </div>
     <div class="qs-section">
@@ -2132,7 +2117,7 @@ b.appendChild(closeBtn);
       <div class="qs-section-title">💾 Data</div>
       <div class="qs-grid2">
         <div class="qs-action" data-onclick="closeQS('qsShop');openBackupModal()"><div class="qs-action-icon">📤</div><div class="qs-action-label">Backup Shop</div></div>
-        <div class="qs-action" data-onclick="closeQS('qsShop');showPage('settings',document.querySelectorAll('.nav-item')[6])"><div class="qs-action-icon">⚙️</div><div class="qs-action-label">Setelan Lanjutan</div></div>
+        <div class="qs-action" data-onclick="closeQS('qsShop');showPage('settings')"><div class="qs-action-icon">⚙️</div><div class="qs-action-label">Setelan Lanjutan</div></div>
       </div>
     </div>
   </div>
@@ -2186,7 +2171,7 @@ b.appendChild(closeBtn);
         <div class="qs-action" data-onclick="closeQS('qsLaporan');exportCSV()"><div class="qs-action-icon">📄</div><div class="qs-action-label">Export CSV</div></div>
         <div class="qs-action" data-onclick="closeQS('qsLaporan');exportJSON()"><div class="qs-action-icon">📦</div><div class="qs-action-label">Export JSON</div></div>
         <div class="qs-action" data-onclick="closeQS('qsLaporan');openBackupModal()"><div class="qs-action-icon">📤</div><div class="qs-action-label">Backup Lanjutan</div></div>
-        <div class="qs-action" data-onclick="closeQS('qsLaporan');showPage('settings',document.querySelectorAll('.nav-item')[6])"><div class="qs-action-icon">⚙️</div><div class="qs-action-label">Setelan Akun</div></div>
+        <div class="qs-action" data-onclick="closeQS('qsLaporan');showPage('settings')"><div class="qs-action-icon">⚙️</div><div class="qs-action-label">Setelan Akun</div></div>
       </div>
     </div>
   </div>
@@ -2211,7 +2196,7 @@ b.appendChild(closeBtn);
       <div class="qs-section-title">🔧 Kelola Chat</div>
       <div class="qs-grid2">
         <div class="qs-action" data-onclick="closeQS('qsAI');clearChat()"><div class="qs-action-icon">🗑️</div><div class="qs-action-label">Reset Chat</div></div>
-        <div class="qs-action" data-onclick="closeQS('qsAI');showPage('settings',document.querySelectorAll('.nav-item')[6])"><div class="qs-action-icon">👤</div><div class="qs-action-label">Edit Profil</div></div>
+        <div class="qs-action" data-onclick="closeQS('qsAI');showPage('settings')"><div class="qs-action-icon">👤</div><div class="qs-action-label">Edit Profil</div></div>
       </div>
     </div>
   </div>
@@ -2267,7 +2252,7 @@ b.appendChild(closeBtn);
 <div class="page active" id="page-dashboard-hub">
   <div class="page-settings-btn">
     <div class="page-title">🧭 Dashboard Hub</div>
-    <button class="qs-btn" data-onclick="showPage('settings',document.querySelectorAll('.nav-item')[6])" aria-label="Kembali ke Pengaturan">←</button>
+    <button class="qs-btn" data-onclick="showPage('settings')" aria-label="Kembali ke Pengaturan">←</button>
   </div>
   <!-- HERO CARD (Sprint 1 Tahap 2 — Dashboard 2.0, lihat HERO-CARD.md &
        DASHBOARD-2.0-PLAN.md §11 "Mockup ASCII"). Murni tampilan ringkasan
@@ -2298,15 +2283,29 @@ b.appendChild(closeBtn);
   <!-- TANGGA KEUANGAN (fitur baru -- lihat tangga-keuangan.js). Kartu murni
        tambahan, diisi oleh TanggaKeuangan.render() yang di-load sebagai
        <script src> terpisah SETELAH app-bundle-a/b.min.js -- tidak mengubah
-       1 baris pun kode yang sudah ada di bundle. -->
+       1 baris pun kode yang sudah ada di bundle.
+       COLLAPSE (permintaan user 2026-07-17): kartu ini sengaja TETAP di
+       posisi semula (selalu tampil di atas nav .dhb-subtabs, lihat
+       tests/dashboard-hub-sectiontabs.test.js) — dipindah ke tab akan
+       memecah kontrak "Hero/Tangga/Quick Actions/Search selalu tampil" yang
+       sudah dites. Sebagai gantinya kartu jadi collapsible lewat sistem
+       toggleCardCollapse/applyCardCollapsePrefs yang SUDAH dipakai ~40+
+       kartu lain (lihat modal-navigasi.js) — bukan mekanisme collapse baru,
+       cuma reuse pola yang ada supaya kartu ini bisa ditutup & tidak makan
+       tempat kalau tidak dibutuhkan. TanggaKeuangan.render() TIDAK diubah
+       (masih nulis ke #tanggaKeuanganStepNum/#tanggaKeuanganStepTitle/
+       #tanggaKeuanganList seperti sebelumnya, cuma sekarang 3 elemen itu ada
+       di dalam wrapper #tanggaKeuangan-cbody). -->
   <div class="card u-mb12" id="tanggaKeuanganCard" style="background-image:linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.75)), url('tangga-ternak-uang.jpg'); background-size:cover; background-position:top center; color:#fff;">
-    <div class="card-title" style="color:#fff;">🪜 Tangga Ternak Uang</div>
-    <div style="font-size:12px;color:#e8e8e8;margin-bottom:10px;">Analisis otomatis dari data keuangan kamu (estimasi, bukan nasihat finansial personal).</div>
-    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
-      <div style="font-size:40px;font-weight:800;line-height:1;" id="tanggaKeuanganStepNum">-</div>
-      <div style="font-size:13px;font-weight:700;" id="tanggaKeuanganStepTitle">Menghitung...</div>
+    <div class="card-title" style="color:#fff;">🪜 Tangga Ternak Uang <span class="u-flexc8"><span class="card-collapse-toggle" id="tanggaKeuangan-chev" data-action="toggleCardCollapse" data-args='["tanggaKeuangan","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
+    <div class="card-collapse-body" id="tanggaKeuangan-cbody">
+      <div style="font-size:12px;color:#e8e8e8;margin-bottom:10px;">Analisis otomatis dari data keuangan kamu (estimasi, bukan nasihat finansial personal).</div>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+        <div style="font-size:40px;font-weight:800;line-height:1;" id="tanggaKeuanganStepNum">-</div>
+        <div style="font-size:13px;font-weight:700;" id="tanggaKeuanganStepTitle">Menghitung...</div>
+      </div>
+      <div id="tanggaKeuanganList"></div>
     </div>
-    <div id="tanggaKeuanganList"></div>
   </div>
   <!-- QUICK ACTIONS (Sprint 1 Tahap 3 — Dashboard 2.0, lihat QUICK-ACTIONS.md).
        Baris tombol kartu kecil ala Material 3, tepat di bawah Hero Card. Setiap
@@ -2380,23 +2379,25 @@ b.appendChild(closeBtn);
   </div>
   <!-- SUB-TAB DASHBOARD HUB (Fase 1, lihat CLAUDE.md "Split tab 🧭 Dashboard
        Hub"). Hero Card/Tangga Ternak Uang/Quick Actions/Search TETAP selalu
-       tampil di atas (TIDAK ikut dipecah) — cuma 3 section di BAWAH search
+       tampil di atas (TIDAK ikut dipecah) — cuma 4 section di BAWAH search
        yang dikelompokkan: Ringkasan (Summary Cards + Analytics), Fitur
-       (Favorit + switcher Semua Fitur/Pinned Widget lama, TIDAK diubah
-       isinya), Insight (Life OS + Kondisi Ekonomi). SENGAJA TIDAK membungkus
-       ulang tiap section jadi elemen wrapper baru (supaya TIDAK ADA reorder
-       DOM sama sekali & 0 risiko ke test containment/urutan yang sudah ada,
+       (Favorit + Semua Fitur), Widget (Pinned Widgets — DIPISAH jadi tab
+       tersendiri 2026-07-17, sebelumnya sempat ditumpuk 1 tab bareng Fitur,
+       lalu di-split lagi krn Fitur & Widget maunya bisa dibuka terpisah),
+       Insight (Life OS + Kondisi Ekonomi). SENGAJA TIDAK membungkus ulang
+       tiap section jadi elemen wrapper baru (supaya TIDAK ADA reorder DOM
+       sama sekali & 0 risiko ke test containment/urutan yang sudah ada,
        lihat dashboard-hub-quickactions.test.js/dashboard-hub-pinnedwidgets.
        test.js) — DashboardHub.setSectionTab()/applySectionTab() di
        dashboard-hub.js toggle class u-dnone LANGSUNG ke id section yang
        sudah ada (dashHubSummaryGrid/dashHubAnalyticsRow/
-       dashHubFavoritSection/dashHubMainTabsRow/dashHubMainGridCard/
-       dashboardHubPinnedWrap/lifeOSWrap/eieWrap), pola sama dgn
-       applyMainTab() yang sudah ada. Pilihan diingat lewat localStorage
-       (key: dashHubSectionTab), pola sama dgn dashHubMainTab. -->
+       dashHubFavoritSection/dashHubMainGridCard/dashboardHubPinnedWrap/
+       lifeOSWrap/eieWrap). Pilihan diingat lewat localStorage
+       (key: dashHubSectionTab). -->
   <div class="cn-tabs dhb-subtabs">
     <button type="button" class="dhb-subtab active" id="dashHubSectionTabBtn-ringkasan" data-action="DashboardHub.setSectionTab" data-args='["ringkasan"]'>📊 Ringkasan</button>
     <button type="button" class="dhb-subtab" id="dashHubSectionTabBtn-fitur" data-action="DashboardHub.setSectionTab" data-args='["fitur"]'>🗂️ Fitur</button>
+    <button type="button" class="dhb-subtab" id="dashHubSectionTabBtn-widget" data-action="DashboardHub.setSectionTab" data-args='["widget"]'>📌 Widget</button>
     <button type="button" class="dhb-subtab" id="dashHubSectionTabBtn-insight" data-action="DashboardHub.setSectionTab" data-args='["insight"]'>🌦️ Insight</button>
   </div>
   <!-- SEMUA FITUR — dibungkus jadi kartu collapse (fix "dashboard hub terlalu
@@ -2410,18 +2411,15 @@ b.appendChild(closeBtn);
        cardCollapsePrefs sama seperti kartu lain — bukan collapse baru yang
        terpisah. Isi grid (#dashboardHubGrid) & cara diisinya (DashboardHub.
        render() di dashboard-hub.js) TIDAK diubah sama sekali. -->
-  <!-- TAB SWITCHER: "Semua Fitur" & "Pinned Widgets" (dua section yang tadinya
-       ditumpuk berurutan) kini jadi 2 tab sebelah-sebelahan supaya Beranda
-       tidak terlalu panjang. Reuse pola chip-btn tab yang sudah ada di
-       banyak tempat (mis. #advisorTabBtn-coach/#advisorTabBtn-report di
-       bawah, atau #whTabAbsensiBtn di absensiModal) — tidak ada gaya/tab
-       system baru. Diatur oleh DashboardHub.setMainTab()/applyMainTab() di
-       dashboard-hub.js; pilihan diingat lewat localStorage
-       (key: dashHubMainTab), pola sama seperti cardCollapsePrefs. -->
-  <div class="u-flex u-gap6 u-mb10" id="dashHubMainTabsRow">
-    <button type="button" class="chip-btn active u-flex1" id="dashHubMainTabBtn-fitur" data-action="DashboardHub.setMainTab" data-args='["fitur"]'>🗂️ Semua Fitur</button>
-    <button type="button" class="chip-btn u-flex1" id="dashHubMainTabBtn-pinned" data-action="DashboardHub.setMainTab" data-args='["pinned"]'>📌 Pinned Widget</button>
-  </div>
+  <!-- TAB SWITCHER "Semua Fitur"/"Pinned Widgets" (chip-btn di dalam 1 tab)
+       DIHAPUS (permintaan user 2026-07-17): sempat digantikan dgn menumpuk
+       #dashHubMainGridCard & #dashboardHubPinnedWrap berurutan di 1 tab
+       "Fitur", tapi lalu DIPISAH LAGI (permintaan user, sesi sama) jadi 2
+       tab section terpisah di nav .dhb-subtabs — #dashHubMainGridCard tetap
+       di tab "Fitur" (sebelah "Ringkasan"), #dashboardHubPinnedWrap pindah
+       ke tab baru "📌 Widget" di sampingnya. Lihat SECTION_GROUPS di
+       DashboardHub.applySectionTab() (dashboard-hub.js) & tests/dashboard-
+       hub-sectiontabs.test.js. -->
   <div class="card u-mb12" id="dashHubMainGridCard">
     <div class="card-title">
       🗂️ Semua Fitur <span class="u-flexc8"><span class="dashhub-cat-badge" id="dashHubMainGridCount"></span><span class="card-collapse-toggle" id="dashHubMainGrid-chev" data-action="toggleCardCollapse" data-args='["dashHubMainGrid","$event"]' aria-label="Buka/tutup bagian">▾</span></span>
@@ -2480,7 +2478,7 @@ b.appendChild(closeBtn);
     <div id="eieStatusCard" style="padding:8px 2px;font-size:12.5px;opacity:.6;">Memuat kondisi ekonomi…</div>
     <div id="eieInsightFeed"></div>
   </div>
-  <div class="dashhub-pinned-wrap u-dnone" id="dashboardHubPinnedWrap">
+  <div class="dashhub-pinned-wrap" id="dashboardHubPinnedWrap">
     <div class="dashhub-cat-head">
       <div class="dashhub-cat-icon">📌</div>
       <div>
@@ -2627,11 +2625,6 @@ b.appendChild(closeBtn);
   <button class="nav-item" aria-current="false" data-action="showPage" data-args='["pajak", "$el"]'>
     <svg aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L3 7v2h18V7zM4 11v8M8 11v8M12 11v8M16 11v8M20 11v8M2 21h20"/></svg>
     Pajak<div class="nav-dot"></div>
-  </button>
-  <button class="nav-item u-rel" aria-current="false" data-action="showPage" data-args='["settings", "$el"]'>
-    <svg aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    <span class="u-dnone u-abs" id="selfTestNavBadge" style="top:2px;right:14px;width:8px;height:8px;border-radius:50%;background:var(--accent2);border:1.5px solid var(--header-bg)" title="Ada tes diagnostik yang gagal"></span>
-    Setelan<div class="nav-dot"></div>
   </button>
 </nav>
 
@@ -2872,7 +2865,7 @@ b.appendChild(closeBtn);
 <script>document.write(MODAL_HTML[69]);</script><!-- modal:importShopExcelModal (Import dari Excel Shop) -->
 <script>document.write(MODAL_HTML[70]);</script><!-- modal:mergeProductModal (Gabungkan Harga Produk) -->
 
-<script src="app-bundle-b.min.js?v=383" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
-<script src="tangga-keuangan.js?v=383"></script>
+<script src="app-bundle-b.min.js?v=418" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
+<script src="modules/finance/tangga-keuangan.js?v=418"></script>
 </body>
 </html>

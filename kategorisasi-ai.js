@@ -1,4 +1,5 @@
 // kategorisasi-ai.js — AI Auto-Kategorisasi Transaksi dari Catatan Bebas
+// Dipindah ke modules/ai/kategorisasi-ai.js (Sesi 14 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // FITUR BARU: saat user mengetik Keterangan transaksi bebas di Input Transaksi (mis. "bayar
 // galon+beras warung"), modul ini menebak Kategori & Subkategori yang paling cocok — jauh lebih
 // akurat dari sekadar keyword-matching yang sudah ada (CAT_EMOJI_GUESS/guessCategoryFromReceiptText
