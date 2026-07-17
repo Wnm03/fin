@@ -21,13 +21,9 @@ const EIEDashboard = {
       const today = new Date().toISOString().slice(0, 10);
       let snapshot = await EIEScoringEngine.getLatestSnapshot();
       // Recompute paling banyak 1x/hari — bukan tiap buka Dashboard Hub,
-      // supaya tidak jadi kerja berat berulang tiap render. syncAndRecompute()
-      // (bukan recomputeOnly()) supaya boundary harian ini juga jadi titik
-      // auto-fetch USD/IDR (API publik) & IHSG (AI+web search) — lihat
-      // MacroDataAdapter.refresh(); gagal fetch tetap fallback ke cache lama
-      // secara diam-diam (tidak pernah melempar ke sini).
+      // supaya tidak jadi kerja berat berulang tiap render.
       if (!snapshot || snapshot.date !== today) {
-        const result = await MacroSyncService.syncAndRecompute();
+        const result = await MacroSyncService.recomputeOnly();
         snapshot = result.snapshot;
       }
       this._renderWeatherCard(snapshot);
@@ -56,48 +52,6 @@ const EIEDashboard = {
         <div style="height:100%;width:${Math.max(4, Math.min(100, score.breakdown && score.breakdown.impactScore || 0))}%;background:${barColor};"></div>
       </div>
       <div style="margin-top:6px;font-size:11.5px;opacity:.6;">Diperbarui: ${score.date}</div>
-      ${this._macroSourceHintHTML()}
-      <button class="btn btn-ghost btn-sm u-mt8" data-action="eieManualSync" data-args='["$el"]'>🔄 Perbarui Kurs USD & IHSG Sekarang</button>
     `;
   },
-
-  /** Baris kecil status sumber data USD/IDR & IHSG (auto-api/auto-ai/manual/belum
-   * disinkron) supaya user tahu kenapa angkanya belum berubah kalau, mis., API
-   * key AI di Pengaturan belum diisi (IHSG tidak bisa auto tanpa itu). */
-  _macroSourceHintHTML() {
-    try {
-      const cache = (typeof MacroDataAdapter !== 'undefined' && MacroDataAdapter.getLatest()) || {};
-      const label = (id, name) => {
-        const s = cache[id];
-        if (!s) return `${name}: belum ada data`;
-        if (s.source === 'auto-api' || s.source === 'auto-ai') return `${name}: auto ✓`;
-        if (s.source === 'manual-input') return `${name}: manual`;
-        return `${name}: belum disinkron`;
-      };
-      return `<div style="margin-top:2px;font-size:11px;opacity:.55;">${label('usdidr', 'USD/IDR')} · ${label('ihsg', 'IHSG')}</div>`;
-    } catch (e) {
-      return '';
-    }
-  },
 };
-
-/** Tombol manual "🔄 Perbarui Kurs USD & IHSG" — dipanggil dari data-action
- * lewat dispatcher global (features-helpers-global-security.js), $el = elemen
- * tombol itu sendiri supaya bisa dikasih status loading/disabled sementara. */
-async function eieManualSync(btn) {
-  const originalLabel = btn ? btn.textContent : null;
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Memperbarui…'; }
-  try {
-    await eieEnsureLoaded();
-    await MacroSyncService.syncAndRecompute();
-    await EIEDashboard.render();
-    if (typeof toast === 'function') toast('✅ Data kurs & IHSG diperbarui');
-  } catch (e) {
-    console.warn('[EIE] eieManualSync() gagal:', e);
-    if (typeof toast === 'function') toast('⚠️ Gagal update, tetap pakai data sebelumnya');
-  } finally {
-    const stillBtn = document.getElementById('eieWeatherCard') ? document.querySelector('#eieWeatherCard [data-action="eieManualSync"]') : null;
-    if (stillBtn) { stillBtn.disabled = false; }
-    else if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
-  }
-}

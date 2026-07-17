@@ -82,6 +82,7 @@ const GROUP_A = [
   'aset.js',
   'aset-keluarga.js',
   'feature-insights.js',
+  'ai-smart-insight.js',
   'invest-ai-widget.js',
   'penyusutan-ai-widget.js',
   'aset-emas-impor.js',
@@ -159,7 +160,6 @@ const GROUP_B = [
   'lifeos/ui/projects.js',
   'lifeos/ui/review.js',
   'lifeos/ui/knowledge.js',
-  'lifeos/lifeos-nav.js',
 
   // --- Economic Intelligence Engine (EIE): layer orkestrasi read-only di
   // atas D + LifeOS (lihat Economic-Intelligence-Engine-Technical-Design.md).

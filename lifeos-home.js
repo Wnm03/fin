@@ -13,56 +13,12 @@
 // antara panel-panel sibling di dalam #lifeOSWrap. Router lama tidak
 // disentuh sama sekali.
 
-// Preferensi tampil/sembunyi section Life OS di Dashboard Hub (Setelan →
-// Profil & Tampilan → 🌱 Life OS di Dashboard Hub). Disimpan di localStorage
-// (bukan D atau LifeOSStore) — pola sama persis dengan `dashHubMainTab`
-// (lihat dashboard-hub.js applyMainTab()): preferensi tampilan murni,
-// bukan data pengguna, jadi tidak perlu ikut siklus save()/IDBStore.
-// DEFAULT: false (tersembunyi) — LifeOS sebelumnya sengaja disembunyikan
-// permanen lewat class u-dnone hardcoded di index.html/app_production.html
-// (lihat komentar lama di situ); default ini menjaga perilaku existing user
-// tetap sama persis sebelum mereka aktifkan sendiri lewat Setelan.
-const LIFEOS_VISIBLE_KEY = 'lifeOSVisible';
-
 const LifeOSHome = {
-  isVisiblePref() {
-    return localStorage.getItem(LIFEOS_VISIBLE_KEY) === '1';
-  },
-
-  /** Terapkan preferensi ke DOM (#lifeOSWrap) — dipanggil dari render() di
-   * bawah, dan juga langsung dari toggleVisibility() saat user klik switch
-   * di Setelan supaya efeknya langsung terlihat tanpa perlu buka ulang
-   * Dashboard Hub. */
-  applyVisibility() {
-    const wrap = document.getElementById('lifeOSWrap');
-    if (!wrap) return;
-    wrap.classList.toggle('u-dnone', !this.isVisiblePref());
-  },
-
-  /** Dipanggil dari toggle switch di Setelan (id=lifeOSVisibleToggle, lihat
-   * index.html/app_production.html stgGroup1). Tidak perlu await apa pun —
-   * localStorage synchronous — supaya switch terasa instan. */
-  toggleVisibility(checked) {
-    localStorage.setItem(LIFEOS_VISIBLE_KEY, checked ? '1' : '0');
-    this.applyVisibility();
-    // Kalau baru dinyalakan dan grid belum pernah terisi (mis. user aktifkan
-    // pertama kali di sesi ini), render sekarang juga supaya tidak muncul
-    // section kosong sebelum Dashboard Hub dibuka ulang.
-    const grid = document.getElementById('lifeOSHomeGrid');
-    if (checked && grid && !grid.innerHTML.trim()) this.render();
-    if (typeof toast === 'function') {
-      toast(checked ? '🌱 Life OS ditampilkan di Dashboard Hub' : '🌱 Life OS disembunyikan dari Dashboard Hub');
-    }
-  },
-
   async render() {
-    this.applyVisibility();
     const el = document.getElementById('lifeOSHomeGrid');
     if (!el) return;
-    if (!this.isVisiblePref()) return; // tersembunyi -> tidak perlu hitung/render isinya sama sekali.
 
     await lifeOSEnsureLoaded();
-
     const store = lifeOSGetStore();
 
     const today = todayAdapterList(D);

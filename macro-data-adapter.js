@@ -1,17 +1,16 @@
 // adapters/macro-data-adapter.js — Normalisasi data makro dari berbagai
 // sumber, dgn fallback cache (offline-first, §16 dokumen desain).
 //
-// FASE 1 (MVP, "senyap"): TIDAK ada fetch ke API eksternal apa pun. Nilai
-// makro diisi dari eie-store (manual cache). Kalau cache masih kosong
+// FASE 1 (MVP, "senyap"): TIDAK ada fetch ke API eksternal apa pun — app ini
+// berjalan offline-first & sandbox build ini tidak mengaktifkan network.
+// Nilai makro diisi dari eie-store (manual cache). Kalau cache masih kosong
 // (pemakaian pertama), dipakai seed placeholder yang DITANDAI TEGAS
 // `isStale:true, source:'seed-belum-disinkron'` — supaya skor/insight yang
 // dihasilkan tidak pernah diam-diam dikira data pasar real-time.
 //
-// FASE 2 (aktif): `refresh()` sekarang benar-benar fetch 2 indikator yang
-// punya sumber otomatis — lihat `_autoFetchUsdIdr()` (API kurs publik) &
-// `_autoFetchIhsgViaAI()` (AI + web search, pakai API key AI yg sudah ada
-// di Pengaturan). 4 indikator lain (inflasi/bi_rate/emas/bbm) tetap manual
-// lewat `setManualValue()` — tidak ada sumber gratis yang cukup andal.
+// Fase 2: ganti isi `_fetchRemote()` dgn fetch API nyata (BI/Yahoo Finance/
+// dst) di dalam try/catch, tetap fallback ke cache kalau gagal — interface
+// `MacroDataAdapter.getLatest()`/`refresh()` TIDAK PERLU berubah.
 
 const EIE_MACRO_INDICATORS = ['usdidr', 'inflasi', 'bi_rate', 'ihsg', 'emas', 'bbm'];
 
@@ -56,15 +55,10 @@ const MacroDataAdapter = {
   getLatest() {
     const store = eieGetStore();
     const cache = store.macroCache || {};
-    const seed = _eieSeedMacro();
-    // Merge PER-INDIKATOR (bukan all-or-nothing): sejak refresh() fase 2 bisa
-    // sukses utk sebagian indikator (mis. usdidr auto-fetch OK tapi ihsg gagal
-    // krn API key AI belum ada), cache yg cuma terisi SEBAGIAN itu normal —
-    // indikator yg belum ada di cache tetap harus fallback ke seed masing2,
-    // bukan jadi undefined.
-    const out = {};
-    EIE_MACRO_INDICATORS.forEach((id) => { out[id] = cache[id] || seed[id]; });
-    return out;
+    if (!cache || !Object.keys(cache).length) {
+      return _eieSeedMacro();
+    }
+    return cache;
   },
 
   /**
@@ -94,82 +88,19 @@ const MacroDataAdapter = {
   },
 
   /**
-   * Fase 2: auto-update 2 indikator yang punya sumber otomatis —
-   * usdidr (API kurs publik, tanpa API key) & ihsg (lewat AI + web search,
-   * pakai API key AI yang SUDAH dikonfigurasi user di Pengaturan → Asisten
-   * AI, `D.profile.apiKey`/`D.profile.apiProvider` — SATU-SATUNYA API key
-   * yang dipunyai app ini, dipakai bersama dgn fitur AI lain lewat
-   * `callAIProviderRaw()` di features-aiwidget-reminder-gdrive-search.js).
-   * 4 indikator lain (inflasi/bi_rate/emas/bbm) TIDAK punya sumber gratis
-   * yang cukup andal utk auto-fetch client-side, tetap manual lewat
-   * `setManualValue()` seperti sebelumnya.
-   * Tiap indikator di-guard try/catch SENDIRI-SENDIRI — gagal satu (mis.
-   * offline, atau API key AI belum diisi) tidak boleh menghalangi yang lain
-   * atau melempar error ke caller; selalu fallback ke cache lama per-indikator.
+   * Placeholder titik integrasi fetch API eksternal (fase 2). Fase 1
+   * SELALU fallback ke cache (network tidak diaktifkan di build ini).
    */
   async refresh() {
-    await Promise.allSettled([this._autoFetchUsdIdr(), this._autoFetchIhsgViaAI()]);
-    return this.getLatest();
-  },
-
-  /** USD/IDR dari open.er-api.com — API publik gratis, tanpa API key, CORS-enabled. */
-  async _autoFetchUsdIdr() {
     try {
-      if (typeof fetch !== 'function') return null;
-      const res = await fetch('https://open.er-api.com/v6/latest/USD');
-      const data = await res.json();
-      const rate = data && data.rates && data.rates.IDR;
-      if (!res.ok || data.result !== 'success' || typeof rate !== 'number' || !(rate > 5000 && rate < 50000)) {
-        throw new Error('Respons kurs tidak valid');
-      }
-      const snap = await this.setManualValue('usdidr', Math.round(rate), 'IDR');
-      snap.source = 'auto-api';
-      const store = eieGetStore();
-      if (store.macroCache && store.macroCache.usdidr) store.macroCache.usdidr.source = 'auto-api';
-      await eieSave();
-      return snap;
+      // TODO fase 2: panggil API nyata di sini, contoh pola:
+      // const res = await fetch(ENDPOINT); const json = await res.json();
+      // lalu MacroDataAdapter.setManualValue(...) per indikator.
+      // Untuk sekarang: tidak ada network call, langsung fallback cache.
+      return this.getLatest();
     } catch (e) {
-      console.warn('[EIE] auto-fetch USD/IDR gagal, pakai cache lama:', e.message || e);
-      return null;
-    }
-  },
-
-  /**
-   * IHSG lewat AI + web search (Claude/Gemini web_search, provider & API
-   * key ambil dari D.profile — sama seperti fitur AI lain). Balasan AI
-   * diminta HANYA berupa JSON `{"value": <angka index>}` supaya gampang
-   * diparse & divalidasi (rentang wajar 1000–20000) sebelum dipakai —
-   * kalau AI balas ngaco/di luar rentang, dibuang & fallback cache lama,
-   * TIDAK pernah ditulis ke store.
-   */
-  async _autoFetchIhsgViaAI() {
-    try {
-      if (typeof D === 'undefined' || !D.profile || !D.profile.apiKey) {
-        return null; // API key AI belum diisi user di Pengaturan -> diam2 skip, bukan error.
-      }
-      if (typeof callAIProviderRaw !== 'function') return null;
-      const sysPrompt = 'Kamu asisten yang HANYA bertugas mencari 1 angka: nilai penutupan/terkini '
-        + 'IHSG (Indeks Harga Saham Gabungan, Bursa Efek Indonesia) HARI INI lewat pencarian web. '
-        + 'Balas HANYA dengan JSON valid TANPA teks/markdown lain apa pun, format persis: '
-        + '{"value": <angka index, contoh 7284.32>}';
-      const r = await callAIProviderRaw(sysPrompt, [{ role: 'user', content: 'Berapa nilai IHSG terkini/penutupan hari ini?' }], { webSearch: true, maxTokens: 200 });
-      if (!r || !r.ok || !r.text) throw new Error((r && r.errMsg) || 'balasan AI kosong');
-      const cleaned = r.text.replace(/```json|```/g, '').trim();
-      const match = cleaned.match(/\{[^}]*\}/);
-      const parsed = JSON.parse(match ? match[0] : cleaned);
-      const value = Number(parsed.value);
-      if (!Number.isFinite(value) || value < 1000 || value > 20000) {
-        throw new Error('nilai IHSG di luar rentang wajar: ' + parsed.value);
-      }
-      const snap = await this.setManualValue('ihsg', value, 'poin');
-      snap.source = 'auto-ai';
-      const store = eieGetStore();
-      if (store.macroCache && store.macroCache.ihsg) store.macroCache.ihsg.source = 'auto-ai';
-      await eieSave();
-      return snap;
-    } catch (e) {
-      console.warn('[EIE] auto-fetch IHSG via AI gagal, pakai cache lama:', e.message || e);
-      return null;
+      console.warn('[EIE] refresh() gagal, pakai cache lama:', e);
+      return this.getLatest();
     }
   },
 };

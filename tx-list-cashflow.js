@@ -146,21 +146,14 @@ const billsDue=upcoming.reduce((s,b)=>s+b.amount,0);
 const projected=saldoNow+incAvg-expAvg-billsDue;
 return{incAvg,expAvg,saldoNow,billsDue,upcoming,projected,months,avail};
 }
-const KEU_TAB_ORDER=['kelola','tagihan','budget','laporan'];
 function setKeuanganTab(t,el){
 document.querySelectorAll('#page-keuangan .cn-tab').forEach(b=>b.classList.remove('active'));
 if(el) el.classList.add('active');
-else { const idx=KEU_TAB_ORDER.indexOf(t); const btn=document.querySelectorAll('#page-keuangan .cn-tab')[idx>=0?idx:0]; if(btn) btn.classList.add('active'); }
+else { const btn=document.querySelectorAll('#page-keuangan .cn-tab')[t==='laporan'?1:0]; if(btn) btn.classList.add('active'); }
 document.getElementById('keuanganTab-kelola').classList.toggle('u-dnone', t!=='kelola');
 document.getElementById('keuanganTab-kelola').style.display='';
-document.getElementById('keuanganTab-tagihan').classList.toggle('u-dnone', t!=='tagihan');
-document.getElementById('keuanganTab-tagihan').style.display='';
-document.getElementById('keuanganTab-budget').classList.toggle('u-dnone', t!=='budget');
-document.getElementById('keuanganTab-budget').style.display='';
 document.getElementById('keuanganTab-laporan').classList.toggle('u-dnone', t!=='laporan');
 document.getElementById('keuanganTab-laporan').style.display='';
-if(t==='kelola'){populateKeuFilters();loadKeuFilterPrefsIntoDOM();renderKeuangan();}
-if(t==='tagihan'){renderBillList();}
-if(t==='budget'){renderBudgets();if(typeof BudgetReko!=='undefined')BudgetReko.init();}
+if(t==='kelola'){populateKeuFilters();loadKeuFilterPrefsIntoDOM();renderKeuangan();renderBillList();}
 if(t==='laporan'){populateCatFilter();populateAccFilters();renderLaporan();}
 }
