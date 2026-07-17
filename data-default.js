@@ -1,4 +1,5 @@
 // data-default.js — Domain Data Default: kategori shop bawaan (DEFAULT_COBEK_KATEGORI),
+// Dipindah ke modules/shared/data-default.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // akun keuangan bawaan (DEFAULT_ACCOUNTS), kategori sparepart kendaraan bawaan (DEFAULT_SPAREPARTS).
 // PENTING: file ini HARUS dimuat SEBELUM features-helpers-global-security.js (bukan sesudah,
 // beda dari file GROUP_B lainnya) — ketiga konstanta di sini dibaca LANGSUNG di dalam deklarasi

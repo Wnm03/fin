@@ -1,4 +1,5 @@
 // sewakios.js — Domain Sewa Kios: catat unit kios yang disewakan, riwayat tagihan sewa, ROI vs modal renovasi, laporan PDF.
+// Dipindah ke modules/business/sewakios.js (Sesi 15 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Dipisah dari: features-edukasi-pajak-utang-sewakios.js (lanjutan roadmap PEMISAHAN-FILE-ROADMAP.md, v58).
 // PENTING: SewaKios.onLinkedTxDeleted()/onLinkedTxEdited() dipanggil dari backup-restore.js & transaksi.js (GROUP_B) saat transaksi diedit/dihapus — lewat variabel global, aman krn dipanggil runtime (bukan saat file di-load), asal file ini tetap ikut dimuat (selalu, lewat build.js).
 // PENTING: harus dimuat sesuai urutan build.js (GROUP_A) — tidak ada modul lain di GROUP_A yang direferensi SewaKios saat load, cuma D global & helper (fmt, fmtFull, sameId, dst) yang sudah tersedia di semua file.

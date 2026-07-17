@@ -21,7 +21,7 @@ const { loadSource } = require('./helpers/loadSource');
 function plain(x) { return JSON.parse(JSON.stringify(x)); }
 
 function freshCenter() {
-  const ctx = loadSource(['ai-command-center.js'], {}, ['AICommandCenter']);
+  const ctx = loadSource(['modules/ai/ai-command-center.js'], {}, ['AICommandCenter']);
   return ctx.AICommandCenter;
 }
 
@@ -132,7 +132,7 @@ test('clear(): mengosongkan seluruh registry', () => {
 });
 
 test('AICommandCenter TIDAK menyentuh FEATURE_REGISTRY (independen, tidak membaca global itu sama sekali)', () => {
-  const ctx = loadSource(['ai-command-center.js'], { FEATURE_REGISTRY: undefined }, ['AICommandCenter']);
+  const ctx = loadSource(['modules/ai/ai-command-center.js'], { FEATURE_REGISTRY: undefined }, ['AICommandCenter']);
   // Loading tidak error meski FEATURE_REGISTRY undefined -> file ini
   // benar-benar tidak bergantung padanya (beda dari modul yang konsumsi
   // FEATURE_REGISTRY, mis. dashboard-hub-favorit-view.js).

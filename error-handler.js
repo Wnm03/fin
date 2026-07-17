@@ -1,4 +1,5 @@
 // error-handler.js — Domain Error Handler Global: tangkap error tak tertangani (uncaught error &
+// Dipindah ke modules/shared/error-handler.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // unhandled promise rejection) di seluruh app, catat ke console utk debugging, dan tampilkan toast
 // singkat yang ramah ke pengguna (dibatasi maksimal 1x per 3 detik biar tidak spam kalau error
 // beruntun) lewat `_friendlyErrorNotice`.

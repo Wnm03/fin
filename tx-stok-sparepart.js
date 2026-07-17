@@ -1,4 +1,5 @@
 // tx-stok-sparepart.js — logika panel "Tambah ke Stok Sparepart juga?" pada
+// Dipindah ke modules/finance/tx-stok-sparepart.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // txModal (Tambah/Edit Transaksi Keuangan). Dipisah dari transaksi.js
 // (2026-07-11, lihat CLAUDE.md catatan kerja "split transaksi.js" bagian
 // ke-7) murni sebagai pengelompokan ulang file, BUKAN perubahan perilaku.

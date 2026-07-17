@@ -46,7 +46,7 @@ function makeFakeIdbStore(seed = {}) {
 }
 
 function buildSandbox({ D, idbSeed = {} } = {}) {
-  const src = fs.readFileSync(path.join(ROOT, 'backup-restore.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'modules/shared/backup-restore.js'), 'utf8');
   const buildBackupPayloadSrc = extractFn(src, 'buildBackupPayload');
   const applyRestoredDataSrc = extractFn(src, 'applyRestoredData');
 

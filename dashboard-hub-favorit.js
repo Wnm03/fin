@@ -1,4 +1,6 @@
 // dashboard-hub-favorit.js — Favorit (Tahap 3, Langkah 6): storage + service
+// Dipindah ke modules/dashboard-hub/dashboard-hub-favorit.js (Sesi 11 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // MURNI (ADR-001 §3/§4/§5, blueprint Favorit final). Tidak ada DOM/render di
 // file ini — itu ada di dashboard-hub-favorit-view.js (Langkah 7-8, sudah
 // diimplementasikan; lihat file itu utk render()/toggle()).

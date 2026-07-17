@@ -1,4 +1,5 @@
 // modal-navigasi.js — Domain Modal Generik & Navigasi Halaman: modal konfirmasi/prompt/pilihan/info/pin
+// Dipindah ke modules/shared/modal-navigasi.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // (askConfirm/showPromptModal/showChoiceModal/showAlertModal/showPinPromptModal & pasangan _xxxAnswer/_xxxSubmit-nya),
 // buka/tutup modal & quick-switcher (openModal/closeModal/openQS/closeQS/_syncNavVisibilityForModals),
 // swipe-to-dismiss modal (enableSwipeToDismiss), pindah halaman (showPage/refreshCurrentPage), dan

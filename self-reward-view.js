@@ -1,4 +1,6 @@
 // self-reward-view.js — UI layer untuk Self Reward Engine. Memisahkan render/DOM
+// Dipindah ke modules/self-reward/self-reward-view.js (Sesi 12 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // dari logic MURNI di self-reward-engine.js (lihat catatan di kepala file itu:
 // "Tidak ada DOM/render di file ini... taruh di file terpisah, pola sama dgn
 // dashboard-hub-favorit.js vs dashboard-hub-favorit-view.js"). File ini HANYA

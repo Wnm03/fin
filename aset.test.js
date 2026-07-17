@@ -96,7 +96,7 @@ function makeAset(D, opts = {}) {
   );
   const calls = { save: 0, toast: [], render: [] };
   const record = (name) => (...args) => calls.render.push({ name, args });
-  const ctx = loadSource(['aset.js'], {
+  const ctx = loadSource(['modules/asset/aset.js'], {
     D,
     document: fakeDocument,
     escapeHtml: (s) => String(s == null ? '' : s),
@@ -759,7 +759,7 @@ function makeAsetIO(D, opts = {}) {
   const calls = { save: 0, toast: [], render: [] };
   const record = (name) => (...args) => calls.render.push({ name, args });
   const XLSX = ('XLSX' in opts) ? opts.XLSX : makeFakeXLSX(opts);
-  const ctx = loadSource(['aset.js'], {
+  const ctx = loadSource(['modules/asset/aset.js'], {
     D,
     document: fakeDocument,
     escapeHtml: (s) => String(s == null ? '' : s),

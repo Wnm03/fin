@@ -1,4 +1,5 @@
 // feature-icons.js — Migrasi Icon Emoji -> SVG (KNOWN-ISSUES.md §4.1 / ROADMAP-v1.1.md #3)
+// Dipindah ke modules/shared/feature-icons.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 //
 // LATAR: field `icon:` di FEATURE_REGISTRY (dashboard-hub-registry.js) & registry
 // serupa berisi emoji literal, tidak konsisten dengan SVG inline yang sudah dipakai

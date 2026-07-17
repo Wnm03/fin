@@ -1,4 +1,6 @@
 // cobek-order.js — Domain Shop bagian order & pelanggan: Produsen (supplier), SiapPulang
+// Dipindah ke modules/shop/cobek-order.js (Sesi 10 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // (status siap diambil/dikirim), Order (order pelanggan), Laporan (omzet), Pelanggan
 // (data & riwayat pelanggan). Bagian ke-3 dari 5 hasil pemecahan cobek.js — lihat catatan
 // urutan load di cobek-etalase.js.

@@ -1,8 +1,10 @@
 // aset.js — Domain Aset & Kekayaan: ALOKASI_PRESETS/AlokasiAset (rekomendasi alokasi dana), Aset (Buku Aset & Kekayaan Bersih), Penyusutan (estimasi nilai buku aset yg menurun nilainya: Garis Lurus/Saldo Menurun/Manual), PajakAset (estimasi PBB aset properti & Zakat Maal per aset zakatable + Ringkasan Pajak), LaporanAset (Laporan Aset gabungan: Daftar Aset, Riwayat Transaksi, Nilai Aset, Penyusutan, Ringkasan Kekayaan — dari sisi aset saja), IDBStore (helper generik penyimpanan IndexedDB), PORTFOLIO_LABELS, TimelineW (timeline tujuan keuangan)
+// Dipindah ke modules/asset/aset.js (Sesi 9 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // CATATAN: modul-modul ini dipindah ke file baru ini dari features-renovasi-pajak-aset-order.js (v62).
 // CATATAN: IDBStore sebenarnya helper GENERIK (bukan spesifik domain Aset) yang dipakai save()/migrasi di features-helpers-global-security.js & self-test — ikut co-located di sini krn memang sudah dari dulu 1 file sama Aset, dipindah apa adanya tanpa isi diubah. Kandidat dipindah lagi ke file sendiri di sesi berikutnya kalau mau lebih rapi.
 // TimelineW.goals() memanggil Renov.totals() (sekarang di renovasi.js) lewat variabel global — aman krn dipanggil saat runtime (render), bukan saat file di-load, & renovasi.js tetap ikut ter-load lewat build.js.
-// PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: pajak-pbb-zakat.js, features-budget-laporan-carnotes-pelanggan.js, edukasi-dana.js, sewakios.js, hidup-seimbang.js, linktx.js, renovasi.js, aset.js, worthit.js
+// PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: pajak-pbb-zakat.js, budget.js, car-notes.js, chat-action-handlers.js, edukasi-dana.js, sewakios.js, hidup-seimbang.js, linktx.js, renovasi.js, aset.js, worthit.js
 
 const ALOKASI_PRESETS={
 konservatif:{label:'🛡️ Konservatif',desc:'Prioritas jaga nilai pokok, fluktuasi seminimal mungkin. Cocok kalau dana ini penting/darurat atau horison waktu pendek (<2 tahun).',items:[

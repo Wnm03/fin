@@ -1,6 +1,8 @@
 // vehicle-core.js — Domain Vehicle core: CRUD kendaraan, KM (log & estimasi konsumsi/rp-per-km),
 // Pajak Kendaraan (STNK tahunan/5-tahunan + SPT Tahunan pribadi), SIM, proactive reminders
 // (dashboard), dan Car Notes tab (filter periode, edit KM cepat, wrapper BBM).
+// Dipindah ke modules/vehicle/vehicle-core.js (Sesi 8 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Dipisah dari tukang-absensi.js (2026-07-12, split file besar bagian ke-4,
 // lanjutan langsung dari bagian ke-1 Chat Action, ke-2 Storage/Archive & ke-3 Sparepart/Servis di
 // sesi yang sama). Sisa file asal (tukang-absensi.js) sekarang murni domain

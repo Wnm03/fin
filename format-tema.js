@@ -1,4 +1,5 @@
 // format-tema.js — Domain Format Angka & Tema: format rupiah singkat (fmt, mis. "Rp 1.5 jt"),
+// Dipindah ke modules/shared/format-tema.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // format rupiah penuh (fmtFull/fmtFullSigned), notifikasi toast di bawah layar (toast), dan
 // ganti/terapkan tema warna app termasuk mode "auto" ikut jam HP (setTheme/applyEffectiveTheme).
 // Dipindah dari features-helpers-global-security.js (v76) — potongan KESEMBILAN stlh

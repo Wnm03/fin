@@ -33,7 +33,7 @@ function makeAkun(D, opts = {}) {
   const fakeDocument = createFakeDocument(accFields(opts.domValues));
   const calls = { save: 0, toast: [], render: [] };
   const record = (name) => () => calls.render.push(name);
-  const ctx = loadSource(['akun.js'], {
+  const ctx = loadSource(['modules/finance/akun.js'], {
     D,
     document: fakeDocument,
     escapeHtml: (s) => String(s == null ? '' : s),

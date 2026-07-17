@@ -84,7 +84,7 @@ function makeCtx(D, opts = {}) {
   const fakeDocument = createFakeDocument(baseFields(opts.domValues), opts.queryGroups);
   const calls = { save: 0, toast: [], render: [], closeModal: [], openModal: [] };
   const record = (name) => (...args) => calls.render.push([name, ...args]);
-  const ctx = loadSource(['cobek-etalase.js', 'cobek-pricing.js', 'cobek-order.js', 'cobek-tx-cart.js', 'cobek-io.js'], {
+  const ctx = loadSource(['modules/shop/cobek-etalase.js', 'modules/shop/cobek-pricing.js', 'modules/shop/cobek-order.js', 'modules/shop/cobek-tx-cart.js', 'modules/shop/cobek-io.js'], {
     D,
     document: fakeDocument,
     toast: (msg) => calls.toast.push(msg),

@@ -106,21 +106,21 @@ test('styles.css: TIDAK ada override posisi baru untuk #page-carnotes .keu-fab (
 });
 
 test('vehicle-core.js (openBbmModal, business logic) tidak disentuh oleh Sprint 2 Tahap 3', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'vehicle-core.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'modules/vehicle/vehicle-core.js'), 'utf8');
   assert.doesNotMatch(src, /carNotesFab|Sprint 2 Tahap 3/i);
 });
 
 test('sparepart-servis.js (openServisModal, business logic) tidak disentuh oleh Sprint 2 Tahap 3', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'sparepart-servis.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'modules/vehicle/sparepart-servis.js'), 'utf8');
   assert.doesNotMatch(src, /carNotesFab|Sprint 2 Tahap 3/i);
 });
 
 test('dashboard-hub-registry.js (FEATURE_REGISTRY) tidak disentuh oleh Sprint 2 Tahap 3', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'dashboard-hub-registry.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'modules/dashboard-hub/dashboard-hub-registry.js'), 'utf8');
   assert.doesNotMatch(src, /carNotesFab|Sprint 2 Tahap 3/i);
 });
 
 test('dashboard-hub.js tidak disentuh oleh Sprint 2 Tahap 3', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'dashboard-hub.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'modules/dashboard-hub/dashboard-hub.js'), 'utf8');
   assert.doesNotMatch(src, /carNotesFab|Sprint 2 Tahap 3/i);
 });

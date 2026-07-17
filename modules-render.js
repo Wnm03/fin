@@ -1,7 +1,8 @@
 // Fungsi render (85 fungsi) dipisah dari app_production.html untuk pemerataan ukuran file.
+// Dipindah ke modules/shared/modules-render.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Semua fungsi ini murni definisi function global (bukan module), jadi tetap bisa dipanggil dari file manapun
 // yang loadnya belakangan (sama seperti modules-calc.js/features-*.js).
-const MODULE_RENDER_VERSION='kw87-fix-hashpin-fallback-crypto-subtle-5';
+const MODULE_RENDER_VERSION='kw99-sesi25-fix-gdrive-backup-await-5';
 
 function renderPageContent(name){
 if(name==='dashboard')renderDashboard();

@@ -7,7 +7,7 @@
 // (escapeHtml ASLI) supaya format Rupiah & escaping yang dites benar-benar
 // implementasi produksi, bukan re-implementasi manual di file test.
 // CHAT_ACTION_HANDLERS/CHAT_ACTION_LABELS (didefinisikan di
-// features-budget-laporan-carnotes-pelanggan.js, tidak di-load di sini biar
+// chat-action-handlers.js, tidak di-load di sini biar
 // ringan) di-stub minimal via extraGlobals — cukup untuk menguji
 // extractChatAction()/chatActionInnerHTML() yang cuma BACA kedua objek itu,
 // tidak mengeksekusi handler-nya (itu ranah confirmChatAction, di luar
@@ -19,7 +19,7 @@ const { loadSource } = require('./helpers/loadSource');
 
 function makeChatAction(extraGlobals = {}) {
   const ctx = loadSource(
-    ['format-tema.js', 'helper-teks.js', 'chat-action.js'],
+    ['modules/shared/format-tema.js', 'modules/shared/helper-teks.js', 'modules/ai/chat-action.js'],
     {
       CHAT_ACTION_LABELS: { add_transaksi: '💸 Usul: Tambah Transaksi' },
       CHAT_ACTION_HANDLERS: { add_transaksi: () => 'ok' },

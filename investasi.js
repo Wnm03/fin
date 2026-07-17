@@ -1,4 +1,6 @@
 // investasi.js — Domain Investment: Portfolio, Dividend, Capital Gain/Loss, ROI,
+// Dipindah ke modules/asset/investasi.js (Sesi 9 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Asset Allocation, Watchlist, Riwayat Transaksi. MODUL BARU — tidak mengubah
 // API/modul yang sudah ada; hanya MEMBACA/MENULIS D.investments/D.investmentTx/
 // D.investmentWatchlist (field baru, dibaca via `D.investments||[]` dst dengan

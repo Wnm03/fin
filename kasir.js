@@ -1,4 +1,5 @@
 // kasir.js — Modul "🧠 Kasir AI" (v127, kw81-kasir-ai-pos):
+// Dipindah ke modules/business/kasir.js (Sesi 15 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Tab checkout BARU utk halaman Bisnis Shop yang lebih cepat dari form "Transaksi Manual" (Order)
 // lama: tap produk langsung dari grid (bukan pilih dari dropdown lalu klik "+ Tambah"), keranjang
 // & total keliatan real-time di 1 layar yang sama, + 1 fitur AI (saran bundling/upsell dari isi

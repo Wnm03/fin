@@ -1,7 +1,8 @@
 // pajak-pbb-zakat.js — Kalkulator Pajak Bumi & Bangunan (PBB), Zakat (penghasilan, maal, fitrah), Referensi AI (cek harga emas/nisab via AI), Pajak UMKM, dan PPh 21 (Orang Pribadi)
+// Dipindah ke modules/finance/pajak-pbb-zakat.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Dipisah dari: features-renovasi-pajak-aset-order.js (PBB, Zakat) dan features-edukasi-pajak-utang-sewakios.js (RefAI, PajakUMKM, PPh21) — sesi pemisahan domain Pajak/Zakat, lanjutan roadmap PEMISAHAN-FILE-ROADMAP.md.
 // CATATAN: RefAI._parseJSON() juga dipakai EduFund.checkAI() (features-edukasi-pajak-utang-sewakios.js) & PriceReko.checkMarketAI() (cobek.js) lewat variabel global RefAI — aman krn dipanggil saat runtime (klik tombol), bukan saat file di-load.
-// PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: pajak-pbb-zakat.js, features-budget-laporan-carnotes-pelanggan.js, edukasi-dana.js, sewakios.js, hidup-seimbang.js, linktx.js, renovasi.js, aset.js, worthit.js
+// PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: pajak-pbb-zakat.js, budget.js, car-notes.js, chat-action-handlers.js, edukasi-dana.js, sewakios.js, hidup-seimbang.js, linktx.js, renovasi.js, aset.js, worthit.js
 
 const PBB={
 render(){

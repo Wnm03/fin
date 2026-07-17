@@ -1,4 +1,5 @@
 // data-archive.js — Storage usage estimate & Archive (export lalu hapus data lama per tahun).
+// Dipindah ke modules/shared/data-archive.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Dipisah dari tukang-absensi.js (2026-07-12, roadmap split file besar bagian
 // ke-2) murni pengelompokan ulang file, BUKAN perubahan perilaku. Domain ini (kuota penyimpanan +
 // arsip/hapus data) tidak overlap dengan Tukang/Vehicle/Sparepart/Servis yang masih ada di file asal

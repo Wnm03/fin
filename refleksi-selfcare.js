@@ -1,4 +1,5 @@
 // refleksi-selfcare.js — Domain Refleksi & Self-Care: Jurnal Syukur, Checklist Self-Care harian
+// Dipindah ke modules/home/refleksi-selfcare.js (Sesi 13 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // (dgn hitung konsisten berturut-turut), & Catatan Privat terenkripsi (pakai PIN aplikasi, skema
 // kripto sama dgn encryptApiKeyWithPin/decryptApiKeyWithPin di keamanan-pin.js — PBKDF2+AES-GCM,
 // kunci diturunkan dari PIN MENTAH sesi (_sessionRawPin), TIDAK PERNAH ditulis ke storage).

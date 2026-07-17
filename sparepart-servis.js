@@ -1,7 +1,9 @@
 // sparepart-servis.js — Domain Sparepart & Servis kendaraan: kategori & stok sparepart
-// (Sparepart), catatan servis (wrapper ke Servis di features-budget-laporan-carnotes-pelanggan.js),
+// (Sparepart), catatan servis (wrapper ke Servis di car-notes.js),
 // interval servis per-kategori & override per-kendaraan, katalog referensi TORSI_DB/VEHICLE_SPEC_DB
 // & skala kunci torsi (MY_WRENCH_SCALE), serta filter kartu Pengingat Servis di Dashboard.
+// Dipindah ke modules/vehicle/sparepart-servis.js (Sesi 8 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Dipisah dari tukang-absensi.js (2026-07-12, split file besar bagian ke-3,
 // lanjutan langsung dari bagian ke-1 Chat Action & ke-2 Storage/Archive di sesi yang sama).
 // PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) — lihat urutan grup di

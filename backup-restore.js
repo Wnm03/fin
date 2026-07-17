@@ -1,4 +1,5 @@
 // backup-restore.js — Export/import/backup data (satu domain penuh: CSV/JSON export laporan, backup
+// Dipindah ke modules/shared/backup-restore.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // terjadwal & manual per-modul, restore dari file backup, import dari Cashew/CSV lain, import Car Notes)
 // (v89): blok "deteksi item checkout dari screenshot belanja" sudah dipindah ke scan-ocr.js — domainnya OCR.
 // (v90): blok wrapper FI (kebebasan finansial) sudah digabung ke modules-calc.js, persis di sebelah objek FI
@@ -16,7 +17,7 @@
 // saveTarget/saveCatatan/saveReminder/saveLDR yang sudah ada di sana sejak v83). Setelah itu, tidak ada
 // lagi kode yang perlu DIPINDAHKAN dari file ini — isinya sudah murni 1 domain (export/import/backup),
 // jadi cukup rename + update semua referensi nama file. Lihat PEMISAHAN-FILE-ROADMAP.md.
-// PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: data-default.js, features-helpers-global-security.js, diagnostik-versi.js, format-tema.js, error-handler.js, helper-teks.js, keamanan-pin.js, modal-navigasi.js, reset-gaji-mingguan.js, debug-console.js, pengaturan-search.js, onboarding.js, kalkulator-input.js, scan-ocr.js, filter-laporan.js, akun.js, gaji-calc.js, transaksi.js, profil-pengaturan.js, kategori.js, tagihan-kalender.js, backup-restore.js, payroll-absensi.js, tukang-absensi.js, features-aiwidget-reminder-gdrive-search.js, features-sheets-pwa-selftest.js
+// PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: data-default.js, features-helpers-global-security.js, diagnostik-versi.js, format-tema.js, error-handler.js, helper-teks.js, keamanan-pin.js, modal-navigasi.js, reset-gaji-mingguan.js, debug-console.js, pengaturan-search.js, onboarding.js, kalkulator-input.js, scan-ocr.js, filter-laporan.js, akun.js, gaji-calc.js, transaksi.js, profil-pengaturan.js, kategori.js, tagihan-kalender.js, backup-restore.js, payroll-absensi.js, tukang-absensi.js
 
 /* moved to modules-render.js: renderLaporan */
 /* moved to modules-render.js: renderGrafik */

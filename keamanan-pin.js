@@ -1,4 +1,5 @@
 // keamanan-pin.js — Domain Keamanan: layar PIN (showPinScreen/checkPin/pinPress/pinBack/updatePinDots),
+// Dipindah ke modules/shared/keamanan-pin.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // lockout percobaan PIN salah (PIN_MAX_ATTEMPTS/PIN_LOCK_DURATIONS_SEC/updatePinLockUI/dst), ganti PIN
 // (gantiPin), dan enkripsi API key AI berbasis PIN (hashPin/encryptApiKeyWithPin/decryptApiKeyWithPin/
 // persistApiKeyEncrypted/loadAndMigrateApiKeyOnUnlock).

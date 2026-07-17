@@ -1,4 +1,6 @@
 // cobek-etalase.js — Domain Shop bagian Etalase: katalog produk (tambah/edit/hapus,
+// Dipindah ke modules/shop/cobek-etalase.js (Sesi 10 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // size-pairing bracket harga, bundle, modal stok tertanam), stok, & produsen terkait produk.
 // Dipecah dari cobek.js (2026-07-12, file lama 1966 baris > 500 baris) menjadi 5 file:
 // cobek-etalase.js, cobek-pricing.js, cobek-order.js, cobek-tx-cart.js, cobek-io.js —

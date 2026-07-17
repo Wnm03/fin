@@ -1,4 +1,6 @@
 // self-reward-ai-widget.js — Widget Rekomendasi AI di dalam modal Self Reward.
+// Dipindah ke modules/self-reward/self-reward-ai-widget.js (Sesi 12 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // MODUL BARU — tidak mengubah API/behavior self-reward-engine.js maupun
 // self-reward-view.js yang sudah ada; file ini HANYA menambah satu section
 // baru ("🤖 Rekomendasi AI") ke body modal yang sudah ada, dengan cara yang

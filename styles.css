@@ -120,6 +120,13 @@ body.has-open-modal .nav { display: none; }
 .stg-group-body-inner .card { margin-bottom: 10px; }
 .stg-group-body-inner .card:last-child { margin-bottom: 0; }
 
+/* Tab panel dipakai KHUSUS 6 seksi utama #page-settings (lihat setSettingsTab() di
+   pengaturan-search.js) — dulu accordion .stg-group, sekarang jadi split-tab lewat .cn-tabs.
+   Class ini SENGAJA terpisah dari .stg-group (yang masih dipakai apa adanya sbg accordion di
+   dashSecondaryGroup/pzPiutangUtangGroup, bukan bagian dari perubahan ini). Cukup pakai utility
+   u-dnone utk toggle tampil/sembunyi, tidak butuh CSS max-height/transition seperti accordion. */
+.stg-tabpanel .stg-group-body-inner { padding: 0; }
+
 /* Collapse per-kartu (beda dari .stg-group yg collapse per-grup) — dipakai kartu tunggal yg
    isinya panjang, mis. "Kartu di Beranda" di Pengaturan, supaya bisa dilipat sendiri tanpa
    melipat seluruh grup. Sistem ini SENGAJA terpisah dari sistem toggleCardCollapse() di bawah
@@ -1078,7 +1085,11 @@ textarea.fi { resize: vertical; min-height: 80px; }
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: radial-gradient(circle, currentColor 10%, transparent 10.5%) center/0% 0% no-repeat;
+  /* ROADMAP-v1.1.md item #8: posisi pulsa ripple sekarang mengikuti titik sentuh/klik asli
+     lewat custom property --ripple-x/--ripple-y (di-set oleh modules/shared/ripple-position.js
+     sesaat sebelum :active). Fallback 50%/50% (tengah, perilaku Tahap 7 lama) dipertahankan
+     untuk aktivasi via keyboard (Enter/Space) yang tidak punya titik koordinat. */
+  background: radial-gradient(circle, currentColor 10%, transparent 10.5%) var(--ripple-x,50%) var(--ripple-y,50%)/0% 0% no-repeat;
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--dur-slow) var(--ease-standard);

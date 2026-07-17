@@ -1,4 +1,5 @@
 // piutang-utang.js — Domain Piutang & Utang: catatan piutang (uang dipinjamkan), utang (uang dipinjam) beserta status lunas/cicilan, dan DebtStrategy (simulasi strategi pelunasan Avalanche/Snowball).
+// Dipindah ke modules/finance/piutang-utang.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Juga berisi Bill (helper hubungkan transaksi lama ke riwayat tagihan) — domain tagihan/cicilan, dipindah dari file etalase.
 // Dipisah dari: features-etalase-piutang-renovai.js (sesi pemisahan domain Piutang/Utang, lanjutan roadmap PEMISAHAN-FILE-ROADMAP.md).
 // DebtStrategy dipindah dari features-edukasi-pajak-utang-sewakios.js (v56) — gabung ke sini krn 1 domain (utang) & sudah dipakai Debt.renderList() di file yang sama.

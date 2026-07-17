@@ -1,4 +1,6 @@
 // dashboard-hub-search.js — Feature Search: cari FITUR/MENU (bukan data
+// Dipindah ke modules/dashboard-hub/dashboard-hub-search.js (Sesi 11 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // transaksi) lintas kategori FEATURE_REGISTRY (blueprint-dashboard-hub.md
 // §2 & §6). Berbeda tujuan dari Global Search existing (`openGlobalSearch`)
 // yang mencari DATA milik user (transaksi/produk/dst) — lihat blueprint §2.

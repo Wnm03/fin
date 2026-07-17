@@ -1,4 +1,6 @@
 // dashboard-hub.js — Dashboard Feature Hub (blueprint-dashboard-hub.md §5)
+// Dipindah ke modules/dashboard-hub/dashboard-hub.js (Sesi 11 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 //
 // STATUS (update v1.0-stabilization, build v234): sejak Tahap 4, halaman ini
 // SUDAH jadi landing page default (satu-satunya class="page active" saat
@@ -10,8 +12,8 @@
 // (peninggalan Tahap 1, kini jadi jalur akses cadangan) — lihat catatan di
 // index.html/app_production.html & tests/dashboard-hub-default-landing.test.js.
 // Semua navigasi kartu fitur REUSE showPage/setKeuanganTab/setShopTab/
-// setCnTab/setPajakTab/toggleStgGroup yang sudah ada — tidak menulis ulang
-// logic halaman manapun (blueprint §5, §7).
+// setCnTab/setPajakTab/setSettingsTab/toggleStgGroup yang sudah ada — tidak
+// menulis ulang logic halaman manapun (blueprint §5, §7).
 //
 // PENTING — Opsi 1 (keputusan sesi lampau, DIAMENDEMEN 2x): semula
 // dashboard-hub-registry.js TIDAK diubah, semua kategori tanpa nav-item
@@ -37,13 +39,20 @@ const PAGE_NAV_IDX = {
   aset: 3,
   carnotes: 4,
   pajak: 5,
-  settings: 6,
   // 'ai' SENGAJA tidak dimasukkan lagi: slot nav-item index 3 sudah diganti
   // jadi "Aset" (lihat index.html/app_production.html bottom-nav). Halaman
   // 'ai' sekarang murni dibuka lewat showPage('ai', null) dari kartu
   // Dashboard Hub / widget AI, TIDAK punya nav-item bottom-nav sendiri.
   // navItems[PAGE_NAV_IDX['ai']] otomatis jadi undefined -> showPage()
   // dipanggil dgn el=null, aman (lihat showPage() di modal-navigasi.js).
+  //
+  // 'settings' JUGA SENGAJA tidak dimasukkan lagi (sesi ini): nav-item
+  // "Setelan" di bottom-nav sudah dihapus, Pengaturan sekarang dibuka lewat
+  // ikon ⚙️ icon-only di header (sebelah tombol Backup) supaya bottom-nav
+  // cukup 6 slot & halaman Pengaturan sendiri jadi split-tab (bukan
+  // accordion, lihat .stg-tabpanel & setSettingsTab() di
+  // pengaturan-search.js). navItems[PAGE_NAV_IDX['settings']] otomatis jadi
+  // undefined -> showPage() dipanggil dgn el=null, aman, sama seperti 'ai'.
 };
 
 // Index tombol tab (.cn-tab) sesuai URUTAN DOM asli di tiap halaman —
@@ -126,9 +135,13 @@ function dashHubNavigateToFeature(target) {
     }
   }
 
-  if (target.group && typeof toggleStgGroup === 'function') {
+  if (target.group) {
     const g = document.getElementById(target.group);
-    if (g && !g.classList.contains('open')) toggleStgGroup(target.group);
+    if (g && g.classList.contains('stg-tabpanel') && typeof setSettingsTab === 'function') {
+      if (g.classList.contains('u-dnone')) setSettingsTab(g.dataset.tab);
+    } else if (g && typeof toggleStgGroup === 'function' && !g.classList.contains('open')) {
+      toggleStgGroup(target.group);
+    }
   }
 
   // goTo/action dijadwalkan sedikit belakangan (pola sama dgn goToList() di
@@ -396,21 +409,20 @@ const DashboardHub = {
     // EIEDashboard.render()), jadi tidak memblokir render kartu lain.
     if (typeof EIEDashboard !== 'undefined') EIEDashboard.render();
 
-    // Tab "Semua Fitur" / "Pinned Widgets" (lihat #dashHubMainTabsRow di
-    // index.html/app_production.html). Tambahan murni — cuma toggle 2
-    // section yang sudah ada (#dashHubMainGridCard & #dashboardHubPinnedWrap)
-    // lewat class u-dnone yang sudah ada, tidak mengubah isi keduanya.
-    this.applyMainTab(localStorage.getItem('dashHubMainTab') || 'fitur');
+    // Tab switcher "Semua Fitur"/"Pinned Widgets" (dashHubMainTabsRow) sudah
+    // DIHAPUS 2026-07-17 — #dashHubMainGridCard & #dashboardHubPinnedWrap
+    // sekarang cuma ditumpuk berurutan (masing-masing sudah collapsible
+    // sendiri), tidak perlu toggle terpisah lagi.
 
     // Sub-tab Dashboard Hub (Fase 1, lihat CLAUDE.md "Split tab 🧭 Dashboard
     // Hub" & #dashHubSectionTabBtn-* di index.html/app_production.html).
-    // Tambahan murni, dipanggil PALING AKHIR (setelah applyMainTab di atas)
-    // — pola "render semua dulu, baru toggle visibility" yang sama.
+    // Tambahan murni, dipanggil PALING AKHIR — pola "render semua dulu, baru
+    // toggle visibility" yang sama.
     this.applySectionTab(localStorage.getItem('dashHubSectionTab') || 'ringkasan');
   },
 
   // Ganti sub-tab aktif & simpan pilihannya (localStorage key:
-  // dashHubSectionTab), pola sama persis dgn setMainTab() di atas.
+  // dashHubSectionTab).
   setSectionTab(tab) {
     localStorage.setItem('dashHubSectionTab', tab);
     this.applySectionTab(tab);
@@ -424,7 +436,8 @@ const DashboardHub = {
   applySectionTab(tab) {
     const SECTION_GROUPS = {
       ringkasan: ['dashHubSummaryGrid', 'dashHubAnalyticsRow'],
-      fitur: ['dashHubFavoritSection', 'dashHubMainTabsRow', 'dashHubMainGridCard', 'dashboardHubPinnedWrap'],
+      fitur: ['dashHubFavoritSection', 'dashHubMainGridCard'],
+      widget: ['dashboardHubPinnedWrap'],
       insight: ['lifeOSWrap', 'eieWrap'],
     };
     Object.keys(SECTION_GROUPS).forEach((t) => {
@@ -434,46 +447,20 @@ const DashboardHub = {
       });
     });
 
-    // Section-section di atas punya visibility SENDIRI yang data-driven
-    // (bukan cuma on/off per sub-tab) — panggil ulang fungsi apply/render
-    // aslinya supaya keputusan itu tetap dihormati begitu sub-tab "fitur"
-    // aktif lagi, bukan ketimpa jadi selalu-tampil oleh toggle generik di
-    // atas:
-    //  - dashHubMainGridCard vs dashboardHubPinnedWrap: tunduk ke
-    //    dashHubMainTab (Semua Fitur / Pinned Widget), lihat applyMainTab().
-    //  - dashHubFavoritSection: disembunyikan total kalau belum ada key
-    //    favorit tersimpan, lihat DashboardHubFavoritView.render().
-    if (tab === 'fitur') {
-      this.applyMainTab(localStorage.getItem('dashHubMainTab') || 'fitur');
-      if (typeof DashboardHubFavoritView !== 'undefined') DashboardHubFavoritView.render();
+    // dashHubFavoritSection punya visibility SENDIRI yang data-driven
+    // (disembunyikan total kalau belum ada key favorit tersimpan) — panggil
+    // ulang render aslinya supaya keputusan itu tetap dihormati begitu
+    // sub-tab "fitur" aktif lagi, bukan ketimpa jadi selalu-tampil oleh
+    // toggle generik di atas.
+    if (tab === 'fitur' && typeof DashboardHubFavoritView !== 'undefined') {
+      DashboardHubFavoritView.render();
     }
 
-    // Update tombol aktif (pola sama dgn applyMainTab()).
-    ['ringkasan', 'fitur', 'insight'].forEach((t) => {
+    // Update tombol aktif.
+    ['ringkasan', 'fitur', 'widget', 'insight'].forEach((t) => {
       const btn = document.getElementById(`dashHubSectionTabBtn-${t}`);
       if (btn) btn.classList.toggle('active', t === tab);
     });
-  },
-
-  // Ganti tab aktif & simpan pilihannya (localStorage key: dashHubMainTab),
-  // pola sama persis dgn cardCollapsePrefs yang sudah dipakai ~40+ kartu
-  // lain (lihat modal-navigasi.js) — bukan sistem preferensi baru.
-  setMainTab(tab) {
-    localStorage.setItem('dashHubMainTab', tab);
-    this.applyMainTab(tab);
-  },
-
-  applyMainTab(tab) {
-    const gridCard = document.getElementById('dashHubMainGridCard');
-    const pinnedWrap = document.getElementById('dashboardHubPinnedWrap');
-    const btnFitur = document.getElementById('dashHubMainTabBtn-fitur');
-    const btnPinned = document.getElementById('dashHubMainTabBtn-pinned');
-    if (!gridCard || !pinnedWrap) return;
-    const isPinned = tab === 'pinned';
-    gridCard.classList.toggle('u-dnone', isPinned);
-    pinnedWrap.classList.toggle('u-dnone', !isPinned);
-    if (btnFitur) btnFitur.classList.toggle('active', !isPinned);
-    if (btnPinned) btnPinned.classList.toggle('active', isPinned);
   },
 
   // Kontrak resolusi ADR-001 §4 — SATU-SATUNYA entry point publik navigasi.

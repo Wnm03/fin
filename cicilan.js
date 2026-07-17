@@ -1,4 +1,5 @@
 // cicilan.js — logika form Cicilan pada txModal (Tambah/Edit Transaksi Keuangan).
+// Dipindah ke modules/finance/cicilan.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Dipisah dari transaksi.js (2026-07-11, lihat CLAUDE.md catatan kerja "split
 // transaksi.js") murni sebagai pengelompokan ulang file, BUKAN perubahan
 // perilaku. Semua fungsi di sini tetap global (bukan module/namespace, sama

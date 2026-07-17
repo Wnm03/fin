@@ -1,4 +1,5 @@
 /*!
+// Dipindah ke modules/shared/smoke-test.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
  * smoke-test.js — validasi ringan otomatis (khusus mode dev)
  * ------------------------------------------------------------
  * Tujuan: menangkap kesalahan struktural SEBELUM kejadian di pemakaian nyata:

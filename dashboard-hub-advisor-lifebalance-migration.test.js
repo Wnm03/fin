@@ -150,7 +150,7 @@ function run() {
   const stubs = makeStubs();
   const fakeDocument = createFakeDocument();
   const warnings = [];
-  const ctx = loadSource(['modules-render.js'], {
+  const ctx = loadSource(['modules/shared/modules-render.js'], {
     D: makeD(),
     document: fakeDocument,
     ...stubs,

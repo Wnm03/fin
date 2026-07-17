@@ -1,4 +1,5 @@
 // debug-console.js — Domain Debug Console: toggle tombol status (updateDebugConsoleBtn) & aktifkan/matikan
+// Dipindah ke modules/shared/debug-console.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // panel debug pihak ketiga "eruda" (toggleDebugConsole), termasuk lazy-load skrip eruda dari CDN kalau
 // belum pernah dipakai.
 // Dipindah dari features-helpers-global-security.js (v73) — potongan KELIMA stlh kalkulator-input.js

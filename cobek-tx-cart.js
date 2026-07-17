@@ -1,4 +1,6 @@
 // cobek-tx-cart.js — Domain Shop bagian integrasi form Transaksi: cart Stok Masuk & Penjualan
+// Dipindah ke modules/shop/cobek-tx-cart.js (Sesi 10 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Shop pada form Transaksi gabungan (populate/onChange/toggle/add/remove/sync/apply), termasuk
 // applyBundleLinkedStock & recordShopSale. Bagian ke-4 dari 5 hasil pemecahan cobek.js — lihat
 // catatan urutan load di cobek-etalase.js. (Beda dari tx-cobek.js yg cuma berisi

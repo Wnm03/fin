@@ -41,7 +41,7 @@ function cicilanFields(overrides = {}) {
 function makeCicilan(D, opts = {}) {
   const fakeDocument = createFakeDocument(cicilanFields(opts.domValues));
   const calls = { toast: [], closeModal: [], openBillHistory: [] };
-  const ctx = loadSource(['cicilan.js'], {
+  const ctx = loadSource(['modules/finance/cicilan.js'], {
     document: fakeDocument,
     toast: (msg) => calls.toast.push(msg),
     // fmtFull dibuat identity (bukan format Rupiah asli) supaya assertion

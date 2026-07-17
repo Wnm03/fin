@@ -5,7 +5,7 @@ const { loadSource } = require('./helpers/loadSource');
 const { createFakeDocument } = require('./helpers/fakeDom');
 
 // BBM._saveInner (alur simpan/edit "Catat Isi BBM" di Car Notes), di
-// features-budget-laporan-carnotes-pelanggan.js. Sebelumnya BELUM ada test
+// car-notes.js. Sebelumnya BELUM ada test
 // sama sekali untuk method ini (lihat catatan review di CLAUDE.md) — di sini
 // khusus menutup temuan #1: catatan BBM "yatim" (txLinkId hilang, mis.
 // transaksi terkaitnya kehapus manual di luar alur normal) yang dulu
@@ -27,7 +27,7 @@ function loadBbmFull(D, opts = {}) {
   const toasts = [];
   const calls = { save: 0, closeModal: null };
   let n = 0;
-  const ctx = loadSource(['features-budget-laporan-carnotes-pelanggan.js'], {
+  const ctx = loadSource(['car-notes.js'], {
     D,
     document: fakeDocument,
     curVehicleId: opts.curVehicleId !== undefined ? opts.curVehicleId : 'veh1',

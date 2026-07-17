@@ -1,11 +1,12 @@
 // transaksi.js — Form Tambah/Edit Transaksi Keuangan: autocomplete kategori/produk,
+// Dipindah ke modules/finance/transaksi.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // panel kendaraan (BBM/sparepart/stok shop), target Dana Darurat, catatan/reminder/
 // transfer, dan simpan transaksi (saveTx) — mesin utama halaman Keuangan.
 // (v92): ditambah domain "List Transaksi & Cashflow Forecast" (txHTML/delTx/changeMonth/
 // setTxListPeriode/getTxListRange/setPeriode/getRange/computeCashflowForecast), dipindah dari
 // backup-restore.js — domainnya sama-sama seputar data transaksi,
 // lihat blok di akhir file & PEMISAHAN-FILE-ROADMAP.md.
-// PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: data-default.js, features-helpers-global-security.js, diagnostik-versi.js, format-tema.js, error-handler.js, helper-teks.js, keamanan-pin.js, modal-navigasi.js, reset-gaji-mingguan.js, debug-console.js, pengaturan-search.js, onboarding.js, kalkulator-input.js, scan-ocr.js, akun.js, gaji-calc.js, transaksi.js, profil-pengaturan.js, kategori.js, tagihan-kalender.js, backup-restore.js, payroll-absensi.js, tukang-absensi.js, features-aiwidget-reminder-gdrive-search.js, features-sheets-pwa-selftest.js
+// PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: data-default.js, features-helpers-global-security.js, diagnostik-versi.js, format-tema.js, error-handler.js, helper-teks.js, keamanan-pin.js, modal-navigasi.js, reset-gaji-mingguan.js, debug-console.js, pengaturan-search.js, onboarding.js, kalkulator-input.js, scan-ocr.js, akun.js, gaji-calc.js, transaksi.js, profil-pengaturan.js, kategori.js, tagihan-kalender.js, backup-restore.js, payroll-absensi.js, tukang-absensi.js
 
 function setTxType(t){
 curTxType=t;
@@ -243,7 +244,7 @@ resetTxShopSaleCart();
 // applyTxBbmFromTx) dipindah ke tx-bbm.js (lihat CLAUDE.md catatan kerja "split
 // transaksi.js" bagian ke-6) -- tetap global, tetap dipanggil persis sama dari
 // sini, dari HTML (modals.js), maupun dari file lain (BBM._saveInner di
-// features-budget-laporan-carnotes-pelanggan.js).
+// car-notes.js).
 // Catatan: fungsi-fungsi panel "Tambah ke Stok Sparepart" (populateTxStockSelect,
 // onTxStockItemChange, toggleTxStockFields, applyTxStockFromTx) dipindah ke
 // tx-stok-sparepart.js (lihat CLAUDE.md catatan kerja "split transaksi.js"

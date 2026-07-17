@@ -1,4 +1,6 @@
 // penyusutan-ai-widget.js — Widget "🤖 Rekomendasi AI" utk kartu 📉 Penyusutan
+// Dipindah ke modules/asset/penyusutan-ai-widget.js (Sesi 9 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Aset (aset.js: Penyusutan.renderList(), target #assetPenyusutanAI, halaman
 // Aset). MODUL BARU — tidak mengubah satu baris pun logic Penyusutan/Aset yang
 // sudah ada; file ini HANYA render ke satu container baru yang dipanggil

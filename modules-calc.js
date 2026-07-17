@@ -1,5 +1,6 @@
 
-const MODULE_CALC_VERSION='kw87-fix-hashpin-fallback-crypto-subtle-5';
+// Dipindah ke modules/shared/modules-calc.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
+const MODULE_CALC_VERSION='kw99-sesi25-fix-gdrive-backup-await-5';
 const FI={
 assetScopeState:'zakatable',
 investmentAssetValue(){

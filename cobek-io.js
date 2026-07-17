@@ -1,4 +1,6 @@
 // cobek-io.js — Domain Shop bagian impor/ekspor: ImportKatalog (impor massal produk+harga
+// Dipindah ke modules/shop/cobek-io.js (Sesi 10 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // dari teks), wrapper tab/tombol UI ringan, ShopExport (ekspor XLSX), ImportShopExcel (impor
 // dari file Excel). Bagian ke-5 (terakhir) dari 5 hasil pemecahan cobek.js — lihat catatan
 // urutan load di cobek-etalase.js.

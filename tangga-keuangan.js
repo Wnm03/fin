@@ -1,4 +1,5 @@
 // tangga-keuangan.js — Kartu "Tangga Ternak Uang": 7 anak tangga membangun
+// Dipindah ke modules/finance/tangga-keuangan.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // kekayaan (Nabung Cash → Lunasi Hutang Kecil → Dana Darurat → Investasi 20% →
 // Dana Pendidikan Anak → Lunasi KPR → Kekayaan Abadi & Berbagi), dihitung
 // OTOMATIS dari data yang SUDAH ADA di app (D.accounts, D.bills, D.targets,

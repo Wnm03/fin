@@ -1,4 +1,5 @@
 // tx-list-cashflow.js — domain "List Transaksi (kartu tx, hapus tx), filter
+// Dipindah ke modules/finance/tx-list-cashflow.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // periode Keuangan/Laporan, & Cashflow Forecast".
 // Dipindah dari transaksi.js (lihat CLAUDE.md catatan kerja "split
 // transaksi.js" bagian ke-11 -- lanjutan bagian ke-5/6/7/8/9). Semua tetap

@@ -1,8 +1,9 @@
 // renovasi.js — Domain Proyek Renovasi: RenovCalc (kalkulator material), Renov (proyek & item biaya), RenovAI (saran AI kebutuhan/ukuran)
+// Dipindah ke modules/home/renovasi.js (Sesi 13 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // CATATAN: modul-modul ini dipindah ke file baru ini dari features-renovasi-pajak-aset-order.js (v62), yang sebelumnya juga berisi domain Aset/Kekayaan (AlokasiAset/Aset/IDBStore/PORTFOLIO_LABELS/TimelineW, sekarang di aset.js) & Worth It/Prioritas Belanja (WorthIt, sekarang di worthit.js).
 // File lama features-renovasi-pajak-aset-order.js DIHAPUS setelah ini karena tidak ada isi tersisa.
 // Renov.saveItem() memakai RenovCalc._pendingDetail lewat variabel global (diisi RenovCalc.useMaterial() saat modal Kalkulator Bantu Material dipakai) — aman krn 1 file yang sama sekarang.
-// PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: pajak-pbb-zakat.js, features-budget-laporan-carnotes-pelanggan.js, edukasi-dana.js, sewakios.js, hidup-seimbang.js, linktx.js, renovasi.js, aset.js, worthit.js
+// PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: pajak-pbb-zakat.js, budget.js, car-notes.js, chat-action-handlers.js, edukasi-dana.js, sewakios.js, hidup-seimbang.js, linktx.js, renovasi.js, aset.js, worthit.js
 
 const RenovCalc={
 _matTotal:0,_matKebutuhan:0,_pendingDetail:null,

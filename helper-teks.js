@@ -1,4 +1,5 @@
 // helper-teks.js — Domain Helper Teks & Kalender: escape karakter HTML berbahaya biar aman
+// Dipindah ke modules/shared/helper-teks.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // dimasukkan ke innerHTML (escapeHtml), daftar nama bulan singkat & lengkap dalam Bahasa Indonesia
 // (MONTHS/MONTHS_FULL) utk format tanggal.
 // Dipindah dari features-helpers-global-security.js (v78) — potongan KESEBELAS dari pembedahan

@@ -1,4 +1,5 @@
 // hidup-seimbang.js — Domain Skor Hidup Seimbang: skor gabungan dari Dana Darurat, DSR cicilan, No-Spend 30 hari, & keseimbangan kerja-istirahat, plus riwayat snapshot bulanan.
+// Dipindah ke modules/home/hidup-seimbang.js (Sesi 13 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Dipisah dari: features-edukasi-pajak-utang-sewakios.js (lanjutan roadmap PEMISAHAN-FILE-ROADMAP.md, v59).
 // PENTING: LifeBalance.compute() memanggil WorthIt.incomeAvg() (di worthit.js, guarded typeof check) & computeNoSpendLast30() (di features-sheets-pwa-selftest.js, GROUP_B, TIDAK di-guard typeof — ini kondisi lama yang sudah ada sebelum dipindah, aman krn dipanggil runtime setelah kedua bundle GROUP_A & GROUP_B ter-load, bukan saat load file).
 // PENTING: harus dimuat sesuai urutan build.js (GROUP_A) — LifeBalance.render()/.compute() dipanggil dari modules-render.js & modules-calc.js (GROUP_A juga) lewat variabel global saat runtime (render dashboard), aman di file manapun dalam GROUP_A.

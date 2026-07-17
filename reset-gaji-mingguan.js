@@ -1,4 +1,5 @@
 // reset-gaji-mingguan.js — Domain Reset Gaji Mingguan: hitung rentang minggu berjalan (getWeekRange),
+// Dipindah ke modules/business/reset-gaji-mingguan.js (Sesi 15 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // deteksi & tawarkan reset absensi tiap Sabtu (checkWeeklySalaryReset), buka modal reset manual
 // (openWeeklyResetManual), dan proses konfirmasi reset + catat pemasukan gaji otomatis (confirmWeeklyReset).
 // Dipindah dari features-helpers-global-security.js (v72) — potongan KEEMPAT stlh kalkulator-input.js

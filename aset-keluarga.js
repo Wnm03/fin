@@ -1,4 +1,6 @@
 // aset-keluarga.js — Laporan gabungan lintas-modul: 🏠 Aset Keluarga
+// Dipindah ke modules/asset/aset-keluarga.js (Sesi 9 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // ============================================================================
 // FITUR BARU: satu kartu ringkasan di tab Laporan yang menyusun ULANG (bukan
 // menduplikasi sumber angka) 3 modul yang selama ini cuma bisa dilihat

@@ -1,8 +1,9 @@
 // scan-ocr.js — Scan struk belanja (OCR): struk belanja, bukti transfer, tanggal dari foto, odometer, portofolio aset, kategori & sparepart otomatis dari struk
+// Dipindah ke modules/shared/scan-ocr.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Domain terakhir hasil pembedahan features-filter-scanstruk-ocr.js (v84-v87 sudah memindahkan Akun, lookup Kategori,
 // Filter/Laporan, dan Form Transaksi+Cicilan ke file domain masing2 — lihat PEMISAHAN-FILE-ROADMAP.md). Sisa file lama
 // ini murni scan OCR, jadi di v88 filenya di-rename jadi scan-ocr.js (isi tidak berubah, cuma nama file + komentar).
-// PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: data-default.js, features-helpers-global-security.js, diagnostik-versi.js, format-tema.js, error-handler.js, helper-teks.js, keamanan-pin.js, modal-navigasi.js, reset-gaji-mingguan.js, debug-console.js, pengaturan-search.js, onboarding.js, kalkulator-input.js, scan-ocr.js, filter-laporan.js, akun.js, gaji-calc.js, transaksi.js, profil-pengaturan.js, kategori.js, tagihan-kalender.js, backup-restore.js, payroll-absensi.js, tukang-absensi.js, features-aiwidget-reminder-gdrive-search.js, features-sheets-pwa-selftest.js
+// PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: data-default.js, features-helpers-global-security.js, diagnostik-versi.js, format-tema.js, error-handler.js, helper-teks.js, keamanan-pin.js, modal-navigasi.js, reset-gaji-mingguan.js, debug-console.js, pengaturan-search.js, onboarding.js, kalkulator-input.js, scan-ocr.js, filter-laporan.js, akun.js, gaji-calc.js, transaksi.js, profil-pengaturan.js, kategori.js, tagihan-kalender.js, backup-restore.js, payroll-absensi.js, tukang-absensi.js
 
 // BUGFIX: semua fungsi scan* di file ini dulu punya pengecekan `if(typeof Tesseract==='undefined')`
 // SEBELUM memanggil ocrRecognize() -- niatnya kasih pesan jelas kalau modul OCR belum siap. Tapi
@@ -110,7 +111,10 @@ return null;
 // terbesar kalau labelnya tidak ketemu (struk kasir biasa/format lain). Sengaja TIDAK match
 // "Subtotal ..." atau "Total ongkos kirim" dsb (butuh kata "total" LANGSUNG diikuti salah satu
 // kata kunci di bawah, bukan cuma mengandung substring "total").
-const RECEIPT_TOTAL_LABEL_RE=/total\s*(belanja|tagihan|pembayaran|bayar|(?:yang\s*)?harus\s*dibayar)\b/i;
+// BUGFIX: e-wallet/dompet digital (GoPay dkk) pakai label "Total Transaksi" utk
+// nominal akhir yg beneran dibayar (bukan "Total belanja/tagihan/pembayaran"
+// spt marketplace) -- ditambahkan supaya tidak fallback salah ke harga barang.
+const RECEIPT_TOTAL_LABEL_RE=/total\s*(belanja|tagihan|pembayaran|transaksi|bayar|(?:yang\s*)?harus\s*dibayar)\b/i;
 // BUGFIX: catatan transaksi (txNote) diisi dari "baris pertama" hasil OCR yang bukan angka murni.
 // Itu cocok untuk struk kasir fisik (baris pertama = nama toko), tapi SALAH untuk screenshot
 // marketplace (Tokopedia/Shopee/dll) seperti "Detail Pesanan" -- baris paling atas di situ malah
@@ -478,7 +482,14 @@ const catField=document.getElementById('txCat');
 if(guessedCat&&catField&&!catField.value.trim()){
 selectTxCat(guessedCat.name);
 }
-_txCatLearnSource=(firstLine||text).slice(0,120);
+// BUGFIX: dulu fallback ke `text` (seluruh blob OCR mentah) kalau firstLine gagal
+// kedetek -- akibatnya catLearnKey() bisa ambil kata generik boilerplate struk
+// (mis. "kirim" dari "Total Ongkos Kirim") lalu diajarkan sbg keyword kategori.
+// Sekali itu tersimpan, SEMUA scan lain yg kebetulan mengandung kata generik itu
+// ikut ke-tag ke kategori yg salah. Fix: kalau firstLine (nama produk/toko yg
+// sudah difilter RECEIPT_NOISE_LINE_RE) tidak ketemu, JANGAN belajar sama sekali
+// drpd belajar dari sumber yg tidak reliable.
+_txCatLearnSource=firstLine?firstLine.slice(0,120):null;
 const catNameForInsight=(catField&&catField.value.trim())||(guessedCat?guessedCat.name:'');
 renderReceiptInsight(amt,catNameForInsight,guessedCat);
 const stockPanelEl=document.getElementById('txStockPanel');
@@ -530,8 +541,17 @@ if(cat)return cat;
 }
 return null;
 }
+// BUGFIX (bareng fix _txCatLearnSource di atas): kata umum boilerplate struk/dompet
+// digital -- kalau kepilih jadi key, bisa nyasar ke SEMUA struk lain yg kebetulan
+// mengandung kata itu (mis. "kirim" muncul di hampir semua "Total Ongkos Kirim"),
+// bukan spesifik ke barang yg dibeli. Diblok di sini sbg lapis kedua (lapis pertama:
+// _txCatLearnSource cuma diisi dari firstLine yg sudah difilter RECEIPT_NOISE_LINE_RE).
+const CAT_LEARN_KEY_BLOCKLIST=new Set(['kirim','ongkos','ongkir','total','bayar','tagihan',
+'transaksi','diskon','metode','invoice','pesanan','ringkasan','rincian','detail','bantuan',
+'hubungi','layanan','cashback','pembayaran','tabungan','dashboard','voucher','asuransi',
+'subtotal','produk','jasa','aplikasi','platform','selesai','diproses','dikirim','dibatalkan']);
 function catLearnKey(name){
-const words=String(name).toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(w=>w.length>=4&&!/^\d+$/.test(w));
+const words=String(name).toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(w=>w.length>=4&&!/^\d+$/.test(w)&&!CAT_LEARN_KEY_BLOCKLIST.has(w));
 return words[0]||null;
 }
 function learnCatFromItemName(name,catName){
@@ -666,7 +686,7 @@ return WORTHIT_KEBUTUHAN_KEYWORDS.test(String(text).toLowerCase())?'kebutuhan':'
 // baris terpisah -> regex gak pernah match, hasilnya selalu null. Newline
 // sekarang diperbolehkan di celah itu (digit tetap dilarang biar gak accidentally
 // lompatin angka lain yang gak berhubungan).
-const CHECKOUT_TOTAL_RE=/total\s*(?:tagihan|pembayaran|bayar|(?:yang\s*)?harus\s*dibayar)\b[^\d]{0,25}rp\s?([\d][\d.,]*)/gi;
+const CHECKOUT_TOTAL_RE=/total\s*(?:tagihan|pembayaran|transaksi|bayar|(?:yang\s*)?harus\s*dibayar)\b[^\d]{0,25}rp\s?([\d][\d.,]*)/gi;
 const CHECKOUT_TOTAL_FALLBACK_RE=/grand\s*total[^\d]{0,25}rp\s?([\d][\d.,]*)/gi;
 function guessCheckoutTotalTagihan(text){
 const full=String(text);

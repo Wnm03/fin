@@ -1,4 +1,5 @@
 // kalkulator-input.js — Kalkulator ekspresi angka: parser aman (safeCalc), popup kalkulator (openCalc/calcPress/dst),
+// Dipindah ke modules/shared/kalkulator-input.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // dan preview nilai input jumlah (calcPreviewValue/updateAmtPreview/evalAmtExpr).
 // Dipindah dari features-helpers-global-security.js (v69) — domain mandiri, cuma pakai document.getElementById
 // & openModal/closeModal (variabel global dari features-helpers-global-security.js, diakses saat runtime lewat

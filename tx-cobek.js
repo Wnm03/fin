@@ -1,4 +1,5 @@
 // tx-cobek.js — domain "Stok/Penjualan Shop (Shop)" pada form Transaksi.
+// Dipindah ke modules/finance/tx-cobek.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Dipindah dari transaksi.js (lihat CLAUDE.md catatan kerja "split transaksi.js"
 // bagian ke-9) -- tetap fungsi global, tetap dipanggil persis sama dari sini
 // (updateTxVehiclePanels di transaksi.js), dari HTML (modals.js), maupun dari

@@ -1,4 +1,6 @@
 // dashboard-hub-registry.js — FEATURE_REGISTRY: sumber data tunggal taksonomi
+// Dipindah ke modules/dashboard-hub/dashboard-hub-registry.js (Sesi 11 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Dashboard Feature Hub (blueprint-dashboard-hub.md §1 & §7, Tahap 0).
 //
 // PENTING — file ini MURNI DATA, tidak ada logic render/navigasi apa pun.

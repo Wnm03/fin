@@ -19,7 +19,7 @@ function makeD(overrides = {}) {
 // bisa dites terisolasi tanpa perlu load seluruh chain modul lain.
 function loadRecordBbmLog(D) {
   let n = 0;
-  const ctx = loadSource(['tx-bbm.js'], { D, uid: () => 'uid-stub-' + (++n) });
+  const ctx = loadSource(['modules/finance/tx-bbm.js'], { D, uid: () => 'uid-stub-' + (++n) });
   return ctx.recordBbmLog;
 }
 

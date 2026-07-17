@@ -1,4 +1,5 @@
 // pengaturan-search.js — Domain Pencarian Pengaturan: buka/tutup grup pengaturan (toggleStgGroup), cari
+// Dipindah ke modules/shared/pengaturan-search.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // & sorot kartu pengaturan yang cocok teks pencarian (stgSearch), dan dukungan keyboard (Enter/Spasi)
 // utk buka grup pengaturan lewat kepala grup yang sedang fokus.
 // Dipindah dari features-helpers-global-security.js (v73) — potongan KEENAM stlh kalkulator-input.js
@@ -12,6 +13,21 @@
 // Dipanggil dari: `onclick="toggleStgGroup(...)"` & `oninput="stgSearch(...)"` di halaman Pengaturan
 // (index.html/app_production.html).
 // PENTING: file ini HARUS dimuat SETELAH features-helpers-global-security.js.
+// setSettingsTab: split-tab utk halaman Pengaturan (#page-settings), gantiin accordion 6 grup
+// lama (stgGroup1..6) yang sekarang jadi .stg-tabpanel + .cn-tabs. Pola PERSIS SAMA dgn
+// setKeuanganTab/setShopTab/setPajakTab/setAsetTab (lihat aset.js) -- toggle 'active' di tombol
+// .cn-tab & toggle 'u-dnone' di panel yg cocok data-tab. toggleStgGroup() di bawah TETAP ada &
+// TIDAK diubah -- masih dipakai apa adanya utk accordion lain (dashSecondaryGroup di Beranda,
+// pzPiutangUtangGroup di Pajak & Zakat), cuma sudah tidak dipakai lagi utk stgGroup1..6.
+const SETTINGS_TAB_ORDER=['profil','keuangan','pengingat','notifbackup','keamanan','diagnostik'];
+function setSettingsTab(tab,el){
+document.querySelectorAll('#page-settings .cn-tabs .cn-tab').forEach(b=>b.classList.remove('active'));
+if(el) el.classList.add('active');
+else { const idx=SETTINGS_TAB_ORDER.indexOf(tab); const btn=document.querySelectorAll('#page-settings .cn-tabs .cn-tab')[idx>=0?idx:0]; if(btn) btn.classList.add('active'); }
+document.querySelectorAll('#page-settings .stg-tabpanel').forEach(p=>{
+p.classList.toggle('u-dnone', p.dataset.tab!==tab);
+});
+}
 function toggleStgGroup(id){
 var g=document.getElementById(id);
 if(!g)return;
@@ -54,8 +70,8 @@ resultEl.classList.remove('u-dnone');resultEl.style.display='block';
 resultEl.textContent=matches.length?('✅ '+matches.length+' hasil ditemukan'):'⚠️ Tidak ada pengaturan yang cocok';
 }
 matches.forEach((card,i)=>{
-const grp=card.closest('.stg-group');
-if(grp && !grp.classList.contains('open')) toggleStgGroup(grp.id);
+const panel=card.closest('.stg-tabpanel');
+if(i===0 && panel && panel.classList.contains('u-dnone')) setSettingsTab(panel.dataset.tab);
 if(card.classList.contains('card-collapse') && !card.classList.contains('open')) toggleSingleCardCollapse(card.id);
 card.style.outline='2px solid var(--accent)';
 card.style.outlineOffset='3px';

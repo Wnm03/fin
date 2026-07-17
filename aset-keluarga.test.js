@@ -15,7 +15,7 @@ const { loadSource } = require('./helpers/loadSource');
 // terpisah di file lain (akun.test.js, dst) — di sini cuma perlu memastikan
 // AsetKeluarga MEMANGGIL & MENJUMLAHKAN-nya dengan benar.
 function buildSandbox(D, stubs) {
-  return loadSource(['aset-keluarga.js'], {
+  return loadSource(['modules/asset/aset-keluarga.js'], {
     D,
     totalSaldoAkun: () => stubs.saldoAkun || 0,
     totalDebtValue: () => stubs.debtValue || 0,

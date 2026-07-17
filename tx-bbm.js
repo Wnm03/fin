@@ -1,4 +1,5 @@
 // tx-bbm.js — logika panel "Sinkron ke Catatan Mobil (BBM)" pada txModal
+// Dipindah ke modules/finance/tx-bbm.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // (Tambah/Edit Transaksi Keuangan). Dipisah dari transaksi.js (2026-07-11,
 // lihat CLAUDE.md catatan kerja "split transaksi.js" bagian ke-6) murni
 // sebagai pengelompokan ulang file, BUKAN perubahan perilaku. Semua fungsi di
@@ -7,7 +8,7 @@
 //  - HTML lewat atribut oninput/onchange di modals.js (mis. txBbmLiter pakai
 //    oninput="syncTxBbmAmt()")
 //  - file lain lintas-bundle: recordBbmLog dipanggil dari BBM._saveInner di
-//    features-budget-laporan-carnotes-pelanggan.js (GROUP_A) -- ini AMAN
+//    car-notes.js (GROUP_A) -- ini AMAN
 //    walau tx-bbm.js ada di GROUP_B (dimuat setelah GROUP_A), karena
 //    pemanggilannya baru terjadi saat user berinteraksi (lazy), bukan saat
 //    file GROUP_A pertama kali di-parse/load.

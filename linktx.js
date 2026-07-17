@@ -1,11 +1,12 @@
 // linktx.js — Transaksi tertaut (LinkTx): hubungkan transaksi lama di Keuangan ke Renov/Wishlist/Bill
+// Dipindah ke modules/finance/linktx.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // CATATAN: modul LinkTx dipindah ke file baru ini dari features-edukasi-pajak-utang-sewakios.js (v61).
 // File lama (features-edukasi-pajak-utang-sewakios.js) DIHAPUS setelah ini karena tidak ada isi tersisa.
 // LinkTx dipakai sbg utility umum "hubungkan transaksi lama" dari 3 domain beda (bukan "milik" 1 domain
 // tunggal): Renov (renovasi.js) & WorthIt (worthit.js) dan Bill (piutang-utang.js).
 // Semua pemanggilan LinkTx.xxx() dari file lain lewat variabel global saat runtime (klik tombol modal),
 // bukan referensi lokal ke file — jadi aman dipindah ke file sendiri.
-// PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: pajak-pbb-zakat.js, features-budget-laporan-carnotes-pelanggan.js, edukasi-dana.js, sewakios.js, hidup-seimbang.js, linktx.js, renovasi.js, aset.js, worthit.js
+// PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: pajak-pbb-zakat.js, budget.js, car-notes.js, chat-action-handlers.js, edukasi-dana.js, sewakios.js, hidup-seimbang.js, linktx.js, renovasi.js, aset.js, worthit.js
 
 const LinkTx={
 ctx:null,

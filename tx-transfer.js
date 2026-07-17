@@ -1,4 +1,5 @@
 // tx-transfer.js — logika modal "⇄ Transfer Antar Akun" (transferModal).
+// Dipindah ke modules/finance/tx-transfer.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Dipisah dari transaksi.js (2026-07-11, lihat CLAUDE.md catatan kerja
 // "split transaksi.js" bagian ke-8) murni sebagai pengelompokan ulang
 // file, BUKAN perubahan perilaku. Kedua fungsi di sini tetap global

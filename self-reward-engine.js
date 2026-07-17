@@ -1,4 +1,6 @@
 // self-reward-engine.js — Domain Self Reward Engine: cek kelayakan self reward
+// Dipindah ke modules/self-reward/self-reward-engine.js (Sesi 12 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // berdasarkan kondisi finansial (Budget, Cashflow, Dana Darurat, Target
 // Investasi, Utang Macet, Tagihan). MODUL BARU — tidak mengubah API/modul
 // yang sudah ada; hanya MEMBACA D.budgets/D.targets/D.debts/D.bills dan

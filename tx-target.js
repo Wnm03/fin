@@ -1,4 +1,5 @@
 // tx-target.js — domain "Target Tabungan" (modal tambah target, deteksi Dana
+// Dipindah ke modules/finance/tx-target.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Darurat, simpan, lihat transaksi akun terkait, tambah/hapus progres).
 // Dipindah dari transaksi.js (lihat CLAUDE.md catatan kerja "split
 // transaksi.js" bagian ke-9). Semua tetap fungsi global verbatim (tidak ada

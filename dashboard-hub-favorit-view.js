@@ -1,4 +1,6 @@
 // dashboard-hub-favorit-view.js — Favorit (Tahap 3, Langkah 7-8): render +
+// Dipindah ke modules/dashboard-hub/dashboard-hub-favorit-view.js (Sesi 11 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // toggle button wiring. Sengaja file TERPISAH dari dashboard-hub-favorit.js
 // (storage murni, Langkah 6) supaya guard test "window.DashboardHubFavorit
 // HANYA mengekspos getFavoritKeys & toggleFavorit" (tests/

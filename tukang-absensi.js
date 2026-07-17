@@ -1,4 +1,5 @@
 // tukang-absensi.js — Domain Tukang (absensi/payroll harian & borongan) ONLY.
+// Dipindah ke modules/business/tukang-absensi.js (Sesi 15 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // CATATAN [2026-07-12]: File ini dulu bernama features-tukang-kendaraan-storage.js dan asalnya
 // campuran 5 domain (lihat riwayat lengkap di docs/CATATAN-CEK-CLAUDE.md). Bagian "Chat Action"
 // SUDAH DIPISAH ke chat-action.js, "Storage/Archive" SUDAH DIPISAH ke data-archive.js,
@@ -7,7 +8,7 @@
 // (roadmap split file besar bagian ke-1 s/d ke-4). Bagian ke-5 (TERAKHIR): file ini di-rename
 // dari features-tukang-kendaraan-storage.js jadi tukang-absensi.js — roadmap split file besar
 // ini SELESAI TOTAL (5 bagian).
-// PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: features-helpers-global-security.js, diagnostik-versi.js, format-tema.js, error-handler.js, helper-teks.js, keamanan-pin.js, modal-navigasi.js, reset-gaji-mingguan.js, debug-console.js, pengaturan-search.js, onboarding.js, kalkulator-input.js, scan-ocr.js, akun.js, gaji-calc.js, transaksi.js, profil-pengaturan.js, kategori.js, tagihan-kalender.js, backup-restore.js, payroll-absensi.js, tukang-absensi.js, vehicle-core.js, chat-action.js, data-archive.js, sparepart-servis.js, features-aiwidget-reminder-gdrive-search.js, features-sheets-pwa-selftest.js
+// PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) karena beberapa modul saling referensi. Urutan grup ini: features-helpers-global-security.js, diagnostik-versi.js, format-tema.js, error-handler.js, helper-teks.js, keamanan-pin.js, modal-navigasi.js, reset-gaji-mingguan.js, debug-console.js, pengaturan-search.js, onboarding.js, kalkulator-input.js, scan-ocr.js, akun.js, gaji-calc.js, transaksi.js, profil-pengaturan.js, kategori.js, tagihan-kalender.js, backup-restore.js, payroll-absensi.js, tukang-absensi.js, vehicle-core.js, chat-action.js, data-archive.js, sparepart-servis.js
 
 /* moved to modules-render.js: renderWorkDays */
 const Tukang={

@@ -1,4 +1,6 @@
 // invest-ai-widget.js — Widget "🤖 Rekomendasi AI" otomatis di kartu 🧭
+// Dipindah ke modules/asset/invest-ai-widget.js (Sesi 9 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Rekomendasi Alokasi Aset (aset.js: AlokasiAset.renderOne(), target #aaResult,
 // halaman Pajak & Zakat / tab Zakat). MODUL BARU — tidak mengubah satu baris
 // pun logic AlokasiAset/Aset yang sudah ada; file ini HANYA menambah satu

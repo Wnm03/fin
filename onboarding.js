@@ -1,4 +1,5 @@
 // onboarding.js — Domain Onboarding: preview perkiraan kasar gaji/kiriman saat setup awal
+// Dipindah ke modules/shared/onboarding.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // (updateOnboardPreview) & proses selesai onboarding — simpan profil awal + PIN (finishOnboard).
 // Dipindah dari features-helpers-global-security.js (v74) — potongan KETUJUH stlh
 // kalkulator-input.js (v69), keamanan-pin.js (v70), modal-navigasi.js (v71),

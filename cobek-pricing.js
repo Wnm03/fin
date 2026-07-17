@@ -1,4 +1,6 @@
 // cobek-pricing.js — Domain Shop bagian rekomendasi harga & ongkir: PriceReko (kalkulator
+// Dipindah ke modules/shop/cobek-pricing.js (Sesi 10 restrukturisasi folder — lihat
+// docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // harga jual AI), OngkirCalc (kalkulator ongkos kirim), PriceRekoWidget & StockRekoWidget
 // (widget dashboard rule-based). Bagian ke-2 dari 5 hasil pemecahan cobek.js — lihat catatan
 // urutan load di cobek-etalase.js.

@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const { loadSource } = require('./helpers/loadSource');
 const { createFakeElement } = require('./helpers/fakeDom');
 
-// BBM.renderList (features-budget-laporan-carnotes-pelanggan.js) baca input
+// BBM.renderList (car-notes.js) baca input
 // dari D.bbmLogs & tulis hasil kalkulasi (rata2 km/L, total liter, total
 // biaya, badge km/L per baris) langsung ke DOM -- bukan return value murni.
 // Beda dari fakeDom.js punya createFakeDocument() (yang meng-auto-vivify
@@ -32,7 +32,7 @@ function makeBbmDocument(prefilled = {}) {
 
 function makeBBM(D, opts = {}) {
   const fakeDocument = makeBbmDocument(opts.domValues);
-  const ctx = loadSource(['features-budget-laporan-carnotes-pelanggan.js'], {
+  const ctx = loadSource(['car-notes.js'], {
     D,
     document: fakeDocument,
     curVehicleId: opts.curVehicleId !== undefined ? opts.curVehicleId : 'veh1',
