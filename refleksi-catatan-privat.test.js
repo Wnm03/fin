@@ -26,7 +26,7 @@ const { createFakeDocument } = require('./helpers/fakeDom');
 function makeRefleksiWithPin(D, opts = {}) {
   const fakeDocument = createFakeDocument(opts.docOverrides || {});
   const toasts = [];
-  const ctx = loadSource(['helper-teks.js', 'keamanan-pin.js', 'refleksi-selfcare.js'], {
+  const ctx = loadSource(['modules/shared/helper-teks.js', 'modules/shared/keamanan-pin.js', 'modules/home/refleksi-selfcare.js'], {
     D,
     document: fakeDocument,
     crypto: globalThis.crypto,

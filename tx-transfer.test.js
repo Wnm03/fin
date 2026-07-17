@@ -17,7 +17,7 @@ function makeTransfer(D, stubs = {}, docOverrides = {}) {
   const fakeDocument = createFakeDocument(docOverrides);
   const toasts = [];
   const calls = { populateAccFilters: 0, openModal: [], closeModal: [], renderDashboard: 0, renderKeuangan: 0 };
-  const ctx = loadSource(['helper-teks.js', 'tx-transfer.js'], {
+  const ctx = loadSource(['modules/shared/helper-teks.js', 'modules/finance/tx-transfer.js'], {
     D,
     document: fakeDocument,
     save: stubs.save || (() => {}),

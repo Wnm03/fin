@@ -15,7 +15,7 @@ const { loadSource } = require('./helpers/loadSource');
 function makeDelTxCtx(D, opts = {}) {
   const calls = { toast: [], save: 0, render: [], revertStockUsage: [], renov: [], worthit: [], sewakios: [], tukang: [] };
   const record = (name) => (...args) => calls.render.push([name, ...args]);
-  const ctx = loadSource(['tx-list-cashflow.js'], {
+  const ctx = loadSource(['modules/finance/tx-list-cashflow.js'], {
     D,
     askConfirm: opts.askConfirm || (async () => true),
     toast: (msg, ...rest) => calls.toast.push(msg),
@@ -258,7 +258,7 @@ test('delTx — tukangPaymentEntryIds ARRAY KOSONG: Tukang.unmarkPaidEntries TID
 // ================= computeCashflowForecast =================
 
 function makeForecastCtx(D, opts = {}) {
-  const ctx = loadSource(['tx-list-cashflow.js'], {
+  const ctx = loadSource(['modules/finance/tx-list-cashflow.js'], {
     D,
     BudgetReko: opts.BudgetReko, // sengaja bisa undefined -> pakai default internal
     totalSaldoAkun: opts.totalSaldoAkun || (() => 1000000),

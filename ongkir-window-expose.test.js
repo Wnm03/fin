@@ -25,7 +25,7 @@ const path = require('path');
 // DashboardHub/DashboardHubSearch yg butuh expose lokal krn dideklarasikan
 // SETELAH blok Object.assign besar itu jalan dalam urutan file GROUP_B).
 
-const SELFTEST_FILE = 'features-sheets-pwa-selftest.js';
+const SELFTEST_FILE = 'app-bootstrap.js';
 
 function getExposedWindowNames() {
   const src = fs.readFileSync(path.join(__dirname, '..', SELFTEST_FILE), 'utf8');
@@ -44,14 +44,14 @@ test('Object.assign(window,{...}) di features-sheets-pwa-selftest.js harus menye
 });
 
 test('Semua data-action="OngkirCalc.*" yang dipakai di modals.js harus punya method yang cocok di OngkirCalc (cobek-pricing.js)', () => {
-  const modalsSrc = fs.readFileSync(path.join(__dirname, '..', 'modals.js'), 'utf8');
+  const modalsSrc = fs.readFileSync(path.join(__dirname, '..', 'modules/shared/modals.js'), 'utf8');
   const usedMethods = new Set();
   const re = /data-action=\\?"OngkirCalc\.([A-Za-z0-9_]+)\\?"/g;
   let m;
   while ((m = re.exec(modalsSrc))) usedMethods.add(m[1]);
   assert.ok(usedMethods.size > 0, 'Tidak ketemu data-action="OngkirCalc.*" di modals.js — cek regex kalau markup berubah');
 
-  const pricingSrc = fs.readFileSync(path.join(__dirname, '..', 'cobek-pricing.js'), 'utf8');
+  const pricingSrc = fs.readFileSync(path.join(__dirname, '..', 'modules/shop/cobek-pricing.js'), 'utf8');
   const ongkirBlockMatch = pricingSrc.match(/const OngkirCalc=\{([\s\S]*?)\n\};/);
   assert.ok(ongkirBlockMatch, 'Blok const OngkirCalc={...} tidak ketemu di cobek-pricing.js');
   const ongkirBlock = ongkirBlockMatch[1];

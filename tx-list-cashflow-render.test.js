@@ -45,7 +45,7 @@ function makeCtx(D, opts = {}) {
   const fakeDocument = createFakeDocument(baseFields(opts.domValues), queryGroups);
   const calls = { render: [] };
   const record = (name) => (...args) => calls.render.push([name, ...args]);
-  const ctx = loadSource(['tx-list-cashflow.js'], {
+  const ctx = loadSource(['modules/finance/tx-list-cashflow.js'], {
     D,
     document: fakeDocument,
     curMonth: opts.curMonth !== undefined ? opts.curMonth : 6,

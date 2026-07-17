@@ -47,7 +47,7 @@ function makeEnv(initialClasses) {
     return createFakeElement();
   };
   const timer = makeManualTimer();
-  const ctx = loadSource(['modal-navigasi.js'], {
+  const ctx = loadSource(['modules/shared/modal-navigasi.js'], {
     document: fakeDocument,
     setTimeout: timer.setTimeout,
     clearTimeout: timer.clearTimeout,

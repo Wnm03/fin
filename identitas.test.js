@@ -12,7 +12,7 @@ const { loadSource } = require('./helpers/loadSource');
 // didefinisikan di renovasi.js (GROUP_A) — di luar cakupan test ini, jadi
 // cukup di-stub kosong supaya `let D = {...categories:...}` tidak error.
 const ctx = loadSource(
-  ['data-default.js', 'features-helpers-global-security.js'],
+  ['modules/shared/data-default.js', 'modules/shared/features-helpers-global-security.js'],
   { DEFAULT_CATS: { income: [], expense: [] } }
 );
 

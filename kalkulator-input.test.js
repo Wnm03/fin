@@ -23,7 +23,7 @@ class FakeEvent {
 
 function makeKalkulator(docOverrides = {}, extraGlobals = {}) {
   const fakeDocument = createFakeDocument(docOverrides);
-  const ctx = loadSource(['kalkulator-input.js'], {
+  const ctx = loadSource(['modules/shared/kalkulator-input.js'], {
     document: fakeDocument,
     Event: FakeEvent,
     fmt: extraGlobals.fmt || ((n) => 'Rp ' + n),

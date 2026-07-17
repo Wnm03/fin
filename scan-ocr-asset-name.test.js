@@ -17,7 +17,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { loadSource } = require('./helpers/loadSource');
 
-const ctx = loadSource(['scan-ocr.js']);
+const ctx = loadSource(['modules/shared/scan-ocr.js']);
 
 function ocrText(lines) {
   return lines.join('\n');

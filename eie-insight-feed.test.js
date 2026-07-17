@@ -13,7 +13,7 @@ const { createFakeDocument } = require('./helpers/fakeDom');
 
 function loadFeed({ insights, extraGlobals = {}, useRealRecommendationService = true } = {}) {
   const fakeDocument = createFakeDocument({ eieInsightFeed: {} });
-  const files = ['helper-teks.js']; // escapeHtml
+  const files = ['modules/shared/helper-teks.js']; // escapeHtml
   // recommendation-service.js deklarasi top-level `const RecommendationService`
   // -> kalau di-load, itu SELALU menang atas override lewat extraGlobals (const
   // baru di context yang sama menimpa binding lama). Jadi utk test yang perlu

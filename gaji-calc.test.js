@@ -12,7 +12,7 @@ function setupCalcGaji(values) {
     gcTotal: {}, gcBreakdown: {}, gcSaveBtn: {},
     ...values,
   });
-  const ctx = loadSource(['gaji-calc.js'], {
+  const ctx = loadSource(['modules/business/gaji-calc.js'], {
     document: fakeDocument,
     D: { profile: {} },
     fmtFull: (n) => String(Math.round(n)),

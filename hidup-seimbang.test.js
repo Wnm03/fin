@@ -6,7 +6,7 @@ const { createFakeDocument } = require('./helpers/fakeDom');
 
 // Cakupan file ini: LifeBalance.compute()/getFocusAreas() (logic murni,
 // dgn WorthIt.incomeAvg()/computeNoSpendLast30() di-stub — bukan implementasi
-// riil dari worthit.js/features-sheets-pwa-selftest.js, sesuai batasan
+// riil dari worthit.js/pajak-aset-ui-wrappers.js, sesuai batasan
 // loadSource.js: file ini SENGAJA tidak dimuat berbarengan dgn seluruh app),
 // render()/renderFocus()/renderTrendBadge() (DOM sederhana via fakeDom), dan
 // saveSnapshot()/autoSnapshotIfNeeded()/deleteSnapshot() (CRUD ke
@@ -27,7 +27,7 @@ function makeLifeBalance(D, stubs = {}, docOverrides = {}) {
     ...docOverrides,
   });
   const toasts = [];
-  const ctx = loadSource(['helper-teks.js', 'hidup-seimbang.js'], {
+  const ctx = loadSource(['modules/shared/helper-teks.js', 'modules/home/hidup-seimbang.js'], {
     D,
     document: fakeDocument,
     save: stubs.save || (() => {}),

@@ -22,7 +22,7 @@ const path = require('path');
 // Object.assign(window,{...}) yang sama tempat PriceReko/OngkirCalc (sibling-nya di file yang
 // sama) sudah ada.
 
-const SELFTEST_FILE = 'features-sheets-pwa-selftest.js';
+const SELFTEST_FILE = 'app-bootstrap.js';
 
 function getExposedWindowNames() {
   const src = fs.readFileSync(path.join(__dirname, '..', SELFTEST_FILE), 'utf8');
@@ -57,7 +57,7 @@ test('Semua data-action="PriceRekoWidget.*"/"StockRekoWidget.*" yang dipakai di 
   while ((m = re.exec(htmlSrc))) usedMethods.add(m[1] + '.' + m[2]);
   assert.ok(usedMethods.size > 0, 'Tidak ketemu data-action="PriceRekoWidget.*"/"StockRekoWidget.*" di index.html — cek regex kalau markup berubah');
 
-  const pricingSrc = fs.readFileSync(path.join(__dirname, '..', 'cobek-pricing.js'), 'utf8');
+  const pricingSrc = fs.readFileSync(path.join(__dirname, '..', 'modules/shop/cobek-pricing.js'), 'utf8');
 
   for (const full of usedMethods) {
     const [modName, method] = full.split('.');

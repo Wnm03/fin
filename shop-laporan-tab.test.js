@@ -167,17 +167,17 @@ test('styles.css: hanya 1 override posisi aditif untuk FAB Laporan Shop (#shopTa
 });
 
 test('cobek-order.js: Laporan.renderTab()/topProdukAgg()/renderTopProduk()/renderTopPelanggan()/setPeriodeLap()/getRangeLap() (business logic pra-existing) tidak diubah', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'cobek-order.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'modules/shop/cobek-order.js'), 'utf8');
   assert.doesNotMatch(src, /shopLaporanFab/);
 });
 
 test('cobek-io.js: hanya 1 wrapper tipis baru renderShopLaporan(), setShopTab()/ShopExport/exportLaporanShopXLSX (business logic pra-existing) tidak diubah', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'cobek-io.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'modules/shop/cobek-io.js'), 'utf8');
   assert.match(src, /function renderShopLaporan\(\)\{return Laporan\.renderTab\(\);\}/);
   assert.doesNotMatch(src, /shopLaporanFab/);
 });
 
 test('dashboard-hub-registry.js (FEATURE_REGISTRY) tidak disentuh oleh penambahan tab Laporan Shop', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'dashboard-hub-registry.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'modules/dashboard-hub/dashboard-hub-registry.js'), 'utf8');
   assert.doesNotMatch(src, /shopLaporanFab/);
 });

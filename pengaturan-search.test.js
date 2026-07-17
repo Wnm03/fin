@@ -28,7 +28,7 @@ function loadPengaturanSearch(domInitial = {}, queryGroups = {}) {
   const listeners = {};
   fakeDocument.addEventListener = (evt, fn) => { listeners[evt] = fn; };
   const timeouts = [];
-  const ctx = loadSource(['pengaturan-search.js'], {
+  const ctx = loadSource(['modules/shared/pengaturan-search.js'], {
     document: fakeDocument,
     setTimeout: (fn, ms) => { timeouts.push({ fn, ms }); return timeouts.length; },
   });
@@ -184,31 +184,30 @@ test('stgSearch — pencarian case-insensitive & abaikan spasi di awal/akhir', (
   assert.match(resultEl.textContent, /✅ 1 hasil ditemukan/);
 });
 
-test('stgSearch — kartu cocok di dalam grup TERTUTUP => grup ikut dibuka', () => {
-  const groupHead = createFakeElement();
-  groupHead.setAttribute = () => {};
-  const group = createFakeElement({
-    id: 'grpKeamanan',
-    querySelector: (sel) => (sel === '.stg-group-head' ? groupHead : null),
-  });
-  const card = createFakeElement({ textContent: 'Ganti PIN', closest: (sel) => (sel === '.stg-group' ? group : null) });
-  const { ctx, fakeDocument } = loadPengaturanSearch({ stgSearchResult: {} }, { [CARD_SELECTOR]: [card] });
-  fakeDocument.getElementById = (id) => (id === 'grpKeamanan' ? group : createFakeElement());
+test('stgSearch — kartu cocok di dalam TAB TERSEMBUNYI => setSettingsTab dipanggil, panel jadi tampil', () => {
+  const panel = createFakeElement({ id: 'stgGroup5', classList: ['u-dnone'], dataset: { tab: 'keamanan' } });
+  const card = createFakeElement({ textContent: 'Ganti PIN', closest: (sel) => (sel === '.stg-tabpanel' ? panel : null) });
+  const { ctx } = loadPengaturanSearch(
+    { stgSearchResult: {} },
+    { [CARD_SELECTOR]: [card], '#page-settings .stg-tabpanel': [panel], '#page-settings .cn-tabs .cn-tab': [] },
+  );
 
   ctx.stgSearch('PIN');
 
-  assert.equal(group.classList.contains('open'), true);
+  assert.equal(panel.classList.contains('u-dnone'), false);
 });
 
-test('stgSearch — kartu cocok di dalam grup yang SUDAH terbuka => tidak ikut ke-toggle jadi tertutup', () => {
-  const group = createFakeElement({ id: 'grpKeamanan', classList: ['open'], querySelector: () => null });
-  const card = createFakeElement({ textContent: 'Ganti PIN', closest: (sel) => (sel === '.stg-group' ? group : null) });
-  const { ctx, fakeDocument } = loadPengaturanSearch({ stgSearchResult: {} }, { [CARD_SELECTOR]: [card] });
-  fakeDocument.getElementById = (id) => (id === 'grpKeamanan' ? group : createFakeElement());
+test('stgSearch — kartu cocok di dalam TAB yang SUDAH tampil => tidak error, tetap tampil', () => {
+  const panel = createFakeElement({ id: 'stgGroup5', dataset: { tab: 'keamanan' } });
+  const card = createFakeElement({ textContent: 'Ganti PIN', closest: (sel) => (sel === '.stg-tabpanel' ? panel : null) });
+  const { ctx } = loadPengaturanSearch(
+    { stgSearchResult: {} },
+    { [CARD_SELECTOR]: [card], '#page-settings .stg-tabpanel': [panel], '#page-settings .cn-tabs .cn-tab': [] },
+  );
 
   ctx.stgSearch('PIN');
 
-  assert.equal(group.classList.contains('open'), true);
+  assert.equal(panel.classList.contains('u-dnone'), false);
 });
 
 test('stgSearch — kartu cocok tanpa grup pembungkus (closest balik null) => tidak error', () => {
@@ -311,4 +310,53 @@ test('keydown listener — target tidak berada di dalam head yang relevan (close
 test('keydown listener — e.target tanpa method closest (mis. bukan elemen) => tidak error (guard e.target.closest&&...)', () => {
   const { listeners } = loadPengaturanSearch();
   assert.doesNotThrow(() => listeners.keydown({ key: 'Enter', target: {}, preventDefault: () => {} }));
+});
+
+// ---------- setSettingsTab (split-tab #page-settings, ganti accordion stgGroup1..6) ----------
+
+test('setSettingsTab — dgn `el`: tombol itu jadi active, tab lain kehilangan active', () => {
+  const oldActive = createFakeElement({ classList: ['active'] });
+  const newBtn = createFakeElement();
+  const panelA = createFakeElement({ dataset: { tab: 'profil' } });
+  const panelB = createFakeElement({ dataset: { tab: 'keamanan' } });
+  const { ctx } = loadPengaturanSearch({}, {
+    '#page-settings .cn-tabs .cn-tab': [oldActive, newBtn],
+    '#page-settings .stg-tabpanel': [panelA, panelB],
+  });
+
+  ctx.setSettingsTab('keamanan', newBtn);
+
+  assert.equal(oldActive.classList.contains('active'), false);
+  assert.equal(newBtn.classList.contains('active'), true);
+  assert.equal(panelA.classList.contains('u-dnone'), true);
+  assert.equal(panelB.classList.contains('u-dnone'), false);
+});
+
+test('setSettingsTab — tanpa `el` (dipanggil dari kode, mis. dashHubNavigateToFeature): fallback ke index SETTINGS_TAB_ORDER', () => {
+  const btnProfil = createFakeElement();
+  const btnKeuangan = createFakeElement();
+  const panelProfil = createFakeElement({ dataset: { tab: 'profil' } });
+  const panelKeuangan = createFakeElement({ dataset: { tab: 'keuangan' } });
+  const { ctx } = loadPengaturanSearch({}, {
+    '#page-settings .cn-tabs .cn-tab': [btnProfil, btnKeuangan],
+    '#page-settings .stg-tabpanel': [panelProfil, panelKeuangan],
+  });
+
+  ctx.setSettingsTab('keuangan');
+
+  assert.equal(btnKeuangan.classList.contains('active'), true);
+  assert.equal(btnProfil.classList.contains('active'), false);
+  assert.equal(panelKeuangan.classList.contains('u-dnone'), false);
+  assert.equal(panelProfil.classList.contains('u-dnone'), true);
+});
+
+test('setSettingsTab — tab tidak dikenal & tanpa `el` => fallback ke tombol index 0, tidak error', () => {
+  const btnProfil = createFakeElement();
+  const { ctx } = loadPengaturanSearch({}, {
+    '#page-settings .cn-tabs .cn-tab': [btnProfil],
+    '#page-settings .stg-tabpanel': [],
+  });
+
+  assert.doesNotThrow(() => ctx.setSettingsTab('tab-asing-tidak-ada'));
+  assert.equal(btnProfil.classList.contains('active'), true);
 });

@@ -15,7 +15,7 @@ const { loadSource } = require('./helpers/loadSource');
 // loadSource + expose, tanpa perlu stub D/document macam-macam.
 
 function loadTangga() {
-  const ctx = loadSource(['tangga-keuangan.js'], {}, ['TanggaKeuangan']);
+  const ctx = loadSource(['modules/finance/tangga-keuangan.js'], {}, ['TanggaKeuangan']);
   return ctx.TanggaKeuangan;
 }
 
@@ -57,7 +57,7 @@ test('compute() — anak tangga #2 (hutang kecil, bukan KPR) & #6 (KPR) membedak
   };
   const totalSaldoAkun = () => 0;
   const WorthIt = { incomeAvg: () => 0 };
-  const ctx = loadSource(['tangga-keuangan.js'], {
+  const ctx = loadSource(['modules/finance/tangga-keuangan.js'], {
     D, totalSaldoAkun, WorthIt, fmtFull: (n) => `Rp ${n}`,
   }, ['TanggaKeuangan']);
   const { steps } = ctx.TanggaKeuangan.compute();

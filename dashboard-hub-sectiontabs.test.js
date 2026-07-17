@@ -11,10 +11,17 @@ const { createFakeElement } = require('./helpers/fakeDom');
 // tab 🧭 Dashboard Hub". SENGAJA TIDAK ada wrapper <div id="dashHubTab-xxx">
 // baru (0 reorder DOM) — DashboardHub.setSectionTab()/applySectionTab() di
 // dashboard-hub.js toggle class u-dnone LANGSUNG ke id section yang sudah
-// ada, pola sama dgn setMainTab()/applyMainTab() (test struktural di sini
-// mengikuti pola tests/dashboard-hub-quickactions.test.js /
-// tests/dashboard-hub-pinnedwidgets.test.js — cek posisi & markup, BUKAN
-// visibility runtime, krn itu bergantung getComputedStyle browser nyata).
+// ada (test struktural di sini mengikuti pola tests/dashboard-hub-
+// quickactions.test.js / tests/dashboard-hub-pinnedwidgets.test.js — cek
+// posisi & markup, BUKAN visibility runtime, krn itu bergantung
+// getComputedStyle browser nyata).
+//
+// 2026-07-17: 4 tab (Ringkasan/Fitur/Widget/Insight) — awalnya tab switcher
+// "Semua Fitur"/"Pinned Widgets" (chip-btn di dalam 1 tab "Fitur") dihapus &
+// kedua section ditumpuk jadi 1 tab, TAPI lalu di-split lagi jadi 2 tab
+// section terpisah (permintaan user, sesi sama): #dashHubMainGridCard tetap
+// di tab "Fitur" (sebelah "Ringkasan"), #dashboardHubPinnedWrap pindah ke
+// tab baru "📌 Widget" di sampingnya.
 
 const HTML_FILES = ['index.html', 'app_production.html'];
 
@@ -27,35 +34,37 @@ function readCss() {
 }
 
 // ---------------------------------------------------------------------------
-// 1. Markup — nav .dhb-subtabs ada, tepat 3 tombol, posisi setelah Favorit &
-//    sebelum tab switcher Fitur/Pinned lama, Hero/Tangga/Quick Actions/Search
-//    tidak tersentuh.
+// 1. Markup — nav .dhb-subtabs ada, tepat 4 tombol, posisi setelah Favorit &
+//    sebelum kartu Semua Fitur, Hero/Tangga/Quick Actions/Search tidak
+//    tersentuh.
 // ---------------------------------------------------------------------------
 
 for (const file of HTML_FILES) {
-  test(`${file}: #dashboardHub .dhb-subtabs ada, tepat di antara Favorit dan tab switcher Fitur/Pinned lama`, () => {
+  test(`${file}: #dashboardHub .dhb-subtabs ada, tepat di antara Favorit dan kartu Semua Fitur`, () => {
     const html = readHtml(file);
     const favIdx = html.indexOf('id="dashHubFavoritSection"');
     const subtabsIdx = html.indexOf('class="cn-tabs dhb-subtabs"');
-    const mainTabsRowIdx = html.indexOf('id="dashHubMainTabsRow"');
+    const mainGridCardIdx = html.indexOf('id="dashHubMainGridCard"');
     assert.notEqual(favIdx, -1, 'Favorit section harus tetap ada');
     assert.notEqual(subtabsIdx, -1, 'Nav .dhb-subtabs harus ada');
-    assert.notEqual(mainTabsRowIdx, -1, 'Tab switcher Fitur/Pinned lama harus tetap ada');
+    assert.equal(html.indexOf('id="dashHubMainTabsRow"'), -1, 'Tab switcher chip-btn Fitur/Pinned lama harus sudah dihapus');
+    assert.notEqual(mainGridCardIdx, -1, 'Kartu Semua Fitur harus tetap ada');
     assert.ok(favIdx < subtabsIdx, 'Nav .dhb-subtabs harus SETELAH Favorit');
-    assert.ok(subtabsIdx < mainTabsRowIdx, 'Nav .dhb-subtabs harus SEBELUM tab switcher Fitur/Pinned lama');
+    assert.ok(subtabsIdx < mainGridCardIdx, 'Nav .dhb-subtabs harus SEBELUM kartu Semua Fitur');
   });
 
-  test(`${file}: berisi tepat 3 tombol .dhb-subtab dgn id & data-args yang benar`, () => {
+  test(`${file}: berisi tepat 4 tombol .dhb-subtab dgn id & data-args yang benar`, () => {
     const html = readHtml(file);
     const btnMatches = [...html.matchAll(/class="dhb-subtab( active)?" id="dashHubSectionTabBtn-([a-z]+)" data-action="DashboardHub\.setSectionTab" data-args='\["([a-z]+)"\]'/g)];
-    assert.equal(btnMatches.length, 3, 'Harus tepat 3 tombol .dhb-subtab');
+    assert.equal(btnMatches.length, 4, 'Harus tepat 4 tombol .dhb-subtab');
     const order = btnMatches.map((m) => m[2]);
-    assert.deepEqual(order, ['ringkasan', 'fitur', 'insight'], 'Urutan tombol harus Ringkasan → Fitur → Insight');
+    assert.deepEqual(order, ['ringkasan', 'fitur', 'widget', 'insight'], 'Urutan tombol harus Ringkasan → Fitur → Widget → Insight');
     btnMatches.forEach((m) => assert.equal(m[2], m[3], `id dashHubSectionTabBtn-${m[2]} harus konsisten dgn data-args ["${m[3]}"]`));
     // Cuma tombol pertama (ringkasan) yang default aktif.
     assert.equal(btnMatches[0][1], ' active', 'Tombol Ringkasan harus default active');
     assert.equal(btnMatches[1][1], undefined, 'Tombol Fitur TIDAK boleh default active');
-    assert.equal(btnMatches[2][1], undefined, 'Tombol Insight TIDAK boleh default active');
+    assert.equal(btnMatches[2][1], undefined, 'Tombol Widget TIDAK boleh default active');
+    assert.equal(btnMatches[3][1], undefined, 'Tombol Insight TIDAK boleh default active');
   });
 
   test(`${file}: Hero Card, Tangga Ternak Uang, Quick Actions & Search TIDAK tersentuh (tetap selalu tampil, di atas nav .dhb-subtabs)`, () => {
@@ -70,11 +79,11 @@ for (const file of HTML_FILES) {
       'Urutan Hero → Tangga Ternak Uang → Quick Actions → Search → nav .dhb-subtabs tidak boleh berubah');
   });
 
-  test(`${file}: section yang dikelompokkan (Summary/Analytics/Favorit/tab switcher/LifeOS/EIE) semua tetap ada, tidak dihapus/dipindah keluar #page-dashboard-hub`, () => {
+  test(`${file}: section yang dikelompokkan (Summary/Analytics/Favorit/Semua Fitur/Pinned Widgets/LifeOS/EIE) semua tetap ada, tidak dihapus/dipindah keluar #page-dashboard-hub`, () => {
     const html = readHtml(file);
     const pageStart = html.indexOf('id="page-dashboard-hub"');
     const pageBlock = html.slice(pageStart, html.indexOf('<!-- mainApp -->'));
-    ['dashHubSummaryGrid', 'dashHubAnalyticsRow', 'dashHubFavoritSection', 'dashHubMainTabsRow',
+    ['dashHubSummaryGrid', 'dashHubAnalyticsRow', 'dashHubFavoritSection',
       'dashHubMainGridCard', 'dashboardHubPinnedWrap', 'lifeOSWrap', 'eieWrap'].forEach((id) => {
       assert.notEqual(pageBlock.indexOf(`id="${id}"`), -1, `#${id} harus tetap ada di dalam #page-dashboard-hub`);
     });
@@ -122,10 +131,11 @@ function makeFakeLocalStorage(initial = {}) {
 }
 
 const RINGKASAN_IDS = ['dashHubSummaryGrid', 'dashHubAnalyticsRow'];
-const FITUR_IDS = ['dashHubFavoritSection', 'dashHubMainTabsRow', 'dashHubMainGridCard', 'dashboardHubPinnedWrap'];
+const FITUR_IDS = ['dashHubFavoritSection', 'dashHubMainGridCard'];
+const WIDGET_IDS = ['dashboardHubPinnedWrap'];
 const INSIGHT_IDS = ['lifeOSWrap', 'eieWrap'];
-const ALL_SECTION_IDS = [...RINGKASAN_IDS, ...FITUR_IDS, ...INSIGHT_IDS];
-const BTN_IDS = ['dashHubSectionTabBtn-ringkasan', 'dashHubSectionTabBtn-fitur', 'dashHubSectionTabBtn-insight'];
+const ALL_SECTION_IDS = [...RINGKASAN_IDS, ...FITUR_IDS, ...WIDGET_IDS, ...INSIGHT_IDS];
+const BTN_IDS = ['dashHubSectionTabBtn-ringkasan', 'dashHubSectionTabBtn-fitur', 'dashHubSectionTabBtn-widget', 'dashHubSectionTabBtn-insight'];
 
 function makeSectionTabDocument() {
   const els = new Map();
@@ -133,8 +143,7 @@ function makeSectionTabDocument() {
     if (!els.has(id)) els.set(id, createFakeElement());
     return els.get(id);
   }
-  [...ALL_SECTION_IDS, ...BTN_IDS, 'dashHubMainGridCard', 'dashboardHubPinnedWrap',
-    'dashHubMainTabBtn-fitur', 'dashHubMainTabBtn-pinned', 'dashHubFavoritSection', 'dashHubFavoritList']
+  [...ALL_SECTION_IDS, ...BTN_IDS, 'dashHubFavoritSection', 'dashHubFavoritList']
     .forEach(ensure);
   return {
     els,
@@ -145,7 +154,7 @@ function makeSectionTabDocument() {
 
 function loadHub(localStorage) {
   const fakeDocument = makeSectionTabDocument();
-  const ctx = loadSource(['dashboard-hub.js'], {
+  const ctx = loadSource(['modules/dashboard-hub/dashboard-hub.js'], {
     document: fakeDocument,
     localStorage,
     escapeHtml: (s) => String(s === null || s === undefined ? '' : s),
@@ -153,11 +162,12 @@ function loadHub(localStorage) {
   return { DashboardHub: ctx.DashboardHub, fakeDocument };
 }
 
-test('DashboardHub.applySectionTab("ringkasan"): hanya section Ringkasan yang tampil (u-dnone dilepas), Fitur & Insight disembunyikan', () => {
+test('DashboardHub.applySectionTab("ringkasan"): hanya section Ringkasan yang tampil (u-dnone dilepas), Fitur/Widget/Insight disembunyikan', () => {
   const { DashboardHub, fakeDocument } = loadHub(makeFakeLocalStorage());
   DashboardHub.applySectionTab('ringkasan');
   RINGKASAN_IDS.forEach((id) => assert.equal(fakeDocument.getElementById(id).classList.contains('u-dnone'), false, `${id} harus TAMPIL`));
   FITUR_IDS.forEach((id) => assert.equal(fakeDocument.getElementById(id).classList.contains('u-dnone'), true, `${id} harus disembunyikan`));
+  WIDGET_IDS.forEach((id) => assert.equal(fakeDocument.getElementById(id).classList.contains('u-dnone'), true, `${id} harus disembunyikan`));
   INSIGHT_IDS.forEach((id) => assert.equal(fakeDocument.getElementById(id).classList.contains('u-dnone'), true, `${id} harus disembunyikan`));
   assert.equal(fakeDocument.getElementById('dashHubSectionTabBtn-ringkasan').classList.contains('active'), true);
   assert.equal(fakeDocument.getElementById('dashHubSectionTabBtn-fitur').classList.contains('active'), false);
@@ -169,20 +179,27 @@ test('DashboardHub.applySectionTab("insight"): hanya Life OS & EIE yang tampil',
   INSIGHT_IDS.forEach((id) => assert.equal(fakeDocument.getElementById(id).classList.contains('u-dnone'), false, `${id} harus TAMPIL`));
   RINGKASAN_IDS.forEach((id) => assert.equal(fakeDocument.getElementById(id).classList.contains('u-dnone'), true));
   FITUR_IDS.forEach((id) => assert.equal(fakeDocument.getElementById(id).classList.contains('u-dnone'), true));
+  WIDGET_IDS.forEach((id) => assert.equal(fakeDocument.getElementById(id).classList.contains('u-dnone'), true));
   assert.equal(fakeDocument.getElementById('dashHubSectionTabBtn-insight').classList.contains('active'), true);
 });
 
-test('DashboardHub.applySectionTab("fitur"): tetap menghormati dashHubMainTab (Semua Fitur vs Pinned Widget) yang sudah dipilih user sebelumnya', () => {
-  const { DashboardHub, fakeDocument } = loadHub(makeFakeLocalStorage({ dashHubMainTab: 'pinned' }));
+test('DashboardHub.applySectionTab("fitur"): hanya Favorit & Semua Fitur yang tampil, Pinned Widgets (tab Widget) disembunyikan', () => {
+  const { DashboardHub, fakeDocument } = loadHub(makeFakeLocalStorage());
   DashboardHub.applySectionTab('fitur');
-  // Grup "fitur" level teratas harus tampil...
   assert.equal(fakeDocument.getElementById('dashHubFavoritSection').classList.contains('u-dnone'), false);
-  assert.equal(fakeDocument.getElementById('dashHubMainTabsRow').classList.contains('u-dnone'), false);
-  // ...tapi di dalamnya, applyMainTab('pinned') tetap menang: grid Semua
-  // Fitur disembunyikan, Pinned Widget yang tampil (BUKAN ketimpa tampil
-  // keduanya oleh toggle generik applySectionTab).
-  assert.equal(fakeDocument.getElementById('dashHubMainGridCard').classList.contains('u-dnone'), true, 'Semua Fitur harus tetap disembunyikan krn dashHubMainTab=pinned');
-  assert.equal(fakeDocument.getElementById('dashboardHubPinnedWrap').classList.contains('u-dnone'), false, 'Pinned Widget harus tampil krn dashHubMainTab=pinned');
+  assert.equal(fakeDocument.getElementById('dashHubMainGridCard').classList.contains('u-dnone'), false, 'Semua Fitur harus tampil');
+  assert.equal(fakeDocument.getElementById('dashboardHubPinnedWrap').classList.contains('u-dnone'), true, 'Pinned Widget harus disembunyikan di tab Fitur');
+  assert.equal(fakeDocument.getElementById('dashHubSectionTabBtn-fitur').classList.contains('active'), true);
+  assert.equal(fakeDocument.getElementById('dashHubSectionTabBtn-widget').classList.contains('active'), false);
+});
+
+test('DashboardHub.applySectionTab("widget"): hanya Pinned Widgets yang tampil, Semua Fitur disembunyikan', () => {
+  const { DashboardHub, fakeDocument } = loadHub(makeFakeLocalStorage());
+  DashboardHub.applySectionTab('widget');
+  assert.equal(fakeDocument.getElementById('dashboardHubPinnedWrap').classList.contains('u-dnone'), false, 'Pinned Widget harus tampil');
+  assert.equal(fakeDocument.getElementById('dashHubMainGridCard').classList.contains('u-dnone'), true, 'Semua Fitur harus disembunyikan di tab Widget');
+  assert.equal(fakeDocument.getElementById('dashHubFavoritSection').classList.contains('u-dnone'), true, 'Favorit harus disembunyikan di tab Widget');
+  assert.equal(fakeDocument.getElementById('dashHubSectionTabBtn-widget').classList.contains('active'), true);
 });
 
 test('DashboardHub.setSectionTab("insight"): menyimpan pilihan ke localStorage (key dashHubSectionTab) & langsung menerapkannya', () => {

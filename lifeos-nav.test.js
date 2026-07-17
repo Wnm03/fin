@@ -19,7 +19,7 @@ function loadLifeOSNav(extraGlobals = {}) {
   const fakeDocument = docOverride || makeDoc();
   const calls = { showPage: [], dashHub: [], toast: [] };
   const ctx = loadSource(
-    ['dashboard-hub.js', 'lifeos/lifeos-nav.js'],
+    ['modules/dashboard-hub/dashboard-hub.js', 'lifeos/lifeos-nav.js'],
     {
       FEATURE_REGISTRY: undefined,
       showPage: (...args) => calls.showPage.push(args),

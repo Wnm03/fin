@@ -69,7 +69,7 @@ function makeCtx({
     localStorage: fakeLocalStorage,
     toast: (msg) => toastCalls.push(msg),
   };
-  const ctx = loadSource(['debug-console.js'], extraGlobals);
+  const ctx = loadSource(['modules/shared/debug-console.js'], extraGlobals);
   if (erudaPresent !== undefined) ctx.eruda = erudaPresent; // sinkronkan bare global
   return {
     ctx,

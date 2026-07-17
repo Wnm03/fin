@@ -19,7 +19,7 @@ function loadTxStock(D, domInitial = {}, opts = {}) {
   const fakeDocument = createFakeDocument(domInitial);
   const toasts = [];
   const calls = { renderStockList: 0 };
-  const ctx = loadSource(['tx-stok-sparepart.js'], {
+  const ctx = loadSource(['modules/finance/tx-stok-sparepart.js'], {
     D,
     document: fakeDocument,
     toast: (msg) => toasts.push(msg),

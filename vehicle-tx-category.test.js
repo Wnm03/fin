@@ -14,7 +14,7 @@ const { loadSource } = require('./helpers/loadSource');
 // kendaraan lain.
 function loadResolve(D) {
   let n = 0;
-  const ctx = loadSource(['transaksi.js'], {
+  const ctx = loadSource(['modules/finance/transaksi.js'], {
     D,
     uid: () => 'uid-' + (++n),
     slugify: (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'x',

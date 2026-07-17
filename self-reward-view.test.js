@@ -45,7 +45,7 @@ function settingsObj(patch) {
 }
 
 function ctx(extraGlobals = {}) {
-  return loadSource(['self-reward-view.js'], extraGlobals, [
+  return loadSource(['modules/self-reward/self-reward-view.js'], extraGlobals, [
     'SelfRewardView',
     'buildEvaluationView',
     'buildSettingsFormHtml',

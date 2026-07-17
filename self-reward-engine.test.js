@@ -21,7 +21,7 @@ function makeEngine({ D, FI, Budget, getBillStats } = {}) {
   if (FI !== undefined) extraGlobals.FI = FI;
   if (Budget !== undefined) extraGlobals.Budget = Budget;
   if (getBillStats !== undefined) extraGlobals.getBillStats = getBillStats;
-  const ctx = loadSource(['self-reward-engine.js'], extraGlobals, ['SelfReward', 'SelfRewardDefaults']);
+  const ctx = loadSource(['modules/self-reward/self-reward-engine.js'], extraGlobals, ['SelfReward', 'SelfRewardDefaults']);
   return { SelfReward: ctx.SelfReward, D: extraGlobals.D, saveCalls };
 }
 
@@ -352,7 +352,7 @@ test('evaluate() — reasons selalu berisi keenam kondisi (ok true/false), utk d
 // ---------- window exposure ----------
 
 test('window.SelfReward ke-expose (dipakai lewat data-action="SelfReward.method" pola modul lain)', () => {
-  const ctx = loadSource(['self-reward-engine.js'], { D: {}, save: () => {}, window: {} });
+  const ctx = loadSource(['modules/self-reward/self-reward-engine.js'], { D: {}, save: () => {}, window: {} });
   assert.ok(ctx.window.SelfReward, 'window.SelfReward harus di-expose');
   assert.equal(typeof ctx.window.SelfReward.evaluate, 'function');
 });

@@ -24,7 +24,7 @@ function makeCtx(domInitial = {}) {
     hashPinArgs: [],
   };
   const D = {};
-  const ctx = loadSource(['onboarding.js'], {
+  const ctx = loadSource(['modules/shared/onboarding.js'], {
     document: fakeDocument,
     fmtFull: (n) => `FULL(${n})`,
     fmtFullSigned: (n) => `SIGNED(${n})`,

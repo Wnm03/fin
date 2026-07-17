@@ -1,7 +1,7 @@
 'use strict';
 // tests/torsi-calc.test.js — pengujian fungsional otomatis untuk modul Torsi
 // (kalkulator torsi sparepart & mode checklist servis) di
-// features-budget-laporan-carnotes-pelanggan.js.
+// car-notes.js.
 //
 // Item ini sebelumnya tercatat "BELUM DIKERJAKAN" di CATATAN-CEK-CLAUDE.md:
 // "Logic Torsi Sparepart (katalog 60+ spesifikasi torsi Honda Vario 125,
@@ -17,7 +17,7 @@
 //
 // Torsi.calcExt/fmt/currentTargetNm SENGAJA tidak butuh D/curVehicleId sama
 // sekali (murni baca this.mode/this.selected/DOM) — jadi file
-// features-budget-laporan-carnotes-pelanggan.js (GROUP_A) bisa di-load
+// car-notes.js (GROUP_A) bisa di-load
 // SENDIRIAN tanpa perlu tukang-absensi.js (dulu features-tukang-kendaraan-storage.js) (GROUP_B, yang
 // baru menyediakan TORSI_DB/findTorsiDb/MY_WRENCH_SCALE — dipakai Torsi utk
 // computeCats()/renderWrenchNote() yang TIDAK dites di sini, lihat catatan
@@ -67,7 +67,7 @@ function setup(initialDom = {}) {
     MY_WRENCH_SCALE.push({ lbft: l, nm: Math.round(l * TORSI_NM_PER_LBFT * 100) / 100 });
   }
   const ctx = loadSource(
-    ['features-budget-laporan-carnotes-pelanggan.js'],
+    ['car-notes.js'],
     {
       D,
       curVehicleId: 'veh1',

@@ -20,7 +20,7 @@ function makeCtx(domInitial = {}, queryGroups = {}) {
     fiCalcAgeArgs: [],
   };
   const D = { profile: {} };
-  const ctx = loadSource(['profil-pengaturan.js'], {
+  const ctx = loadSource(['modules/shared/profil-pengaturan.js'], {
     document: fakeDocument,
     D,
     save: () => { calls.save++; },

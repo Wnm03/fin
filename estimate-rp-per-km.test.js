@@ -15,7 +15,7 @@ function makeD(bbmLogs) {
 // (getWeekRange, MY_WRENCH, dateToISO) -- di-stub seperlunya di sini sekadar biar file bisa
 // di-load, bukan bagian yg dites (pola sama seperti tests/servis-calc.test.js).
 function loadEstimateRpPerKm(D) {
-  const ctx = loadSource(['vehicle-core.js'], {
+  const ctx = loadSource(['modules/vehicle/vehicle-core.js'], {
     D,
     dateToISO: (d) => d.toISOString().slice(0, 10),
     getWeekRange: () => ({ start: new Date(), end: new Date() }),

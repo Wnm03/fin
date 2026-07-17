@@ -83,7 +83,7 @@ function makeCtx({ D = {}, domInitial = {}, queryGroups = {}, extraGlobals = {},
     toast: [], safeSetItem: [], openModal: [],
   };
   const baseD = { accounts: [], transactions: [], ...D };
-  const ctx = loadSource(['filter-laporan.js'], {
+  const ctx = loadSource(['modules/finance/filter-laporan.js'], {
     document: fakeDocument,
     Date: makeFakeDate(nowIso),
     D: baseD,
@@ -292,7 +292,7 @@ test('toggleKeuFilter — panel tidak ada di DOM -> tidak crash, tidak melakukan
     getElementById: (id) => (id === 'keuFilterPanel' ? null : createFakeElement()),
     querySelectorAll: () => [],
   };
-  const local = loadSource(['filter-laporan.js'], { document: noPanelDoc, D: { accounts: [] } });
+  const local = loadSource(['modules/finance/filter-laporan.js'], { document: noPanelDoc, D: { accounts: [] } });
   assert.doesNotThrow(() => local.toggleKeuFilter());
 });
 
@@ -532,7 +532,7 @@ test('updateKfBadge — ada 3 filter aktif (bukan "semua"/kosong) -> tampilkan h
 
 test('updateKfBadge — tombol tidak ada di DOM -> tidak crash', () => {
   const noBtnDoc = { getElementById: (id) => (id === 'kfToggleBtn' ? null : createFakeElement()), querySelectorAll: () => [] };
-  const local = loadSource(['filter-laporan.js'], { document: noBtnDoc, D: { accounts: [] } });
+  const local = loadSource(['modules/finance/filter-laporan.js'], { document: noBtnDoc, D: { accounts: [] } });
   assert.doesNotThrow(() => local.updateKfBadge());
 });
 
@@ -648,7 +648,7 @@ function makeFtxDocument(prefilled = {}) {
 function makeShowFtxCtx({ D = {}, nowIso = '2026-07-11T10:00:00.000Z', extraGlobals = {} } = {}) {
   const fakeDocument = makeFtxDocument();
   const calls = { openModal: [] };
-  const ctx = loadSource(['filter-laporan.js'], {
+  const ctx = loadSource(['modules/finance/filter-laporan.js'], {
     document: fakeDocument,
     Date: makeFakeDate(nowIso),
     D: { accounts: [], transactions: [], ...D },
@@ -721,7 +721,7 @@ test('showFilteredTx — scope "keuangan": pakai getKeuFilters() (DOM), hanya bu
     kfTipe: { value: 'semua' }, kfKat: { value: 'semua' }, kfSub: { value: 'semua' },
     kfAcc: { value: 'semua' }, kfMethod: { value: 'semua' },
   });
-  const ctx = loadSource(['filter-laporan.js'], {
+  const ctx = loadSource(['modules/finance/filter-laporan.js'], {
     document: fakeDocument,
     Date: makeFakeDate('2026-07-11T10:00:00.000Z'),
     D: {

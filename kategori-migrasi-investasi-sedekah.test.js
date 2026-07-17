@@ -15,7 +15,7 @@ const { loadSource } = require('./helpers/loadSource');
 // sendiri sebelum panggil runDataMigrations).
 
 function loadMigrations(extra = {}) {
-  const ctx = loadSource(['features-helpers-global-security.js'], {
+  const ctx = loadSource(['modules/shared/features-helpers-global-security.js'], {
     DEFAULT_COBEK_KATEGORI: [],
     DEFAULT_ACCOUNTS: [],
     DEFAULT_SPAREPARTS: [],
@@ -115,7 +115,7 @@ test('runDataMigrations — D.categories belum ada sama sekali (user benar2 baru
 });
 
 test('DEFAULT_CATS.expense (renovasi.js) — user BARU langsung dapat kategori Investasi & Sedekah/Donasi tanpa perlu migrasi', () => {
-  const ctx = loadSource(['renovasi.js'], {
+  const ctx = loadSource(['modules/home/renovasi.js'], {
     D: { renovProjects: [] },
     escapeHtml: (s) => String(s == null ? '' : s),
   }, ['DEFAULT_CATS']);

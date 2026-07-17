@@ -13,7 +13,7 @@ const { createFakeElement } = require('./helpers/fakeDom');
 // (FEATURE_REGISTRY asli) — dipakai FEATURE_REGISTRY tiruan kecil di sini
 // supaya test tidak ikut berubah kalau taksonomi Tahap 0 direvisi nanti.
 
-const SRC = fs.readFileSync(path.join(__dirname, '..', 'dashboard-hub.js'), 'utf8');
+const SRC = fs.readFileSync(path.join(__dirname, '..', 'modules/dashboard-hub/dashboard-hub.js'), 'utf8');
 
 // document tiruan: getElementById auto-vivify (butuh utk id goTo/group yang
 // muncul on-the-fly dari target registry), querySelectorAll dikontrol manual
@@ -70,7 +70,7 @@ function withConsoleWarnSpy(fn) {
 function makeHub(FEATURE_REGISTRY, opts = {}) {
   const fakeDocument = makeDashDocument(opts);
   const calls = { showPage: [], setKeuanganTab: [], setShopTab: [], setCnTab: [], setPajakTab: [], toggleStgGroup: [] };
-  const ctx = loadSource(['dashboard-hub.js'], {
+  const ctx = loadSource(['modules/dashboard-hub/dashboard-hub.js'], {
     document: fakeDocument,
     FEATURE_REGISTRY,
     escapeHtml: (s) => String(s === null || s === undefined ? '' : s),
@@ -149,7 +149,7 @@ test('render() — data-action/data-args kartu fitur sesuai pola dispatcher glob
 
 // BUGFIX (aksesibilitas): bintang favorit (★) di tiap kartu fitur cuma
 // berisi ikon, tanpa teks -- sebelumnya tidak punya aria-label sama sekali
-// sehingga findMissingAriaLabels() (features-sheets-pwa-selftest.js) & tes
+// sehingga findMissingAriaLabels() (self-test.js) & tes
 // navigasi halaman menandainya sbg pelanggaran ("screen reader tidak akan
 // bisa menjelaskan fungsi tombol ini"). Fix: setiap elemen
 // .dashhub-fav-star sekarang selalu punya aria-label yang menyebutkan nama
@@ -176,12 +176,12 @@ test('source dashboard-hub.js memakai PAGE_NAV_IDX, TIDAK memakai cat.navIdx utk
   assert.match(SRC, /navItems\[PAGE_NAV_IDX\[target\.page\]\]/, 'showPage harus di-resolve lewat PAGE_NAV_IDX[target.page]');
 });
 
-test('PAGE_NAV_IDX — nilainya sesuai urutan 7 nav-item nyata di DOM (dashboard/keuangan/shop/aset/carnotes/pajak/settings)', () => {
+test('PAGE_NAV_IDX — nilainya sesuai urutan 6 nav-item nyata di DOM (dashboard/keuangan/shop/aset/carnotes/pajak) — settings TIDAK lagi punya slot bottom-nav (pindah ke ikon header ⚙️)', () => {
   const { PAGE_NAV_IDX } = makeHub(registry());
   // PAGE_NAV_IDX datang dari sandbox vm (realm beda, prototype Object beda),
   // jadi disalin ke object polos di realm host dulu sebelum deepEqual.
   assert.deepEqual({ ...PAGE_NAV_IDX }, {
-    dashboard: 0, 'dashboard-hub': 0, keuangan: 1, shop: 2, aset: 3, carnotes: 4, pajak: 5, settings: 6,
+    dashboard: 0, 'dashboard-hub': 0, keuangan: 1, shop: 2, aset: 3, carnotes: 4, pajak: 5,
   });
 });
 

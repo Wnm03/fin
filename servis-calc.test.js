@@ -14,7 +14,7 @@ const { loadSource } = require('./helpers/loadSource');
 // (getWeekRange, MY_WRENCH, dateToISO) supaya kedua file bisa di-load tanpa
 // error, bukan bagian yg dites.
 function loadVehicleHelpers(D) {
-  return loadSource(['vehicle-core.js', 'sparepart-servis.js'], {
+  return loadSource(['modules/vehicle/vehicle-core.js', 'modules/vehicle/sparepart-servis.js'], {
     D,
     dateToISO: (d) => d.toISOString().slice(0, 10),
     getWeekRange: () => ({ start: new Date(), end: new Date() }),
@@ -160,12 +160,12 @@ test('estimateServiceDateISO — hitung tanggal = hari ini + ceil(sisaKm/kmPerDa
 });
 
 // ---------- Servis.applyStockUsage / revertStockUsage ----------
-// Method ini di const Servis (features-budget-laporan-carnotes-pelanggan.js),
+// Method ini di const Servis (car-notes.js),
 // TIDAK menyentuh DOM sama sekali -- cuma baca D.partsStock & (kalau stok
 // kurang) tanya konfirmasi lewat askConfirm(), jadi cukup di-stub tanpa fakeDom.
 
 function loadServis(D, askConfirm) {
-  const ctx = loadSource(['features-budget-laporan-carnotes-pelanggan.js'], {
+  const ctx = loadSource(['car-notes.js'], {
     D,
     askConfirm: askConfirm || (async () => true),
     escapeHtml: (s) => String(s === null || s === undefined ? '' : s),
@@ -251,7 +251,7 @@ function loadServisFull(D, opts = {}) {
   const toasts = [];
   const calls = { save: 0, closeModal: null, renderStockList: 0, renderCatList: 0 };
   let n = 0;
-  const ctx = loadSource(['features-budget-laporan-carnotes-pelanggan.js'], {
+  const ctx = loadSource(['car-notes.js'], {
     D,
     document: fakeDocument,
     curVehicleId: opts.curVehicleId !== undefined ? opts.curVehicleId : 'veh1',

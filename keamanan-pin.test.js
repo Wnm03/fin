@@ -32,7 +32,7 @@ function makeKeamananPin(opts = {}) {
   const setItemCalls = [];
   const fakeLocalStorage = opts.localStorage || makeFakeLocalStorage();
   const D = opts.D || { profile: {} };
-  const ctx = loadSource(['keamanan-pin.js'], {
+  const ctx = loadSource(['modules/shared/keamanan-pin.js'], {
     D,
     crypto: globalThis.crypto,
     TextEncoder,

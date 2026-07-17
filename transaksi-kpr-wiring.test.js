@@ -64,7 +64,7 @@ function makeTransaksi(D, opts = {}) {
   const fakeDocument = createFakeDocument(txFields(opts.domValues));
   const calls = { toast: [], save: 0, closeModal: [] };
   let uidCounter = opts.uidStart || 1000;
-  const ctx = loadSource(['transaksi.js'], {
+  const ctx = loadSource(['modules/finance/transaksi.js'], {
     D,
     document: fakeDocument,
     curTxType: opts.curTxType || 'expense',

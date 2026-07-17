@@ -143,7 +143,7 @@ test('_checkModuleVersionSync (auto-run) — beberapa modul tidak sinkron sekali
   const { warnCalls } = makeCtx({ MODULE_CALC_VERSION: '98', MODULE_RENDER_VERSION: '97' });
   assert.equal(warnCalls[0][1].includes('modules-calc.js (v98)'), true);
   assert.equal(warnCalls[0][1].includes('modules-render.js (v97)'), true);
-  assert.equal(warnCalls[0][1].includes('modals.js'), false);
+  assert.equal(warnCalls[0][1].includes('modules/shared/modals.js'), false);
 });
 
 test('_checkModuleVersionSync (auto-run) — versi tidak sinkron TAPI toast belum jadi function: tetap console.warn, tidak crash, tidak ada toast', () => {

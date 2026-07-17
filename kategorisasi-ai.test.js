@@ -49,7 +49,7 @@ function makeAutoKat(D, opts = {}) {
   // tersedia") tidak diam-diam ketimpa fallback recorder.
   const selectTxCat = 'selectTxCat' in opts ? opts.selectTxCat : (name) => calls.selectTxCat.push(name);
   const selectTxSubCat = 'selectTxSubCat' in opts ? opts.selectTxSubCat : (name) => calls.selectTxSubCat.push(name);
-  const ctx = loadSource(['kategorisasi-ai.js'], {
+  const ctx = loadSource(['modules/ai/kategorisasi-ai.js'], {
     D,
     document: fakeDocument,
     escapeHtml: (s) => String(s == null ? '' : s),

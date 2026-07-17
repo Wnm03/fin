@@ -16,7 +16,7 @@ function makeFavorit(initialFavoritKeys) {
   const D = { favoritKeys: initialFavoritKeys };
   const saveCalls = [];
   const windowStub = {};
-  const ctx = loadSource(['dashboard-hub-favorit.js'], {
+  const ctx = loadSource(['modules/dashboard-hub/dashboard-hub-favorit.js'], {
     D,
     save: (...args) => saveCalls.push(args),
     window: windowStub,
@@ -135,7 +135,7 @@ test('guard — hanya dashboard-hub-favorit.js yang boleh menulis ke D.favoritKe
   const offenders = [];
   for (const file of jsFiles) {
     const rel = path.relative(ROOT, file);
-    if (rel === 'dashboard-hub-favorit.js') continue; // satu-satunya yang boleh
+    if (rel === 'modules/dashboard-hub/dashboard-hub-favorit.js') continue; // satu-satunya yang boleh
     const src = fs.readFileSync(file, 'utf8');
     if (src.includes('D.favoritKeys')) offenders.push(rel);
   }

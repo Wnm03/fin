@@ -66,7 +66,7 @@ function makeKategori(D, opts = {}) {
   const fakeDocument = createFakeDocument(catFields(opts.domValues), opts.queryGroups);
   const calls = { save: 0, toast: [], render: [], modal: [] };
   const record = (name) => (...args) => calls.render.push(name);
-  const ctx = loadSource(['kategori.js'], {
+  const ctx = loadSource(['modules/finance/kategori.js'], {
     D,
     document: fakeDocument,
     escapeHtml: (s) => String(s == null ? '' : s),

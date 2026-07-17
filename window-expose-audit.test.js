@@ -130,7 +130,7 @@ test('Semua root data-action="Modul(.method)" di index.html & seluruh source ke-
     [],
     'Modul berikut dipakai lewat data-action tapi lupa di-expose ke window (tombolnya akan diam saat diklik):\n' +
     missing.join('\n') +
-    '\n\nFix: tambahkan ke blok Object.assign(window,{...}) di features-sheets-pwa-selftest.js, ' +
+    '\n\nFix: tambahkan ke blok Object.assign(window,{...}) di app-bootstrap.js, ' +
     'atau tambahkan `if(typeof window!==\'undefined\')window.Nama=Nama;` di akhir file modulnya.'
   );
 });

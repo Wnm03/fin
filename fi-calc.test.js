@@ -12,7 +12,7 @@ const { loadSource } = require('./helpers/loadSource');
 // di-stub manual per test biar method FI yang dites benar-benar terisolasi
 // dari file lain (bukan test integrasi lintas-file).
 function makeFI(D, stubs = {}) {
-  const ctx = loadSource(['modules-calc.js'], {
+  const ctx = loadSource(['modules/shared/modules-calc.js'], {
     D,
     totalSaldoAkun: stubs.totalSaldoAkun || (() => 0),
     totalPiutangValue: stubs.totalPiutangValue || (() => 0),
@@ -20,7 +20,7 @@ function makeFI(D, stubs = {}) {
     getBillStats: stubs.getBillStats || (() => ({ outstanding: 0 })),
     totalCicilanOutstanding: stubs.totalCicilanOutstanding || (() => 0),
     totalAssetValue: stubs.totalAssetValue || (() => 0),
-    // Default meniru perilaku ASLI Budget.matchesTx (features-budget-laporan-carnotes-pelanggan.js):
+    // Default meniru perilaku ASLI Budget.matchesTx (budget.js):
     // budget dgn catIds ['__total__'] (dipakai FI.annualExpense saat belum ada
     // kategori spesifik dipilih) HANYA match transaksi type 'expense'. Kalau
     // stub ini asal return true untuk semua transaksi, annualExpense/budget
@@ -229,7 +229,7 @@ function makeFIWithDom(D, stubs = {}, domValues = {}, queryGroups = {}) {
     fiScenarioBox: {}, fiScenPess: {}, fiScenMod: {}, fiScenOpt: {}, fiScenNote: {},
     ...domValues,
   }, queryGroups);
-  const ctx = loadSource(['modules-calc.js'], {
+  const ctx = loadSource(['modules/shared/modules-calc.js'], {
     document: fakeDocument,
     D,
     // fmt DIBUAT identity (bukan format rupiah asli) — sama alasannya dgn

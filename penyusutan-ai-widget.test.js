@@ -25,7 +25,7 @@ function makeAsset(overrides = {}) {
 }
 
 function loadPenyusutanAI(D, extraGlobals = {}) {
-  const ctx = loadSource(['aset.js', 'penyusutan-ai-widget.js'], {
+  const ctx = loadSource(['modules/asset/aset.js', 'modules/asset/penyusutan-ai-widget.js'], {
     D,
     document: extraGlobals.document || {},
     escapeHtml: (s) => String(s == null ? '' : s),

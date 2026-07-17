@@ -18,7 +18,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { loadSource } = require('./helpers/loadSource');
 
-const ctx = loadSource(['scan-ocr.js'], {
+const ctx = loadSource(['modules/shared/scan-ocr.js'], {
   normalizeOcrNumber(raw) {
     if (!raw) return NaN;
     return parseFloat(String(raw).replace(/\./g, '').replace(',', '.'));
@@ -73,6 +73,35 @@ test('RECEIPT_TOTAL_LABEL_RE — match varian umum lain: Total Tagihan, Total Pe
   assert.ok(ctx.RECEIPT_TOTAL_LABEL_RE.test('Total Pembayaran'));
   assert.ok(ctx.RECEIPT_TOTAL_LABEL_RE.test('Total Bayar'));
   assert.ok(ctx.RECEIPT_TOTAL_LABEL_RE.test('Total yang harus dibayar'));
+});
+
+test('RECEIPT_TOTAL_LABEL_RE + extractLabeledAmount — screenshot GoPay "Detail Transaksi" pakai label "Total Transaksi", harus ambil itu (154.280) BUKAN harga barang (200.000)', () => {
+  const text = ocrText([
+    'Detail Transaksi',
+    '-Rp154.280',
+    'Pembayaran',
+    '22 Jun 2026, 08:17 WIB',
+    'Rincian transaksi',
+    'ID Transaksi GCL-TKP3235866197',
+    '1 X Kloset',
+    'Rp200.000',
+    'Total Ongkos Kirim',
+    'Rp56.100',
+    'Total Diskon',
+    'Rp101.820',
+    'Total Transaksi',
+    'Rp154.280',
+    'Metode bayar',
+    'GoPay Later',
+    'Rp154.280',
+  ]);
+  const n = ctx.extractLabeledAmount(text, ctx.RECEIPT_TOTAL_LABEL_RE);
+  assert.equal(n, 154280, 'harus ambil Total Transaksi (154.280), bukan harga barang Kloset (200.000)');
+});
+
+test('RECEIPT_TOTAL_LABEL_RE — TIDAK match "Total Ongkos Kirim" tapi match "Total Transaksi"', () => {
+  assert.equal(ctx.RECEIPT_TOTAL_LABEL_RE.test('Total Ongkos Kirim'), false);
+  assert.ok(ctx.RECEIPT_TOTAL_LABEL_RE.test('Total Transaksi'));
 });
 
 test('extractLabeledAmount — fallback null kalau tidak ada baris "Total xxx" berlabel sama sekali (struk kasir polos), caller pakai Math.max nums', () => {

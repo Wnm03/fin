@@ -26,9 +26,9 @@ const { createFakeElement } = require('./helpers/fakeDom');
 // dijalankan bersama di SATU context vm kecil dgn DashboardHub/renderDashboard
 // tiruan (spy) supaya jumlah pemanggilan bisa dihitung persis.
 
-const MODULES_RENDER = fs.readFileSync(path.join(__dirname, '..', 'modules-render.js'), 'utf8');
-const MODAL_NAVIGASI = fs.readFileSync(path.join(__dirname, '..', 'modal-navigasi.js'), 'utf8');
-const MODULES_CALC = fs.readFileSync(path.join(__dirname, '..', 'modules-calc.js'), 'utf8');
+const MODULES_RENDER = fs.readFileSync(path.join(__dirname, '..', 'modules/shared/modules-render.js'), 'utf8');
+const MODAL_NAVIGASI = fs.readFileSync(path.join(__dirname, '..', 'modules/shared/modal-navigasi.js'), 'utf8');
+const MODULES_CALC = fs.readFileSync(path.join(__dirname, '..', 'modules/shared/modules-calc.js'), 'utf8');
 const HTML_FILES = ['index.html', 'app_production.html'].map((f) =>
   fs.readFileSync(path.join(__dirname, '..', f), 'utf8')
 );

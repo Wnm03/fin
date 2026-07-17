@@ -54,7 +54,7 @@ function makeView(favoritKeys, opts = {}) {
       if (idx !== -1) favoritStore.keys.splice(idx, 1); else favoritStore.keys.push(key);
     },
   };
-  const ctx = loadSource(['dashboard-hub-favorit-view.js'], {
+  const ctx = loadSource(['modules/dashboard-hub/dashboard-hub-favorit-view.js'], {
     document: fakeDocument,
     FEATURE_REGISTRY: registry(),
     DashboardHubFavorit,
@@ -136,7 +136,7 @@ test('render() — kartu Favorit membawa tombol \u2605 dgn data-action="Dashboar
 
 // BUGFIX (aksesibilitas): bintang favorit ini cuma berisi ikon ★, tanpa
 // teks -- sebelumnya tidak punya aria-label, sehingga findMissingAriaLabels()
-// (features-sheets-pwa-selftest.js) menandainya sbg pelanggaran ("screen
+// (self-test.js) menandainya sbg pelanggaran ("screen
 // reader tidak akan bisa menjelaskan fungsi tombol ini"). Fix: elemen
 // .dashhub-fav-star di section Favorit sekarang selalu punya aria-label
 // yang menyebutkan nama fiturnya.
@@ -159,7 +159,7 @@ test('render() — favoritKeys HANYA berisi key basi/kategori-tanpa-target -> ha
 
 test('render() tidak melempar exception kalau elemen section/list belum ada di DOM', () => {
   const fakeDocument = { getElementById: () => null };
-  const ctx = loadSource(['dashboard-hub-favorit-view.js'], {
+  const ctx = loadSource(['modules/dashboard-hub/dashboard-hub-favorit-view.js'], {
     document: fakeDocument,
     FEATURE_REGISTRY: registry(),
     DashboardHubFavorit: { getFavoritKeys: () => ['ai-chat'], toggleFavorit: () => {} },

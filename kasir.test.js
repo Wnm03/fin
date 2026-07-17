@@ -38,7 +38,7 @@ function makeCtx(D, opts = {}) {
   const fakeDocument = createFakeDocument({ ...fields, ...(opts.domValues || {}) }, opts.queryGroups);
   const calls = { save: 0, toast: [], openDetail: [], render: [] };
   const priceRekoChecks = opts.priceRekoChecks || {}; // { productId: {reko,diffPct} | undefined }
-  const ctx = loadSource(['kasir.js'], {
+  const ctx = loadSource(['modules/business/kasir.js'], {
     D,
     document: fakeDocument,
     toast: (msg) => calls.toast.push(msg),

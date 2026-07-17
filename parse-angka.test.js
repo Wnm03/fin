@@ -4,11 +4,11 @@ const assert = require('node:assert/strict');
 const { extractFunction } = require('./helpers/loadSource');
 
 // Diambil langsung dari source file asli (bukan disalin manual) via
-// extractFunction, karena features-sheets-pwa-selftest.js sendiri
+// extractFunction, karena pajak-aset-ui-wrappers.js sendiri
 // membutuhkan seluruh modul app lain ter-load dulu (baris "expose ke
-// window" di akhir file) — di luar cakupan test murni-logika ini.
-const parsePzNum = extractFunction('features-sheets-pwa-selftest.js', 'parsePzNum');
-const parseDecStr = extractFunction('features-sheets-pwa-selftest.js', 'parseDecStr');
+// window" di app-bootstrap.js) — di luar cakupan test murni-logika ini.
+const parsePzNum = extractFunction('pajak-aset-ui-wrappers.js', 'parsePzNum');
+const parseDecStr = extractFunction('pajak-aset-ui-wrappers.js', 'parseDecStr');
 
 test('parsePzNum — buang semua karakter non-digit (termasuk "Rp", titik ribuan)', () => {
   assert.equal(parsePzNum('Rp 1.234.567'), 1234567);

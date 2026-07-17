@@ -34,7 +34,7 @@ function makeCtx({ time = 0, toastImpl, provideToast = true } = {}) {
   if (provideToast) {
     extraGlobals.toast = toastImpl || ((msg, dur) => toastCalls.push({ msg, dur }));
   }
-  const ctx = loadSource(['error-handler.js'], extraGlobals);
+  const ctx = loadSource(['modules/shared/error-handler.js'], extraGlobals);
   return { ctx, toastCalls, consoleErrors, consoleWarns, listeners, setTime: (t) => { fakeDate.now = () => t; } };
 }
 

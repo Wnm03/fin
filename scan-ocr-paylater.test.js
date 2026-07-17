@@ -17,11 +17,11 @@ const assert = require('node:assert/strict');
 const { loadSource } = require('./helpers/loadSource');
 
 // scan-ocr.js memakai normalizeOcrNumber() (didefinisikan di
-// features-sheets-pwa-selftest.js, dimuat belakangan di urutan build.js —
+// pajak-aset-ui-wrappers.js, dimuat belakangan di urutan build.js —
 // aman di app asli krn dipanggil runtime, tapi di sandbox test ini perlu
 // di-stub biar guessCheckoutTotalTagihan() bisa jalan tanpa load file lain
 // yang tidak relevan ke fungsi yang dites di sini).
-const ctx = loadSource(['scan-ocr.js'], {
+const ctx = loadSource(['modules/shared/scan-ocr.js'], {
   normalizeOcrNumber(raw) {
     if (!raw) return NaN;
     return parseFloat(String(raw).replace(/\./g, '').replace(',', '.'));
@@ -65,6 +65,20 @@ test('detectPaylaterDueNextMonth — amount null kalau tidak ada pola "Total Tag
   const r = ctx.detectPaylaterDueNextMonth(text, false);
   assert.ok(r);
   assert.equal(r.amount, null, '"Total belanja" bukan salah satu pola yang dikenali guessCheckoutTotalTagihan, jadi amount dari detector ini null — caller yang isi fallback dari nominal hasil OCR lainnya');
+});
+
+test('detectPaylaterDueNextMonth — ambil nominal dari "Total Transaksi" (format GoPay), bukan harga barang', () => {
+  const text = ocrText([
+    '1 X Kloset Rp200.000',
+    'Total Ongkos Kirim Rp56.100',
+    'Total Diskon Rp101.820',
+    'Total Transaksi Rp154.280',
+    'Metode bayar',
+    'GoPay Later Rp154.280',
+  ]);
+  const r = ctx.detectPaylaterDueNextMonth(text, false);
+  assert.ok(r, 'harusnya kedeteksi sbg paylater');
+  assert.equal(r.amount, 154280, 'harus ambil Total Transaksi (154.280), bukan harga barang Kloset (200.000)');
 });
 
 test('detectPaylaterDueNextMonth — TIDAK kedeteksi kalau sudah ketangkep sbg cicilan (alreadyCicilan=true)', () => {

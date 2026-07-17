@@ -6,7 +6,7 @@ const { loadSource } = require('./helpers/loadSource');
 // format-tema.js juga berisi toast/setTheme/applyEffectiveTheme yang pakai
 // DOM (D, document) — di luar cakupan test murni-logika ini, cuma dimuat
 // supaya file bisa jalan (fungsi itu tidak dites di sini).
-const ctx = loadSource(['format-tema.js']);
+const ctx = loadSource(['modules/shared/format-tema.js']);
 
 test('fmt — di bawah 1.000 tampil apa adanya', () => {
   assert.equal(ctx.fmt(500), 'Rp 500');

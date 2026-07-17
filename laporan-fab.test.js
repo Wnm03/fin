@@ -125,26 +125,26 @@ test('styles.css: hanya 1 override posisi aditif untuk FAB Laporan (#keuanganTab
 });
 
 test('tx-list-cashflow.js (setKeuanganTab, business logic) tidak disentuh oleh Sprint 2 Tahap 4', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'tx-list-cashflow.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'modules/finance/tx-list-cashflow.js'), 'utf8');
   assert.doesNotMatch(src, /laporanFab|Sprint 2 Tahap 4/i);
 });
 
-test('features-aiwidget-reminder-gdrive-search.js (exportLaporanPDF, business logic) tidak disentuh oleh Sprint 2 Tahap 4', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'features-aiwidget-reminder-gdrive-search.js'), 'utf8');
+test('laporan-export.js (exportLaporanPDF, business logic) tidak disentuh oleh Sprint 2 Tahap 4', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'laporan-export.js'), 'utf8');
   assert.doesNotMatch(src, /laporanFab|Sprint 2 Tahap 4/i);
 });
 
 test('backup-restore.js (exportCSV, business logic) tidak disentuh oleh Sprint 2 Tahap 4', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'backup-restore.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'modules/shared/backup-restore.js'), 'utf8');
   assert.doesNotMatch(src, /laporanFab|Sprint 2 Tahap 4/i);
 });
 
 test('dashboard-hub-registry.js (FEATURE_REGISTRY) tidak disentuh oleh Sprint 2 Tahap 4', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'dashboard-hub-registry.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'modules/dashboard-hub/dashboard-hub-registry.js'), 'utf8');
   assert.doesNotMatch(src, /laporanFab|Sprint 2 Tahap 4/i);
 });
 
 test('dashboard-hub.js tidak disentuh oleh Sprint 2 Tahap 4', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'dashboard-hub.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'modules/dashboard-hub/dashboard-hub.js'), 'utf8');
   assert.doesNotMatch(src, /laporanFab|Sprint 2 Tahap 4/i);
 });

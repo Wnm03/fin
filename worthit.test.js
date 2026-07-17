@@ -36,7 +36,7 @@ function makeWorthIt(D, stubs = {}, docOverrides = {}) {
     ...docOverrides,
   });
   const toasts = [];
-  const ctx = loadSource(['worthit.js'], {
+  const ctx = loadSource(['modules/finance/worthit.js'], {
     D,
     document: fakeDocument,
     save: stubs.save || (() => {}),

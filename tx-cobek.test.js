@@ -10,7 +10,7 @@ const { loadSource } = require('./helpers/loadSource');
 // test di CLAUDE.md bagian ke-13) -- dipilih sbg saran RINGAN berikutnya
 // krn file-nya kecil (28 baris) & logic-nya murni, tanpa perlu mock DOM.
 function loadFn(D) {
-  const ctx = loadSource(['tx-cobek.js'], { D });
+  const ctx = loadSource(['modules/finance/tx-cobek.js'], { D });
   return ctx.isShopStockCatName;
 }
 

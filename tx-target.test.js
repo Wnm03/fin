@@ -26,7 +26,7 @@ function makeTarget(D, opts = {}) {
   const fakeDocument = createFakeDocument(targetFields(opts.domValues));
   const calls = { save: 0, toast: [], render: [] };
   const record = (name) => (...args) => calls.render.push([name, ...args]);
-  const ctx = loadSource(['tx-target.js'], {
+  const ctx = loadSource(['modules/finance/tx-target.js'], {
     D,
     document: fakeDocument,
     populateAccFilters: opts.populateAccFilters || record('populateAccFilters'),

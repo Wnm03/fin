@@ -17,7 +17,7 @@ function makeEngine({ D } = {}) {
     save: (...args) => saveCalls.push(args),
     uid: () => 'uid_' + (seq++),
   };
-  const ctx = loadSource(['investasi.js'], extraGlobals, ['Investment', 'INVESTMENT_TYPES']);
+  const ctx = loadSource(['modules/asset/investasi.js'], extraGlobals, ['Investment', 'INVESTMENT_TYPES']);
   return { Investment: ctx.Investment, TYPES: ctx.INVESTMENT_TYPES, D: extraGlobals.D, saveCalls };
 }
 

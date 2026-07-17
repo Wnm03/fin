@@ -26,7 +26,7 @@ function makeHeroDoc(initial = {}) {
 function loadHero(extraGlobals = {}) {
   const { document: docOverride, ...rest } = extraGlobals;
   const fakeDocument = docOverride || makeHeroDoc();
-  const ctx = loadSource(['dashboard-hub.js'], {
+  const ctx = loadSource(['modules/dashboard-hub/dashboard-hub.js'], {
     FEATURE_REGISTRY: undefined,
     ...rest,
     document: fakeDocument,
@@ -116,7 +116,7 @@ test('DashboardHub.render() — tetap memanggil DashboardHubHero.render() tanpa 
   const registry = [
     { key: 'keuangan', label: 'Keuangan', icon: '💰', desc: 'd', navIdx: 1, features: [{ key: 'k1', label: 'F1', desc: 'd', target: { page: 'keuangan' } }] },
   ];
-  const ctx = loadSource(['dashboard-hub.js'], {
+  const ctx = loadSource(['modules/dashboard-hub/dashboard-hub.js'], {
     document: fakeDocument,
     FEATURE_REGISTRY: registry,
     escapeHtml: (s) => String(s ?? ''),

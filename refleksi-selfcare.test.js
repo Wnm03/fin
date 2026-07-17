@@ -17,7 +17,7 @@ const { createFakeDocument } = require('./helpers/fakeDom');
 function makeRefleksi(D, stubs = {}, docOverrides = {}) {
   const fakeDocument = createFakeDocument(docOverrides);
   const toasts = [];
-  const ctx = loadSource(['helper-teks.js', 'refleksi-selfcare.js'], {
+  const ctx = loadSource(['modules/shared/helper-teks.js', 'modules/home/refleksi-selfcare.js'], {
     D,
     document: fakeDocument,
     save: stubs.save || (() => {}),

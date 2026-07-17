@@ -27,7 +27,7 @@ const HTML_FILES = ['index.html', 'app_production.html'];
 function getModalHtmlLength() {
   // Load modals.js asli via vm (bukan re-implement/copy-paste), MODAL_HTML
   // dideklarasikan `const` jadi perlu diminta eksplisit lewat `expose`.
-  const ctx = loadSource(['modals.js'], {}, ['MODAL_HTML', 'MODAL_VERSION']);
+  const ctx = loadSource(['modules/shared/modals.js'], {}, ['MODAL_HTML', 'MODAL_VERSION']);
   assert.ok(Array.isArray(ctx.MODAL_HTML), 'MODAL_HTML harus berupa array di modals.js');
   return ctx.MODAL_HTML.length;
 }

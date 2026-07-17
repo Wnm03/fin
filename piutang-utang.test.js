@@ -37,7 +37,7 @@ function makePU(D, opts = {}) {
   const fakeDocument = createFakeDocument(baseFields(opts.domValues), opts.queryGroups);
   const calls = { save: 0, toast: [], render: [], closeModal: [], openModal: [] };
   const record = (name) => (...args) => calls.render.push([name, ...args]);
-  const ctx = loadSource(['piutang-utang.js'], {
+  const ctx = loadSource(['modules/finance/piutang-utang.js'], {
     D,
     document: fakeDocument,
     toast: (msg) => calls.toast.push(msg),

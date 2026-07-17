@@ -22,7 +22,7 @@ function makeIntegration() {
   const navItems = Array.from({ length: 7 }, () => ({}));
   const calls = { showPage: [] };
   const ctx = loadSource(
-    ['dashboard-hub-registry.js', 'dashboard-hub.js', 'dashboard-hub-search.js'],
+    ['modules/dashboard-hub/dashboard-hub-registry.js', 'modules/dashboard-hub/dashboard-hub.js', 'modules/dashboard-hub/dashboard-hub-search.js'],
     {
       document: fakeDocument,
       escapeHtml: (s) => String(s === null || s === undefined ? '' : s),
@@ -170,7 +170,7 @@ test('Langkah 4 — query yang cocok ke LABEL kategori tanpa target ("Personal")
 });
 
 test('guard — Global Search (openGlobalSearch) tidak tersentuh: id/elemen berbeda dari Feature Search, fungsi tetap ada persis 1x', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'features-aiwidget-reminder-gdrive-search.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'global-search.js'), 'utf8');
   const defs = src.match(/function openGlobalSearch\(\)/g) || [];
   assert.equal(defs.length, 1, 'openGlobalSearch harus tetap terdefinisi persis 1x (tidak dihapus/diduplikasi)');
   // Global Search pakai id globalSearchInput/globalSearchResults, BUKAN
@@ -182,14 +182,14 @@ test('guard — Global Search (openGlobalSearch) tidak tersentuh: id/elemen berb
 });
 
 test('guard — dashboard-hub-search.js sama sekali tidak mereferensikan globalSearchInput/globalSearchResults/openGlobalSearch', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'dashboard-hub-search.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'modules/dashboard-hub/dashboard-hub-search.js'), 'utf8');
   assert.doesNotMatch(src, /globalSearchInput|globalSearchResults|openGlobalSearch\(/);
 });
 
 // ---------- guard: tidak mengubah MODAL_HTML ----------
 
 test('guard — MODAL_HTML[] di modals.js & document.write(MODAL_HTML[i]) di kedua HTML tetap sinkron pada baseline (71) — Feature Search tidak menambah modal baru', () => {
-  const modalCtx = loadSource(['modals.js'], {}, ['MODAL_HTML']);
+  const modalCtx = loadSource(['modules/shared/modals.js'], {}, ['MODAL_HTML']);
   assert.ok(Array.isArray(modalCtx.MODAL_HTML));
   const modalCount = modalCtx.MODAL_HTML.length;
   assert.equal(modalCount, 71, 'MODAL_HTML berubah jumlah — seharusnya Tahap 2 Feature Search tidak menambah modal baru sama sekali');
@@ -202,7 +202,7 @@ test('guard — MODAL_HTML[] di modals.js & document.write(MODAL_HTML[i]) di ked
 });
 
 test('guard — markup Feature Search (dashHubSearchInput/dashHubSearchResults) TIDAK berada di dalam MODAL_HTML manapun, murni container biasa di halaman', () => {
-  const modalCtx = loadSource(['modals.js'], {}, ['MODAL_HTML']);
+  const modalCtx = loadSource(['modules/shared/modals.js'], {}, ['MODAL_HTML']);
   const joined = modalCtx.MODAL_HTML.join('\n');
   assert.doesNotMatch(joined, /dashHubSearchInput|dashHubSearchResults/);
 });

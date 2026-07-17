@@ -99,11 +99,11 @@ test('styles.css: CSS .keu-fab* ditambahkan secara aditif, 100% pakai token desi
 });
 
 test('dashboard-hub-registry.js (FEATURE_REGISTRY) tidak disentuh oleh Sprint 2 Tahap 1', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'dashboard-hub-registry.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'modules/dashboard-hub/dashboard-hub-registry.js'), 'utf8');
   assert.doesNotMatch(src, /keuFab|keu-fab|Finance 2\.0/i);
 });
 
 test('transaksi.js (business logic openTxModal) tidak disentuh oleh Sprint 2 Tahap 1', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'transaksi.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'modules/finance/transaksi.js'), 'utf8');
   assert.doesNotMatch(src, /keuFab|keu-fab|Finance 2\.0/i);
 });

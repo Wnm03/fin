@@ -89,7 +89,7 @@ function makeIndexedDB(dbFactory, opts = {}) {
 }
 
 function loadIdbStore(indexedDBMock) {
-  return loadSource(['aset.js'], {
+  return loadSource(['modules/asset/aset.js'], {
     D: {},
     document: { getElementById: () => null },
     window: indexedDBMock ? { indexedDB: indexedDBMock } : {},

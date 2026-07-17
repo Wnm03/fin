@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 const { loadSource } = require('./helpers/loadSource');
+const { getAllSourceFiles } = require('../scripts/collect-app-globals');
 
 const ROOT = path.join(__dirname, '..');
 const INDEX_HTML = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
@@ -37,7 +38,7 @@ const SUBTAB_PANE_PREFIX = {
 };
 
 function ctx() {
-  return loadSource(['dashboard-hub-registry.js'], {}, ['FEATURE_REGISTRY']);
+  return loadSource(['modules/dashboard-hub/dashboard-hub-registry.js'], {}, ['FEATURE_REGISTRY']);
 }
 
 // collectNavEntries — satu-satunya tempat yang tahu cara menyisir
@@ -101,10 +102,15 @@ function extractPageBlock(html, pageId) {
 }
 
 function allSourceJsText() {
-  // Gabungan seluruh file .js di root project (bukan node_modules/tests/
-  // archive/backups) — dipakai buat verifikasi target.action beneran ada.
-  return fs.readdirSync(ROOT)
-    .filter((f) => f.endsWith('.js') && !f.endsWith('.min.js'))
+  // Gabungan seluruh file .js sumber app (GROUP_A+GROUP_B di build.js, lewat
+  // getAllSourceFiles() yang sudah dipakai eslint.config.js/generate-file-map.js
+  // — SATU sumber kebenaran, otomatis ikut path modules/* subfolder & tidak
+  // basi kalau file dipindah/ditambah) — dipakai buat verifikasi target.action
+  // beneran ada. Sebelumnya pakai fs.readdirSync(ROOT) non-recursive (cuma file
+  // level-root), jadi tidak ketemu function yang dideklarasikan di dalam
+  // modules/vehicle|asset|shop|dashboard-hub|self-reward/*.js atau lifeos/**,
+  // economic-intelligence/** — diperbaiki di sini.
+  return getAllSourceFiles()
     .map((f) => fs.readFileSync(path.join(ROOT, f), 'utf8'))
     .join('\n');
 }
@@ -288,7 +294,7 @@ test('FEATURE_REGISTRY — target.group (Settings) mengarah ke stgGroup yang nya
 
 test('FEATURE_REGISTRY — target.dashKey cocok dgn key nyata di DASH_CARD_DEFS', () => {
   const { FEATURE_REGISTRY } = ctx();
-  const modulesRenderSrc = fs.readFileSync(path.join(ROOT, 'modules-render.js'), 'utf8');
+  const modulesRenderSrc = fs.readFileSync(path.join(ROOT, 'modules/shared/modules-render.js'), 'utf8');
   const defsMatch = modulesRenderSrc.match(/const DASH_CARD_DEFS\s*=\s*\[([\s\S]*?)\];/);
   assert.ok(defsMatch, 'DASH_CARD_DEFS tidak ditemukan di modules-render.js (source berubah?)');
   const dashKeys = new Set();

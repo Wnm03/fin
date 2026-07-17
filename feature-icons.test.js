@@ -7,7 +7,7 @@ const assert = require('node:assert/strict');
 const { loadSource } = require('./helpers/loadSource');
 
 function makeFeatureIcons() {
-  return loadSource(['feature-icons.js'], {}, ['FeatureIcons']);
+  return loadSource(['modules/shared/feature-icons.js'], {}, ['FeatureIcons']);
 }
 
 test('FeatureIcons.svg — emoji yang ada di _MAP menghasilkan markup <svg> dengan inner path benar', () => {

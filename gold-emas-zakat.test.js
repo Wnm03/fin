@@ -21,7 +21,7 @@ const { createFakeDocument } = require('./helpers/fakeDom');
 //    manual), sehingga selftest gagal terus kalau ada utang di Buku Utang/cicilan
 //    outstanding/piutang.
 
-const SELFTEST_FILE = 'features-sheets-pwa-selftest.js';
+const SELFTEST_FILE = 'app-bootstrap.js';
 
 test('Object.assign(window,{...}) di features-sheets-pwa-selftest.js harus menyertakan GoldImport & GoldZakat', () => {
   const src = fs.readFileSync(path.join(__dirname, '..', SELFTEST_FILE), 'utf8');
@@ -93,7 +93,7 @@ function makeZakatCtx(D, domValues = {}) {
     zpStatus: { textContent: '', style: {} },
     ...domValues,
   });
-  const ctx = loadSource(['pajak-pbb-zakat.js'], {
+  const ctx = loadSource(['modules/finance/pajak-pbb-zakat.js'], {
     D,
     document: fakeDocument,
     fmtFull: (n) => 'Rp ' + Number(Math.abs(n || 0)).toLocaleString('id-ID'),
@@ -173,7 +173,7 @@ function makeGoldCtx(D, opts = {}) {
     goldImportXLSXFile: { click: () => { calls.filePickerClicked++; } },
   });
   const XLSX = ('XLSX' in opts) ? opts.XLSX : makeFakeXLSX(opts);
-  const ctx = loadSource(['aset-emas-impor.js'], {
+  const ctx = loadSource(['modules/asset/aset-emas-impor.js'], {
     D,
     document: fakeDocument,
     Aset: { renderList: () => { calls.renderList++; } },

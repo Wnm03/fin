@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { loadSource } = require('./helpers/loadSource');
 
-const ctx = loadSource(['helper-teks.js'], {}, ['MONTHS', 'MONTHS_FULL']);
+const ctx = loadSource(['modules/shared/helper-teks.js'], {}, ['MONTHS', 'MONTHS_FULL']);
 
 test('escapeHtml — meng-escape 5 karakter berbahaya', () => {
   assert.equal(

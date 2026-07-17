@@ -99,16 +99,16 @@ test('styles.css: hanya 1 override posisi aditif untuk FAB Shop (#page-shop .keu
 });
 
 test('cobek-io.js (openOrderModal, business logic) tidak disentuh oleh Sprint 2 Tahap 2', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'cobek-io.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'modules/shop/cobek-io.js'), 'utf8');
   assert.doesNotMatch(src, /shopFab|Sprint 2 Tahap 2/i);
 });
 
 test('cobek-tx-cart.js (openProductModal, business logic) tidak disentuh oleh Sprint 2 Tahap 2', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'cobek-tx-cart.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'modules/shop/cobek-tx-cart.js'), 'utf8');
   assert.doesNotMatch(src, /shopFab|Sprint 2 Tahap 2/i);
 });
 
 test('dashboard-hub-registry.js (FEATURE_REGISTRY) tidak disentuh oleh Sprint 2 Tahap 2', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'dashboard-hub-registry.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'modules/dashboard-hub/dashboard-hub-registry.js'), 'utf8');
   assert.doesNotMatch(src, /shopFab|Sprint 2 Tahap 2/i);
 });

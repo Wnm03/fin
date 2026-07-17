@@ -39,7 +39,7 @@ function baseD(overrides = {}) {
 }
 
 function load(D) {
-  return loadSource(['feature-insights.js'], {
+  return loadSource(['modules/ai/feature-insights.js'], {
     D,
     escapeHtml,
     fmtFull,

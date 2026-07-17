@@ -22,7 +22,7 @@ function makeEduFund(D, stubs = {}, docOverrides = {}) {
     ...docOverrides,
   });
   const toasts = [];
-  const ctx = loadSource(['edukasi-dana.js'], {
+  const ctx = loadSource(['modules/finance/edukasi-dana.js'], {
     D,
     document: fakeDocument,
     save: stubs.save || (() => {}),

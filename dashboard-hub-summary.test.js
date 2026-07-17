@@ -21,7 +21,7 @@ function makeSummaryDoc(initial = {}) {
 function loadSummary(extraGlobals = {}) {
   const { document: docOverride, ...rest } = extraGlobals;
   const fakeDocument = docOverride || makeSummaryDoc();
-  const ctx = loadSource(['dashboard-hub.js'], {
+  const ctx = loadSource(['modules/dashboard-hub/dashboard-hub.js'], {
     FEATURE_REGISTRY: undefined,
     escapeHtml: (s) => String(s ?? ''),
     ...rest,
@@ -99,7 +99,7 @@ test('DashboardHubSummary tidak mengubah fungsi Hero (_dashHubHeroMonthTx tetap 
   // Hero secara langsung (constraint: Hero Card tidak diubah) — dites lewat
   // memastikan kedua fungsi punya nama & instance berbeda di sandbox yang
   // sama, dan modifikasi salah satu tidak memengaruhi yang lain.
-  const ctx = loadSource(['dashboard-hub.js'], {
+  const ctx = loadSource(['modules/dashboard-hub/dashboard-hub.js'], {
     FEATURE_REGISTRY: undefined,
     document: makeSummaryDoc(),
   }, ['DashboardHubHero', 'DashboardHubSummary']);
@@ -128,7 +128,7 @@ test('DashboardHub.render() — tetap memanggil DashboardHubSummary.render() tan
   const registry = [
     { key: 'keuangan', label: 'Keuangan', icon: '💰', desc: 'd', navIdx: 1, features: [{ key: 'k1', label: 'F1', desc: 'd', target: { page: 'keuangan' } }] },
   ];
-  const ctx = loadSource(['dashboard-hub.js'], {
+  const ctx = loadSource(['modules/dashboard-hub/dashboard-hub.js'], {
     document: fakeDocument,
     FEATURE_REGISTRY: registry,
     escapeHtml: (s) => String(s ?? ''),

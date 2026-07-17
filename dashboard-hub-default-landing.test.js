@@ -16,8 +16,8 @@ const { createFakeElement } = require('./helpers/fakeDom');
 // 'dashboard-hub' supaya konsisten dgn landing page baru (Langkah 3).
 
 const HTML_FILES = ['index.html', 'app_production.html'];
-const MODULES_RENDER = fs.readFileSync(path.join(__dirname, '..', 'modules-render.js'), 'utf8');
-const MODAL_NAVIGASI = fs.readFileSync(path.join(__dirname, '..', 'modal-navigasi.js'), 'utf8');
+const MODULES_RENDER = fs.readFileSync(path.join(__dirname, '..', 'modules/shared/modules-render.js'), 'utf8');
+const MODAL_NAVIGASI = fs.readFileSync(path.join(__dirname, '..', 'modules/shared/modal-navigasi.js'), 'utf8');
 
 function readHtml(file) {
   return fs.readFileSync(path.join(__dirname, '..', file), 'utf8');

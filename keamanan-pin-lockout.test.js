@@ -44,7 +44,7 @@ function makeCtx(opts = {}) {
   });
   const calls = { showMain: 0, toast: [], setTimeoutFns: [] };
   const D = opts.D || { profile: {} };
-  const ctx = loadSource(['keamanan-pin.js'], {
+  const ctx = loadSource(['modules/shared/keamanan-pin.js'], {
     D,
     document: fakeDocument,
     localStorage: fakeLocalStorage,

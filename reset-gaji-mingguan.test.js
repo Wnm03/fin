@@ -46,7 +46,7 @@ function makeCtx({ nowIso = '2026-07-11T10:00:00.000Z', domInitial = {}, D = {} 
     lastResetPromptDate: null,
     ...D,
   };
-  const ctx = loadSource(['reset-gaji-mingguan.js'], {
+  const ctx = loadSource(['modules/business/reset-gaji-mingguan.js'], {
     document: fakeDocument,
     Date: makeFakeDate(nowIso),
     D: baseD,

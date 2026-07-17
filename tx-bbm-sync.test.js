@@ -41,7 +41,7 @@ function loadSaveTx(D, opts = {}) {
   const fakeDocument = createFakeDocument(txFormFields(opts.domValues));
   const toasts = [];
   const calls = { save: 0, closeModal: null };
-  const ctx = loadSource(['tx-bbm.js', 'tx-stok-sparepart.js', 'transaksi.js'], {
+  const ctx = loadSource(['modules/finance/tx-bbm.js', 'modules/finance/tx-stok-sparepart.js', 'modules/finance/transaksi.js'], {
     D,
     document: fakeDocument,
     curTxType: opts.curTxType || 'expense',

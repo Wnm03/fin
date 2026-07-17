@@ -24,7 +24,7 @@ function makeCalcPopup(docOverrides = {}) {
     calcExprEl: {}, calcValEl: {}, ...docOverrides,
   });
   const modalCalls = { open: [], close: [] };
-  const ctx = loadSource(['kalkulator-input.js'], {
+  const ctx = loadSource(['modules/shared/kalkulator-input.js'], {
     document: fakeDocument,
     Event: FakeEvent,
     fmt: (n) => 'Rp ' + n,

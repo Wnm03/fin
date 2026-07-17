@@ -22,7 +22,7 @@ function fakeParsePzNum(v) {
 // breakdown pajak jadi salah format.
 // `const PPh21={...}` di top-level butuh `expose: ['PPh21']` karena vm TIDAK
 // menempelkan binding const ke context secara otomatis (beda dari function).
-const ctx = loadSource(['format-tema.js', 'pajak-pbb-zakat.js'], {}, ['PPh21']);
+const ctx = loadSource(['modules/shared/format-tema.js', 'modules/finance/pajak-pbb-zakat.js'], {}, ['PPh21']);
 
 test('PPh21.getPTKP — TK0 (lajang tanpa tanggungan) = 54 juta', () => {
   assert.equal(ctx.PPh21.getPTKP('TK0'), 54000000);
@@ -98,7 +98,7 @@ function setupPbb(values) {
   // menimpa properti context (termasuk stub fmtFull identity yang kita
   // kasih di extraGlobals). Supaya assertion di bawah bisa cek ANGKA
   // PERSIS (bukan string "Rp ..."), pajak-pbb-zakat.js dimuat SENDIRIAN.
-  const pbbCtx = loadSource(['pajak-pbb-zakat.js'], {
+  const pbbCtx = loadSource(['modules/finance/pajak-pbb-zakat.js'], {
     document: fakeDocument,
     D: { pajakZakat: { pbb: {} } },
     fmtFull: (n) => String(Math.round(n)),
@@ -150,7 +150,7 @@ function setupZakatPenghasilan(values, D) {
     zpIncomeBulan: {}, zpNisabBulan: {}, zpStatus: {}, zpJumlah: {},
     ...values,
   });
-  const ctx = loadSource(['pajak-pbb-zakat.js'], {
+  const ctx = loadSource(['modules/finance/pajak-pbb-zakat.js'], {
     document: fakeDocument,
     D,
     fmtFull: (n) => String(Math.round(n)),
@@ -220,7 +220,7 @@ function setupZakatMaal(values, D, stubs = {}) {
     zmTotalHarta: {}, zmNisab: {}, zmStatus: {}, zmJumlah: {}, zmHaulInfo: {},
     ...values,
   });
-  const ctx = loadSource(['pajak-pbb-zakat.js'], {
+  const ctx = loadSource(['modules/finance/pajak-pbb-zakat.js'], {
     document: fakeDocument,
     D,
     fmtFull: (n) => String(Math.round(n)),
@@ -327,7 +327,7 @@ function setupZakatFitrah(values, D) {
     zfJiwa: { value: '1' }, zfTotal: {},
     ...values,
   });
-  const ctx = loadSource(['pajak-pbb-zakat.js'], {
+  const ctx = loadSource(['modules/finance/pajak-pbb-zakat.js'], {
     document: fakeDocument,
     D,
     fmtFull: (n) => String(Math.round(n)),
