@@ -11,7 +11,7 @@ const LifeOSGoals = {
     const goals = goalAdapterList(D);
     el.innerHTML = goals.length
       ? goals.map((g) => `
-        <div class="lifeos-goal-card">
+        <div class="lifeos-goal-card u-pointer" data-action="lifeOSNavigateToSource" data-args='${escapeHtml(JSON.stringify([g.sourceKind, g.sourceId]))}' title="Buka referensi data">
           <div class="lifeos-goal-emoji">${g.emoji || '🎯'}</div>
           <div class="lifeos-goal-name">${escapeHtml(g.name || '')}</div>
           ${g.progressPct != null ? `<div class="lifeos-goal-progress">${g.progressPct}%</div>` : ''}
