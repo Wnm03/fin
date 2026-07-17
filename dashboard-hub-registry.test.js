@@ -12,12 +12,29 @@ const APP_PRODUCTION_HTML = fs.readFileSync(path.join(ROOT, 'app_production.html
 // Tab yang TERVERIFIKASI ada per page (lihat komentar "TAB REFERENSI" di
 // dashboard-hub-registry.js) — dipakai buat cross-check target.tab.
 const KNOWN_TABS = {
-  keuangan: ['kelola', 'laporan'],
+  keuangan: ['kelola', 'tagihan', 'budget', 'utangpiutang', 'asetproyek', 'laporan'],
   shop: ['kasir', 'jual', 'etalase', 'produsen', 'riwayat', 'pelanggan'],
   carnotes: ['bbm', 'servis'],
   pajak: ['zakat', 'pajak'],
+  aset: ['ringkasan', 'buku', 'analisis'],
 };
 const KNOWN_PAGES = ['dashboard', 'dashboard-hub', 'keuangan', 'shop', 'carnotes', 'pajak', 'aset', 'ai', 'settings'];
+
+// Sub-tab bersarang DI DALAM tab tertentu (2026-07-17, lihat setLaporanTab di
+// tx-list-cashflow.js) — key = "page.tab", value = daftar subtab valid,
+// dipakai buat cross-check target.subtab (mirip pola KNOWN_TABS di atas).
+const KNOWN_SUBTABS = {
+  'keuangan.laporan': ['ringkasan', 'aruskas', 'transaksi'],
+  'keuangan.kelola': ['ringkasan', 'transaksi', 'pengaturan'],
+  'pajak.pajak': ['pph21', 'pbb'],
+};
+// Prefix pane id per parent "page.tab" — dipakai buat cross-check
+// target.subtab ke id nyata di DOM (laporanTab-*/kelolaTab-*, dst).
+const SUBTAB_PANE_PREFIX = {
+  'keuangan.laporan': 'laporanTab-',
+  'keuangan.kelola': 'kelolaTab-',
+  'pajak.pajak': 'pjkTab-',
+};
 
 function ctx() {
   return loadSource(['dashboard-hub-registry.js'], {}, ['FEATURE_REGISTRY']);
@@ -198,6 +215,27 @@ test('FEATURE_REGISTRY — target.tab valid sesuai TAB REFERENSI per page — ca
     assert.ok(
       allowed.includes(e.target.tab),
       `${e.key} (${e.scope}): tab "${e.target.tab}" bukan tab valid utk page "${e.target.page}" (valid: ${allowed.join(',')})`
+    );
+  }
+});
+
+test('FEATURE_REGISTRY — target.subtab valid sesuai KNOWN_SUBTABS & pane id-nya nyata ada di DOM (split tab Laporan, 2026-07-17) — cat.target & f.target setara (ADR-001 §5)', () => {
+  const { FEATURE_REGISTRY } = ctx();
+  for (const e of collectNavEntries(FEATURE_REGISTRY)) {
+    if (!e.target || !e.target.subtab) continue;
+    const parentKey = `${e.target.page}.${e.target.tab}`;
+    const allowed = KNOWN_SUBTABS[parentKey];
+    assert.ok(allowed, `${e.key} (${e.scope}): "${parentKey}" tidak punya sub-tab yang dikenal (cek KNOWN_SUBTABS)`);
+    assert.ok(
+      allowed.includes(e.target.subtab),
+      `${e.key} (${e.scope}): subtab "${e.target.subtab}" bukan subtab valid utk "${parentKey}" (valid: ${allowed.join(',')})`
+    );
+    const panePrefix = SUBTAB_PANE_PREFIX[parentKey];
+    assert.ok(panePrefix, `${e.key} (${e.scope}): "${parentKey}" tidak punya pane prefix yang dikenal (cek SUBTAB_PANE_PREFIX)`);
+    const paneId = `${panePrefix}${e.target.subtab}`;
+    assert.ok(
+      idExistsInHtml(paneId),
+      `${e.key} (${e.scope}): id="${paneId}" tidak ditemukan di index.html/app_production.html`
     );
   }
 });

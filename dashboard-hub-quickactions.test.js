@@ -32,19 +32,20 @@ for (const file of HTML_FILES) {
     assert.ok(qaIdx < searchIdx, 'Quick Actions harus SEBELUM search bar');
   });
 
-  test(`${file}: berisi tepat 5 tombol .dashhub-qa-btn`, () => {
+  test(`${file}: berisi tepat 4 tombol .dashhub-qa-btn`, () => {
     const html = readHtml(file);
     const btnMatches = [...html.matchAll(/class="dashhub-qa-btn"/g)];
-    assert.equal(btnMatches.length, 5);
+    assert.equal(btnMatches.length, 4);
   });
 
   test(`${file}: tiap tombol Quick Action memanggil fungsi yang SUDAH ADA (bukan business logic baru)`, () => {
     const html = readHtml(file);
-    // openTxModal, openCatatan, openBackupModal, showPage sudah ada sejak
-    // sebelum Tahap 3 (transaksi.js / backup-restore.js / modal-navigasi.js);
+    // openTxModal, openBackupModal, showPage sudah ada sejak sebelum
+    // Tahap 3 (transaksi.js / backup-restore.js / modal-navigasi.js);
     // fokus ke #dashHubSearchInput murni DOM focus, bukan logic baru.
+    // (Catatan: tombol "Catatan" (openCatatan('anak')) dihapus bareng fitur
+    // Keluarga & Anak di Pengaturan.)
     assert.match(html, /data-onclick="openTxModal\('expense'\)"/);
-    assert.match(html, /data-onclick="openCatatan\('anak'\)"/);
     assert.match(html, /data-onclick="openBackupModal\(\)"/);
     assert.match(html, /data-onclick="document\.getElementById\('dashHubSearchInput'\)\.focus\(\)"/);
     assert.match(html, /data-onclick="showPage\('ai'\)"/);
