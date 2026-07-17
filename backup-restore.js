@@ -191,7 +191,14 @@ out.wishlist=D.wishlist||[];
 out.lifeBalanceSnapshots=(D.lifeBalanceSnapshots||[]).filter(s=>inRange(s.date,from,to));
 }
 if(backupModules.lain){
+// FIX (lihat CHANGELOG): apiKey WAJIB dihapus sebelum diekspor -- dulu D.profile
+// ditaruh langsung tanpa disaring, beda sendiri dari buildBackupPayload() yang
+// sudah benar menghapusnya. Kalau tidak, API key AI ikut nyangkut di file JSON.
+if(D.profile && Object.prototype.hasOwnProperty.call(D.profile,'apiKey')){
+out.profile={...D.profile}; delete out.profile.apiKey;
+} else {
 out.profile=D.profile;
+}
 out.workDays=D.workDays.filter(w=>inRange(w.date,from,to));
 out.catatan={
 anak:(D.catatan.anak||[]).filter(c=>inRange(c.date,from,to))
@@ -202,6 +209,19 @@ out.reminders=D.reminders;
 out.budgets=D.budgets;
 out.notifSettings=D.notifSettings;
 out.archiveHistory=D.archiveHistory||[];
+// FIX: field berikut sebelumnya TIDAK ikut modul manapun sehingga selalu
+// hilang dari backup custom ini (beda dari tombol Backup utama yang pakai
+// buildBackupPayload() / {...D} sehingga otomatis lengkap). Ditambahkan di
+// sini (modul "lain") supaya kedua jalur backup konsisten cakupannya.
+out.refleksi=D.refleksi||{gratitude:[],selfCareLog:{},privateNotes:[]};
+out.gajiMingguanHistory=D.gajiMingguanHistory||[];
+out.tukangBorHargaMemory=D.tukangBorHargaMemory||{};
+out.tukangWorkers=D.tukangWorkers||[];
+out.tukangAbsensi=D.tukangAbsensi||[];
+out.torsiChecklist=D.torsiChecklist||{};
+out.debtStrategy=D.debtStrategy||{method:'avalanche',extra:0};
+out.favoritKeys=(typeof getFavoritKeys==='function'?getFavoritKeys():[])||[];
+out.dashCardPrefs=D.dashCardPrefs||{};
 }
 if(!Object.keys(out).length){toast('⚠️ Pilih minimal 1 modul');return;}
 const dateTag=new Date().toISOString().split('T')[0];

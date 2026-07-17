@@ -220,7 +220,7 @@ arr.push(sheetsCellsToItem(modKey,row[0],row.slice(2)));
 pulled[modKey]=arr;
 totalItems+=arr.length;
 });
-let msg=`Data di HP untuk ${SHEETS_MODULES.length} modul (transaksi, shop, etalase produk, bbm, servis, km, stok sparepart, tagihan, target tabungan, dana pendidikan, absensi/gaji — total ${totalItems} item dari Sheets) akan DITIMPA TOTAL dengan isi Spreadsheet. Modul lain (perjalanan, budget, produsen, aset, profil, akun, kategori) tidak disentuh.`;
+let msg=`Data di HP untuk ${SHEETS_MODULES.length} modul (transaksi, shop, etalase produk, bbm, servis, km, stok sparepart, tagihan, target tabungan, dana pendidikan, absensi/gaji harian, data SIM, data tukang & absensinya, riwayat gaji mingguan — total ${totalItems} item dari Sheets) akan DITIMPA TOTAL dengan isi Spreadsheet. Modul lain (perjalanan/jalanLogs -- fitur lama, budget, produsen, aset, profil, akun, kategori) tidak disentuh.`;
 if(totalBadRows) msg+=`\n\n⚠️ ${totalBadRows} baris di Sheets tidak terbaca (format rusak) dan akan dilewati/hilang.`;
 const confirmed=await askConfirm(msg,{title:'Tarik dari Google Sheets',danger:true,okText:'Ya, Timpa dari Sheets',icon:'📥'});
 if(!confirmed)return;

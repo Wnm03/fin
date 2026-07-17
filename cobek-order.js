@@ -307,8 +307,89 @@ if(t&&t.txLinkId)D.transactions=D.transactions.filter(tx=>tx.id!==t.txLinkId);
 D.cobek=D.cobek.filter(t=>t.id!==id);
 save();this.render();renderShopRecent();renderProductList();renderDashboard();renderKeuangan();toast('🗑 Dihapus, stok & catatan keuangan dikembalikan');
 },
-renderGrafik(){
-const el=document.getElementById('shopGrafikBars');
+// ------ Tab "📊 Laporan" (kw-shop-laporan-tab) ------
+// Analisa terpisah dari tab Riwayat: filter periode SENDIRI (periodeLap, tidak
+// berbagi state dgn `periode` milik tab Riwayat di atas) supaya user bisa lihat
+// riwayat transaksi "selamanya" sambil laporan tetap difilter bulan ini, atau
+// sebaliknya, tanpa saling menimpa.
+periodeLap:'selamanya',
+setPeriodeLap(p,el){
+this.periodeLap=p;
+document.querySelectorAll('#lapPeriodeChips .chip-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');
+document.getElementById('lapCustomRange').classList.toggle('u-dnone', p!=='custom');
+this.renderTab();
+},
+getRangeLap(){
+if(this.periodeLap==='selamanya')return{from:new Date(0),to:new Date(8640000000000000)};
+const now=new Date();now.setHours(23,59,59,999);let from;
+if(this.periodeLap==='hari'){from=new Date();from.setHours(0,0,0,0);}
+else if(this.periodeLap==='minggu'){from=new Date();from.setDate(from.getDate()-from.getDay());from.setHours(0,0,0,0);}
+else if(this.periodeLap==='bulan'){from=new Date(now.getFullYear(),now.getMonth(),1);}
+else if(this.periodeLap==='tahun'){from=new Date(now.getFullYear(),0,1);}
+else{const f=document.getElementById('lapFrom').value,t2=document.getElementById('lapTo').value;return{from:f?new Date(f):new Date(0),to:t2?new Date(t2+'T23:59:59'):now};}
+return{from,to:now};
+},
+renderTab(){
+const {from,to}=this.getRangeLap();
+const inRange=(D.cobek||[]).filter(t=>{const d=new Date(t.date);return d>=from&&d<=to;});
+const omzet=inRange.reduce((s,t)=>s+(t.total||0),0);
+const untung=inRange.reduce((s,t)=>s+(t.profit||0),0);
+const elTrip=document.getElementById('lapTrip');if(elTrip)elTrip.textContent=inRange.length;
+const elOmzet=document.getElementById('lapOmzet');if(elOmzet)elOmzet.textContent=fmt(omzet);
+const elUntung=document.getElementById('lapUntung');if(elUntung)elUntung.textContent=fmt(untung);
+const elMargin=document.getElementById('lapMargin');if(elMargin)elMargin.textContent=(omzet>0?Math.round((untung/omzet)*100):0)+'%';
+this.renderGrafik('lapGrafikBars');
+this.renderTopProduk(inRange);
+this.renderTopPelanggan(inRange);
+},
+topProdukAgg(inRange){
+const map={};
+inRange.forEach(t=>{
+if(!t.items)return;
+t.items.forEach(it=>{
+const key=it.productId||it.name;
+if(!map[key])map[key]={name:it.name,qty:0,omzet:0};
+map[key].qty+=it.qty||0;
+map[key].omzet+=(it.harga||0)*(it.qty||0);
+});
+});
+return Object.values(map).sort((a,b)=>b.qty-a.qty);
+},
+renderTopProduk(inRange){
+const el=document.getElementById('lapTopProduk');
+if(!el)return;
+const list=this.topProdukAgg(inRange).slice(0,5);
+if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">📦</div><div class="empty-text">Belum ada data di periode ini</div></div>';return;}
+const maxQty=Math.max(...list.map(p=>p.qty),1);
+el.innerHTML=list.map((p,i)=>`
+      <div class="u-mb8">
+        <div class="u-flex u-jcb u-fs13"><span>${i+1}. ${escapeHtml(p.name)}</span><span class="u-fw700">${p.qty} terjual</span></div>
+        <div style="background:var(--surface3);border-radius:6px;height:6px;margin-top:4px;overflow:hidden"><div style="background:var(--accent4);height:100%;width:${Math.max(4,(p.qty/maxQty)*100)}%"></div></div>
+        <div class="u-fs12 u-t2 u-mt2">Omzet ${fmt(p.omzet)}</div>
+      </div>`).join('');
+},
+renderTopPelanggan(inRange){
+const el=document.getElementById('lapTopPelanggan');
+if(!el)return;
+const map={};
+inRange.forEach(t=>{
+if(!t.items)return;
+const key=Pelanggan.key(t.customer);
+if(!key)return;
+if(!map[key])map[key]={name:(t.customer&&t.customer.name)||'(Tanpa nama)',orders:0,omzet:0};
+map[key].orders++;
+map[key].omzet+=t.total||0;
+});
+const list=Object.values(map).sort((a,b)=>b.omzet-a.omzet).slice(0,5);
+if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">👤</div><div class="empty-text">Belum ada data di periode ini</div></div>';return;}
+el.innerHTML=list.map((c,i)=>`
+      <div class="u-flex u-jcb u-fs13 u-mb6">
+        <span>${i+1}. ${escapeHtml(c.name)}${c.orders>=3?' 🌟':''}</span>
+        <span class="u-fw700">${fmt(c.omzet)} <span class="u-fs12 u-t2 u-fw400">(${c.orders}x)</span></span>
+      </div>`).join('');
+},
+renderGrafik(elId){
+const el=document.getElementById(elId||'shopGrafikBars');
 if(!el)return;
 const now=new Date();const bars=[];
 for(let i=5;i>=0;i--){

@@ -49,7 +49,7 @@ const PAGE_NAV_IDX = {
 // Index tombol tab (.cn-tab) sesuai URUTAN DOM asli di tiap halaman —
 // diverifikasi lewat grep ke index.html (lihat komentar TAB REFERENSI di
 // dashboard-hub-registry.js untuk daftar tab yang valid per page).
-const KEU_TAB_IDX = { kelola: 0, laporan: 1 };
+const KEU_TAB_IDX = { kelola: 0, tagihan: 1, budget: 2, laporan: 3 };
 const SHOP_TAB_IDX = { kasir: 0, jual: 1, etalase: 2, produsen: 3, riwayat: 4, pelanggan: 5 };
 const CN_TAB_IDX = { bbm: 0, servis: 1 };
 const PAJAK_TAB_IDX = { zakat: 0, pajak: 1 };
@@ -370,6 +370,33 @@ const DashboardHub = {
     // manapun sebelum ini. Async & self-guarded (try/catch di dalam
     // EIEDashboard.render()), jadi tidak memblokir render kartu lain.
     if (typeof EIEDashboard !== 'undefined') EIEDashboard.render();
+
+    // Tab "Semua Fitur" / "Pinned Widgets" (lihat #dashHubMainTabsRow di
+    // index.html/app_production.html). Tambahan murni — cuma toggle 2
+    // section yang sudah ada (#dashHubMainGridCard & #dashboardHubPinnedWrap)
+    // lewat class u-dnone yang sudah ada, tidak mengubah isi keduanya.
+    this.applyMainTab(localStorage.getItem('dashHubMainTab') || 'fitur');
+  },
+
+  // Ganti tab aktif & simpan pilihannya (localStorage key: dashHubMainTab),
+  // pola sama persis dgn cardCollapsePrefs yang sudah dipakai ~40+ kartu
+  // lain (lihat modal-navigasi.js) — bukan sistem preferensi baru.
+  setMainTab(tab) {
+    localStorage.setItem('dashHubMainTab', tab);
+    this.applyMainTab(tab);
+  },
+
+  applyMainTab(tab) {
+    const gridCard = document.getElementById('dashHubMainGridCard');
+    const pinnedWrap = document.getElementById('dashboardHubPinnedWrap');
+    const btnFitur = document.getElementById('dashHubMainTabBtn-fitur');
+    const btnPinned = document.getElementById('dashHubMainTabBtn-pinned');
+    if (!gridCard || !pinnedWrap) return;
+    const isPinned = tab === 'pinned';
+    gridCard.classList.toggle('u-dnone', isPinned);
+    pinnedWrap.classList.toggle('u-dnone', !isPinned);
+    if (btnFitur) btnFitur.classList.toggle('active', !isPinned);
+    if (btnPinned) btnPinned.classList.toggle('active', isPinned);
   },
 
   // Kontrak resolusi ADR-001 §4 — SATU-SATUNYA entry point publik navigasi.
