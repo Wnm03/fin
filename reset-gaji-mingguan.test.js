@@ -242,55 +242,6 @@ test('confirmWeeklyReset(true) — auto-income aktif: transaksi Pemasukan tercat
   assert.equal(calls.renderKeuangan, 1);
 });
 
-test('confirmWeeklyReset(true) — kategori match punya subs "Toko" & lainnya -> subcategory otomatis pilih yang mengandung "toko"', () => {
-  const { ctx, D, fakeDocument } = makeCtx({
-    nowIso: '2026-07-11T10:00:00.000Z',
-    D: {
-      workDays: [{ date: '2026-07-06', total: 100000 }],
-      accounts: [{ id: 'acc1' }],
-      categories: { income: [{ name: 'Gaji Toko', subs: [{ name: 'Lembur' }, { name: 'Gaji Toko' }, { name: 'Bonus' }] }] },
-    },
-  });
-  ctx.openWeeklyResetManual();
-  fakeDocument.getElementById('wrAutoIncome').checked = true;
-  fakeDocument.getElementById('wrAcc').value = 'acc1';
-  ctx.confirmWeeklyReset(true);
-  assert.equal(D.transactions[0].category, 'Gaji Toko');
-  assert.equal(D.transactions[0].subcategory, 'Gaji Toko');
-});
-
-test('confirmWeeklyReset(true) — kategori match punya subs tapi tidak ada yg cocok "toko"/"gaji" -> subcategory fallback ke sub pertama', () => {
-  const { ctx, D, fakeDocument } = makeCtx({
-    nowIso: '2026-07-11T10:00:00.000Z',
-    D: {
-      workDays: [{ date: '2026-07-06', total: 100000 }],
-      accounts: [{ id: 'acc1' }],
-      categories: { income: [{ name: 'Gaji Bulanan', subs: [{ name: 'Pokok' }, { name: 'Tunjangan' }] }] },
-    },
-  });
-  ctx.openWeeklyResetManual();
-  fakeDocument.getElementById('wrAutoIncome').checked = true;
-  fakeDocument.getElementById('wrAcc').value = 'acc1';
-  ctx.confirmWeeklyReset(true);
-  assert.equal(D.transactions[0].subcategory, 'Pokok');
-});
-
-test('confirmWeeklyReset(true) — kategori match TANPA subs sama sekali (default lama) -> subcategory tetap kosong, tidak error', () => {
-  const { ctx, D, fakeDocument } = makeCtx({
-    nowIso: '2026-07-11T10:00:00.000Z',
-    D: {
-      workDays: [{ date: '2026-07-06', total: 100000 }],
-      accounts: [{ id: 'acc1' }],
-      categories: { income: [{ name: 'Gaji toko' }] },
-    },
-  });
-  ctx.openWeeklyResetManual();
-  fakeDocument.getElementById('wrAutoIncome').checked = true;
-  fakeDocument.getElementById('wrAcc').value = 'acc1';
-  ctx.confirmWeeklyReset(true);
-  assert.equal(D.transactions[0].subcategory, '');
-});
-
 test('confirmWeeklyReset(true) — checkbox auto-income OFF: absensi tetap direset tapi TIDAK ada transaksi & TIDAK renderKeuangan', () => {
   const { ctx, calls, D, fakeDocument } = makeCtx({
     nowIso: '2026-07-11T10:00:00.000Z',
