@@ -12,7 +12,7 @@ const APP_PRODUCTION_HTML = fs.readFileSync(path.join(ROOT, 'app_production.html
 // Tab yang TERVERIFIKASI ada per page (lihat komentar "TAB REFERENSI" di
 // dashboard-hub-registry.js) — dipakai buat cross-check target.tab.
 const KNOWN_TABS = {
-  keuangan: ['kelola', 'laporan'],
+  keuangan: ['kelola', 'tagihan', 'budget', 'laporan'],
   shop: ['kasir', 'jual', 'etalase', 'produsen', 'riwayat', 'pelanggan'],
   carnotes: ['bbm', 'servis'],
   pajak: ['zakat', 'pajak'],

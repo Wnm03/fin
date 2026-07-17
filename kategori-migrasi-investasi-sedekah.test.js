@@ -38,7 +38,7 @@ function setD(ctx, patch) {
 
 test('SCHEMA_VERSION sudah naik ke 2 (migrasi kategori Investasi & Sedekah/Donasi terdaftar)', () => {
   const ctx = loadMigrations();
-  assert.equal(ctx.SCHEMA_VERSION, 2);
+  assert.equal(ctx.SCHEMA_VERSION, 3);
   assert.ok(ctx.DATA_MIGRATIONS.some((m) => m.toVersion === 2));
 });
 
@@ -64,7 +64,7 @@ test('runDataMigrations — user lama (fromVersion 0/undefined) dgn kategori ter
   // Kategori pemasukan tidak disentuh oleh migrasi ini.
   assert.deepEqual(ctx.D.categories.income.map((c) => c.id), ['cat_gi']);
   // schemaVersion ikut ter-update ke versi terbaru.
-  assert.equal(ctx.D.schemaVersion, 2);
+  assert.equal(ctx.D.schemaVersion, 3);
 });
 
 test('runDataMigrations — sudah di schemaVersion terbaru -> tidak dobel-tambah kategori', () => {
@@ -111,7 +111,7 @@ test('runDataMigrations — D.categories belum ada sama sekali (user benar2 baru
   const ctx = loadMigrations();
   setD(ctx, { schemaVersion: undefined });
   assert.doesNotThrow(() => ctx.runDataMigrations(0));
-  assert.equal(ctx.D.schemaVersion, 2);
+  assert.equal(ctx.D.schemaVersion, 3);
 });
 
 test('DEFAULT_CATS.expense (renovasi.js) — user BARU langsung dapat kategori Investasi & Sedekah/Donasi tanpa perlu migrasi', () => {

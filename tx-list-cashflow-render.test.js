@@ -35,7 +35,7 @@ function baseFields(overrides = {}) {
     txListFrom: { value: '' }, txListTo: { value: '' },
     periodeChips: {}, customRange: { style: {} },
     fFrom: { value: '' }, fTo: { value: '' },
-    'keuanganTab-kelola': { style: {} }, 'keuanganTab-laporan': { style: {} },
+    'keuanganTab-kelola': { style: {} }, 'keuanganTab-tagihan': { style: {} }, 'keuanganTab-budget': { style: {} }, 'keuanganTab-laporan': { style: {} },
     ...overrides,
   };
 }
@@ -62,6 +62,8 @@ function makeCtx(D, opts = {}) {
     populateKeuFilters: opts.populateKeuFilters || record('populateKeuFilters'),
     loadKeuFilterPrefsIntoDOM: opts.loadKeuFilterPrefsIntoDOM || record('loadKeuFilterPrefsIntoDOM'),
     renderBillList: opts.renderBillList || record('renderBillList'),
+    renderBudgets: opts.renderBudgets || record('renderBudgets'),
+    BudgetReko: opts.BudgetReko || { init: record('BudgetReko.init') },
     populateCatFilter: opts.populateCatFilter || record('populateCatFilter'),
     populateAccFilters: opts.populateAccFilters || record('populateAccFilters'),
   }, ['txListPeriode']);
@@ -273,43 +275,109 @@ function fakeTabBtn() {
   return { classList: { active: false, add() { this.active = true; }, remove() { this.active = false; } } };
 }
 
-test('setKeuanganTab — tab "kelola": tampilkan panel kelola, sembunyikan laporan, panggil populateKeuFilters/loadKeuFilterPrefsIntoDOM/renderKeuangan/renderBillList', () => {
-  const { ctx, fakeDocument, calls } = makeCtx({}, { queryGroups: { '#page-keuangan .cn-tab': [fakeTabBtn(), fakeTabBtn()] } });
+test('setKeuanganTab — tab "kelola": tampilkan panel kelola, sembunyikan tagihan & laporan, panggil populateKeuFilters/loadKeuFilterPrefsIntoDOM/renderKeuangan (BUKAN renderBillList)', () => {
+  const { ctx, fakeDocument, calls } = makeCtx({}, { queryGroups: { '#page-keuangan .cn-tab': [fakeTabBtn(), fakeTabBtn(), fakeTabBtn(), fakeTabBtn()] } });
   ctx.setKeuanganTab('kelola', fakeTabBtn());
   assert.equal(fakeDocument.getElementById('keuanganTab-kelola').classList.contains('u-dnone'), false);
+  assert.equal(fakeDocument.getElementById('keuanganTab-tagihan').classList.contains('u-dnone'), true);
+  assert.equal(fakeDocument.getElementById('keuanganTab-budget').classList.contains('u-dnone'), true);
   assert.equal(fakeDocument.getElementById('keuanganTab-laporan').classList.contains('u-dnone'), true);
   const names = calls.render.map((r) => r[0]);
   assert.ok(names.includes('populateKeuFilters'));
   assert.ok(names.includes('loadKeuFilterPrefsIntoDOM'));
   assert.ok(names.includes('renderKeuangan'));
-  assert.ok(names.includes('renderBillList'));
+  assert.ok(!names.includes('renderBillList'));
+  assert.ok(!names.includes('renderBudgets'));
   assert.ok(!names.includes('renderLaporan'));
 });
 
-test('setKeuanganTab — tab "laporan": tampilkan panel laporan, panggil populateCatFilter/populateAccFilters/renderLaporan (BUKAN renderKeuangan/renderBillList)', () => {
-  const { ctx, fakeDocument, calls } = makeCtx({}, { queryGroups: { '#page-keuangan .cn-tab': [fakeTabBtn(), fakeTabBtn()] } });
+test('setKeuanganTab — tab "tagihan": tampilkan panel tagihan, sembunyikan kelola, budget & laporan, panggil renderBillList (BUKAN renderKeuangan/renderBudgets/renderLaporan)', () => {
+  const { ctx, fakeDocument, calls } = makeCtx({}, { queryGroups: { '#page-keuangan .cn-tab': [fakeTabBtn(), fakeTabBtn(), fakeTabBtn(), fakeTabBtn()] } });
+  ctx.setKeuanganTab('tagihan', fakeTabBtn());
+  assert.equal(fakeDocument.getElementById('keuanganTab-tagihan').classList.contains('u-dnone'), false);
+  assert.equal(fakeDocument.getElementById('keuanganTab-kelola').classList.contains('u-dnone'), true);
+  assert.equal(fakeDocument.getElementById('keuanganTab-budget').classList.contains('u-dnone'), true);
+  assert.equal(fakeDocument.getElementById('keuanganTab-laporan').classList.contains('u-dnone'), true);
+  const names = calls.render.map((r) => r[0]);
+  assert.ok(names.includes('renderBillList'));
+  assert.ok(!names.includes('renderKeuangan'));
+  assert.ok(!names.includes('renderBudgets'));
+  assert.ok(!names.includes('renderLaporan'));
+});
+
+test('setKeuanganTab — tab "budget": tampilkan panel budget, sembunyikan kelola, tagihan & laporan, panggil renderBudgets + BudgetReko.init (BUKAN renderKeuangan/renderBillList/renderLaporan)', () => {
+  const { ctx, fakeDocument, calls } = makeCtx({}, { queryGroups: { '#page-keuangan .cn-tab': [fakeTabBtn(), fakeTabBtn(), fakeTabBtn(), fakeTabBtn()] } });
+  ctx.setKeuanganTab('budget', fakeTabBtn());
+  assert.equal(fakeDocument.getElementById('keuanganTab-budget').classList.contains('u-dnone'), false);
+  assert.equal(fakeDocument.getElementById('keuanganTab-kelola').classList.contains('u-dnone'), true);
+  assert.equal(fakeDocument.getElementById('keuanganTab-tagihan').classList.contains('u-dnone'), true);
+  assert.equal(fakeDocument.getElementById('keuanganTab-laporan').classList.contains('u-dnone'), true);
+  const names = calls.render.map((r) => r[0]);
+  assert.ok(names.includes('renderBudgets'));
+  assert.ok(names.includes('BudgetReko.init'));
+  assert.ok(!names.includes('renderKeuangan'));
+  assert.ok(!names.includes('renderBillList'));
+  assert.ok(!names.includes('renderLaporan'));
+});
+
+test('setKeuanganTab — tab "laporan": tampilkan panel laporan, sembunyikan kelola, tagihan & budget, panggil populateCatFilter/populateAccFilters/renderLaporan (BUKAN renderKeuangan/renderBillList/renderBudgets)', () => {
+  const { ctx, fakeDocument, calls } = makeCtx({}, { queryGroups: { '#page-keuangan .cn-tab': [fakeTabBtn(), fakeTabBtn(), fakeTabBtn(), fakeTabBtn()] } });
   ctx.setKeuanganTab('laporan', fakeTabBtn());
   assert.equal(fakeDocument.getElementById('keuanganTab-laporan').classList.contains('u-dnone'), false);
   assert.equal(fakeDocument.getElementById('keuanganTab-kelola').classList.contains('u-dnone'), true);
+  assert.equal(fakeDocument.getElementById('keuanganTab-tagihan').classList.contains('u-dnone'), true);
+  assert.equal(fakeDocument.getElementById('keuanganTab-budget').classList.contains('u-dnone'), true);
   const names = calls.render.map((r) => r[0]);
   assert.ok(names.includes('populateCatFilter'));
   assert.ok(names.includes('populateAccFilters'));
   assert.ok(names.includes('renderLaporan'));
   assert.ok(!names.includes('renderKeuangan'));
+  assert.ok(!names.includes('renderBillList'));
+  assert.ok(!names.includes('renderBudgets'));
 });
 
-test('setKeuanganTab — el TIDAK diberikan (null): fallback pilih tombol ke-1 (index0) utk kelola, ke-2 (index1) utk laporan, dari queryGroups', () => {
+test('setKeuanganTab — el TIDAK diberikan (null): fallback pilih tombol sesuai urutan kelola(0)/tagihan(1)/budget(2)/laporan(3), dari queryGroups', () => {
   const btnKelola = fakeTabBtn();
+  const btnTagihan = fakeTabBtn();
+  const btnBudget = fakeTabBtn();
   const btnLaporan = fakeTabBtn();
-  const { ctx } = makeCtx({}, { queryGroups: { '#page-keuangan .cn-tab': [btnKelola, btnLaporan] } });
+  const { ctx } = makeCtx({}, { queryGroups: { '#page-keuangan .cn-tab': [btnKelola, btnTagihan, btnBudget, btnLaporan] } });
   ctx.setKeuanganTab('kelola');
   assert.equal(btnKelola.classList.active, true);
+  assert.equal(btnTagihan.classList.active, false);
+  assert.equal(btnBudget.classList.active, false);
   assert.equal(btnLaporan.classList.active, false);
 
   const btnKelola2 = fakeTabBtn();
+  const btnTagihan2 = fakeTabBtn();
+  const btnBudget2 = fakeTabBtn();
   const btnLaporan2 = fakeTabBtn();
-  const { ctx: ctx2 } = makeCtx({}, { queryGroups: { '#page-keuangan .cn-tab': [btnKelola2, btnLaporan2] } });
-  ctx2.setKeuanganTab('laporan');
-  assert.equal(btnLaporan2.classList.active, true);
+  const { ctx: ctx2 } = makeCtx({}, { queryGroups: { '#page-keuangan .cn-tab': [btnKelola2, btnTagihan2, btnBudget2, btnLaporan2] } });
+  ctx2.setKeuanganTab('tagihan');
+  assert.equal(btnTagihan2.classList.active, true);
   assert.equal(btnKelola2.classList.active, false);
+  assert.equal(btnBudget2.classList.active, false);
+  assert.equal(btnLaporan2.classList.active, false);
+
+  const btnKelola3 = fakeTabBtn();
+  const btnTagihan3 = fakeTabBtn();
+  const btnBudget3 = fakeTabBtn();
+  const btnLaporan3 = fakeTabBtn();
+  const { ctx: ctx3 } = makeCtx({}, { queryGroups: { '#page-keuangan .cn-tab': [btnKelola3, btnTagihan3, btnBudget3, btnLaporan3] } });
+  ctx3.setKeuanganTab('budget');
+  assert.equal(btnBudget3.classList.active, true);
+  assert.equal(btnKelola3.classList.active, false);
+  assert.equal(btnTagihan3.classList.active, false);
+  assert.equal(btnLaporan3.classList.active, false);
+
+  const btnKelola4 = fakeTabBtn();
+  const btnTagihan4 = fakeTabBtn();
+  const btnBudget4 = fakeTabBtn();
+  const btnLaporan4 = fakeTabBtn();
+  const { ctx: ctx4 } = makeCtx({}, { queryGroups: { '#page-keuangan .cn-tab': [btnKelola4, btnTagihan4, btnBudget4, btnLaporan4] } });
+  ctx4.setKeuanganTab('laporan');
+  assert.equal(btnLaporan4.classList.active, true);
+  assert.equal(btnKelola4.classList.active, false);
+  assert.equal(btnTagihan4.classList.active, false);
+  assert.equal(btnBudget4.classList.active, false);
 });
