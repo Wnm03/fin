@@ -38,16 +38,32 @@ const txs=D.transactions.filter(t=>{const d=new Date(t.date);return d>=from&&d<=
 const blob=new Blob([JSON.stringify(txs,null,2)],{type:'application/json'});
 const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='laporan-W-'+new Date().toISOString().split('T')[0]+'.json';a.click();
 }
-function buildBackupPayload(){
+async function buildBackupPayload(){
 const backupD={...D,chatHistory:[]};
 if(backupD.profile){
 backupD.profile={...backupD.profile};
 delete backupD.profile.apiKey;
 }
+// BUGFIX-INTEGRASI: LifeOS (projects/reviewLog/knowledge) & EIE (macroCache/
+// insights/scoreHistory/notificationsEnabled/dst) disimpan di IndexedDB
+// terpisah dari D (key 'lifeos:store'/'eie:store', lihat lifeos-store.js/
+// eie-store.js) — sebelumnya TIDAK pernah ikut ke file backup sama sekali,
+// walau {...D} di atas terlihat lengkap. Field `_lifeosStore`/`_eieStore` di
+// bawah ini murni titipan utk restore, BUKAN properti D — jangan pernah
+// merge langsung `{...D,...imp}` tanpa menyaring 2 key ini (lihat
+// applyRestoredData()).
+try{
+const lifeosStore=await IDBStore.get('lifeos:store');
+if(lifeosStore)backupD._lifeosStore=lifeosStore;
+}catch(e){console.warn('Backup: gagal baca lifeos:store dari IndexedDB (dilewati):',e);}
+try{
+const eieStore=await IDBStore.get('eie:store');
+if(eieStore)backupD._eieStore=eieStore;
+}catch(e){console.warn('Backup: gagal baca eie:store dari IndexedDB (dilewati):',e);}
 return backupD;
 }
-function exportData(){
-const backupD=buildBackupPayload();
+async function exportData(){
+const backupD=await buildBackupPayload();
 const blob=new Blob([JSON.stringify(backupD,null,2)],{type:'application/json'});
 const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='backup-keluarga-W-'+new Date().toISOString().split('T')[0]+'.json';a.click();
 D.lastBackup=new Date().toISOString();save();
@@ -67,7 +83,7 @@ const skipped=[];
 const errors=[];
 try{
 try{
-const backupD=buildBackupPayload();
+const backupD=await buildBackupPayload();
 const blob=new Blob([JSON.stringify(backupD,null,2)],{type:'application/json'});
 const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='backup-keluarga-W-'+new Date().toISOString().split('T')[0]+'.json';a.click();
 D.lastBackup=new Date().toISOString();save();
@@ -191,7 +207,14 @@ out.wishlist=D.wishlist||[];
 out.lifeBalanceSnapshots=(D.lifeBalanceSnapshots||[]).filter(s=>inRange(s.date,from,to));
 }
 if(backupModules.lain){
+// FIX (lihat CHANGELOG): apiKey WAJIB dihapus sebelum diekspor -- dulu D.profile
+// ditaruh langsung tanpa disaring, beda sendiri dari buildBackupPayload() yang
+// sudah benar menghapusnya. Kalau tidak, API key AI ikut nyangkut di file JSON.
+if(D.profile && Object.prototype.hasOwnProperty.call(D.profile,'apiKey')){
+out.profile={...D.profile}; delete out.profile.apiKey;
+} else {
 out.profile=D.profile;
+}
 out.workDays=D.workDays.filter(w=>inRange(w.date,from,to));
 out.catatan={
 anak:(D.catatan.anak||[]).filter(c=>inRange(c.date,from,to))
@@ -202,6 +225,19 @@ out.reminders=D.reminders;
 out.budgets=D.budgets;
 out.notifSettings=D.notifSettings;
 out.archiveHistory=D.archiveHistory||[];
+// FIX: field berikut sebelumnya TIDAK ikut modul manapun sehingga selalu
+// hilang dari backup custom ini (beda dari tombol Backup utama yang pakai
+// buildBackupPayload() / {...D} sehingga otomatis lengkap). Ditambahkan di
+// sini (modul "lain") supaya kedua jalur backup konsisten cakupannya.
+out.refleksi=D.refleksi||{gratitude:[],selfCareLog:{},privateNotes:[]};
+out.gajiMingguanHistory=D.gajiMingguanHistory||[];
+out.tukangBorHargaMemory=D.tukangBorHargaMemory||{};
+out.tukangWorkers=D.tukangWorkers||[];
+out.tukangAbsensi=D.tukangAbsensi||[];
+out.torsiChecklist=D.torsiChecklist||{};
+out.debtStrategy=D.debtStrategy||{method:'avalanche',extra:0};
+out.favoritKeys=(typeof getFavoritKeys==='function'?getFavoritKeys():[])||[];
+out.dashCardPrefs=D.dashCardPrefs||{};
 }
 if(!Object.keys(out).length){toast('⚠️ Pilih minimal 1 modul');return;}
 const dateTag=new Date().toISOString().split('T')[0];
@@ -342,11 +378,28 @@ snapJson=JSON.stringify(D);
 safeSetItem('kw_v4_prerestore',snapJson);
 }catch(e){console.error('Gagal simpan snapshot pengaman:',e);}
 const prevD=JSON.parse(JSON.stringify(D));
+// BUGFIX-INTEGRASI: `_lifeosStore`/`_eieStore` (lihat buildBackupPayload())
+// adalah titipan data IndexedDB, BUKAN properti D — disimpan dulu sebelum
+// merge, lalu dihapus dari D supaya tidak nyangkut sbg field liar di D.
+const _restoredLifeosStore=imp._lifeosStore;
+const _restoredEieStore=imp._eieStore;
 try{
 D={...D,...imp};
+delete D._lifeosStore;
+delete D._eieStore;
 applyRestoredDataMigrations();
 runDataMigrations(backupVersion);
 saveFlush();init();
+try{
+if(_restoredLifeosStore!==undefined){
+await IDBStore.set('lifeos:store',_restoredLifeosStore);
+if(typeof lifeOSInvalidateCache==='function')lifeOSInvalidateCache();
+}
+if(_restoredEieStore!==undefined){
+await IDBStore.set('eie:store',_restoredEieStore);
+if(typeof eieInvalidateCache==='function')eieInvalidateCache();
+}
+}catch(e){console.error('Restore data LifeOS/EIE (IndexedDB) gagal (data D lain tetap ter-restore):',e);}
 return true;
 }catch(e){
 console.error('Restore gagal, mengembalikan data sebelumnya:',e);

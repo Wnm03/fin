@@ -36,7 +36,17 @@ openTxModal('income');
 setTimeout(()=>{
 document.getElementById('txAmt').value=amount;
 const gajiCat=D.categories.income.find(c=>/gaji/i.test(c.name));
-if(gajiCat){ document.getElementById('txCat').value=gajiCat.name; updateSubCatOptions(); }
+if(gajiCat){
+document.getElementById('txCat').value=gajiCat.name;
+updateSubCatOptions();
+// Auto-pilih subkategori yang paling cocok (mis. "Gaji Toko"), sama pola
+// dgn confirmWeeklyReset() di reset-gaji-mingguan.js — dulu txSubCat
+// selalu dibiarkan kosong walau kategori ini sudah punya subs yang cocok.
+if(Array.isArray(gajiCat.subs)&&gajiCat.subs.length){
+const subMatch=gajiCat.subs.find(s=>/toko/i.test(s.name))||gajiCat.subs.find(s=>/gaji/i.test(s.name))||gajiCat.subs[0];
+if(subMatch) document.getElementById('txSubCat').value=subMatch.name;
+}
+}
 document.getElementById('txNote').value='Hasil kalkulator gaji';
 },60);
 }

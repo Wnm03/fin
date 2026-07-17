@@ -437,7 +437,7 @@ function aiErrorHint(provider,status){
 if(provider==='gemini')return(status===400||status===403)?' (cek API key di Pengaturan)':'';
 return status===401?' (API key salah/expired, cek di Pengaturan)':'';
 }
-// Advisor — pengatur tab utk card gabungan "🧭 Penasihat" (v124, feature-icons-svg-350):
+// Advisor — pengatur tab utk card gabungan "🧭 Penasihat" (v124, kw87-fix-hashpin-fallback-crypto-subtle-5):
 // dulu FinCoach ("🩺 Insight Cepat", rule-based-gratis-instan) & AIWidget ("🔍 Laporan AI",
 // panggil Claude/Gemini, wajib API key) tampil sbg 2 card TERPISAH di Dashboard — sekarang
 // digabung jadi SATU card dgn 2 tab, supaya tidak terasa ada "2 penasihat AI" yang mirip2.
@@ -684,11 +684,6 @@ n.onclick=()=>{window.focus();n.close();};
 function toggleNotifEnabled(checked){
 if(checked){requestNotifPermission();}
 else{D.notifSettings.enabled=false;save();renderNotifSettings();toast('🔕 Notifikasi dimatikan');}
-}
-function saveNotifDays(){
-D.notifSettings.billDays=parseInt(document.getElementById('notifBillDays').value)||3;
-D.notifSettings.ldrDays=parseInt(document.getElementById('notifLdrDays').value)||3;
-save();toast('✅ Pengaturan reminder disimpan');
 }
 /* moved to modules-render.js: renderNotifSettings */
 function testNotif(){
@@ -1561,8 +1556,34 @@ workDays:[
 {key:'total',type:'number'},
 {key:'gajiHariInput',type:'number'},
 ],
+simList:[
+{key:'nama',type:'string'},
+{key:'jenis',type:'string'},
+{key:'tglAkhir',type:'string'},
+],
+tukangWorkers:[
+{key:'name',type:'string'},
+{key:'upahJam',type:'number'},
+{key:'jamKerjaNormal',type:'number'},
+{key:'upahLemburJam',type:'number'},
+],
+gajiMingguanHistory:[
+{key:'weekStart',type:'string'},
+{key:'weekEnd',type:'string'},
+{key:'total',type:'number'},
+{key:'count',type:'number'},
+{key:'resetDate',type:'string'},
+{key:'incomeSaved',type:'boolean'},
+],
 };
-const SHEETS_MODULES=['transactions','shop','bbmLogs','servisLogs','kmLogs','partsStock','products','bills','targets','eduFunds','workDays'];
+const SHEETS_MODULES=['transactions','cobek','bbmLogs','servisLogs','kmLogs','partsStock','products','bills','targets','eduFunds','workDays','simList','tukangWorkers','tukangAbsensi','gajiMingguanHistory'];
+// FIX (lihat CHANGELOG): dulu tertulis 'shop' di sini, padahal D TIDAK PUNYA field
+// bernama 'shop' (data asli ada di D.cobek) dan SHEETS_SCHEMAS juga tidak punya
+// entry 'shop' -- akibatnya tab "shop" di Spreadsheet SELALU KOSONG (0 baris)
+// walau kelihatan terdaftar sbg modul yg disync. 'tukangAbsensi' sengaja TIDAK
+// didaftarkan di SHEETS_SCHEMAS di atas (bentuk datanya variatif tergantung mode
+// 'jam'/'borongan') -- otomatis fallback ke 1 kolom JSON (lihat sheetsItemToCells),
+// itu perilaku yang sudah didukung & aman, bukan bug.
 function sheetsColLetter(n){
 let s='';
 while(n>0){ const m=(n-1)%26; s=String.fromCharCode(65+m)+s; n=Math.floor((n-1)/26); }

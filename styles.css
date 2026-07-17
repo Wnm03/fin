@@ -103,13 +103,6 @@ body.has-open-modal .nav { display: none; }
   .page{max-width:1080px;margin-left:auto;margin-right:auto;}
 }
 .page.active { display: block; }
-/* AI Smart Insight — kartu persisten di LUAR .page (lihat ai-smart-insight.js), makanya butuh
-   padding horizontal + max-width sendiri yang sama persis dgn .page supaya sejajar visual dgn
-   konten di bawahnya, tanpa ikut aturan display:none/.page.active (harus tampil di SEMUA tab). */
-#aiSmartInsightWrap { padding: 14px 16px 0; }
-@media (min-width:1024px){
-  #aiSmartInsightWrap{max-width:1080px;margin-left:auto;margin-right:auto;}
-}
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 .card { background: var(--surface2); border-radius: var(--r-2xl); padding: 20px; margin-bottom: 14px; border: 1px solid var(--border); box-shadow: var(--shadow-card, 0 2px 4px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.06)); position: relative; transition: box-shadow var(--dur-moderate) var(--ease-standard), border-color var(--dur-moderate) var(--ease-standard), transform var(--dur-moderate) var(--ease-standard); }
 .card:active { transform: scale(0.995); box-shadow: var(--shadow-sm); }
@@ -519,6 +512,35 @@ textarea.fi { resize: vertical; min-height: 80px; }
 .cn-tabs { display:flex; gap:var(--sp-2); margin-bottom:var(--sp-5); }
 .cn-tab { flex:1; padding:var(--sp-4) var(--sp-1); border-radius:var(--r-md); border:1px solid var(--border); background:var(--surface2); color:var(--text2); font-size:var(--fs-label); font-weight:700; cursor:pointer; text-align:center; }
 .cn-tab.active { background:var(--accent); color:white; border-color:var(--accent); }
+/* 2026-07-17: sub-tab nav utk split tab Laporan (Keuangan) — class SENGAJA
+   beda dari .cn-tab (bukan cuma varian) supaya query `#page-keuangan .cn-tab`
+   yang dipakai setKeuanganTab()/KEU_TAB_IDX/self-test TIDAK ikut menangkap
+   tombol sub-tab bersarang ini (lihat pola sama persis di .budget-tab-btn). */
+.lap-subtabs { margin-bottom:var(--sp-4); }
+.lap-subtab { flex:1; padding:var(--sp-3) var(--sp-1); border-radius:var(--r-md); border:1px solid var(--border); background:var(--surface2); color:var(--text2); font-size:var(--fs-label); font-weight:700; cursor:pointer; text-align:center; }
+.lap-subtab.active { background:var(--accent); color:white; border-color:var(--accent); }
+/* 2026-07-17 (bagian ke-3): sub-tab nav utk split tab Kelola (Keuangan) —
+   class terpisah lagi dari .cn-tab MAUPUN .lap-subtab (pola sama, alasan
+   sama dgn .lap-subtab di atas: cegah tabrakan query per-page). */
+.kel-subtabs { margin-bottom:var(--sp-4); }
+.kel-subtab { flex:1; padding:var(--sp-3) var(--sp-1); border-radius:var(--r-md); border:1px solid var(--border); background:var(--surface2); color:var(--text2); font-size:var(--fs-label); font-weight:700; cursor:pointer; text-align:center; }
+.kel-subtab.active { background:var(--accent); color:white; border-color:var(--accent); }
+/* 2026-07-17 (bagian ke-4): sub-tab nav utk split tab 🧾 Pajak (PPh 21)
+   (page-pajak) — class terpisah lagi dari .cn-tab/.lap-subtab/.kel-subtab
+   (pola sama, alasan sama: cegah tabrakan query per-page, khususnya
+   `#page-pajak .cn-tab` yang dipakai setPajakTab()/PAJAK_TAB_IDX/self-test
+   utk tab Zakat/Pajak tingkat atas). */
+.pjk-subtabs { margin-bottom:var(--sp-4); }
+.pjk-subtab { flex:1; padding:var(--sp-3) var(--sp-1); border-radius:var(--r-md); border:1px solid var(--border); background:var(--surface2); color:var(--text2); font-size:var(--fs-label); font-weight:700; cursor:pointer; text-align:center; }
+.pjk-subtab.active { background:var(--accent); color:white; border-color:var(--accent); }
+
+/* Sub-tab Dashboard Hub (landing page, Fase 1 — lihat CLAUDE.md "Split tab
+   🧭 Dashboard Hub") — class terpisah lagi dari .cn-tab/.lap-subtab/
+   .kel-subtab/.pjk-subtab, alasan sama: cegah tabrakan query
+   #page-dashboard-hub .cn-tab kalau nanti ada .cn-tab lain di page ini. */
+.dhb-subtabs { margin-bottom:var(--sp-4); }
+.dhb-subtab { flex:1; padding:var(--sp-3) var(--sp-1); border-radius:var(--r-md); border:1px solid var(--border); background:var(--surface2); color:var(--text2); font-size:var(--fs-label); font-weight:700; cursor:pointer; text-align:center; }
+.dhb-subtab.active { background:var(--accent); color:white; border-color:var(--accent); }
 .bbm-stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--sp-3); margin-bottom:var(--sp-5); }
 .bbm-stat { background:var(--surface2); border-radius:var(--r-md); padding:var(--sp-5) var(--sp-3); text-align:center; border:1px solid var(--border); }
 .bbm-val { font-family:'Space Grotesk',sans-serif; font-size:var(--fs-title); font-weight:700; color:var(--accent); }
@@ -1119,6 +1141,15 @@ textarea.fi { resize: vertical; min-height: 80px; }
    posisi vertikal supaya #laporanFab tidak tumpang tindih dgn #keuFab saat
    tab Laporan aktif. */
 #keuanganTab-laporan .keu-fab{bottom:170px;}
+
+/* ===== Laporan Shop FAB — reuse penuh .keu-fab* (Finance 2.0), TIDAK ada
+   class baru. FAB Laporan Shop (#shopLaporanFab) ditaruh DI DALAM
+   #shopTab-laporan supaya kontekstual (hanya tampil saat tab Laporan Shop
+   aktif). #shopFab (Sprint 2 Tahap 2) tetap tampil di semua tab Shop — 1
+   override posisi vertikal aditif (offset sama seperti #laporanFab vs
+   #keuFab, +86px) supaya #shopLaporanFab tidak tumpang tindih dgn #shopFab
+   saat tab Laporan Shop aktif. */
+#shopTab-laporan .keu-fab{bottom:236px;}
 
 
 /* ===== FIX: Life OS panels (Today/Goals/Projects/Review/Knowledge) — sebelumnya

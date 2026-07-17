@@ -1,5 +1,5 @@
 
-const MODULE_CALC_VERSION='feature-icons-svg-350';
+const MODULE_CALC_VERSION='kw87-fix-hashpin-fallback-crypto-subtle-5';
 const FI={
 assetScopeState:'zakatable',
 investmentAssetValue(){

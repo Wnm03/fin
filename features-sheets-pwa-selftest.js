@@ -220,7 +220,7 @@ arr.push(sheetsCellsToItem(modKey,row[0],row.slice(2)));
 pulled[modKey]=arr;
 totalItems+=arr.length;
 });
-let msg=`Data di HP untuk ${SHEETS_MODULES.length} modul (transaksi, shop, etalase produk, bbm, servis, km, stok sparepart, tagihan, target tabungan, dana pendidikan, absensi/gaji — total ${totalItems} item dari Sheets) akan DITIMPA TOTAL dengan isi Spreadsheet. Modul lain (perjalanan, budget, produsen, aset, profil, akun, kategori) tidak disentuh.`;
+let msg=`Data di HP untuk ${SHEETS_MODULES.length} modul (transaksi, shop, etalase produk, bbm, servis, km, stok sparepart, tagihan, target tabungan, dana pendidikan, absensi/gaji harian, data SIM, data tukang & absensinya, riwayat gaji mingguan — total ${totalItems} item dari Sheets) akan DITIMPA TOTAL dengan isi Spreadsheet. Modul lain (perjalanan/jalanLogs -- fitur lama, budget, produsen, aset, profil, akun, kategori) tidak disentuh.`;
 if(totalBadRows) msg+=`\n\n⚠️ ${totalBadRows} baris di Sheets tidak terbaca (format rusak) dan akan dilewati/hilang.`;
 const confirmed=await askConfirm(msg,{title:'Tarik dari Google Sheets',danger:true,okText:'Ya, Timpa dari Sheets',icon:'📥'});
 if(!confirmed)return;
@@ -1699,7 +1699,11 @@ const groups=[
 {page:'#page-shop',fn:(typeof setShopTab==='function')?setShopTab:null,paneId:t=>'shopTab-'+t},
 {page:'#page-pajak',fn:(typeof setPajakTab==='function')?setPajakTab:null,paneId:t=>'pajakTab-'+t},
 {page:'#page-keuangan',fn:(typeof setKeuanganTab==='function')?setKeuanganTab:null,paneId:t=>'keuanganTab-'+t},
-{page:'#page-keuangan',fn:(typeof BudgetTabs!=='undefined')?BudgetTabs.switchTo:null,paneId:t=>'budgetTabPane-'+t,btnClass:'.budget-tab-btn'}
+{page:'#page-keuangan',fn:(typeof BudgetTabs!=='undefined')?BudgetTabs.switchTo:null,paneId:t=>'budgetTabPane-'+t,btnClass:'.budget-tab-btn'},
+{page:'#page-aset',fn:(typeof setAsetTab==='function')?setAsetTab:null,paneId:t=>'asetTab-'+t},
+{page:'#keuanganTab-laporan',fn:(typeof setLaporanTab==='function')?setLaporanTab:null,paneId:t=>'laporanTab-'+t,btnClass:'.lap-subtab'},
+{page:'#keuanganTab-kelola',fn:(typeof setKelolaTab==='function')?setKelolaTab:null,paneId:t=>'kelolaTab-'+t,btnClass:'.kel-subtab'},
+{page:'#pajakTab-pajak',fn:(typeof setPjkTab==='function')?setPjkTab:null,paneId:t=>'pjkTab-'+t,btnClass:'.pjk-subtab'}
 ];
 groups.forEach(g=>{
 if(!g.fn)return;
@@ -2296,6 +2300,21 @@ document.getElementById('pajakTab-zakat').classList.toggle('u-dnone', tab!=='zak
 document.getElementById('pajakTab-zakat').style.display='';
 document.getElementById('pajakTab-pajak').classList.toggle('u-dnone', tab!=='pajak');
 document.getElementById('pajakTab-pajak').style.display='';
+}
+// 2026-07-17 (bagian ke-4): split tab 🧾 Pajak (PPh 21) (dalam page-pajak)
+// jadi 2 sub-tab (PPh 21 / PBB & UMKM) — pola SAMA PERSIS dgn
+// setLaporanTab/setKelolaTab (tx-list-cashflow.js) & setAsetTab (aset.js),
+// murni toggle DOM, tidak ada logic baru. renderPajakZakat()/
+// renderPajakRekomendasi() (modules-render.js) tetap mengisi kartu di kedua
+// sub-tab sekaligus saat masuk tab Pajak, terlepas dari sub-tab mana yang
+// aktif.
+const PJK_SUBTAB_ORDER=['pph21','pbb'];
+function setPjkTab(t,el){
+document.querySelectorAll('#pajakTab-pajak .pjk-subtab').forEach(b=>b.classList.remove('active'));
+if(el) el.classList.add('active');
+else { const idx=PJK_SUBTAB_ORDER.indexOf(t); const btn=document.querySelectorAll('#pajakTab-pajak .pjk-subtab')[idx>=0?idx:0]; if(btn) btn.classList.add('active'); }
+document.getElementById('pjkTab-pph21').classList.toggle('u-dnone', t!=='pph21');
+document.getElementById('pjkTab-pbb').classList.toggle('u-dnone', t!=='pbb');
 }
 let _pajakZakatRenderedOnce=false;
 /* moved to modules-render.js: renderPajakZakat */

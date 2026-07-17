@@ -80,11 +80,22 @@ const accEl=document.getElementById('wrAcc');
 const accId=(accEl&&accEl.value)||(D.accounts.length?D.accounts[0].id:null);
 const gajiCat=D.categories.income.find(c=>/gaji/i.test(c.name));
 const catName=gajiCat?gajiCat.name:(D.categories.income[0]?D.categories.income[0].name:'Gaji');
-D.transactions.push({id:uid(),type:'income',amount:_wrLastTotal,category:catName,subcategory:'',accountId:accId,payMethod:'tunai',note:`Gaji mingguan dari absensi (${_wrLastCount} hari kerja, ${dateToISO(start)} s/d ${dateToISO(end)})`,date:dateToISO(now)});
+// Auto-pilih subkategori yang paling cocok (mis. "Gaji Toko") kalau kategori
+// yang match punya subs — dulu subcategory SELALU dikosongkan walau user
+// sudah punya subkategori yang sesuai, jadi harus dipilih manual tiap minggu.
+// Prioritas: sub yang namanya mengandung "toko" > mengandung "gaji" > sub
+// pertama yang ada. Kalau kategori tidak punya subs sama sekali (default
+// lama), tetap kosong seperti sebelumnya — tidak ada regresi.
+let subName='';
+if(gajiCat && Array.isArray(gajiCat.subs) && gajiCat.subs.length){
+const subMatch=gajiCat.subs.find(s=>/toko/i.test(s.name))||gajiCat.subs.find(s=>/gaji/i.test(s.name))||gajiCat.subs[0];
+if(subMatch) subName=subMatch.name;
+}
+D.transactions.push({id:uid(),type:'income',amount:_wrLastTotal,category:catName,subcategory:subName,accountId:accId,payMethod:'tunai',note:`Gaji mingguan dari absensi (${_wrLastCount} hari kerja, ${dateToISO(start)} s/d ${dateToISO(end)})`,date:dateToISO(now)});
 incomeSaved=true;
 }
 if(!Array.isArray(D.gajiMingguanHistory))D.gajiMingguanHistory=[];
-D.gajiMingguanHistory.push({weekStart:dateToISO(start),weekEnd:dateToISO(end),total:_wrLastTotal,count:_wrLastCount,resetDate:todayStr(),incomeSaved});
+D.gajiMingguanHistory.push({id:uid(),weekStart:dateToISO(start),weekEnd:dateToISO(end),total:_wrLastTotal,count:_wrLastCount,resetDate:todayStr(),incomeSaved});
 if(D.gajiMingguanHistory.length>26) D.gajiMingguanHistory=D.gajiMingguanHistory.slice(-26);
 D.workDays=D.workDays.filter(w=>{const d=new Date(w.date);return !(d>=start&&d<=end);});
 toast(incomeSaved?`✅ Absensi direset & ${fmtFull(_wrLastTotal)} dicatat sebagai Pemasukan! 🎉`:'✅ Absensi minggu ini direset, selamat gajian! 🎉');

@@ -49,10 +49,21 @@ const PAGE_NAV_IDX = {
 // Index tombol tab (.cn-tab) sesuai URUTAN DOM asli di tiap halaman —
 // diverifikasi lewat grep ke index.html (lihat komentar TAB REFERENSI di
 // dashboard-hub-registry.js untuk daftar tab yang valid per page).
-const KEU_TAB_IDX = { kelola: 0, laporan: 1 };
+const KEU_TAB_IDX = { kelola: 0, tagihan: 1, budget: 2, utangpiutang: 3, asetproyek: 4, laporan: 5 };
 const SHOP_TAB_IDX = { kasir: 0, jual: 1, etalase: 2, produsen: 3, riwayat: 4, pelanggan: 5 };
 const CN_TAB_IDX = { bbm: 0, servis: 1 };
 const PAJAK_TAB_IDX = { zakat: 0, pajak: 1 };
+const ASET_TAB_IDX = { ringkasan: 0, buku: 1, analisis: 2 };
+// Sub-tab nested DI DALAM tab 'laporan' (page keuangan) — lihat setLaporanTab
+// di tx-list-cashflow.js & catatan split 2026-07-17 di CLAUDE.md.
+const LAPORAN_SUBTAB_IDX = { ringkasan: 0, aruskas: 1, transaksi: 2 };
+// Sub-tab nested DI DALAM tab 'kelola' (page keuangan) — lihat setKelolaTab
+// di tx-list-cashflow.js & catatan split 2026-07-17 (bagian ke-3) di CLAUDE.md.
+const KELOLA_SUBTAB_IDX = { ringkasan: 0, transaksi: 1, pengaturan: 2 };
+// Sub-tab nested DI DALAM tab 'pajak' (page pajak) — lihat setPjkTab di
+// features-sheets-pwa-selftest.js & catatan split 2026-07-17 (bagian ke-4)
+// di CLAUDE.md.
+const PJK_SUBTAB_IDX = { pph21: 0, pbb: 1 };
 
 // Resolve string action ("openTxModal" atau "WorthIt.open") jadi pemanggilan
 // fungsi nyata, dgn `this` yg benar kalau namespaced (pola sama dgn
@@ -89,6 +100,13 @@ function dashHubNavigateToFeature(target) {
     if (target.page === 'keuangan') {
       const tabs = document.querySelectorAll('#page-keuangan .cn-tab');
       setKeuanganTab(target.tab, tabs[KEU_TAB_IDX[target.tab]]);
+      if (target.tab === 'laporan' && target.subtab) {
+        const subtabs = document.querySelectorAll('#keuanganTab-laporan .lap-subtab');
+        setLaporanTab(target.subtab, subtabs[LAPORAN_SUBTAB_IDX[target.subtab]]);
+      } else if (target.tab === 'kelola' && target.subtab) {
+        const subtabs = document.querySelectorAll('#keuanganTab-kelola .kel-subtab');
+        setKelolaTab(target.subtab, subtabs[KELOLA_SUBTAB_IDX[target.subtab]]);
+      }
     } else if (target.page === 'shop') {
       const tabs = document.querySelectorAll('#page-shop .cn-tab');
       setShopTab(target.tab, tabs[SHOP_TAB_IDX[target.tab]]);
@@ -98,6 +116,13 @@ function dashHubNavigateToFeature(target) {
     } else if (target.page === 'pajak') {
       const tabs = document.querySelectorAll('#page-pajak .cn-tab');
       setPajakTab(target.tab, tabs[PAJAK_TAB_IDX[target.tab]]);
+      if (target.tab === 'pajak' && target.subtab) {
+        const subtabs = document.querySelectorAll('#pajakTab-pajak .pjk-subtab');
+        setPjkTab(target.subtab, subtabs[PJK_SUBTAB_IDX[target.subtab]]);
+      }
+    } else if (target.page === 'aset') {
+      const tabs = document.querySelectorAll('#page-aset .cn-tab');
+      setAsetTab(target.tab, tabs[ASET_TAB_IDX[target.tab]]);
     }
   }
 
@@ -370,6 +395,85 @@ const DashboardHub = {
     // manapun sebelum ini. Async & self-guarded (try/catch di dalam
     // EIEDashboard.render()), jadi tidak memblokir render kartu lain.
     if (typeof EIEDashboard !== 'undefined') EIEDashboard.render();
+
+    // Tab "Semua Fitur" / "Pinned Widgets" (lihat #dashHubMainTabsRow di
+    // index.html/app_production.html). Tambahan murni — cuma toggle 2
+    // section yang sudah ada (#dashHubMainGridCard & #dashboardHubPinnedWrap)
+    // lewat class u-dnone yang sudah ada, tidak mengubah isi keduanya.
+    this.applyMainTab(localStorage.getItem('dashHubMainTab') || 'fitur');
+
+    // Sub-tab Dashboard Hub (Fase 1, lihat CLAUDE.md "Split tab 🧭 Dashboard
+    // Hub" & #dashHubSectionTabBtn-* di index.html/app_production.html).
+    // Tambahan murni, dipanggil PALING AKHIR (setelah applyMainTab di atas)
+    // — pola "render semua dulu, baru toggle visibility" yang sama.
+    this.applySectionTab(localStorage.getItem('dashHubSectionTab') || 'ringkasan');
+  },
+
+  // Ganti sub-tab aktif & simpan pilihannya (localStorage key:
+  // dashHubSectionTab), pola sama persis dgn setMainTab() di atas.
+  setSectionTab(tab) {
+    localStorage.setItem('dashHubSectionTab', tab);
+    this.applySectionTab(tab);
+  },
+
+  // Toggle visibility 3 kelompok section yang SUDAH ADA (tidak ada wrapper
+  // <div> baru — lihat catatan panjang di index.html/app_production.html
+  // persis di atas nav .dhb-subtabs) lewat class u-dnone yang sudah dipakai
+  // di seluruh app ini. Hero Card/Tangga Ternak Uang/Quick Actions/Search
+  // SENGAJA tidak masuk daftar manapun di bawah — tetap selalu tampil.
+  applySectionTab(tab) {
+    const SECTION_GROUPS = {
+      ringkasan: ['dashHubSummaryGrid', 'dashHubAnalyticsRow'],
+      fitur: ['dashHubFavoritSection', 'dashHubMainTabsRow', 'dashHubMainGridCard', 'dashboardHubPinnedWrap'],
+      insight: ['lifeOSWrap', 'eieWrap'],
+    };
+    Object.keys(SECTION_GROUPS).forEach((t) => {
+      SECTION_GROUPS[t].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('u-dnone', t !== tab);
+      });
+    });
+
+    // Section-section di atas punya visibility SENDIRI yang data-driven
+    // (bukan cuma on/off per sub-tab) — panggil ulang fungsi apply/render
+    // aslinya supaya keputusan itu tetap dihormati begitu sub-tab "fitur"
+    // aktif lagi, bukan ketimpa jadi selalu-tampil oleh toggle generik di
+    // atas:
+    //  - dashHubMainGridCard vs dashboardHubPinnedWrap: tunduk ke
+    //    dashHubMainTab (Semua Fitur / Pinned Widget), lihat applyMainTab().
+    //  - dashHubFavoritSection: disembunyikan total kalau belum ada key
+    //    favorit tersimpan, lihat DashboardHubFavoritView.render().
+    if (tab === 'fitur') {
+      this.applyMainTab(localStorage.getItem('dashHubMainTab') || 'fitur');
+      if (typeof DashboardHubFavoritView !== 'undefined') DashboardHubFavoritView.render();
+    }
+
+    // Update tombol aktif (pola sama dgn applyMainTab()).
+    ['ringkasan', 'fitur', 'insight'].forEach((t) => {
+      const btn = document.getElementById(`dashHubSectionTabBtn-${t}`);
+      if (btn) btn.classList.toggle('active', t === tab);
+    });
+  },
+
+  // Ganti tab aktif & simpan pilihannya (localStorage key: dashHubMainTab),
+  // pola sama persis dgn cardCollapsePrefs yang sudah dipakai ~40+ kartu
+  // lain (lihat modal-navigasi.js) — bukan sistem preferensi baru.
+  setMainTab(tab) {
+    localStorage.setItem('dashHubMainTab', tab);
+    this.applyMainTab(tab);
+  },
+
+  applyMainTab(tab) {
+    const gridCard = document.getElementById('dashHubMainGridCard');
+    const pinnedWrap = document.getElementById('dashboardHubPinnedWrap');
+    const btnFitur = document.getElementById('dashHubMainTabBtn-fitur');
+    const btnPinned = document.getElementById('dashHubMainTabBtn-pinned');
+    if (!gridCard || !pinnedWrap) return;
+    const isPinned = tab === 'pinned';
+    gridCard.classList.toggle('u-dnone', isPinned);
+    pinnedWrap.classList.toggle('u-dnone', !isPinned);
+    if (btnFitur) btnFitur.classList.toggle('active', !isPinned);
+    if (btnPinned) btnPinned.classList.toggle('active', isPinned);
   },
 
   // Kontrak resolusi ADR-001 §4 — SATU-SATUNYA entry point publik navigasi.

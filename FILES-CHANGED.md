@@ -2794,3 +2794,73 @@ node --test tests/dashboard-v2-hero-real-data.test.js
 node --test
 # tests 1876 / pass 1876 / fail 0
 ```
+
+# Files Changed — Tab "📊 Laporan" Shop/Cobek (bangun UI utk logic yatim)
+
+Baseline: 1727/1727 test PASS sebelum sesi ini.
+
+## Temuan audit
+
+`Laporan.renderTab()`/`topProdukAgg()`/`renderTopProduk()`/
+`renderTopPelanggan()`/`setPeriodeLap()`/`getRangeLap()` (`cobek-order.js`)
+dan `exportLaporanShopXLSX()` (`cobek-io.js`), plus cabang
+`t==='laporan'` di `setShopTab()`, sudah ada sejak lama — tapi **tidak ada
+elemen HTML sama sekali** (`#lapTrip`, `#lapOmzet`, `#lapGrafikBars`, dst)
+maupun tombol tab untuk memicunya. Tab "Laporan" Shop sepenuhnya tidak bisa
+diakses user walau logic-nya lengkap. Sesi ini menambahkan HANYA markup +
+1 wrapper tipis baru untuk mengaktifkannya, plus FAB kontekstual (pola sama
+persis dengan `#laporanFab` di tab Laporan Keuangan, `REPORTS-2.0.md`).
+
+## File yang berubah
+
+| File | Jenis | Ringkasan |
+|---|---|---|
+| `index.html` | Diubah (+95 baris) | 1 tombol tab baru "📊 Laporan" di `.cn-tabs` Shop; 1 div `#shopTab-laporan` baru berisi filter periode (`#lapPeriodeChips`/`#lapCustomRange`, TERPISAH dari filter Riwayat), 4 kartu stat (reuse `.grid2`/`.stat-box`), grafik (reuse `.grafik-bar-wrap`), top produk & top pelanggan; FAB kontekstual `#shopLaporanFab` (reuse penuh `.keu-fab*`, 2 aksi: `exportLaporanShopXLSX()`/`exportShopSemuaXLSX()`, keduanya fungsi lama tidak diubah). |
+| `app_production.html` | Diubah (disinkronkan) | Disalin ulang jadi salinan persis `index.html` (diverifikasi `diff` kosong). |
+| `styles.css` | Diubah (+8 baris) | 1 rule baru `#shopTab-laporan .keu-fab{bottom:236px;}` (override posisi, aditif, offset sama seperti pola Laporan Keuangan) + komentar. Tidak ada class `.shop-laporan-fab*` baru. |
+| `cobek-io.js` | Diubah (+1 baris) | 1 wrapper tipis baru `function renderShopLaporan(){return Laporan.renderTab();}` (pola sama dgn `renderShop()`/`renderShopGrafik()` yang sudah ada) supaya input `#lapFrom`/`#lapTo` bisa memicu render ulang. Tidak ada baris lain di file ini yang diubah. |
+| `tests/shop-laporan-tab.test.js` | **Baru** (28 test) | Test struktural: tombol tab & posisi, elemen `#lapTrip`/dst ada, filter periode terpisah dari Riwayat, 4 kartu stat reuse `.grid2`/`.stat-box` (bukan grid-4 baru), grafik reuse `.grafik-bar-wrap`, FAB kontekstual (di dalam `#shopTab-laporan`, ter-toggle otomatis), FAB reuse `.keu-fab*` & 2 fungsi export lama, parity `index.html`/`app_production.html`, guard tidak ada class CSS baru, guard `cobek-order.js`/`dashboard-hub-registry.js` tidak disentuh, guard `cobek-io.js` hanya nambah 1 wrapper. |
+| `CHANGELOG.md` | Diubah | ditambah entry baru (aditif, prepend). |
+| `FILES-CHANGED.md` | Diubah | Dokumen ini (aditif, append). |
+
+## Yang TIDAK diubah
+
+- `Laporan.renderTab()`/`topProdukAgg()`/`renderTopProduk()`/
+  `renderTopPelanggan()`/`setPeriodeLap()`/`getRangeLap()`/`renderGrafik()`
+  (`cobek-order.js`) — 0 baris tersentuh, semua logic direuse apa adanya.
+- `exportLaporanShopXLSX()`/`ShopExport.exportLaporan()`/
+  `exportShopSemuaXLSX()` (`cobek-io.js`) — 0 baris tersentuh.
+- `setShopTab()` (`cobek-io.js`) — cabang `t==='laporan'` sudah ada sejak
+  lama, tidak diubah.
+- `#shopFab` (Sprint 2 Tahap 2) — tidak diubah, tetap tampil di semua tab
+  Shop termasuk tab Laporan yang baru.
+- `dashboard-hub-registry.js` (`FEATURE_REGISTRY`) — tidak relevan/tidak
+  disentuh, tab Laporan Shop bukan entri baru di Dashboard Grid.
+
+## Verifikasi
+
+Diverifikasi lewat browser (Playwright + Chrome headless), dgn transaksi
+nyata di `D.cobek` (bukan mock): tab Laporan menampilkan jumlah transaksi,
+omzet, untung, margin, grafik 6 bulan, top produk, top pelanggan dgn benar;
+FAB toggle & kedua aksi export terwire dgn benar; ganti filter periode
+(Harian) tidak memicu error; smoke-test internal tetap bersih
+(`✅ [smoke-test] OK — 1155 referensi getElementById() & 79 data-action
+semuanya valid`).
+
+## Hasil test
+
+```
+node --test tests/shop-laporan-tab.test.js
+# tests 28 / pass 28 / fail 0
+
+node --test
+# tests 1755 / pass 1755 / fail 0
+
+npm run build
+✓ Tidak ada elemen u-dnone yang berisiko permanen kosong
+✓ Tidak ada field user yang dirender tanpa escapeHtml()
+✓ Tidak ada regresi pola guard dini Tesseract
+✓ Semua konstanta versi terverifikasi sinkron
+✓ Sintaks kedua bundle valid (node --check lolos)
+✓ index.html & app_production.html sudah identik.
+```

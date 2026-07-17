@@ -153,7 +153,7 @@ try{
 if(typeof DebtStrategy!=='undefined'&&typeof WorthIt!=='undefined'){
 const dsr=DebtStrategy.computeDSR();
 if(dsr.pct!=null&&dsr.pct>=PiutangUtangInsight.DSR_WARN_PCT){
-out.push({id:'debt-dsr-tinggi',level:dsr.pct>=50?'danger':'warning',icon:dsr.pct>=50?'🔴':'🟠',text:`Beban cicilan bulanan (DSR) sudah ${Math.round(dsr.pct)}% dari rata-rata pemasukan (${fmtFull(dsr.totalCicilan)}/bln) — idealnya di bawah ${PiutangUtangInsight.DSR_WARN_PCT}%.`,action:{label:'Lihat Strategi Utang',page:'pajak',navIdx:5}});
+out.push({id:'debt-dsr-tinggi',level:dsr.pct>=50?'danger':'warning',icon:dsr.pct>=50?'🔴':'🟠',text:`Beban cicilan bulanan (DSR) sudah ${Math.round(dsr.pct)}% dari rata-rata pemasukan (${fmtFull(dsr.totalCicilan)}/bln) — idealnya di bawah ${PiutangUtangInsight.DSR_WARN_PCT}%.`,action:{label:'Lihat Strategi Utang',page:'keuangan',navIdx:1}});
 }
 }
 }catch(e){console.warn('PiutangUtangInsight: gagal cek DSR',e);}

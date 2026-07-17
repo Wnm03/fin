@@ -43,12 +43,22 @@
 //
 // TAB REFERENSI (diverifikasi lewat data-action="setXxxTab" & pane id di
 // index.html/app_production.html):
-//   page:'keuangan' -> 'kelola' | 'laporan'      (setKeuanganTab, tx-list-cashflow.js)
+//   page:'keuangan' -> 'kelola' | 'tagihan' | 'budget' | 'laporan' (setKeuanganTab, tx-list-cashflow.js)
+//     tab:'laporan' PUNYA sub-tab bersarang (2026-07-17): field opsional
+//     `subtab: 'ringkasan'|'aruskas'|'transaksi'` (setLaporanTab, sama file)
+//     tab:'kelola' JUGA PUNYA sub-tab bersarang (2026-07-17, bagian ke-3):
+//     field opsional `subtab: 'ringkasan'|'transaksi'|'pengaturan'`
+//     (setKelolaTab, sama file)
 //   page:'shop'     -> 'kasir'|'jual'|'etalase'|'produsen'|'riwayat'|'pelanggan' (setShopTab, cobek-io.js)
 //   page:'carnotes' -> 'bbm' | 'servis'           (setCnTab, vehicle-core.js)
 //   page:'pajak'    -> 'zakat' | 'pajak'           (setPajakTab, features-sheets-pwa-selftest.js)
-//   page:'aset'     -> (tanpa tab; halaman tunggal, PUNYA nav-item bottom-nav sendiri
-//                        (slot index 3, dulu "AI") sejak update ini, lihat PAGE_NAV_IDX di dashboard-hub.js)
+//     tab:'pajak' JUGA PUNYA sub-tab bersarang (2026-07-17, bagian ke-4):
+//     field opsional `subtab: 'pph21'|'pbb'` (setPjkTab, sama file)
+//   page:'aset'     -> 'ringkasan' | 'buku' | 'analisis' (setAsetTab, aset.js) — PUNYA
+//                        nav-item bottom-nav sendiri (slot index 3, dulu "AI") sejak
+//                        update sebelumnya, lihat PAGE_NAV_IDX di dashboard-hub.js.
+//                        Dipecah jadi 3 tab di sesi ini krn sebelumnya 1 halaman tunggal
+//                        numpuk 8 kartu (lihat catatan kerja "Split tab: Aset" di CLAUDE.md).
 //
 // `icon` per fitur/kategori SENGAJA masih emoji (bukan nama ikon SVG
 // Feather/Lucide dari Design System §9) — emoji ini adalah yang SUDAH
@@ -83,16 +93,16 @@ const FEATURE_REGISTRY = [
     target: { page: 'keuangan' },
     navIdx: 1,
     features: [
-      { key: 'keu-transaksi', label: 'Transaksi (Masuk/Keluar/Transfer)', icon: '💸', desc: 'Catat pemasukan, pengeluaran, transfer akun', target: { page: 'keuangan', tab: 'kelola', action: 'openTxModal' } },
-      { key: 'keu-saldo-akun', label: 'Saldo Akun', icon: '🏦', desc: 'Saldo tiap akun cash/bank/e-wallet', target: { page: 'keuangan', tab: 'laporan', goTo: 'lapAccList' } },
-      { key: 'keu-anggaran', label: 'Anggaran Bulan Ini', icon: '📋', desc: 'Batas & pemakaian anggaran per kategori', target: { page: 'keuangan', tab: 'kelola', goTo: 'budgetList' } },
-      { key: 'keu-tagihan', label: 'Tagihan & Cicilan', icon: '🧾', desc: 'Tagihan, cicilan, dan langganan jatuh tempo', target: { page: 'keuangan', tab: 'kelola', goTo: 'billListKeu' } },
+      { key: 'keu-transaksi', label: 'Transaksi (Masuk/Keluar/Transfer)', icon: '💸', desc: 'Catat pemasukan, pengeluaran, transfer akun', target: { page: 'keuangan', tab: 'kelola', subtab: 'transaksi', action: 'openTxModal' } },
+      { key: 'keu-saldo-akun', label: 'Saldo Akun', icon: '🏦', desc: 'Saldo tiap akun cash/bank/e-wallet', target: { page: 'keuangan', tab: 'laporan', subtab: 'ringkasan', goTo: 'lapAccList' } },
+      { key: 'keu-anggaran', label: 'Anggaran Bulan Ini', icon: '📋', desc: 'Batas & pemakaian anggaran per kategori', target: { page: 'keuangan', tab: 'budget', goTo: 'budgetList' } },
+      { key: 'keu-tagihan', label: 'Tagihan & Cicilan', icon: '🧾', desc: 'Tagihan, cicilan, dan langganan jatuh tempo', target: { page: 'keuangan', tab: 'tagihan', goTo: 'billListKeu' } },
       { key: 'keu-target', label: 'Target Keuangan', icon: '🎯', desc: 'Target tabungan & Dana Darurat', target: { page: 'settings', group: 'stgGroup2', goTo: 'targetList' } },
-      { key: 'keu-pensiun', label: 'Dana Pensiun', icon: '👴', desc: 'Proyeksi kebutuhan & tabungan pensiun', target: { page: 'keuangan', tab: 'kelola', goTo: 'pensiunBody' } },
-      { key: 'keu-grafik', label: 'Grafik 6 Bulan', icon: '📈', desc: 'Tren income/expense 6 bulan terakhir', target: { page: 'keuangan', tab: 'laporan', goTo: 'grafikBars' } },
-      { key: 'keu-cashflow', label: 'Proyeksi Arus Kas 30 Hari', icon: '🌊', desc: 'Perkiraan saldo 30 hari ke depan', target: { page: 'keuangan', tab: 'laporan', goTo: 'cfBody' } },
-      { key: 'keu-laporan-kategori', label: 'Laporan per Kategori', icon: '🗂️', desc: 'Rekap pengeluaran/pemasukan per kategori', target: { page: 'keuangan', tab: 'laporan', goTo: 'lapKat' } },
-      { key: 'keu-export', label: 'Export', icon: '📤', desc: 'Export laporan ke CSV/JSON/PDF/Gambar', target: { page: 'keuangan', tab: 'laporan' } },
+      { key: 'keu-pensiun', label: 'Dana Pensiun', icon: '👴', desc: 'Proyeksi kebutuhan & tabungan pensiun', target: { page: 'keuangan', tab: 'asetproyek', goTo: 'pensiunBody' } },
+      { key: 'keu-grafik', label: 'Grafik 6 Bulan', icon: '📈', desc: 'Tren income/expense 6 bulan terakhir', target: { page: 'keuangan', tab: 'laporan', subtab: 'ringkasan', goTo: 'grafikBars' } },
+      { key: 'keu-cashflow', label: 'Proyeksi Arus Kas 30 Hari', icon: '🌊', desc: 'Perkiraan saldo 30 hari ke depan', target: { page: 'keuangan', tab: 'laporan', subtab: 'aruskas', goTo: 'cfBody' } },
+      { key: 'keu-laporan-kategori', label: 'Laporan per Kategori', icon: '🗂️', desc: 'Rekap pengeluaran/pemasukan per kategori', target: { page: 'keuangan', tab: 'laporan', subtab: 'aruskas', goTo: 'lapKat' } },
+      { key: 'keu-export', label: 'Export', icon: '📤', desc: 'Export laporan ke CSV/JSON/PDF/Gambar', target: { page: 'keuangan', tab: 'laporan', subtab: 'transaksi' } },
     ],
   },
   {
@@ -111,8 +121,8 @@ const FEATURE_REGISTRY = [
       { key: 'shop-tren', label: 'Tren Penjualan 6 Bulan', icon: '📈', desc: 'Grafik omzet 6 bulan terakhir', target: { page: 'shop', tab: 'riwayat', goTo: 'shopGrafikBars' } },
       { key: 'shop-reko-harga', label: 'Rekomendasi Harga Jual AI', icon: '🏷️', desc: 'Saran harga jual per produk', target: { page: 'shop', tab: 'etalase', goTo: 'priceRekoWidgetList' } },
       { key: 'shop-reko-restock', label: 'Rekomendasi Restock AI', icon: '🔄', desc: 'Saran produk yang perlu di-restock', target: { page: 'shop', tab: 'etalase', goTo: 'stockRekoWidgetList' } },
-      { key: 'shop-sewakios', label: 'Sewa Kios', icon: '🔑', desc: 'Unit kios disewakan & riwayat tagihan', target: { page: 'keuangan', tab: 'kelola', goTo: 'sewaKiosList' } },
-      { key: 'shop-renovasi', label: 'Proyek Renovasi', icon: '🛠️', desc: 'Kalkulator material & biaya renovasi', target: { page: 'keuangan', tab: 'kelola', goTo: 'renovList' } },
+      { key: 'shop-sewakios', label: 'Sewa Kios', icon: '🔑', desc: 'Unit kios disewakan & riwayat tagihan', target: { page: 'keuangan', tab: 'asetproyek', goTo: 'sewaKiosList' } },
+      { key: 'shop-renovasi', label: 'Proyek Renovasi', icon: '🛠️', desc: 'Kalkulator material & biaya renovasi', target: { page: 'keuangan', tab: 'asetproyek', goTo: 'renovList' } },
     ],
   },
   {
@@ -141,8 +151,8 @@ const FEATURE_REGISTRY = [
       { key: 'pz-zakat-maal', label: 'Zakat Maal', icon: '💰', desc: 'Zakat harta & simpanan', target: { page: 'pajak', tab: 'zakat', goTo: 'zmStatusBox' } },
       { key: 'pz-zakat-fitrah', label: 'Zakat Fitrah', icon: '🌙', desc: 'Hitung zakat fitrah per jiwa', target: { page: 'pajak', tab: 'zakat', goTo: 'zfTotal' } },
       { key: 'pz-riwayat-zakat', label: 'Riwayat Pembayaran Zakat', icon: '📜', desc: 'Catatan zakat yang sudah dibayar', target: { page: 'pajak', tab: 'zakat', goTo: 'zakatLogList' } },
-      { key: 'pz-pph21', label: 'Estimasi PPh 21', icon: '🧾', desc: 'Estimasi pajak penghasilan pribadi', target: { page: 'pajak', tab: 'pajak', goTo: 'pphResultBox' } },
-      { key: 'pz-pbb', label: 'PBB', icon: '🏠', desc: 'Pajak Bumi & Bangunan', target: { page: 'pajak', tab: 'pajak', goTo: 'pbbAssetPick' } },
+      { key: 'pz-pph21', label: 'Estimasi PPh 21', icon: '🧾', desc: 'Estimasi pajak penghasilan pribadi', target: { page: 'pajak', tab: 'pajak', subtab: 'pph21', goTo: 'pphResultBox' } },
+      { key: 'pz-pbb', label: 'PBB', icon: '🏠', desc: 'Pajak Bumi & Bangunan', target: { page: 'pajak', tab: 'pajak', subtab: 'pbb', goTo: 'pbbAssetPick' } },
     ],
   },
   {
@@ -152,10 +162,10 @@ const FEATURE_REGISTRY = [
     desc: 'Kekayaan di luar arus kas harian',
     navIdx: 5,
     features: [
-      { key: 'aset-buku', label: 'Buku Aset & Kekayaan Bersih', icon: '📚', desc: 'Daftar aset & total kekayaan bersih', target: { page: 'aset', goTo: 'assetList' } },
-      { key: 'aset-histori', label: 'Histori Kekayaan & Growth Rate', icon: '📉', desc: 'Snapshot kekayaan & CAGR', target: { page: 'aset', goTo: 'wealthSnapshotList' } },
-      { key: 'aset-alokasi', label: 'Rekomendasi Alokasi Aset', icon: '🧭', desc: 'Saran alokasi dana sesuai profil risiko', target: { page: 'aset', goTo: 'aaResult' } },
-      { key: 'aset-emas', label: 'Aset Emas (impor nota massal)', icon: '🥇', desc: 'Impor nota emas & rekap zakat maal emas', target: { page: 'aset', goTo: 'assetList', action: 'GoldImport.open' } },
+      { key: 'aset-buku', label: 'Buku Aset & Kekayaan Bersih', icon: '📚', desc: 'Daftar aset & total kekayaan bersih', target: { page: 'aset', tab: 'buku', goTo: 'assetList' } },
+      { key: 'aset-histori', label: 'Histori Kekayaan & Growth Rate', icon: '📉', desc: 'Snapshot kekayaan & CAGR', target: { page: 'aset', tab: 'ringkasan', goTo: 'wealthSnapshotList' } },
+      { key: 'aset-alokasi', label: 'Rekomendasi Alokasi Aset', icon: '🧭', desc: 'Saran alokasi dana sesuai profil risiko', target: { page: 'aset', tab: 'analisis', goTo: 'aaResult' } },
+      { key: 'aset-emas', label: 'Aset Emas (impor nota massal)', icon: '🥇', desc: 'Impor nota emas & rekap zakat maal emas', target: { page: 'aset', tab: 'buku', goTo: 'assetList', action: 'GoldImport.open' } },
     ],
   },
   {
@@ -167,11 +177,10 @@ const FEATURE_REGISTRY = [
     features: [
       { key: 'per-absensi', label: 'Absensi Harian & Kalkulator Gaji', icon: '🕒', desc: 'Absensi & estimasi gaji mingguan', target: { page: 'dashboard-hub', dashKey: 'absensi', goTo: 'dashAbsensiCard' } },
       { key: 'per-edufund', label: 'Dana Pendidikan', icon: '🎓', desc: 'Target biaya sekolah/kuliah anak', target: { page: 'settings', group: 'stgGroup2', goTo: 'eduFundList' } },
-      { key: 'per-anak', label: 'Perkembangan Anak', icon: '👶', desc: 'Milestone tumbuh kembang anak', target: { page: 'settings', group: 'stgGroup3', goTo: 'anakList' } },
       { key: 'per-worthit', label: 'Worth It? & Prioritas Belanja', icon: '🤔', desc: 'Cek layak beli & daftar prioritas belanja', target: { action: 'WorthIt.open' } },
       { key: 'per-self-reward', label: 'Self Reward', icon: '🎁', desc: 'Cek kelayakan & level self reward sesuai kondisi finansial', target: { action: 'SelfRewardView.open' } },
-      { key: 'per-piutang-utang', label: 'Piutang & Utang', icon: '🤝', desc: 'Catatan piutang, utang, strategi pelunasan', target: { page: 'keuangan', tab: 'kelola', goTo: 'piutangList' } },
-      { key: 'per-pengingat', label: 'Pengingat', icon: '🔔', desc: 'Pengingat umum keluarga', target: { page: 'settings', group: 'stgGroup3', goTo: 'reminderList' } },
+      { key: 'per-piutang-utang', label: 'Piutang & Utang', icon: '🤝', desc: 'Catatan piutang, utang, strategi pelunasan', target: { page: 'keuangan', tab: 'utangpiutang', goTo: 'piutangList' } },
+      { key: 'per-pengingat', label: 'Pengingat', icon: '🔔', desc: 'Pengingat umum', target: { page: 'settings', group: 'stgGroup3', goTo: 'reminderList' } },
     ],
   },
   {
@@ -183,8 +192,8 @@ const FEATURE_REGISTRY = [
     navIdx: 3,
     features: [
       { key: 'ai-chat', label: 'AI Asisten (chat)', icon: '💬', desc: 'Tanya jawab & aksi lewat chat AI', target: { page: 'ai', goTo: 'chatBox' } },
-      { key: 'ai-kategorisasi', label: 'Kategorisasi Transaksi Otomatis', icon: '🏷️', desc: 'Tebak kategori dari catatan bebas saat isi transaksi', target: { page: 'keuangan', tab: 'kelola', action: 'openTxModal' } },
-      { key: 'ai-scan-ocr', label: 'Scan Struk/OCR', icon: '📸', desc: 'Scan struk belanja, transfer, odometer, portofolio aset', target: { page: 'keuangan', tab: 'kelola', action: 'openTxModal' } },
+      { key: 'ai-kategorisasi', label: 'Kategorisasi Transaksi Otomatis', icon: '🏷️', desc: 'Tebak kategori dari catatan bebas saat isi transaksi', target: { page: 'keuangan', tab: 'kelola', subtab: 'transaksi', action: 'openTxModal' } },
+      { key: 'ai-scan-ocr', label: 'Scan Struk/OCR', icon: '📸', desc: 'Scan struk belanja, transfer, odometer, portofolio aset', target: { page: 'keuangan', tab: 'kelola', subtab: 'transaksi', action: 'openTxModal' } },
     ],
   },
   {

@@ -38,6 +38,9 @@
     accounts.google.com -> Google Identity Services (login Google Drive/Sheets).
     api.anthropic.com, generativelanguage.googleapis.com -> panggilan AI
       (fitur AI Asisten, pakai API key milik user sendiri, disimpan lokal).
+    open.er-api.com -> auto-fetch kurs USD/IDR untuk kartu Kondisi Ekonomi
+      (EIE, fase 2), API publik gratis TANPA API key, dipanggil dari
+      MacroDataAdapter._autoFetchUsdIdr().
     www.googleapis.com, sheets.googleapis.com -> integrasi Google Drive & Sheets.
     BUGFIX: cdn.jsdelivr.net & tessdata.projectnaptha.com di connect-src
       (+ cdn.jsdelivr.net di worker-src) -> setelah <script src> tesseract.min.js
@@ -61,7 +64,7 @@
   ini dihosting di server sendiri, sebaiknya arahan ini juga dikirim lewat
   header `Content-Security-Policy` di response, bukan cuma meta tag di sini.
 -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://api.anthropic.com https://generativelanguage.googleapis.com https://www.googleapis.com https://sheets.googleapis.com https://accounts.google.com https://cdn.jsdelivr.net https://tessdata.projectnaptha.com; frame-src https://accounts.google.com; worker-src 'self' blob: https://cdn.jsdelivr.net; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://open.er-api.com https://api.anthropic.com https://generativelanguage.googleapis.com https://www.googleapis.com https://sheets.googleapis.com https://accounts.google.com https://cdn.jsdelivr.net https://tessdata.projectnaptha.com; frame-src https://accounts.google.com; worker-src 'self' blob: https://cdn.jsdelivr.net; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self';">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#08090c">
@@ -76,8 +79,8 @@
 <link rel="preconnect" href="https://accounts.google.com" crossorigin>
 <link rel="dns-prefetch" href="https://accounts.google.com">
 <title>Keluarga W</title>
-<link rel="stylesheet" href="styles.css?v=350">
-<link rel="stylesheet" href="modern-ui-layer.css?v=350">
+<link rel="stylesheet" href="styles.css?v=383">
+<link rel="stylesheet" href="modern-ui-layer.css?v=383">
 <script>
 /* Debug console (Eruda) — aktifkan sekali lewat ?debug=1 di URL, nempel via localStorage.
    Matikan lagi lewat ?debug=0. Tidak aktif buat user biasa. */
@@ -130,8 +133,8 @@ b.appendChild(closeBtn);
 }catch(_e){ console.error('Gagal tampilkan banner error modul:',_e); }
 };
 </script>
-<script src="app-bundle-a.min.js?v=350" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
-<script src="smoke-test.js?v=350" defer></script>
+<script src="app-bundle-a.min.js?v=383" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
+<script src="smoke-test.js?v=383" defer></script>
 <link rel="manifest" id="pwaManifestLink" href="manifest.json">
 </head>
 <body data-theme="fresh">
@@ -194,21 +197,6 @@ b.appendChild(closeBtn);
 
 <div id="mainApp" class="u-dnone">
 
-<!-- AI SMART INSIGHT — di LUAR .page dengan sengaja: showPage() (modal-navigasi.js) cuma
-     toggle class active di elemen .page, elemen ini bukan salah satunya jadi TIDAK pernah
-     ikut disembunyikan/dipindah saat pindah tab -- otomatis selalu tampil di posisi paling
-     atas (tepat di bawah header) di SEMUA tab. Isinya di-refresh tiap showPage() lewat
-     AiSmartInsight.render() (lihat ai-smart-insight.js). -->
-<div id="aiSmartInsightWrap">
-  <div class="card u-mb0" id="aiSmartInsightCard">
-    <div class="card-title">🤖 Insight AI <span class="u-flexc8"><span class="acc-chip" id="aiSmartInsightBadge">–</span><span class="card-collapse-toggle" id="aiSmartInsightCard-chev" data-action="toggleCardCollapse" data-args='["aiSmartInsightCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
-    <div class="card-collapse-body" id="aiSmartInsightCard-cbody">
-      <div class="u-fs12 u-fw700 u-mb6" id="aiSmartInsightHeadline"></div>
-      <div id="aiSmartInsightBody"></div>
-    </div>
-  </div>
-</div>
-
 <!-- DASHBOARD -->
 <div class="page" id="page-dashboard">
   <div class="page-settings-btn">
@@ -261,7 +249,7 @@ b.appendChild(closeBtn);
       <div class="stg-group-chevron">▼</div>
     </div>
     <div class="stg-group-body" id="dashSecondaryGroup-body"><div class="stg-group-body-inner">
-  <div class="card u-mb12 u-dnone u-pointer" id="dashBudgetMiniCard" data-action="showPage" data-args='["keuangan", "$nav:1"]'>
+  <div class="card u-mb12 u-dnone u-pointer" id="dashBudgetMiniCard" data-onclick="showPage('keuangan',document.querySelectorAll('.nav-item')[1]);setKeuanganTab('budget',document.querySelectorAll('#page-keuangan .cn-tab')[2])">
     <div class="card-title">📊 Anggaran Bulan Ini <span class="card-collapse-toggle" id="dashBudgetMiniCard-chev" data-action="toggleCardCollapse" data-args='["dashBudgetMiniCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
     <div class="card-collapse-body" id="dashBudgetMiniCard-cbody">
     <div class="u-flex u-jcb u-aic u-mb6">
@@ -299,7 +287,7 @@ b.appendChild(closeBtn);
     <div class="stat-box clickable" data-action="showFilteredTx" data-args='["dashboard", "all", "\ud83d\udcb0 Saldo Bersih Bulan Ini"]'><div class="stat-label">💰 Saldo Bersih</div><div class="stat-val purple" id="dBalance">Rp 0</div></div>
     <div class="stat-box clickable" data-action="goToList" data-args='["shopList", "shop", 2, "riwayat"]'><div class="stat-label">🪨 Untung Shop</div><div class="stat-val orange" id="dShop">Rp 0</div></div>
   </div>
-  <div class="card u-mb12 u-pointer" id="dashLaporanMiniCard" data-onclick="showPage('keuangan',document.querySelectorAll('.nav-item')[1]);setKeuanganTab('laporan',document.querySelectorAll('#page-keuangan .cn-tab')[1])">
+  <div class="card u-mb12 u-pointer" id="dashLaporanMiniCard" data-onclick="showPage('keuangan',document.querySelectorAll('.nav-item')[1]);setKeuanganTab('laporan',document.querySelectorAll('#page-keuangan .cn-tab')[5])">
     <div class="card-title">📊 Ringkasan Laporan Bulan Ini <span class="u-flexc8"><span class="u-fw400 u-fs12 u-cacc" style="text-transform:none;letter-spacing:0">Lihat Detail →</span><span class="card-collapse-toggle" id="dashLaporanMiniCard-chev" data-action="toggleCardCollapse" data-args='["dashLaporanMiniCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
     <div class="card-collapse-body" id="dashLaporanMiniCard-cbody">
     <div class="u-fs12 u-t2 u-mb10" id="dashLapTrend"></div>
@@ -339,6 +327,10 @@ b.appendChild(closeBtn);
 <div class="page" id="page-keuangan">
   <div class="cn-tabs">
     <button class="cn-tab active" data-action="setKeuanganTab" data-args='["kelola", "$el"]'>💰 Kelola</button>
+    <button class="cn-tab" data-action="setKeuanganTab" data-args='["tagihan", "$el"]'>🔔 Tagihan &amp; Cicilan</button>
+    <button class="cn-tab" data-action="setKeuanganTab" data-args='["budget", "$el"]'>📊 Budget</button>
+    <button class="cn-tab" data-action="setKeuanganTab" data-args='["utangpiutang", "$el"]'>🤝 Piutang &amp; Utang</button>
+    <button class="cn-tab" data-action="setKeuanganTab" data-args='["asetproyek", "$el"]'>🏠 Aset &amp; Proyek</button>
     <button class="cn-tab" data-action="setKeuanganTab" data-args='["laporan", "$el"]'>📊 Laporan</button>
   </div>
 
@@ -358,6 +350,18 @@ b.appendChild(closeBtn);
 
   <!-- KELOLA -->
   <div id="keuanganTab-kelola">
+  <div class="cn-tabs kel-subtabs">
+    <button class="kel-subtab active" data-action="setKelolaTab" data-args='["ringkasan", "$el"]'>📊 Ringkasan</button>
+    <button class="kel-subtab" data-action="setKelolaTab" data-args='["transaksi", "$el"]'>💸 Transaksi</button>
+    <button class="kel-subtab" data-action="setKelolaTab" data-args='["pengaturan", "$el"]'>🏷️ Kelola Data</button>
+  </div>
+  <!-- 2026-07-17 (bagian ke-3): split tab 💰 Kelola (page-keuangan) jadi 3
+       sub-tab — pola SAMA PERSIS dgn split Laporan (setLaporanTab) & Aset
+       (setAsetTab), murni reorganisasi DOM lewat setKelolaTab()
+       (tx-list-cashflow.js), TIDAK ADA business logic baru. renderKeuangan()
+       (dipanggil sekali saat masuk tab Kelola) tetap mengisi semua kartu di
+       ketiga sub-tab sekaligus, terlepas dari sub-tab mana yang aktif. -->
+  <div id="kelolaTab-ringkasan">
     <div class="card u-mb12 u-dnone" id="keuanganInsightCard">
       <div class="card-title">💡 Insight Keuangan</div>
       <div id="keuanganInsightBody"></div>
@@ -389,147 +393,34 @@ b.appendChild(closeBtn);
       <button class="btn btn-income btn-sm" data-action="openWeeklyResetManual">💰 Catat</button>
     </div>
   </div>
-  <div class="card u-mb12">
-    <div class="card-title">📊 Anggaran
-      <div class="u-flex u-gap6 u-aic">
-        <button class="card-setting-btn" id="budgetTabSettingsBtn" data-action="openBudgetSettings" title="Pengaturan anggaran" aria-label="Pengaturan anggaran">⚙️ Atur</button>
-        <button class="card-setting-btn" id="budgetTabAddBtn" data-action="openBudgetModal" data-args='[null]' title="Tambah anggaran" aria-label="Tambah anggaran">＋ Tambah</button>
-        <span class="card-collapse-toggle" id="keuBudgetCard-chev" data-action="toggleCardCollapse" data-args='["keuBudgetCard","$event"]' aria-label="Buka/tutup bagian">▾</span>
+  <!-- Dipindah dari tab Zakat (halaman Pajak) -- ini murni ringkasan kekayaan,
+       piutang & utang, tidak spesifik zakat. Tab Zakat sekarang cuma isi
+       perhitungan zakat (Penghasilan, Maal, Fitrah, Riwayat). -->
+    <div class="card u-mb12" style="padding:12px 14px">
+      <div class="card-title u-mb8">📊 Kekayaan Bersih <span class="card-collapse-toggle" id="pzKekayaanCard-chev" data-action="toggleCardCollapse" data-args='["pzKekayaanCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
+      <div class="card-collapse-body" id="pzKekayaanCard-cbody">
+      <div class="grid3">
+        <div class="stat-box clickable" data-action="showPage" data-args='["dashboard", "$nav:0"]'><div class="stat-label">Saldo Akun</div><div class="stat-val green u-fs13" id="kbSaldoAkun">Rp 0</div></div>
+        <div class="stat-box clickable" data-action="goToList" data-args='["assetList", "aset"]'><div class="stat-label">Total Aset</div><div class="stat-val u-fs13" id="kbTotalAset">Rp 0</div></div>
+        <div class="stat-box"><div class="stat-label">Utang</div><div class="stat-val red u-fs13" id="kbUtang">Rp 0</div></div>
+      </div>
+      <div class="u-flex u-jcb u-aic u-mt10 divider-top">
+        <span class="u-fs12t2">🤝 Piutang (akan diterima)</span>
+        <span class="stat-val green u-fs14 u-pointer" id="kbPiutang" data-action="goToList" data-args='["piutangList", null, null, null, null, "utangpiutang"]' aria-label="Lihat daftar piutang">Rp 0</span>
+      </div>
+      <div class="u-flex u-jcb u-aic u-mt10 divider-top">
+        <span class="u-fs12t2">📦 Inventori Bisnis (modal stok)</span>
+        <span class="stat-val u-fs14 u-pointer" id="kbInventori" data-action="showPage" data-args='["shop", "$el"]' aria-label="Lihat etalase produk">Rp 0</span>
+      </div>
+      <div class="u-flex u-jcb u-aic u-mt10 divider-top">
+        <span class="u-fs12t2">Kekayaan Bersih</span>
+        <span class="stat-val purple u-fs18" id="kbNetWorth">Rp 0</span>
+      </div>
       </div>
     </div>
-    <div class="card-collapse-body" id="keuBudgetCard-cbody">
-    <div class="budget-tabbar u-flex u-gap6" style="margin-bottom:14px;background:var(--surface3);border-radius:var(--r-md);padding:3px">
-      <button type="button" class="budget-tab-btn active u-flex1 u-fs12 u-fw700 u-r8 u-pointer u-t2" data-tab="list" data-action="BudgetTabs.switchTo" data-args='["list"]' style="border:none;background:none;padding:8px 6px">📊 Bulan Ini</button>
-      <button type="button" class="budget-tab-btn u-flex1 u-fs12 u-fw700 u-r8 u-pointer u-t2" data-tab="reko" data-action="BudgetTabs.switchTo" data-args='["reko"]' style="border:none;background:none;padding:8px 6px">🎯 Rekomendasi Otomatis</button>
-    </div>
-    <div id="budgetTabPane-list">
-    <div id="budgetSummary" class="u-dnone">
-      <div class="budget-summary-grid">
-        <div class="budget-sum-box"><div class="budget-sum-val green" id="bTotalBudget">Rp 0</div><div class="budget-sum-lbl">Total Anggaran</div></div>
-        <div class="budget-sum-box clickable" data-action="showAllBudgetDrillDown"><div class="budget-sum-val red" id="bTotalUsed">Rp 0</div><div class="budget-sum-lbl">Terpakai</div></div>
-        <div class="budget-sum-box"><div class="budget-sum-val u-cacc" id="bTotalSisa">Rp 0</div><div class="budget-sum-lbl">Sisa</div></div>
-      </div>
-      <div class="budget-bar-track u-mb4" style="height:10px">
-        <div class="budget-bar-fill" id="bOverallBar" style="width:0%"></div>
-      </div>
-      <div class="budget-bar-label"><span id="bOverallPct">0% terpakai</span><span id="bOverallDays" class="u-t2"></span></div>
-      <div class="hr-divider"></div>
-    </div>
-    <div id="budgetList"></div>
-    </div>
-    <div id="budgetTabPane-reko" class="u-dnone">
-    <div class="u-hint10">Dihitung dari rata-rata transaksi asli kamu per kategori (BBM, Pulsa, Tagihan, dst) — bukan tebakan. Tinggal tap "Tetapkan" utk langsung bikin/update anggaran kategori itu.</div>
-    <div class="u-flex u-gap8 u-fwrap u-mb8" id="brMonthChips">
-      <button type="button" class="chip-btn" data-m="3" data-action="BudgetReko.setMonths" data-args='[3]'>3 Bulan Terakhir</button>
-      <button type="button" class="chip-btn" data-m="6" data-action="BudgetReko.setMonths" data-args='[6]'>6 Bulan Terakhir</button>
-    </div>
-    <div class="u-flex u-gap8 u-fwrap u-mb12" id="brBufferChips">
-      <button type="button" class="chip-btn" data-b="0" data-action="BudgetReko.setBuffer" data-args='[0]'>Pas Rata-rata</button>
-      <button type="button" class="chip-btn" data-b="10" data-action="BudgetReko.setBuffer" data-args='[10]'>+10% Buffer</button>
-      <button type="button" class="chip-btn" data-b="20" data-action="BudgetReko.setBuffer" data-args='[20]'>+20% Buffer</button>
-    </div>
-    <div id="budgetRekoResult"></div>
-    </div>
-    </div>
   </div>
-  <div class="stg-group" id="keuAsetProyekGroup">
-    <div class="stg-group-head" data-action="toggleStgGroup" data-args='["keuAsetProyekGroup"]' role="button" tabindex="0" aria-expanded="false" aria-controls="keuAsetProyekGroup-body">
-      <div class="stg-group-head-left"><div class="stg-group-icon">🏠</div><div><div class="stg-group-title">Aset & Proyek</div><div class="stg-group-sub">Dana Pensiun, Renovasi, Sewa Kios</div></div></div>
-      <div class="stg-group-chevron">▼</div>
-    </div>
-    <div class="stg-group-body" id="keuAsetProyekGroup-body"><div class="stg-group-body-inner">
-  <div class="card u-mb12">
-    <div class="card-title">🏖️ Dana Pensiun
-      <div class="u-flex u-gap6 u-aic">
-        <button class="card-setting-btn" data-action="Pensiun.openSettings" title="Atur Dana Pensiun" aria-label="Atur Dana Pensiun">⚙️ Atur</button>
-        <span class="card-collapse-toggle" id="keuPensiunCard-chev" data-action="toggleCardCollapse" data-args='["keuPensiunCard","$event"]' aria-label="Buka/tutup bagian">▾</span>
-      </div>
-    </div>
-    <div class="card-collapse-body" id="keuPensiunCard-cbody">
-    <div class="u-hint10">Sinkron 2 arah dengan Keuangan: saldo & proyeksi dihitung otomatis dari akun & rata-rata transaksi asli kamu, dan kontribusi yang dicatat di sini langsung jadi transaksi nyata yang mempengaruhi saldo akun.</div>
-    <div id="pensiunBody"></div>
-    </div>
-  </div>
-  <div class="card u-mb12 u-dnone" id="sewaKiosRenovInsightCard">
-    <div class="card-title">💡 Insight Sewa Kios & Renovasi</div>
-    <div id="sewaKiosRenovInsightBody"></div>
-  </div>
-  <div class="card u-mb12">
-    <div class="card-title">🛠️ Proyek Renovasi
-      <span class="u-flex u-gap6 u-aic">
-        <button class="card-setting-btn" data-action="Renov.openProjectModal">＋ Proyek Baru</button>
-        <span class="card-collapse-toggle" id="keuRenovCard-chev" data-action="toggleCardCollapse" data-args='["keuRenovCard","$event"]' aria-label="Buka/tutup bagian">▾</span>
-      </span>
-    </div>
-    <div class="card-collapse-body" id="keuRenovCard-cbody">
-    <div class="u-hint10">Kumpulkan biaya per-item (keran, keramik, ongkos tukang, dst) jadi 1 paket proyek. Sinkron 2 arah dgn Transaksi: tandai item "lunas" langsung bikin transaksi pengeluaran nyata (pengaruh ke saldo akun), dan hapus/edit transaksi itu di Keuangan otomatis mengubah status/harga item di sini juga.</div>
-    <div class="u-flex u-gap6 u-fwrap u-mb12">
-      <button class="card-setting-btn" data-action="Tukang.openModal">👷 Absensi Tukang</button>
-      <button class="card-setting-btn" data-action="Tukang.openModal">🧮 Kalkulator Upah</button>
-      <button class="card-setting-btn" data-onclick="RenovCalc.open(null)">📦 Kalkulator Material</button>
-    </div>
-    <div id="renovList"><div class="empty"><div class="empty-icon">🛠️</div><div class="empty-text">Belum ada proyek renovasi</div></div></div>
-    </div>
-  </div>
-  <div class="card u-mb12">
-    <div class="card-title">🏠 Sewa Kios
-      <span class="u-flex u-gap6 u-aic">
-        <button class="card-setting-btn" data-action="SewaKios.exportPDF" title="Export laporan sewa kios (PDF)" aria-label="Export laporan sewa kios (PDF)">🧾 Export</button>
-        <button class="card-setting-btn" data-action="SewaKios.openUnitModal" aria-label="Edit">＋ Unit Baru</button>
-        <span class="card-collapse-toggle" id="keuSewaKiosCard-chev" data-action="toggleCardCollapse" data-args='["keuSewaKiosCard","$event"]' aria-label="Buka/tutup bagian">▾</span>
-      </span>
-    </div>
-    <div class="card-collapse-body" id="keuSewaKiosCard-cbody">
-    <div class="u-hint10">Lacak hasil sewa kios pasca renovasi: status unit, pendapatan sewa yang tersambung ke Transaksi (sync 2 arah, sama seperti Proyek Renovasi), dan estimasi balik modal (ROI) dibanding biaya renovasinya.</div>
-    <div id="sewaKiosList"><div class="empty"><div class="empty-icon">🏠</div><div class="empty-text">Belum ada unit kios</div></div></div>
-    </div>
-  </div>
-    </div></div>
-  </div>
-  <div class="card u-mb12">
-    <div class="card-title">🔔 Tagihan, Cicilan & Langganan
-      <span class="u-flex u-gap6 u-aic">
-        <button class="card-setting-btn" id="billFilterToggleBtn" data-action="toggleBillFilterPanel" title="Filter" aria-label="Filter">🔍 Filter</button>
-        <button class="card-setting-btn" data-action="openBillCalendar" title="Lihat kalender" aria-label="Lihat kalender">📅 Kalender</button>
-        <button class="card-setting-btn" data-action="openBillModal" title="Tambah tagihan" aria-label="Tambah tagihan">＋ Tambah</button>
-        <span class="card-collapse-toggle" id="keuBillCard-chev" data-action="toggleCardCollapse" data-args='["keuBillCard","$event"]' aria-label="Buka/tutup bagian">▾</span>
-      </span>
-    </div>
-    <div class="card-collapse-body" id="keuBillCard-cbody">
-    <div class="grid3 u-mb10" id="keuBillStatGrid">
-      <div class="stat-box"><div class="stat-label">Bulan Ini</div><div class="stat-val red" id="keuBillMonthTotal">Rp 0</div></div>
-      <div class="stat-box"><div class="stat-label">Jatuh Tempo ≤7 Hari</div><div class="stat-val orange" id="keuBillSoonCount">0</div></div>
-      <div class="stat-box"><div class="stat-label">Sisa Cicilan</div><div class="stat-val purple" id="keuBillOutstanding">Rp 0</div></div>
-    </div>
-    <div class="u-dnone u-mb6" id="billFilterPanel" style="padding-top:2px">
-      <div class="u-gap8 u-mb6 u-grid2-nogap">
-        <select class="fs" id="billFilterStatus" onchange="applyBillFilter()">
-          <option value="all">Semua Status</option>
-          <option value="aktif">Belum Dibayar (Aktif)</option>
-          <option value="lunas">Sudah Lunas</option>
-        </select>
-        <select class="fs" id="billFilterKategori" onchange="applyBillFilter()">
-          <option value="all">Semua Kategori</option>
-        </select>
-        <select class="fs" id="billFilterBulan" onchange="applyBillFilter()">
-          <option value="all">Semua Bulan</option>
-          <option value="0">Januari</option><option value="1">Februari</option><option value="2">Maret</option>
-          <option value="3">April</option><option value="4">Mei</option><option value="5">Juni</option>
-          <option value="6">Juli</option><option value="7">Agustus</option><option value="8">September</option>
-          <option value="9">Oktober</option><option value="10">November</option><option value="11">Desember</option>
-        </select>
-        <select class="fs" id="billFilterTahun" onchange="applyBillFilter()">
-          <option value="all">Semua Tahun</option>
-        </select>
-      </div>
-      <div class="u-flex u-jcb u-aic u-mb2">
-        <div id="billFilterCount" class="u-fs12t2"></div>
-        <button id="billFilterResetBtn" class="card-setting-btn u-dnone" data-action="resetBillFilter">↺ Reset Filter</button>
-      </div>
-    </div>
-    <div id="billListKeu"><div class="empty"><div class="empty-icon">🔔</div><div class="empty-text">Belum ada tagihan terjadwal</div></div></div>
-    </div>
-  </div>
+  <!-- /RINGKASAN -->
+  <div id="kelolaTab-transaksi" class="u-dnone">
   <div class="btn-row3">
     <button class="btn btn-income" data-action="openTxModal" data-args='["income"]' aria-label="Edit/Buka">+ Masuk</button>
     <button class="btn btn-expense" data-action="openTxModal" data-args='["expense"]' aria-label="Edit/Buka">- Keluar</button>
@@ -581,7 +472,9 @@ b.appendChild(closeBtn);
     </div>
     </div>
   </div>
-
+  </div>
+  <!-- /TRANSAKSI -->
+  <div id="kelolaTab-pengaturan" class="u-dnone">
   <details class="card u-p0">
     <summary class="u-pointer u-flex u-aic u-jcb summary-toggle"><span class="card-title u-mb0">🏷️ Kelola Kategori & Subkategori</span></summary>
     <div class="summary-body-pad">
@@ -614,33 +507,107 @@ b.appendChild(closeBtn);
       <div id="importResult"></div>
     </div>
   </details>
+  </div>
+  <!-- /KELOLA DATA -->
+  </div>
 
-  <!-- Dipindah dari tab Zakat (halaman Pajak) -- ini murni ringkasan kekayaan,
-       piutang & utang, tidak spesifik zakat. Tab Zakat sekarang cuma isi
-       perhitungan zakat (Penghasilan, Maal, Fitrah, Riwayat). -->
-    <div class="card u-mb12" style="padding:12px 14px">
-      <div class="card-title u-mb8">📊 Kekayaan Bersih <span class="card-collapse-toggle" id="pzKekayaanCard-chev" data-action="toggleCardCollapse" data-args='["pzKekayaanCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
-      <div class="card-collapse-body" id="pzKekayaanCard-cbody">
-      <div class="grid3">
-        <div class="stat-box clickable" data-action="showPage" data-args='["dashboard", "$nav:0"]'><div class="stat-label">Saldo Akun</div><div class="stat-val green u-fs13" id="kbSaldoAkun">Rp 0</div></div>
-        <div class="stat-box clickable" data-action="goToList" data-args='["assetList", "aset"]'><div class="stat-label">Total Aset</div><div class="stat-val u-fs13" id="kbTotalAset">Rp 0</div></div>
-        <div class="stat-box"><div class="stat-label">Utang</div><div class="stat-val red u-fs13" id="kbUtang">Rp 0</div></div>
+  <!-- TAGIHAN & CICILAN -->
+  <div id="keuanganTab-tagihan" class="u-dnone">
+  <div class="card u-mb12">
+    <div class="card-title">🔔 Tagihan, Cicilan & Langganan
+      <span class="u-flex u-gap6 u-aic">
+        <button class="card-setting-btn" id="billFilterToggleBtn" data-action="toggleBillFilterPanel" title="Filter" aria-label="Filter">🔍 Filter</button>
+        <button class="card-setting-btn" data-action="openBillCalendar" title="Lihat kalender" aria-label="Lihat kalender">📅 Kalender</button>
+        <button class="card-setting-btn" data-action="openBillModal" title="Tambah tagihan" aria-label="Tambah tagihan">＋ Tambah</button>
+        <span class="card-collapse-toggle" id="keuBillCard-chev" data-action="toggleCardCollapse" data-args='["keuBillCard","$event"]' aria-label="Buka/tutup bagian">▾</span>
+      </span>
+    </div>
+    <div class="card-collapse-body" id="keuBillCard-cbody">
+    <div class="grid3 u-mb10" id="keuBillStatGrid">
+      <div class="stat-box"><div class="stat-label">Bulan Ini</div><div class="stat-val red" id="keuBillMonthTotal">Rp 0</div></div>
+      <div class="stat-box"><div class="stat-label">Jatuh Tempo ≤7 Hari</div><div class="stat-val orange" id="keuBillSoonCount">0</div></div>
+      <div class="stat-box"><div class="stat-label">Sisa Cicilan</div><div class="stat-val purple" id="keuBillOutstanding">Rp 0</div></div>
+    </div>
+    <div class="u-dnone u-mb6" id="billFilterPanel" style="padding-top:2px">
+      <div class="u-gap8 u-mb6 u-grid2-nogap">
+        <select class="fs" id="billFilterStatus" onchange="applyBillFilter()">
+          <option value="all">Semua Status</option>
+          <option value="aktif">Belum Dibayar (Aktif)</option>
+          <option value="lunas">Sudah Lunas</option>
+        </select>
+        <select class="fs" id="billFilterKategori" onchange="applyBillFilter()">
+          <option value="all">Semua Kategori</option>
+        </select>
+        <select class="fs" id="billFilterBulan" onchange="applyBillFilter()">
+          <option value="all">Semua Bulan</option>
+          <option value="0">Januari</option><option value="1">Februari</option><option value="2">Maret</option>
+          <option value="3">April</option><option value="4">Mei</option><option value="5">Juni</option>
+          <option value="6">Juli</option><option value="7">Agustus</option><option value="8">September</option>
+          <option value="9">Oktober</option><option value="10">November</option><option value="11">Desember</option>
+        </select>
+        <select class="fs" id="billFilterTahun" onchange="applyBillFilter()">
+          <option value="all">Semua Tahun</option>
+        </select>
       </div>
-      <div class="u-flex u-jcb u-aic u-mt10 divider-top">
-        <span class="u-fs12t2">🤝 Piutang (akan diterima)</span>
-        <span class="stat-val green u-fs14 u-pointer" id="kbPiutang" data-action="goToList" data-args='["piutangList", null]' aria-label="Lihat daftar piutang">Rp 0</span>
-      </div>
-      <div class="u-flex u-jcb u-aic u-mt10 divider-top">
-        <span class="u-fs12t2">📦 Inventori Bisnis (modal stok)</span>
-        <span class="stat-val u-fs14 u-pointer" id="kbInventori" data-action="showPage" data-args='["shop", "$el"]' aria-label="Lihat etalase produk">Rp 0</span>
-      </div>
-      <div class="u-flex u-jcb u-aic u-mt10 divider-top">
-        <span class="u-fs12t2">Kekayaan Bersih</span>
-        <span class="stat-val purple u-fs18" id="kbNetWorth">Rp 0</span>
-      </div>
+      <div class="u-flex u-jcb u-aic u-mb2">
+        <div id="billFilterCount" class="u-fs12t2"></div>
+        <button id="billFilterResetBtn" class="card-setting-btn u-dnone" data-action="resetBillFilter">↺ Reset Filter</button>
       </div>
     </div>
+    <div id="billListKeu"><div class="empty"><div class="empty-icon">🔔</div><div class="empty-text">Belum ada tagihan terjadwal</div></div></div>
+    </div>
+  </div>
+  </div>
 
+  <!-- BUDGET -->
+  <div id="keuanganTab-budget" class="u-dnone">
+  <div class="card u-mb12">
+    <div class="card-title">📊 Anggaran
+      <div class="u-flex u-gap6 u-aic">
+        <button class="card-setting-btn" id="budgetTabSettingsBtn" data-action="openBudgetSettings" title="Pengaturan anggaran" aria-label="Pengaturan anggaran">⚙️ Atur</button>
+        <button class="card-setting-btn" id="budgetTabAddBtn" data-action="openBudgetModal" data-args='[null]' title="Tambah anggaran" aria-label="Tambah anggaran">＋ Tambah</button>
+        <span class="card-collapse-toggle" id="keuBudgetCard-chev" data-action="toggleCardCollapse" data-args='["keuBudgetCard","$event"]' aria-label="Buka/tutup bagian">▾</span>
+      </div>
+    </div>
+    <div class="card-collapse-body" id="keuBudgetCard-cbody">
+    <div class="budget-tabbar u-flex u-gap6" style="margin-bottom:14px;background:var(--surface3);border-radius:var(--r-md);padding:3px">
+      <button type="button" class="budget-tab-btn active u-flex1 u-fs12 u-fw700 u-r8 u-pointer u-t2" data-tab="list" data-action="BudgetTabs.switchTo" data-args='["list"]' style="border:none;background:none;padding:8px 6px">📊 Bulan Ini</button>
+      <button type="button" class="budget-tab-btn u-flex1 u-fs12 u-fw700 u-r8 u-pointer u-t2" data-tab="reko" data-action="BudgetTabs.switchTo" data-args='["reko"]' style="border:none;background:none;padding:8px 6px">🎯 Rekomendasi Otomatis</button>
+    </div>
+    <div id="budgetTabPane-list">
+    <div id="budgetSummary" class="u-dnone">
+      <div class="budget-summary-grid">
+        <div class="budget-sum-box"><div class="budget-sum-val green" id="bTotalBudget">Rp 0</div><div class="budget-sum-lbl">Total Anggaran</div></div>
+        <div class="budget-sum-box clickable" data-action="showAllBudgetDrillDown"><div class="budget-sum-val red" id="bTotalUsed">Rp 0</div><div class="budget-sum-lbl">Terpakai</div></div>
+        <div class="budget-sum-box"><div class="budget-sum-val u-cacc" id="bTotalSisa">Rp 0</div><div class="budget-sum-lbl">Sisa</div></div>
+      </div>
+      <div class="budget-bar-track u-mb4" style="height:10px">
+        <div class="budget-bar-fill" id="bOverallBar" style="width:0%"></div>
+      </div>
+      <div class="budget-bar-label"><span id="bOverallPct">0% terpakai</span><span id="bOverallDays" class="u-t2"></span></div>
+      <div class="hr-divider"></div>
+    </div>
+    <div id="budgetList"></div>
+    </div>
+    <div id="budgetTabPane-reko" class="u-dnone">
+    <div class="u-hint10">Dihitung dari rata-rata transaksi asli kamu per kategori (BBM, Pulsa, Tagihan, dst) — bukan tebakan. Tinggal tap "Tetapkan" utk langsung bikin/update anggaran kategori itu.</div>
+    <div class="u-flex u-gap8 u-fwrap u-mb8" id="brMonthChips">
+      <button type="button" class="chip-btn" data-m="3" data-action="BudgetReko.setMonths" data-args='[3]'>3 Bulan Terakhir</button>
+      <button type="button" class="chip-btn" data-m="6" data-action="BudgetReko.setMonths" data-args='[6]'>6 Bulan Terakhir</button>
+    </div>
+    <div class="u-flex u-gap8 u-fwrap u-mb12" id="brBufferChips">
+      <button type="button" class="chip-btn" data-b="0" data-action="BudgetReko.setBuffer" data-args='[0]'>Pas Rata-rata</button>
+      <button type="button" class="chip-btn" data-b="10" data-action="BudgetReko.setBuffer" data-args='[10]'>+10% Buffer</button>
+      <button type="button" class="chip-btn" data-b="20" data-action="BudgetReko.setBuffer" data-args='[20]'>+20% Buffer</button>
+    </div>
+    <div id="budgetRekoResult"></div>
+    </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- PIUTANG & UTANG -->
+  <div id="keuanganTab-utangpiutang" class="u-dnone">
     <div class="card u-mb12 u-dnone" id="piutangUtangInsightCard">
       <div class="card-title">💡 Insight Piutang & Utang</div>
       <div id="piutangUtangInsightBody"></div>
@@ -693,6 +660,56 @@ b.appendChild(closeBtn);
     </div>
     </div></div>
     </div>
+  </div>
+
+  <!-- ASET & PROYEK -->
+  <div id="keuanganTab-asetproyek" class="u-dnone">
+  <div class="card u-mb12">
+    <div class="card-title">🏖️ Dana Pensiun
+      <div class="u-flex u-gap6 u-aic">
+        <button class="card-setting-btn" data-action="Pensiun.openSettings" title="Atur Dana Pensiun" aria-label="Atur Dana Pensiun">⚙️ Atur</button>
+        <span class="card-collapse-toggle" id="keuPensiunCard-chev" data-action="toggleCardCollapse" data-args='["keuPensiunCard","$event"]' aria-label="Buka/tutup bagian">▾</span>
+      </div>
+    </div>
+    <div class="card-collapse-body" id="keuPensiunCard-cbody">
+    <div class="u-hint10">Sinkron 2 arah dengan Keuangan: saldo & proyeksi dihitung otomatis dari akun & rata-rata transaksi asli kamu, dan kontribusi yang dicatat di sini langsung jadi transaksi nyata yang mempengaruhi saldo akun.</div>
+    <div id="pensiunBody"></div>
+    </div>
+  </div>
+  <div class="card u-mb12 u-dnone" id="sewaKiosRenovInsightCard">
+    <div class="card-title">💡 Insight Sewa Kios & Renovasi</div>
+    <div id="sewaKiosRenovInsightBody"></div>
+  </div>
+  <div class="card u-mb12">
+    <div class="card-title">🛠️ Proyek Renovasi
+      <span class="u-flex u-gap6 u-aic">
+        <button class="card-setting-btn" data-action="Renov.openProjectModal">＋ Proyek Baru</button>
+        <span class="card-collapse-toggle" id="keuRenovCard-chev" data-action="toggleCardCollapse" data-args='["keuRenovCard","$event"]' aria-label="Buka/tutup bagian">▾</span>
+      </span>
+    </div>
+    <div class="card-collapse-body" id="keuRenovCard-cbody">
+    <div class="u-hint10">Kumpulkan biaya per-item (keran, keramik, ongkos tukang, dst) jadi 1 paket proyek. Sinkron 2 arah dgn Transaksi: tandai item "lunas" langsung bikin transaksi pengeluaran nyata (pengaruh ke saldo akun), dan hapus/edit transaksi itu di Keuangan otomatis mengubah status/harga item di sini juga.</div>
+    <div class="u-flex u-gap6 u-fwrap u-mb12">
+      <button class="card-setting-btn" data-action="Tukang.openModal">👷 Absensi Tukang</button>
+      <button class="card-setting-btn" data-action="Tukang.openModal">🧮 Kalkulator Upah</button>
+      <button class="card-setting-btn" data-onclick="RenovCalc.open(null)">📦 Kalkulator Material</button>
+    </div>
+    <div id="renovList"><div class="empty"><div class="empty-icon">🛠️</div><div class="empty-text">Belum ada proyek renovasi</div></div></div>
+    </div>
+  </div>
+  <div class="card u-mb12">
+    <div class="card-title">🏠 Sewa Kios
+      <span class="u-flex u-gap6 u-aic">
+        <button class="card-setting-btn" data-action="SewaKios.exportPDF" title="Export laporan sewa kios (PDF)" aria-label="Export laporan sewa kios (PDF)">🧾 Export</button>
+        <button class="card-setting-btn" data-action="SewaKios.openUnitModal" aria-label="Edit">＋ Unit Baru</button>
+        <span class="card-collapse-toggle" id="keuSewaKiosCard-chev" data-action="toggleCardCollapse" data-args='["keuSewaKiosCard","$event"]' aria-label="Buka/tutup bagian">▾</span>
+      </span>
+    </div>
+    <div class="card-collapse-body" id="keuSewaKiosCard-cbody">
+    <div class="u-hint10">Lacak hasil sewa kios pasca renovasi: status unit, pendapatan sewa yang tersambung ke Transaksi (sync 2 arah, sama seperti Proyek Renovasi), dan estimasi balik modal (ROI) dibanding biaya renovasinya.</div>
+    <div id="sewaKiosList"><div class="empty"><div class="empty-icon">🏠</div><div class="empty-text">Belum ada unit kios</div></div></div>
+    </div>
+  </div>
   </div>
 
   <!-- LAPORAN -->
@@ -751,6 +768,18 @@ b.appendChild(closeBtn);
     <option value="tagihan">🧾 Tagihan</option>
   </select></div>
   <div class="u-flex u-jcb u-aic u-mb12"><span id="lapFilterCount" class="u-fs12t2"></span><span class="u-fs12 u-cacc u-pointer" data-action="resetLaporanFilter">↺ Reset Filter</span></div>
+  <div class="cn-tabs lap-subtabs">
+    <button class="lap-subtab active" data-action="setLaporanTab" data-args='["ringkasan", "$el"]'>📊 Ringkasan</button>
+    <button class="lap-subtab" data-action="setLaporanTab" data-args='["aruskas", "$el"]'>📅 Arus Kas &amp; Kategori</button>
+    <button class="lap-subtab" data-action="setLaporanTab" data-args='["transaksi", "$el"]'>📋 Transaksi &amp; Export</button>
+  </div>
+  <!-- 2026-07-17: Split tab 📊 Laporan (dalam page-keuangan) jadi 3 sub-tab —
+       pola SAMA PERSIS dgn split page-aset (setAsetTab/asetTab-*), murni
+       reorganisasi DOM lewat setLaporanTab() (tx-list-cashflow.js), TIDAK
+       ADA business logic baru. Filter/FAB/periode di atas TETAP di luar
+       sub-tab (berlaku ke semua sub-tab sekaligus, satu state filter utk
+       ketiganya) — lihat CLAUDE.md utk alasan pengelompokan kartu. -->
+  <div id="laporanTab-ringkasan">
   <div class="card u-mb12">
     <div class="card-title">🏦 Saldo Akun <span class="u-flexc8"><span class="u-fw400 u-fs12 u-cacc u-pointer" style="text-transform:none;letter-spacing:0" data-action="showPage" data-args='["settings", "$nav:6"]'>Kelola →</span><span class="card-collapse-toggle" id="lapAccCard-chev" data-action="toggleCardCollapse" data-args='["lapAccCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
     <div class="card-collapse-body" id="lapAccCard-cbody">
@@ -787,10 +816,6 @@ b.appendChild(closeBtn);
     <div class="stat-box clickable u-tac" style="padding:12px 8px" data-action="showFilteredTx" data-args='["laporan", "expense", "\ud83d\udd34 Keluar"]'><div class="stat-val red u-fs14" id="lapOut">Rp 0</div><div class="stat-label">Keluar</div></div>
     <div class="stat-box clickable u-tac" style="padding:12px 8px" data-action="showFilteredTx" data-args='["laporan", "all", "\ud83d\udcb0 Bersih"]'><div class="stat-val purple u-fs14" id="lapNet">Rp 0</div><div class="stat-label">Bersih</div></div>
   </div>
-  <div class="card u-mb12" style="padding:12px 14px">
-    <div class="u-flex u-jcb u-fs12 u-t2 u-pointer" data-action="goToList" data-args='["lapTx"]'><span>Jumlah transaksi</span><span class="u-ctext u-fw700" id="lapCount">0</span></div>
-    <div class="u-flex u-jcb u-fs12 u-t2 u-pointer" style="margin-top:5px" data-action="goToList" data-args='["lapTx"]'><span>Rata-rata/transaksi</span><span class="u-ctext u-fw700" id="lapAvg">Rp 0</span></div>
-  </div>
   <div class="card u-mb12">
     <div class="card-title">📊 Grafik 6 Bulan <span class="card-collapse-toggle" id="lapGrafikCard-chev" data-action="toggleCardCollapse" data-args='["lapGrafikCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
     <div class="card-collapse-body" id="lapGrafikCard-cbody">
@@ -801,6 +826,9 @@ b.appendChild(closeBtn);
     </div>
     </div>
   </div>
+  </div>
+  <!-- /RINGKASAN -->
+  <div id="laporanTab-aruskas" class="u-dnone">
   <div class="card u-mb12">
     <div class="card-title">📅 Proyeksi Arus Kas 30 Hari <span class="card-collapse-toggle" id="lapArusKasCard-chev" data-action="toggleCardCollapse" data-args='["lapArusKasCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
     <div class="card-collapse-body" id="lapArusKasCard-cbody">
@@ -824,11 +852,20 @@ b.appendChild(closeBtn);
     </div>
   </div>
   <div class="card u-mb12"><div class="card-title">📂 Per Kategori <span class="card-collapse-toggle" id="lapKatCard-chev" data-action="toggleCardCollapse" data-args='["lapKatCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div><div class="card-collapse-body" id="lapKatCard-cbody"><div id="lapKat"><div class="empty"><div class="empty-icon">📊</div><div class="empty-text">Belum ada data</div></div></div></div></div>
+  </div>
+  <!-- /ARUS KAS & KATEGORI -->
+  <div id="laporanTab-transaksi" class="u-dnone">
+  <div class="card u-mb12" style="padding:12px 14px">
+    <div class="u-flex u-jcb u-fs12 u-t2 u-pointer" data-action="goToList" data-args='["lapTx"]'><span>Jumlah transaksi</span><span class="u-ctext u-fw700" id="lapCount">0</span></div>
+    <div class="u-flex u-jcb u-fs12 u-t2 u-pointer" style="margin-top:5px" data-action="goToList" data-args='["lapTx"]'><span>Rata-rata/transaksi</span><span class="u-ctext u-fw700" id="lapAvg">Rp 0</span></div>
+  </div>
   <div class="card u-mb12"><div class="card-title">📋 Daftar Transaksi <span class="u-flexc8"><span class="u-t2 u-fw400 u-fs12" id="lapTxN"></span><span class="card-collapse-toggle" id="lapTxCard-chev" data-action="toggleCardCollapse" data-args='["lapTxCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div><div class="card-collapse-body" id="lapTxCard-cbody"><div id="lapTx"><div class="empty"><div class="empty-icon">💸</div><div class="empty-text">Tidak ada transaksi</div></div></div></div></div>
   <div class="card"><div class="card-title">💾 Export</div>
     <div class="export-row"><button class="export-half" data-action="exportCSV">📄 CSV</button><button class="export-half" data-action="exportJSON">📦 JSON</button></div>
     <div class="export-row u-mt8"><button class="export-half" data-action="exportLaporanPDF">🧾 PDF</button><button class="export-half" data-action="exportLaporanImage">🖼️ Gambar</button></div>
   </div>
+  </div>
+  <!-- /TRANSAKSI & EXPORT -->
   </div>
 </div>
 
@@ -870,6 +907,7 @@ b.appendChild(closeBtn);
     <button class="cn-tab tab-fixed-pad" data-action="setShopTab" data-args='["produsen", "$el"]'>🏭 Produsen</button>
     <button class="cn-tab tab-fixed-pad" data-action="setShopTab" data-args='["riwayat", "$el"]'>📋 Riwayat</button>
     <button class="cn-tab tab-fixed-pad" data-action="setShopTab" data-args='["pelanggan", "$el"]'>👤 Pelanggan</button>
+    <button class="cn-tab tab-fixed-pad" data-action="setShopTab" data-args='["laporan", "$el"]'>📊 Laporan</button>
   </div>
 
   <!-- Sprint 2 Tahap 2: FAB Shop, menyamakan standar UI dgn Finance 2.0
@@ -1035,6 +1073,79 @@ b.appendChild(closeBtn);
       <div class="card-title">👤 Daftar Pelanggan <button class="card-setting-btn" data-action="exportShopPelangganXLSX">📤 Excel</button></div>
       <div class="u-hint10">Pelanggan dengan 3x order atau lebih otomatis ditandai 🌟 Langganan. Tap untuk lihat riwayat harga per produk.</div>
       <div id="customerList"></div>
+    </div>
+  </div>
+
+  <!-- LAPORAN (kw-shop-laporan-tab): tab & UI-nya sebelumnya belum pernah
+       dibangun walau logic-nya (Laporan.renderTab()/topProdukAgg()/
+       renderTopProduk()/renderTopPelanggan()/setPeriodeLap()/getRangeLap()
+       di cobek-order.js, exportLaporanShopXLSX() di cobek-io.js) sudah ada
+       sejak lama — setShopTab() (cobek-io.js, tidak disentuh) sudah
+       memanggil Laporan.renderTab() saat t==='laporan', hanya markup-nya
+       yang baru ditambahkan di sini. Filter periode (lapPeriodeChips/
+       lapCustomRange) TERPISAH dari filter periode tab Riwayat
+       (shopPeriodeChips/shopCustomRange) — lihat catatan Laporan.periodeLap
+       di cobek-order.js. Kartu stat pakai reuse .grid2/.stat-box/.stat-val/
+       .stat-label yang sudah ada (pola sama dgn cfIncAvg/cfExpAvg di tab
+       Laporan Keuangan) supaya bisa 4 kartu tanpa bikin class grid-4 baru
+       (.shop-grid yang ada cuma utk 3 kolom). Grafik pakai .grafik-bar-wrap
+       yang sama dgn tab Riwayat (Laporan.renderGrafik() generik, sudah
+       menerima elId). -->
+  <div id="shopTab-laporan" class="u-dnone">
+    <!-- FAB Laporan Shop: kontekstual, ditaruh DI DALAM #shopTab-laporan
+         (pola sama dgn #laporanFab di #keuanganTab-laporan, REPORTS-2.0.md)
+         supaya hanya tampil saat tab Laporan aktif, otomatis ikut ter-
+         toggle 'u-dnone' oleh setShopTab() yang sudah ada tanpa JS baru.
+         #shopFab (Sprint 2 Tahap 2) tidak diubah — tetap tampil di semua
+         tab Shop termasuk tab ini. 100% reuse class CSS `.keu-fab*` &
+         fungsi export yang sudah ada (exportLaporanShopXLSX()/
+         exportShopSemuaXLSX(), cobek-io.js, tidak diubah). -->
+    <div class="keu-fab" id="shopLaporanFab">
+      <div class="keu-fab-actions">
+        <button type="button" class="keu-fab-action" data-onclick="document.getElementById('shopLaporanFab').classList.remove('open');document.getElementById('shopLaporanFabMain').setAttribute('aria-expanded','false');exportLaporanShopXLSX()" aria-label="Export Laporan Excel"><span class="keu-fab-action-icon">📤</span><span class="keu-fab-action-label">Export Laporan</span></button>
+        <button type="button" class="keu-fab-action" data-onclick="document.getElementById('shopLaporanFab').classList.remove('open');document.getElementById('shopLaporanFabMain').setAttribute('aria-expanded','false');exportShopSemuaXLSX()" aria-label="Export Semua Data Shop"><span class="keu-fab-action-icon">📊</span><span class="keu-fab-action-label">Export Semua Data</span></button>
+      </div>
+      <button type="button" class="keu-fab-main" id="shopLaporanFabMain" data-onclick="const _o=document.getElementById('shopLaporanFab').classList.toggle('open');this.setAttribute('aria-expanded', _o?'true':'false')" aria-label="Aksi cepat Laporan Shop" aria-expanded="false"><span class="keu-fab-main-icon">＋</span></button>
+    </div>
+
+    <div class="filter-scroll u-mt12" id="lapPeriodeChips">
+      <button class="chip-btn" data-action="setLaporanPeriode" data-args='["hari", "$el"]'>Harian</button>
+      <button class="chip-btn" data-action="setLaporanPeriode" data-args='["minggu", "$el"]'>Mingguan</button>
+      <button class="chip-btn" data-action="setLaporanPeriode" data-args='["bulan", "$el"]'>Bulanan</button>
+      <button class="chip-btn" data-action="setLaporanPeriode" data-args='["tahun", "$el"]'>Tahunan</button>
+      <button class="chip-btn active" data-action="setLaporanPeriode" data-args='["selamanya", "$el"]'>Selamanya</button>
+      <button class="chip-btn" data-action="setLaporanPeriode" data-args='["custom", "$el"]'>Custom</button>
+    </div>
+    <div class="u-dnone u-mb10" id="lapCustomRange">
+      <div class="u-grid2">
+        <div><label class="fl">Dari</label><input type="date" class="fi" id="lapFrom" onchange="renderShopLaporan()"></div>
+        <div><label class="fl">Sampai</label><input type="date" class="fi" id="lapTo" onchange="renderShopLaporan()"></div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="stat-box u-tac"><div class="stat-val u-fs14" id="lapTrip">0</div><div class="stat-label">Transaksi</div></div>
+      <div class="stat-box u-tac"><div class="stat-val u-fs14" id="lapOmzet">Rp 0</div><div class="stat-label">Omzet</div></div>
+    </div>
+    <div class="grid2">
+      <div class="stat-box u-tac"><div class="stat-val u-fs14" id="lapUntung">Rp 0</div><div class="stat-label">Untung</div></div>
+      <div class="stat-box u-tac"><div class="stat-val u-fs14" id="lapMargin">0%</div><div class="stat-label">Margin</div></div>
+    </div>
+
+    <div class="card u-mt12">
+      <div class="card-title">📈 Tren Penjualan 6 Bulan</div>
+      <div class="grafik-bar-wrap" id="lapGrafikBars"></div>
+      <div class="u-fs12 u-t2 u-mt6">Jumlah set terjual per bulan & estimasi margin keuntungan (%)</div>
+    </div>
+
+    <div class="card u-mt12">
+      <div class="card-title">🏆 Top 5 Produk Terlaris</div>
+      <div id="lapTopProduk"><div class="empty"><div class="empty-icon">📦</div><div class="empty-text">Belum ada data di periode ini</div></div></div>
+    </div>
+
+    <div class="card u-mt12">
+      <div class="card-title">👑 Top 5 Pelanggan</div>
+      <div id="lapTopPelanggan"><div class="empty"><div class="empty-icon">👤</div><div class="empty-text">Belum ada data di periode ini</div></div></div>
     </div>
   </div>
 </div>
@@ -1247,6 +1358,22 @@ b.appendChild(closeBtn);
     <div class="card u-mb12 u-dnone" id="pajakRekomendasiCard">
       <div class="u-fs12 u-lh16" id="pajakRekomendasiText"></div>
     </div>
+    <div class="cn-tabs pjk-subtabs">
+      <button class="pjk-subtab active" data-action="setPjkTab" data-args='["pph21", "$el"]'>🧾 PPh 21</button>
+      <button class="pjk-subtab" data-action="setPjkTab" data-args='["pbb", "$el"]'>🏛️ PBB &amp; UMKM</button>
+    </div>
+    <!-- 2026-07-17 (bagian ke-4): split tab 🧾 Pajak (PPh 21) (page-pajak) jadi 2
+         sub-tab (PPh 21 / PBB & UMKM) — pola SAMA PERSIS dgn split Laporan/
+         Kelola (Keuangan) & Aset di atas, murni reorganisasi DOM lewat
+         setPjkTab() (features-sheets-pwa-selftest.js), TIDAK ADA business
+         logic baru. pajakRekomendasiCard SENGAJA ditaruh DI LUAR kedua
+         sub-tab (di atas nav sub-tab ini) krn kontennya lintas sub-tab
+         (merujuk baik kalkulator PPh 21 maupun PPh Final UMKM sekaligus —
+         lihat renderPajakRekomendasi() di modules-render.js). Urutan kartu
+         direorganisasi (PPh 21 + Tabel Referensi PTKP&Tarif jadi satu
+         sub-tab, PBB + UMKM jadi sub-tab lain) — sebelumnya PBB ada DI
+         ANTARA PPh 21 & tabel referensinya di DOM. -->
+    <div id="pjkTab-pph21">
     <div class="card u-mb12">
       <div class="card-title">🧾 Estimasi PPh 21 (Orang Pribadi) <span class="card-collapse-toggle" id="pjPPh21Card-chev" data-action="toggleCardCollapse" data-args='["pjPPh21Card","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
       <div class="card-collapse-body" id="pjPPh21Card-cbody">
@@ -1288,6 +1415,21 @@ b.appendChild(closeBtn);
       </div>
     </div>
 
+    <details class="card u-p0">
+      <summary class="u-pointer u-flex u-aic u-jcb summary-toggle"><span class="card-title u-mb0">📖 Tabel Referensi PTKP &amp; Tarif</span></summary>
+      <div class="u-fs12 u-t2" style="padding:0 16px 16px;line-height:1.8">
+        <b class="u-ctext">PTKP (PMK 101/2016)</b><br>
+        TK/0: Rp54.000.000 · TK/1 &amp; K/0: Rp58.500.000<br>
+        TK/2 &amp; K/1: Rp63.000.000 · TK/3 &amp; K/2: Rp67.500.000 · K/3: Rp72.000.000
+        <div style="height:1px;background:var(--border);margin:10px 0"></div>
+        <b class="u-ctext">Tarif Progresif Pasal 17 UU HPP</b><br>
+        5% s.d. Rp60jt · 15% Rp60jt–Rp250jt · 25% Rp250jt–Rp500jt · 30% Rp500jt–Rp5M · 35% &gt;Rp5M
+      </div>
+    </details>
+
+    </div>
+
+    <div id="pjkTab-pbb" class="u-dnone">
     <div class="card u-mb12">
       <div class="card-title">🏛️ PBB (Pajak Bumi &amp; Bangunan) <span class="card-collapse-toggle" id="pjPBBCard-chev" data-action="toggleCardCollapse" data-args='["pjPBBCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
       <div class="card-collapse-body" id="pjPBBCard-cbody">
@@ -1316,18 +1458,6 @@ b.appendChild(closeBtn);
       </div>
     </div>
 
-    <details class="card u-p0">
-      <summary class="u-pointer u-flex u-aic u-jcb summary-toggle"><span class="card-title u-mb0">📖 Tabel Referensi PTKP &amp; Tarif</span></summary>
-      <div class="u-fs12 u-t2" style="padding:0 16px 16px;line-height:1.8">
-        <b class="u-ctext">PTKP (PMK 101/2016)</b><br>
-        TK/0: Rp54.000.000 · TK/1 &amp; K/0: Rp58.500.000<br>
-        TK/2 &amp; K/1: Rp63.000.000 · TK/3 &amp; K/2: Rp67.500.000 · K/3: Rp72.000.000
-        <div style="height:1px;background:var(--border);margin:10px 0"></div>
-        <b class="u-ctext">Tarif Progresif Pasal 17 UU HPP</b><br>
-        5% s.d. Rp60jt · 15% Rp60jt–Rp250jt · 25% Rp250jt–Rp500jt · 30% Rp500jt–Rp5M · 35% &gt;Rp5M
-      </div>
-    </details>
-
     <details class="card u-p0" id="umkmDetails">
       <summary class="u-pointer u-flex u-aic u-jcb summary-toggle"><span class="card-title u-mb0">🏪 Pajak Bisnis Shop (UMKM)</span></summary>
       <div class="summary-body-pad">
@@ -1336,6 +1466,7 @@ b.appendChild(closeBtn);
         <div class="stat-box"><div class="stat-label">Estimasi PPh Final (0,5%)</div><div class="stat-val orange" id="umkmPajak">Rp 0</div></div>
       </div>
     </details>
+    </div>
   </div>
 
   <details class="card u-p0">
@@ -1366,11 +1497,20 @@ b.appendChild(closeBtn);
     <div class="page-title">📦 Aset</div>
   </div>
 
+  <div class="cn-tabs">
+    <button class="cn-tab active" data-action="setAsetTab" data-args='["ringkasan", "$el"]'>📊 Ringkasan</button>
+    <button class="cn-tab" data-action="setAsetTab" data-args='["buku", "$el"]'>📋 Buku Aset</button>
+    <button class="cn-tab" data-action="setAsetTab" data-args='["analisis", "$el"]'>🧮 Analisis &amp; Pajak</button>
+  </div>
+
+  <!-- RINGKASAN -->
+  <div id="asetTab-ringkasan">
     <div class="card u-mb12 u-dnone" id="assetInsightCard">
       <div class="card-title">💡 Insight Aset</div>
       <div id="assetInsightBody"></div>
     </div>
 
+    
     <div class="card u-mb12 u-dnone" id="assetDashboard">
       <div class="card-title">📊 Dashboard Aset</div>
       <div class="budget-summary-grid">
@@ -1384,6 +1524,7 @@ b.appendChild(closeBtn);
       <div id="assetDashDiversifikasi"></div>
     </div>
 
+    
     <div class="card u-mb12 u-dnone" id="assetInvestasiDashboard">
       <div class="card-title">💹 Ringkasan Performa Investasi</div>
       <div class="u-hint10">Cuma mencakup aset yang ada data modalnya (Modal Investasi, atau Harga Beli × Jumlah Unit) — aset tanpa data modal dikecualikan biar ROI/Yield gak keisi angka semu.</div>
@@ -1395,32 +1536,7 @@ b.appendChild(closeBtn);
       <div class="u-fs12 u-t2 u-mt10 u-lh15" id="assetInvestasiRingkasan"></div>
     </div>
 
-    <div class="card u-mb12 u-dnone" id="assetPenyusutanDashboard">
-      <div class="card-title">📉 Penyusutan Aset</div>
-      <div class="u-hint10">Estimasi nilai buku aset yang nilainya <b>menurun</b> dari waktu ke waktu (mis. kendaraan, bangunan, peralatan) — bukan utk aset yang cenderung naik nilainya (tanah, emas, saham/reksadana; pakai kartu 💹 Performa Investasi di atas utk itu). Aktifkan per aset & pilih metode: <b>Garis Lurus</b> (beban rata tiap tahun), <b>Saldo Menurun</b> (persentase dari nilai buku, makin kecil tiap tahun), atau <b>Manual</b> (nilai buku ikut field "Nilai" yang kamu update sendiri, tanpa formula otomatis).</div>
-      <div class="budget-summary-grid u-mb10">
-        <div class="budget-sum-box"><div class="budget-sum-val" id="assetPenyusutanTotalAkumulasi">Rp 0</div><div class="budget-sum-lbl">Akumulasi Penyusutan</div></div>
-        <div class="budget-sum-box"><div class="budget-sum-val" id="assetPenyusutanTotalBuku">Rp 0</div><div class="budget-sum-lbl">Nilai Buku Skrg</div></div>
-      </div>
-      <div id="assetPenyusutanList"></div>
-      <div id="assetPenyusutanAI"></div>
-    </div>
-
-    <div class="card u-mb12 u-dnone" id="assetPajakDashboard">
-      <div class="card-title">🧾 Pajak Aset</div>
-      <div class="u-hint10">Estimasi <b>PBB</b> (Pajak Bumi &amp; Bangunan) utk aset Tanah/Rumah-Bangunan &amp; <b>Zakat Maal</b> khusus aset yang ditandai "Hitung ke Zakat Maal" di Buku Aset — beda dari kalkulator Zakat Maal lengkap di tab 🕌 Pajak (yang juga menghitung aset cair &amp; utang). NJOP di sini didekati dari field "Nilai" aset (bukan NJOP resmi SPPT) — cek Perda/SPPT setempat utk angka pasti.</div>
-      <div class="u-grid2 u-gap8 u-mb10">
-        <div><label class="fl">NJOPTKP (Rp)</label><input type="text" inputmode="numeric" class="fi" id="pajakAsetNjoptkp" placeholder="12000000" oninput="PajakAset.updateSetting('njoptkp',this.value)"></div>
-        <div><label class="fl">Tarif PBB-P2 (%, cek Perda daerah)</label><input type="text" inputmode="decimal" class="fi" id="pajakAsetTarif" placeholder="0.5" oninput="PajakAset.updateSetting('tarifPersen',this.value)"></div>
-      </div>
-      <div class="budget-summary-grid u-mb10">
-        <div class="budget-sum-box"><div class="budget-sum-val red" id="assetPajakTotalPBB">Rp 0</div><div class="budget-sum-lbl">Estimasi PBB/Tahun</div></div>
-        <div class="budget-sum-box"><div class="budget-sum-val orange" id="assetPajakTotalZakat">Rp 0</div><div class="budget-sum-lbl">Zakat Maal Aset (2,5%)</div></div>
-      </div>
-      <div id="assetPajakList"></div>
-      <div class="u-fs12 u-t2 u-mt10 u-lh15" id="assetPajakRingkasan"></div>
-    </div>
-
+    
     <div class="card u-mb12">
       <div class="card-title">📈 Histori Kekayaan &amp; Growth Rate Aktual <span class="u-flexc8"><span class="card-setting-btn u-pointer" data-action="saveWealthSnapshot" data-args='[true]'>📸 Catat Sekarang</span><span class="card-collapse-toggle" id="pzHistoriCard-chev" data-action="toggleCardCollapse" data-args='["pzHistoriCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
       <div class="card-collapse-body" id="pzHistoriCard-cbody">
@@ -1434,6 +1550,11 @@ b.appendChild(closeBtn);
       </div>
     </div>
 
+  </div>
+  <!-- /RINGKASAN -->
+
+  <!-- BUKU ASET -->
+  <div id="asetTab-buku" class="u-dnone">
     <div class="card u-mb12">
       <div class="card-title">📋 Buku Aset <span class="u-flexc8"><span class="card-setting-btn u-pointer" data-action="openAssetModal">＋ Tambah Aset</span><span class="card-collapse-toggle" id="pzAsetCard-chev" data-action="toggleCardCollapse" data-args='["pzAsetCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
       <div class="card-collapse-body" id="pzAsetCard-cbody">
@@ -1451,6 +1572,40 @@ b.appendChild(closeBtn);
       </div>
     </div>
 
+    
+  </div>
+  <!-- /BUKU ASET -->
+
+  <!-- ANALISIS & PAJAK -->
+  <div id="asetTab-analisis" class="u-dnone">
+    <div class="card u-mb12 u-dnone" id="assetPenyusutanDashboard">
+      <div class="card-title">📉 Penyusutan Aset</div>
+      <div class="u-hint10">Estimasi nilai buku aset yang nilainya <b>menurun</b> dari waktu ke waktu (mis. kendaraan, bangunan, peralatan) — bukan utk aset yang cenderung naik nilainya (tanah, emas, saham/reksadana; pakai kartu 💹 Performa Investasi di atas utk itu). Aktifkan per aset & pilih metode: <b>Garis Lurus</b> (beban rata tiap tahun), <b>Saldo Menurun</b> (persentase dari nilai buku, makin kecil tiap tahun), atau <b>Manual</b> (nilai buku ikut field "Nilai" yang kamu update sendiri, tanpa formula otomatis).</div>
+      <div class="budget-summary-grid u-mb10">
+        <div class="budget-sum-box"><div class="budget-sum-val" id="assetPenyusutanTotalAkumulasi">Rp 0</div><div class="budget-sum-lbl">Akumulasi Penyusutan</div></div>
+        <div class="budget-sum-box"><div class="budget-sum-val" id="assetPenyusutanTotalBuku">Rp 0</div><div class="budget-sum-lbl">Nilai Buku Skrg</div></div>
+      </div>
+      <div id="assetPenyusutanList"></div>
+      <div id="assetPenyusutanAI"></div>
+    </div>
+
+    
+    <div class="card u-mb12 u-dnone" id="assetPajakDashboard">
+      <div class="card-title">🧾 Pajak Aset</div>
+      <div class="u-hint10">Estimasi <b>PBB</b> (Pajak Bumi &amp; Bangunan) utk aset Tanah/Rumah-Bangunan &amp; <b>Zakat Maal</b> khusus aset yang ditandai "Hitung ke Zakat Maal" di Buku Aset — beda dari kalkulator Zakat Maal lengkap di tab 🕌 Pajak (yang juga menghitung aset cair &amp; utang). NJOP di sini didekati dari field "Nilai" aset (bukan NJOP resmi SPPT) — cek Perda/SPPT setempat utk angka pasti.</div>
+      <div class="u-grid2 u-gap8 u-mb10">
+        <div><label class="fl">NJOPTKP (Rp)</label><input type="text" inputmode="numeric" class="fi" id="pajakAsetNjoptkp" placeholder="12000000" oninput="PajakAset.updateSetting('njoptkp',this.value)"></div>
+        <div><label class="fl">Tarif PBB-P2 (%, cek Perda daerah)</label><input type="text" inputmode="decimal" class="fi" id="pajakAsetTarif" placeholder="0.5" oninput="PajakAset.updateSetting('tarifPersen',this.value)"></div>
+      </div>
+      <div class="budget-summary-grid u-mb10">
+        <div class="budget-sum-box"><div class="budget-sum-val red" id="assetPajakTotalPBB">Rp 0</div><div class="budget-sum-lbl">Estimasi PBB/Tahun</div></div>
+        <div class="budget-sum-box"><div class="budget-sum-val orange" id="assetPajakTotalZakat">Rp 0</div><div class="budget-sum-lbl">Zakat Maal Aset (2,5%)</div></div>
+      </div>
+      <div id="assetPajakList"></div>
+      <div class="u-fs12 u-t2 u-mt10 u-lh15" id="assetPajakRingkasan"></div>
+    </div>
+
+    
     <div class="card u-mb12 u-dnone" id="laporanAsetCard">
       <div class="card-title">📑 Laporan Aset <span class="u-flexc8"><span class="card-setting-btn u-pointer" data-onclick="window.print()">🖨️ Cetak</span><span class="card-collapse-toggle" id="laporanAsetCard-chev" data-action="toggleCardCollapse" data-args='["laporanAsetCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
       <div class="card-collapse-body" id="laporanAsetCard-cbody">
@@ -1468,6 +1623,7 @@ b.appendChild(closeBtn);
       </div>
     </div>
 
+    
     <div class="card u-mb12">
       <div class="card-title">🧭 Rekomendasi Alokasi Aset <span class="card-collapse-toggle" id="pzAlokasiCard-chev" data-action="toggleCardCollapse" data-args='["pzAlokasiCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
       <div class="card-collapse-body" id="pzAlokasiCard-cbody">
@@ -1487,6 +1643,9 @@ b.appendChild(closeBtn);
       <div id="aaResult"></div>
       </div>
     </div>
+
+  </div>
+  <!-- /ANALISIS & PAJAK -->
 </div>
 
 <!-- AI -->
@@ -1617,6 +1776,19 @@ b.appendChild(closeBtn);
     </div>
   </div>
 
+  <!-- Toggle tampil/sembunyi section Life OS di Dashboard Hub. Lihat
+       lifeos/ui/lifeos-home.js (LifeOSHome.isVisiblePref()/toggleVisibility()/
+       applyVisibility()) & #lifeOSWrap di bawah — preferensi tampilan murni
+       lewat localStorage, TIDAK menyentuh D atau LifeOSStore. -->
+  <div class="card">
+    <div class="card-title">🌱 Life OS di Dashboard Hub</div>
+    <div class="u-hint10">Section tambahan (Today / Goals / Projects / Review / Knowledge) yang muncul di halaman Dashboard Hub, dibangun di atas data yang sudah ada. Nonaktif secara default — aktifkan kalau mau mencobanya.</div>
+    <div class="setting-item">
+      <div class="setting-label">Tampilkan Life OS</div>
+      <label class="tgl-switch"><input type="checkbox" id="lifeOSVisibleToggle" onchange="LifeOSHome.toggleVisibility(this.checked)"><span class="tgl-track"></span></label>
+    </div>
+  </div>
+
   </div></div>
 </div>
 
@@ -1687,24 +1859,10 @@ b.appendChild(closeBtn);
 
 <div class="stg-group" id="stgGroup3">
   <div class="stg-group-head" data-action="toggleStgGroup" data-args='["stgGroup3"]' role="button" tabindex="0" aria-expanded="false" aria-controls="stgGroup3-body">
-    <div class="stg-group-head-left"><div class="stg-group-icon">👨‍👩‍👧</div><div><div class="stg-group-title">Keluarga & Anak</div><div class="stg-group-sub">Perkembangan anak, pengingat</div></div></div>
+    <div class="stg-group-head-left"><div class="stg-group-icon">⏰</div><div><div class="stg-group-title">Pengingat</div><div class="stg-group-sub">Pengingat umum</div></div></div>
     <div class="stg-group-chevron">▼</div>
   </div>
   <div class="stg-group-body" id="stgGroup3-body"><div class="stg-group-body-inner">
-
-  <div class="card">
-    <div class="card-title">👶 Perkembangan Anak</div>
-    <div id="msList">
-      <div class="ms-item"><div class="ms-check" id="ms0" data-action="toggleMs" data-args='[0]' role="checkbox" aria-checked="false" aria-label="Bisa menyebutkan nama lengkap"></div><div class="u-fs13">Bisa menyebutkan nama lengkap</div></div>
-      <div class="ms-item"><div class="ms-check" id="ms1" data-action="toggleMs" data-args='[1]' role="checkbox" aria-checked="false" aria-label="Bisa berhitung 1–10"></div><div class="u-fs13">Bisa berhitung 1–10</div></div>
-      <div class="ms-item"><div class="ms-check" id="ms2" data-action="toggleMs" data-args='[2]' role="checkbox" aria-checked="false" aria-label="Mengenal huruf A–Z"></div><div class="u-fs13">Mengenal huruf A–Z</div></div>
-      <div class="ms-item"><div class="ms-check" id="ms3" data-action="toggleMs" data-args='[3]' role="checkbox" aria-checked="false" aria-label="Bisa makan sendiri"></div><div class="u-fs13">Bisa makan sendiri</div></div>
-      <div class="ms-item"><div class="ms-check" id="ms4" data-action="toggleMs" data-args='[4]' role="checkbox" aria-checked="false" aria-label="Bisa pakai baju sendiri"></div><div class="u-fs13">Bisa pakai baju sendiri</div></div>
-    </div>
-    <div class="div"></div>
-    <button class="btn btn-ghost btn-full btn-sm" data-action="openCatatan" data-args='["anak"]'>+ Catatan Anak</button>
-    <div class="u-mt10" id="anakList"></div>
-  </div>
 
   <div class="card">
     <div class="card-title">⏰ Pengingat</div>
@@ -1729,10 +1887,6 @@ b.appendChild(closeBtn);
     <div class="setting-item">
       <div><div class="setting-label">Notifikasi Browser</div><div class="setting-sub" id="notifStatus">Belum aktif</div></div>
       <label class="tgl-switch"><input type="checkbox" id="notifEnableToggle" onchange="toggleNotifEnabled(this.checked)"><span class="tgl-track"></span></label>
-    </div>
-    <div class="u-gap8 u-mt10 u-grid2-nogap">
-      <div class="fg u-mb0"><label class="fl">Ingatkan tagihan H-</label><input class="fi" id="notifBillDays" type="number" min="0" max="30" value="3" oninput="saveNotifDays()"></div>
-      <div class="fg u-mb0"><label class="fl">Ingatkan pulang H-</label><input class="fi" id="notifLdrDays" type="number" min="0" max="30" value="3" oninput="saveNotifDays()"></div>
     </div>
     <button class="btn btn-ghost btn-full btn-sm u-mt10" data-action="testNotif">🔔 Tes Notifikasi</button>
     <div class="u-fs12 u-t2 u-lh15 u-mt8">Notifikasi otomatis hanya berjalan selama aplikasi ini dibuka di browser/HP (tidak saat browser ditutup total). Untuk reminder ke WhatsApp, pakai tombol "💬 Kirim ke WA" yang ada di tagihan & jadwal pulang — kamu tinggal pilih kontak & kirim manual (kirim WA otomatis tanpa kamu pencet butuh WhatsApp Business API berbayar, tidak tersedia di aplikasi browser biasa).</div>
@@ -2048,7 +2202,6 @@ b.appendChild(closeBtn);
       <div class="qs-grid2">
         <div class="qs-action" data-onclick="closeQS('qsAI');aiQ('Analisa keuangan bulan ini, boros di mana?')"><div class="qs-action-icon">📊</div><div class="qs-action-label">Analisa Bulan Ini</div></div>
         <div class="qs-action" data-onclick="closeQS('qsAI');aiQ('Kondisi kendaraan saya bagaimana, ada servis yang mendesak?')"><div class="qs-action-icon">🏍️</div><div class="qs-action-label">Cek Kendaraan</div></div>
-        <div class="qs-action" data-onclick="closeQS('qsAI');aiQ('Perkembangan anak bulan ini?')"><div class="qs-action-icon">👶</div><div class="qs-action-label">Keluarga & Anak</div></div>
         <div class="qs-action" data-onclick="closeQS('qsAI');aiQ('Tagihan dan cicilan yang akan jatuh tempo?')"><div class="qs-action-icon">🔔</div><div class="qs-action-label">Tagihan Mendesak</div></div>
         <div class="qs-action" data-onclick="closeQS('qsAI');aiQ('Gimana performa bisnis shop bulan ini, stok mana yang mau habis?')"><div class="qs-action-icon">🪨</div><div class="qs-action-label">Cek Bisnis Shop</div></div>
         <div class="qs-action" data-onclick="closeQS('qsAI');aiQ('Absensi & estimasi gaji bulan ini sudah berapa?')"><div class="qs-action-icon">🧾</div><div class="qs-action-label">Gaji & Absensi</div></div>
@@ -2166,9 +2319,6 @@ b.appendChild(closeBtn);
     <button type="button" class="dashhub-qa-btn" data-onclick="openTxModal('expense')" aria-label="Tambah Transaksi">
       <span class="dashhub-qa-icon">💰</span><span class="dashhub-qa-label">Transaksi</span>
     </button>
-    <button type="button" class="dashhub-qa-btn" data-onclick="openCatatan('anak')" aria-label="Tambah Catatan">
-      <span class="dashhub-qa-icon">📝</span><span class="dashhub-qa-label">Catatan</span>
-    </button>
     <button type="button" class="dashhub-qa-btn" data-onclick="openBackupModal()" aria-label="Backup">
       <span class="dashhub-qa-icon">💾</span><span class="dashhub-qa-label">Backup</span>
     </button>
@@ -2228,6 +2378,27 @@ b.appendChild(closeBtn);
     </div>
     <div class="dashhub-feature-grid dashhub-feature-grid--icon" id="dashHubFavoritList"></div>
   </div>
+  <!-- SUB-TAB DASHBOARD HUB (Fase 1, lihat CLAUDE.md "Split tab 🧭 Dashboard
+       Hub"). Hero Card/Tangga Ternak Uang/Quick Actions/Search TETAP selalu
+       tampil di atas (TIDAK ikut dipecah) — cuma 3 section di BAWAH search
+       yang dikelompokkan: Ringkasan (Summary Cards + Analytics), Fitur
+       (Favorit + switcher Semua Fitur/Pinned Widget lama, TIDAK diubah
+       isinya), Insight (Life OS + Kondisi Ekonomi). SENGAJA TIDAK membungkus
+       ulang tiap section jadi elemen wrapper baru (supaya TIDAK ADA reorder
+       DOM sama sekali & 0 risiko ke test containment/urutan yang sudah ada,
+       lihat dashboard-hub-quickactions.test.js/dashboard-hub-pinnedwidgets.
+       test.js) — DashboardHub.setSectionTab()/applySectionTab() di
+       dashboard-hub.js toggle class u-dnone LANGSUNG ke id section yang
+       sudah ada (dashHubSummaryGrid/dashHubAnalyticsRow/
+       dashHubFavoritSection/dashHubMainTabsRow/dashHubMainGridCard/
+       dashboardHubPinnedWrap/lifeOSWrap/eieWrap), pola sama dgn
+       applyMainTab() yang sudah ada. Pilihan diingat lewat localStorage
+       (key: dashHubSectionTab), pola sama dgn dashHubMainTab. -->
+  <div class="cn-tabs dhb-subtabs">
+    <button type="button" class="dhb-subtab active" id="dashHubSectionTabBtn-ringkasan" data-action="DashboardHub.setSectionTab" data-args='["ringkasan"]'>📊 Ringkasan</button>
+    <button type="button" class="dhb-subtab" id="dashHubSectionTabBtn-fitur" data-action="DashboardHub.setSectionTab" data-args='["fitur"]'>🗂️ Fitur</button>
+    <button type="button" class="dhb-subtab" id="dashHubSectionTabBtn-insight" data-action="DashboardHub.setSectionTab" data-args='["insight"]'>🌦️ Insight</button>
+  </div>
   <!-- SEMUA FITUR — dibungkus jadi kartu collapse (fix "dashboard hub terlalu
        mengganggu di tampilan utama"). Reuse PERSIS sistem collapse yang
        sudah dipakai ~40+ kartu lain di app ini (toggleCardCollapse/
@@ -2239,6 +2410,18 @@ b.appendChild(closeBtn);
        cardCollapsePrefs sama seperti kartu lain — bukan collapse baru yang
        terpisah. Isi grid (#dashboardHubGrid) & cara diisinya (DashboardHub.
        render() di dashboard-hub.js) TIDAK diubah sama sekali. -->
+  <!-- TAB SWITCHER: "Semua Fitur" & "Pinned Widgets" (dua section yang tadinya
+       ditumpuk berurutan) kini jadi 2 tab sebelah-sebelahan supaya Beranda
+       tidak terlalu panjang. Reuse pola chip-btn tab yang sudah ada di
+       banyak tempat (mis. #advisorTabBtn-coach/#advisorTabBtn-report di
+       bawah, atau #whTabAbsensiBtn di absensiModal) — tidak ada gaya/tab
+       system baru. Diatur oleh DashboardHub.setMainTab()/applyMainTab() di
+       dashboard-hub.js; pilihan diingat lewat localStorage
+       (key: dashHubMainTab), pola sama seperti cardCollapsePrefs. -->
+  <div class="u-flex u-gap6 u-mb10" id="dashHubMainTabsRow">
+    <button type="button" class="chip-btn active u-flex1" id="dashHubMainTabBtn-fitur" data-action="DashboardHub.setMainTab" data-args='["fitur"]'>🗂️ Semua Fitur</button>
+    <button type="button" class="chip-btn u-flex1" id="dashHubMainTabBtn-pinned" data-action="DashboardHub.setMainTab" data-args='["pinned"]'>📌 Pinned Widget</button>
+  </div>
   <div class="card u-mb12" id="dashHubMainGridCard">
     <div class="card-title">
       🗂️ Semua Fitur <span class="u-flexc8"><span class="dashhub-cat-badge" id="dashHubMainGridCount"></span><span class="card-collapse-toggle" id="dashHubMainGrid-chev" data-action="toggleCardCollapse" data-args='["dashHubMainGrid","$event"]' aria-label="Buka/tutup bagian">▾</span></span>
@@ -2256,8 +2439,17 @@ b.appendChild(closeBtn);
        di dashboard-hub.js), yang lalu delegasi ke LifeOSToday/Goals/
        Projects/Review/Knowledge.render() masing-masing. Panel selain yang
        aktif disembunyikan pakai class u-dnone yang sudah ada (bukan CSS
-       baru), ditoggle oleh LifeOSHome.switchPanel(). -->
-  <div class="dashhub-wrap" id="lifeOSWrap">
+       baru), ditoggle oleh LifeOSHome.switchPanel().
+       TAMPIL/SEMBUNYI section ini sekarang diatur lewat Setelan → Profil &
+       Tampilan → "🌱 Life OS di Dashboard Hub" (toggle switch, id
+       lifeOSVisibleToggle), disimpan di localStorage (lifeOSVisible) dan
+       diterapkan oleh LifeOSHome.applyVisibility()/render() lewat class
+       u-dnone di div ini — BUKAN lagi hardcoded permanen seperti
+       sebelumnya. Default: tersembunyi (localStorage kosong dianggap '0'),
+       sama seperti perilaku lama, sampai user aktifkan sendiri. Jangan
+       tambah/hapus class u-dnone di div ini secara manual — biarkan
+       LifeOSHome.applyVisibility() yang mengatur. -->
+  <div class="dashhub-wrap u-dnone" id="lifeOSWrap">
     <div class="dashhub-cat-head">
       <div class="dashhub-cat-icon">🌱</div>
       <div>
@@ -2285,10 +2477,10 @@ b.appendChild(closeBtn);
         <div class="dashhub-cat-desc">Dampak kurs/inflasi/BI Rate/IHSG ke keuanganmu, bukan berita mentah</div>
       </div>
     </div>
-    <div id="eieWeatherCard" style="padding:8px 2px;font-size:12.5px;opacity:.6;">Memuat kondisi ekonomi…</div>
+    <div id="eieStatusCard" style="padding:8px 2px;font-size:12.5px;opacity:.6;">Memuat kondisi ekonomi…</div>
     <div id="eieInsightFeed"></div>
   </div>
-  <div class="dashhub-pinned-wrap" id="dashboardHubPinnedWrap">
+  <div class="dashhub-pinned-wrap u-dnone" id="dashboardHubPinnedWrap">
     <div class="dashhub-cat-head">
       <div class="dashhub-cat-icon">📌</div>
       <div>
@@ -2680,7 +2872,7 @@ b.appendChild(closeBtn);
 <script>document.write(MODAL_HTML[69]);</script><!-- modal:importShopExcelModal (Import dari Excel Shop) -->
 <script>document.write(MODAL_HTML[70]);</script><!-- modal:mergeProductModal (Gabungkan Harga Produk) -->
 
-<script src="app-bundle-b.min.js?v=350" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
-<script src="tangga-keuangan.js?v=350"></script>
+<script src="app-bundle-b.min.js?v=383" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
+<script src="tangga-keuangan.js?v=383"></script>
 </body>
 </html>

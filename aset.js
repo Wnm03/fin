@@ -1187,6 +1187,24 @@ applyOneCardCollapsePref('timelineWCard');
 };
 // BUGFIX-INTEGRASI: semua modul di atas dideklarasikan `const`, yang TIDAK
 // otomatis nempel ke `window` walau file ini di-load lewat <script> biasa
+// setAsetTab — split halaman Aset (page-aset) jadi 3 tab (Ringkasan/Buku
+// Aset/Analisis & Pajak), pola SAMA PERSIS dgn setKeuanganTab (tx-list-cashflow.js)
+// /setShopTab/setCnTab/setPajakTab: toggle class u-dnone per pane, TIDAK ada
+// business logic baru. Semua card di dalam pane tetap dirender penuh oleh
+// renderAssetList()/AlokasiAset.init()/renderWealthSnapshots() (dipanggil dari
+// renderPageContent('aset') di modules-render.js) TERLEPAS dari tab mana yang
+// lagi aktif -- sama seperti pola kartu ber-collapse yg sudah ada di app ini,
+// cuma sekarang levelnya per-tab, bukan per-kartu.
+const ASET_TAB_ORDER=['ringkasan','buku','analisis'];
+function setAsetTab(t,el){
+document.querySelectorAll('#page-aset .cn-tab').forEach(b=>b.classList.remove('active'));
+if(el) el.classList.add('active');
+else { const idx=ASET_TAB_ORDER.indexOf(t); const btn=document.querySelectorAll('#page-aset .cn-tab')[idx>=0?idx:0]; if(btn) btn.classList.add('active'); }
+document.getElementById('asetTab-ringkasan').classList.toggle('u-dnone', t!=='ringkasan');
+document.getElementById('asetTab-buku').classList.toggle('u-dnone', t!=='buku');
+document.getElementById('asetTab-analisis').classList.toggle('u-dnone', t!=='analisis');
+}
+
 // (bukan module). Dispatcher data-action (mis. data-action="Aset.exportXLSX",
 // "AlokasiAset.setRisk", dst di index.html/app_production.html) resolve nama
 // aksi lewat window[...], jadi TANPA baris ini semua binding tsb gagal diam2

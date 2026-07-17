@@ -32,9 +32,14 @@ const kirim=parseInt(document.getElementById('ob_kirim').value)||500000;
 const pin=document.getElementById('ob_pin').value;
 const tema=document.getElementById('ob_tema').value;
 if(pin.length!==4){showAlertModal('PIN harus 4 digit!',{icon:'🔒',title:'PIN Belum Valid'});return;}
+try{
 D.profile={nama,gajiPokok:gaji,kiriman:kirim,theme:tema,tanggalLahir:null,statusKawin:false,tanggungan:0,statusPekerjaan:null};
 safeSetItem('kw_pin',await hashPin(pin));
 _sessionRawPin=pin;
 safeSetItem('kw_setup','1');
 save(); document.getElementById('onboard').style.display='none'; showMain();
+}catch(e){
+console.error('finishOnboard gagal:',e);
+showAlertModal('Gagal menyimpan profil awal: '+(e&&e.message?e.message:'error tidak diketahui')+'. Coba lagi, atau buka app ini di browser biasa (bukan preview) kalau masalah berlanjut.',{icon:'⚠️',title:'Gagal Setup'});
+}
 }
