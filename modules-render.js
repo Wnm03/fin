@@ -2,7 +2,7 @@
 // Dipindah ke modules/shared/modules-render.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Semua fungsi ini murni definisi function global (bukan module), jadi tetap bisa dipanggil dari file manapun
 // yang loadnya belakangan (sama seperti modules-calc.js/features-*.js).
-const MODULE_RENDER_VERSION='kw99-sesi25-fix-gdrive-backup-await-5';
+const MODULE_RENDER_VERSION='kw120-batch13-final-integration-release';
 
 function renderPageContent(name){
 if(name==='dashboard')renderDashboard();
@@ -634,6 +634,9 @@ const exp=txM.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
 const billStatsShared=(typeof getBillStats==='function')?getBillStats():null;
 const dashCtx={now,m,y,txM,inc,exp,billStats:billStatsShared};
 if(typeof FinCoach!=='undefined')FinCoach.renderDash(dashCtx);
+if(typeof AIRecommendCard!=='undefined')AIRecommendCard.render();
+if(typeof AIDailyBriefingCard!=='undefined')AIDailyBriefingCard.render();
+if(typeof AIStatusCard!=='undefined')AIStatusCard.render();
 const cobM=D.cobek.filter(t=>{const d=new Date(t.date);return d.getMonth()===m&&d.getFullYear()===y;}).reduce((s,t)=>s+t.profit,0);
 document.getElementById('dIncome').textContent=fmt(inc);
 document.getElementById('dExpense').textContent=fmt(exp);
@@ -663,6 +666,62 @@ cardDef.render(dashCtx);
 }catch(e){
 console.warn('renderDashboard: card "'+key+'" ('+cardDef.elId+') gagal dirender, dilewati:',e);
 }
+}
+// ================== DASHBOARD HUB — LIVE WIRING (dashboard wiring Fase 2) ==================
+// renderDashboard() sudah dipanggil dari puluhan titik save() di seluruh app (transaksi, shop,
+// vehicle, akun, kategori, tagihan, dst) — Advisor.render()/LifeBalance.render() di atas SUDAH
+// otomatis ikut ter-update lewat titik ini tiap kali data berubah, di halaman manapun user
+// sedang berada. Hero Card/Summary Cards/Dashboard Analytics/Favorit (Dashboard Hub, Sprint 1)
+// SEBELUMNYA cuma ter-render ulang lewat DashboardHub.render() (dipanggil navigasi/showPage
+// saja), jadi kalau user tetap di halaman Dashboard Hub lalu menyimpan data dari Quick
+// Action/modal, angkanya tidak ikut ter-update sampai halaman dibuka ulang. Baris di bawah
+// menyambungkannya ke titik "live" yang sama dengan Advisor/LifeBalance — BUKAN mekanisme baru,
+// murni pola yang sudah ada, cuma tadinya belum diikutkan. EIEDashboard.render() ikut disertakan
+// krn ini yang berperan sbg "AI Insight" Dashboard Hub (lihat DashboardHub.render() di
+// dashboard-hub.js) — sudah self-guarded (_rendering flag) & throttle sync makro 1x/hari sendiri,
+// jadi aman dipanggil sesering renderDashboard(). Dibungkus try/catch SENDIRI (pola sama dgn
+// loop DASH_RENDER_ORDER di atas) supaya kalau salah satu gagal, TIDAK menjatuhkan sisa
+// renderDashboard() yang dipanggil dari alur simpan data di halaman lain (Keuangan/Shop/dst).
+try{
+if(typeof DashboardHubHero!=='undefined')DashboardHubHero.render();
+if(typeof DashboardHubSummary!=='undefined')DashboardHubSummary.render();
+if(typeof DashboardHubAnalytics!=='undefined')DashboardHubAnalytics.render();
+if(typeof FinanceDashboard!=='undefined')FinanceDashboard.render();
+if(typeof FinancialForecastPresenter!=='undefined')FinancialForecastPresenter.render();
+if(typeof BudgetRecommendationPresenter!=='undefined')BudgetRecommendationPresenter.render();
+if(typeof CashFlowProjectionPresenter!=='undefined')CashFlowProjectionPresenter.render();
+if(typeof FinancialGoalPresenter!=='undefined')FinancialGoalPresenter.render();
+if(typeof InvestmentPlannerPresenter!=='undefined')InvestmentPlannerPresenter.render();
+if(typeof DebtOptimizerPresenter!=='undefined')DebtOptimizerPresenter.render();
+if(typeof RetirementPlannerPresenter!=='undefined')RetirementPlannerPresenter.render();
+if(typeof FinancialHealthScorePresenter!=='undefined')FinancialHealthScorePresenter.render();
+if(typeof FinancialRiskDashboardPresenter!=='undefined')FinancialRiskDashboardPresenter.render();
+if(typeof VehicleDashboard!=='undefined')VehicleDashboard.render();
+if(typeof VehicleInsightPresenter!=='undefined')VehicleInsightPresenter.render();
+if(typeof VehicleDailyBrief!=='undefined')VehicleDailyBrief.render();
+if(typeof VehicleAlertPanel!=='undefined')VehicleAlertPanel.render();
+if(typeof VehicleInsightFeed!=='undefined')VehicleInsightFeed.render();
+if(typeof VehicleAnalyticsPresenter!=='undefined')VehicleAnalyticsPresenter.render();
+if(typeof VehicleDecisionPresenter!=='undefined')VehicleDecisionPresenter.render();
+if(typeof VehicleAutomationPresenter!=='undefined')VehicleAutomationPresenter.render();
+if(typeof CrossDashboardCard!=='undefined')CrossDashboardCard.render();
+if(typeof CrossInsightPresenter!=='undefined')CrossInsightPresenter.render();
+if(typeof UnifiedBriefingPresenter!=='undefined')UnifiedBriefingPresenter.render();
+if(typeof UnifiedDashboardHome!=='undefined')UnifiedDashboardHome.render();
+// S118 (Cross Module Integration Hardening): DecisionCenterHome (Recommendation Panel + Action
+// Queue, Sesi 90) SEBELUMNYA hanya disambungkan lewat DashboardHub.render() (navigasi/showPage) —
+// tertinggal dari live-wiring ini walau 4 presenter cross lain di atas (CrossDashboardCard/
+// CrossInsightPresenter/UnifiedBriefingPresenter/UnifiedDashboardHome) sudah disertakan sejak
+// Sesi 87-89. Akibatnya Action Queue/Recommendation Panel tidak ikut ter-update kalau user tetap
+// di halaman Dashboard Hub lalu menyimpan data dari halaman lain — pola gap yang SAMA PERSIS
+// yang melatarbelakangi live-wiring Hero/Summary/Analytics/Favorit di atas. 100% reuse
+// DecisionCenterHome.render() yang sudah ada (0 mekanisme/rumus baru), TIDAK mengubah baris
+// manapun sebelum ini.
+if(typeof DecisionCenterHome!=='undefined')DecisionCenterHome.render();
+if(typeof DashboardHubFavoritView!=='undefined')DashboardHubFavoritView.render();
+if(typeof EIEDashboard!=='undefined')EIEDashboard.render();
+}catch(e){
+console.warn('renderDashboard: live-refresh widget Dashboard Hub gagal, dilewati:',e);
 }
 }
 
@@ -1197,6 +1256,12 @@ updateProfilPTKPPreview();
 updateUsiaPreview();
 const apiKeyEl=document.getElementById('sApiKey'); if(apiKeyEl) apiKeyEl.value=D.profile.apiKey||'';
 const providerEl=document.getElementById('sApiProvider'); if(providerEl){providerEl.value=D.profile.apiProvider||'claude';toggleApiKeyHint();}
+const aiThEl=document.getElementById('sAIFinanceThreshold'); if(aiThEl) aiThEl.value=typeof getAIFinanceOverspendThreshold==='function'?getAIFinanceOverspendThreshold():150;
+const aiDelThEl=document.getElementById('sAIDeliveryThreshold'); if(aiDelThEl) aiDelThEl.value=typeof getAIDeliveryThinMarginThreshold==='function'?getAIDeliveryThinMarginThreshold():10;
+const aiFinLowBalEl=document.getElementById('sAIFinanceLowBalance'); if(aiFinLowBalEl) aiFinLowBalEl.value=typeof getAIFinanceLowBalanceMultiplier==='function'?getAIFinanceLowBalanceMultiplier():0.5;
+const aiVehFuelDropEl=document.getElementById('sAIVehicleFuelDrop'); if(aiVehFuelDropEl) aiVehFuelDropEl.value=typeof getAIVehicleFuelDropThreshold==='function'?getAIVehicleFuelDropThreshold():20;
+const aiDelLowStockEl=document.getElementById('sAIDeliveryLowStock'); if(aiDelLowStockEl) aiDelLowStockEl.value=typeof getAIDeliveryLowStockThreshold==='function'?getAIDeliveryLowStockThreshold():2;
+const aiAssetZakatMinEl=document.getElementById('sAIAssetZakatMin'); if(aiAssetZakatMinEl) aiAssetZakatMinEl.value=typeof getAIAssetZakatMinThreshold==='function'?getAIAssetZakatMinThreshold():0;
 const whG=document.getElementById('whGaji'); if(whG) whG.value=D.profile.gajiPokok||65000;
 const whD=document.getElementById('whDate'); if(whD&&!whD.value) whD.value=new Date().toISOString().split('T')[0];
 renderWorkDays();

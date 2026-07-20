@@ -16,7 +16,7 @@ const path = require('node:path');
 const HTML_FILES = ['index.html', 'app_production.html'];
 
 function readHtml(file) {
-  return fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
+  return fs.readFileSync(path.join(__dirname, '..', '..', file), 'utf8');
 }
 
 for (const file of HTML_FILES) {
@@ -69,7 +69,7 @@ test('index.html & app_production.html tetap identik setelah Tahap 3', () => {
 // ---------------------------------------------------------------------------
 
 test('styles.css: .dashhub-qa-row/.dashhub-qa-btn hanya pakai token yang sudah ada', () => {
-  const css = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', '..', 'styles.css'), 'utf8');
   assert.match(css, /\.dashhub-qa-row\{/);
   assert.match(css, /\.dashhub-qa-btn\{/);
   const block = css.slice(css.indexOf('.dashhub-qa-row{'), css.indexOf('.dashhub-qa-row{') + 1500);

@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const { createFakeElement } = require('./helpers/fakeDom');
+const { createFakeElement } = require('../helpers/fakeDom');
 
 // Tahap 3c — blueprint-dashboard-hub.md, "Dashboard Hub Readiness (Wiring &
 // Regression Fixes)". Tahap ini TIDAK mengubah landing page default, TIDAK
@@ -26,11 +26,11 @@ const { createFakeElement } = require('./helpers/fakeDom');
 // dijalankan bersama di SATU context vm kecil dgn DashboardHub/renderDashboard
 // tiruan (spy) supaya jumlah pemanggilan bisa dihitung persis.
 
-const MODULES_RENDER = fs.readFileSync(path.join(__dirname, '..', 'modules/shared/modules-render.js'), 'utf8');
-const MODAL_NAVIGASI = fs.readFileSync(path.join(__dirname, '..', 'modules/shared/modal-navigasi.js'), 'utf8');
-const MODULES_CALC = fs.readFileSync(path.join(__dirname, '..', 'modules/shared/modules-calc.js'), 'utf8');
+const MODULES_RENDER = fs.readFileSync(path.join(__dirname, '..', '..', 'modules/shared/modules-render.js'), 'utf8');
+const MODAL_NAVIGASI = fs.readFileSync(path.join(__dirname, '..', '..', 'modules/shared/modal-navigasi.js'), 'utf8');
+const MODULES_CALC = fs.readFileSync(path.join(__dirname, '..', '..', 'modules/shared/modules-calc.js'), 'utf8');
 const HTML_FILES = ['index.html', 'app_production.html'].map((f) =>
-  fs.readFileSync(path.join(__dirname, '..', f), 'utf8')
+  fs.readFileSync(path.join(__dirname, '..', '..', f), 'utf8')
 );
 
 // Brace-counting: sama persis dgn extractFunction() di helpers/loadSource.js,

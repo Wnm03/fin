@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 // Cakupan file ini: wiring checkbox "🏠 Ini KPR" (txCicilanIsKpr) <-> bill.isKpr
 // di transaksi.js — bagian yang di PATCH-NOTES-jenis-akun-kpr-kategori.md

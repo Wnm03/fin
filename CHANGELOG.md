@@ -1,3 +1,76 @@
+# Changelog — Smart Delivery Engine, Sesi 4/6: Fungsi Additive Shop + Cobek
+
+Lihat `RENCANA-SESI-RINGKAS.md` untuk peta 6 sesi lengkap. Sesi ini
+melanjutkan Sesi 1-3 (`modules/ai/*`, `modules/logistics/*`, sudah ada &
+tidak disentuh) dengan menambah fungsi kalkulasi ke 3 file Shop yang SUDAH
+ADA (bukan file baru) — sesuai rencana ringkas, TIDAK ada file baru di
+sesi ini.
+
+## Ditambahkan (semua PURE/read-only, tidak ada UI/tombol/wiring baru)
+
+- **`modules/shop/cobek-etalase.js`** — `weightCalculator({beratPerUnit,
+  qty})`, `volumeCalculator({panjang, lebar, tinggi, qty})`,
+  `packingCalculator({items, capacityKg, capacityM3})`: kalkulator
+  berat/volume/rit pengiriman, murni parameter (D.products belum punya
+  field berat/volume, jadi tidak baca D sama sekali).
+- **`modules/shop/cobek-pricing.js`** — `calculateFuel(vehicleId)`
+  (bungkus `LogisticsEngine.fuel()` dgn pesan alasan gagal),
+  `calculateProfit({productId, qty, deliveryPlan})` (revenue - modal -
+  ongkir dari `D.products` + `deliveryPlan.route`), `calculateVehicleCapacity
+  ({vehicleId, items, capacityKg, capacityM3})` (gabungan
+  `packingCalculator()` + `calculateFuel()`).
+- **`modules/shop/cobek-order.js`** — `calculateSmartDelivery({productId,
+  qty, produsenId, kmKonsumen, biayaPerKmKonsumen, metode, vehicleId,
+  marginPct})`: orkestrator rencana pengiriman lengkap 1 produk, Etape 1
+  (jarak/biaya ke Produsen) diambil otomatis dari `D.produsen[].jarakKm/
+  biayaPerKm` kalau ada, lewat `LogisticsEngine.plan()` +
+  `calculateProfit()`. `requestAIRecommendation({...})` (async): bangun
+  prompt lewat `AIService.buildPrompt()`, kirim ke AI lewat
+  `callAIProviderRaw()` KALAU `D.profile.apiKey` sudah diisi (pola sama
+  dgn `PriceReko.checkMarketAI()`), kalau belum tetap balikin prompt-nya
+  (`aiText:null`) — tidak memaksa isi API Key dulu.
+- **`tests/cobek-smart-delivery.test.js`** (file baru, 21 test) — meliputi
+  ke-8 fungsi di atas, termasuk kasus gagal (produk tidak ketemu, histori
+  BBM belum cukup, kapasitas tidak dikasih, API Key kosong, AI gagal
+  dihubungi).
+
+## Tidak diubah
+
+- `modules/ai/*`, `modules/logistics/*` (Sesi 1-3) — 0 byte diubah, cuma
+  DIPAKAI (dipanggil dari dalam fungsi baru di atas, referensi lewat nama
+  global karena urutan load `scripts/build.js` menaruh Shop SEBELUM AI/
+  Logistics — lihat catatan di tiap fungsi baru).
+- Tidak ada file baru di `scripts/build.js` (semua fungsi ditambah ke file
+  yang SUDAH terdaftar), jadi tidak ada perubahan urutan/registrasi build.
+- Tidak ada UI/tombol/menu baru, tidak ada `save()` dipanggil dari fungsi
+  manapun di atas — semua murni baca `D` (read-only) + hitung.
+- `D.products`/`D.vehicles` tidak ditambah field baru (berat/volume/
+  kapasitas tetap jadi parameter eksplisit, bukan field D baru).
+
+## Yang masih perlu diputuskan sebelum Sesi 5
+
+"Inventory" mau dipetakan ke stok produk Shop (`cobek-etalase.js`), stok
+sparepart kendaraan (`tx-stok-sparepart.js`), keduanya, atau modul baru? —
+lihat `RENCANA-SESI-RINGKAS.md`.
+
+## Hasil test
+
+```
+node --test tests/cobek-smart-delivery.test.js
+# tests 21 / pass 21 / fail 0
+
+node --test tests/*.test.js
+# tests 1985 / pass 1985 / fail 0  (baseline lama tetap hijau, 0 diubah)
+
+node scripts/build.js
+# ✅ Build "kw99-sesi25-fix-gdrive-backup-await-9" selesai & lolos cek sintaks
+
+node --test tests/*.test.js   (setelah build)
+# tests 1985 / pass 1985 / fail 0
+```
+
+---
+
 # Changelog — Bangun UI Tab "📊 Laporan" Shop/Cobek + FAB Kontekstual
 
 ## Ditambahkan
@@ -4461,4 +4534,66 @@ node scripts/build.js
 
 node --test   (setelah build)
 # tests 1876 / pass 1876 / fail 0
+```
+
+## Sesi 74 (2026-07-20) — Finance Intelligence Foundation (Batch 6)
+
+Keputusan produk FINAL eksplisit user (target baru Batch 6, lanjutan
+setelah Finance Account & Finance Category Foundation Sesi 73). Target:
+Cash Flow Summary, Budget Summary, Income vs Expense, Financial Health
+Score, Insight dasar — semua REUSE penuh atas service/registry/data yang
+sudah ada, TIDAK ada framework baru, TIDAK duplikasi logic, TIDAK
+mengubah struktur data `D`.
+
+### Ditambahkan (PURE/read-only, tidak ada UI/tombol/wiring baru)
+
+- `modules/finance/finance-intelligence.js` — objek `FinanceIntelligence`:
+  - `incomeVsExpense(range?)` — total income/expense per rentang tanggal
+    eksplisit `{from,to}` (default bulan berjalan). Satu-satunya logic
+    genuinely baru sesi ini — sebelumnya tidak ada versi murni (non-DOM)
+    dari agregasi ini.
+  - `cashflowSummary()` — wrapper tipis `computeCashflowForecast()`
+    (`modules/finance/tx-list-cashflow.js`) + `incomeVsExpense()` bulan
+    berjalan.
+  - `budgetSummary(month?, year?)` — wrapper tipis `Budget.getUsed()`/
+    `Budget.getEffectiveLimit()` (`budget.js`) atas `D.budgets`.
+  - `healthScore()` — skor 0-100 komposit 4 komponen (savings rate,
+    budget adherence, rasio utang thd saldo via `totalDebtValue()`/
+    `totalSaldoAkun()`, proyeksi cashflow 30 hari) — tiap komponen HANYA
+    disertakan kalau service pendukungnya tersedia (guard `typeof`), skor
+    diskalakan ulang dari bobot yang tersedia.
+  - `insights()` — insight dasar (deficit/good_savings/budget_over/
+    cashflow_negative/health_score) derivatif langsung dari 4 fungsi di
+    atas. BUKAN duplikasi `FinCoach` (`modules/shared/modules-calc.js`) —
+    FinCoach tetap widget Dashboard proaktif dgn state dismiss/persist &
+    mencakup domain di luar finance murni.
+  - `summary()` — satu pintu masuk gabungan ke-5 fungsi di atas.
+
+### Diubah
+
+- `scripts/build.js` — `GROUP_B` nambah `modules/finance/finance-
+  intelligence.js`, diletakkan setelah `pajak-aset-ui-wrappers.js`
+  (dependency `totalDebtValue()`) & sebelum `app-bootstrap.js`.
+
+### Test
+
+- `tests/finance-intelligence.test.js` (BARU, 17 test) — pola sama
+  `tests/finance-predict.test.js`, dependency (`computeCashflowForecast`,
+  `Budget`, `totalSaldoAkun`, `totalDebtValue`) di-mock lewat `loadSource`
+  extraGlobals (isolasi murni per fungsi).
+
+### Hasil test
+
+```
+node --test tests/finance-intelligence.test.js
+# tests 17 / pass 17 / fail 0
+
+node --test tests/*.test.js
+# tests 2583 / pass 2583 / fail 0   (naik dari 2566)
+
+node scripts/build.js kw74-batch6-finance-intelligence-foundation
+# ✅ Build "kw74-batch6-finance-intelligence-foundation" selesai & lolos cek sintaks (?v=498)
+
+node --test tests/*.test.js   (setelah build)
+# tests 2583 / pass 2583 / fail 0
 ```

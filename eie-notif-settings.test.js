@@ -8,7 +8,7 @@
 // yang dites di sini murni logika non-DOM (store + wiring NotificationService).
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 function makeFakeIDBStore(initial = {}) {
   const data = { ...initial };

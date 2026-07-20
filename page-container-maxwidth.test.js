@@ -10,7 +10,7 @@ const path = require('node:path');
 // Hero Dashboard scope, tidak disentuh).
 
 function readCss() {
-  return fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
+  return fs.readFileSync(path.join(__dirname, '..', '..', 'styles.css'), 'utf8');
 }
 
 test('styles.css: .page mendapat max-width:1080px di @media (min-width:1024px)', () => {

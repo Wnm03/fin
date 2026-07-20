@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { loadSource } = require('./helpers/loadSource.js');
+const { loadSource } = require('../helpers/loadSource.js');
 
 // Kenapa test ini penting: modals.js punya komentar "Urutan array WAJIB sama
 // dengan urutan pemanggilan document.write(MODAL_HTML[i]) di
@@ -21,7 +21,7 @@ const { loadSource } = require('./helpers/loadSource.js');
 //      0..N-1 (bukan cuma jumlahnya sama, tapi urutannya juga tidak geser/
 //      kececer/kebalik).
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(__dirname, '..', '..');
 const HTML_FILES = ['index.html', 'app_production.html'];
 
 function getModalHtmlLength() {

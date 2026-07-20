@@ -2,8 +2,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const vm = require('node:vm');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 // kalkulator-input.js bagian POPUP INTERAKTIF: openCalc/closeCalc/calcPress/
 // calcClear/calcBackspace/calcEquals/calcUseResult/calcRenderDisplay.

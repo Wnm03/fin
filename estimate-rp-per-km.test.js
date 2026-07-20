@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // estimateRpPerKm (vehicle-core.js, kw191-ongkir-jarak lanjutan — dipisah dari
 // tukang-absensi.js (dulu features-tukang-kendaraan-storage.js) di split file besar bagian ke-4) dipakai oleh

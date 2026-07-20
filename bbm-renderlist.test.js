@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeElement } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeElement } = require('../helpers/fakeDom');
 
 // BBM.renderList (car-notes.js) baca input
 // dari D.bbmLogs & tulis hasil kalkulasi (rata2 km/L, total liter, total

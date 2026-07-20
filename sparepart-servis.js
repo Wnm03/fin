@@ -498,7 +498,11 @@ return marks;
 })();
 function revertStockUsage(partId,qty){return Servis.revertStockUsage(partId,qty);}
 function applyStockUsage(partId,qty){return Servis.applyStockUsage(partId,qty);}
-function saveServis(){return Servis.save();}
+function saveServis(){
+const r=Servis.save();
+if(typeof AIBus!=="undefined")AIBus.emit("vehicle.updated",{kind:"servis"});
+return r;
+}
 function deleteServisFromModal(){return Servis.deleteFromModal();}
 function delServis(id){return Servis.del(id);}
 function markSparepartServiced(catId){return Servis.markServiced(catId);}
@@ -518,4 +522,217 @@ renderDashboardServisReminder();
 function goToServisFromDash(vehicleId){
 if(vehicleId&&D.vehicles.find(v=>v.id===vehicleId)){curVehicleId=vehicleId;renderVehicleSelect();}
 goToList('servisReminderCard','carnotes',4,null,'servis');
+}
+
+// ---------------------------------------------------------------------------
+// Smart Delivery Engine, Sesi 5/6: predictService() & maintenanceForecast()
+// — fungsi prediktif domain VEHICLE (bagian servis/sparepart). Lihat
+// RENCANA-SESI-RINGKAS.md untuk peta 6 sesi. fuelEfficiency() (fungsi
+// prediktif VEHICLE lainnya, bagian BBM) ada di modules/vehicle/vehicle-
+// core.js, di-load SEBELUM file ini.
+//
+// predictService() SENGAJA tidak menduplikasi perhitungan yang sudah ada di
+// Servis.renderReminder() (car-notes.js) — dia memakai getEffectiveIntervalKm/
+// getLastServiceKmForCat/estimateKmPerDay/estimateServiceDateISO yang PERSIS
+// SAMA (fungsi yang sama, bukan reimplementasi), cuma dikeluarkan versi
+// pure-data-nya (tanpa HTML/DOM) supaya bisa dipakai AIService/wiring Sesi 6
+// nanti. renderReminder() DIBIARKAN seperti semula (tidak di-refactor pakai
+// fungsi ini) untuk minimalkan risiko regresi UI di sesi ini.
+// PURE/read-only, TIDAK PERNAH memanggil save(). Belum ada UI/tombol baru.
+// ---------------------------------------------------------------------------
+
+// predictService({vehicleId, categoryId}) — prediksi servis berikutnya.
+// Tanpa categoryId: balikin array (1 baris per D.sparepartCats), urut dari
+// paling mendesak (sisaKm terkecil dulu) — sama urutan dgn
+// Servis.renderReminder(). Dengan categoryId: balikin 1 objek prediksi
+// (bukan array) buat kategori itu saja. Balikin {ok:false} kalau kendaraan
+// tidak ditemukan atau belum ada kategori sparepart terdaftar.
+function predictService({vehicleId,categoryId}={}){
+const veh=(D.vehicles||[]).find(v=>v.id===vehicleId);
+if(!veh)return{ok:false,reason:'Kendaraan tidak ditemukan'};
+const cats=categoryId
+? (D.sparepartCats||[]).filter((c)=>c.id===categoryId)
+: (D.sparepartCats||[]);
+if(!cats.length)return{ok:false,reason:categoryId?'Kategori sparepart tidak ditemukan':'Belum ada kategori sparepart terdaftar'};
+const curKm=getVehicleKm(vehicleId);
+const kmPerDay=estimateKmPerDay(vehicleId);
+const rows=cats.map((cat)=>{
+const lastKm=getLastServiceKmForCat(vehicleId,cat);
+const intervalKm=getEffectiveIntervalKm(vehicleId,cat);
+const overridden=hasIntervalOverride(vehicleId,cat);
+const jarakTempuh=lastKm===null?curKm:curKm-lastKm;
+const sisaKm=intervalKm-jarakTempuh;
+const estDateISO=estimateServiceDateISO(sisaKm,kmPerDay);
+const status=sisaKm<=0?'lewat':(sisaKm<=intervalKm*0.15?'segera':'aman');
+return{categoryId:cat.id,categoryName:cat.name,lastKm,intervalKm,overridden,sisaKm,estDateISO,status};
+}).sort((a,b)=>a.sisaKm-b.sisaKm);
+return{ok:true,vehicleId,curKm,kmPerDay,items:categoryId?undefined:rows,...(categoryId?rows[0]:{})};
+}
+
+// maintenanceForecast({vehicleId, monthsAhead}) — perkiraan item servis yang
+// akan JATUH TEMPO dalam N bulan ke depan (dari estDateISO hasil
+// predictService() di atas) + estimasi total biayanya, dari rata-rata biaya
+// histori per kategori (D.servisLogs[].cost, kalau ada catatannya — kategori
+// tanpa histori biaya dihitung biayaEstimasi:null & TIDAK ikut totalBiaya,
+// supaya total tidak under-estimate secara diam-diam).
+function maintenanceForecast({vehicleId,monthsAhead=3}={}){
+const pred=predictService({vehicleId});
+if(!pred.ok)return pred;
+const now=new Date();
+const batas=new Date(now.getFullYear(),now.getMonth()+monthsAhead,now.getDate());
+const dueItems=pred.items.filter((r)=>r.status==='lewat'||(r.estDateISO&&new Date(r.estDateISO)<=batas));
+let totalBiaya=0;
+let totalBiayaLengkap=true;
+const items=dueItems.map((r)=>{
+const logs=(D.servisLogs||[]).filter((s)=>s.vehicleId===vehicleId&&(s.categoryId===r.categoryId||(!s.categoryId&&s.item===r.categoryName))&&s.cost>0);
+const biayaEstimasi=logs.length?logs.reduce((s,l)=>s+l.cost,0)/logs.length:null;
+if(biayaEstimasi==null)totalBiayaLengkap=false;else totalBiaya+=biayaEstimasi;
+return Object.assign({},r,{biayaEstimasi});
+});
+return{ok:true,vehicleId,monthsAhead,items,totalBiaya,totalBiayaLengkap};
+}
+
+// ---------------------------------------------------------------------------
+// Smart Delivery Engine, Sesi 8: rule domain VEHICLE utk AIDecision (lanjutan
+// Sesi 7 — lihat RENCANA-SESI-RINGKAS.md). Rule: "ada kendaraan dgn item
+// servis berstatus 'lewat' (jatuh tempo terlampaui)" — dari predictService()
+// di atas, status yang SAMA PERSIS dipakai Servis.renderReminder() (jadi
+// rule ini TIDAK mengarang ambang baru, cuma numpang status yang sudah ada).
+// Diperiksa lintas SEMUA D.vehicles (bukan cuma kendaraan aktif) karena
+// event 'vehicle.updated' (saveServis()) tidak membawa vehicleId spesifik.
+// ---------------------------------------------------------------------------
+
+// _vehicleOverdueCheck() — helper dipakai condition() & action().
+function _vehicleOverdueCheck(){
+if(typeof predictService!=='function')return{trigger:false};
+const overdue=[];
+(D.vehicles||[]).forEach((v)=>{
+const pred=predictService({vehicleId:v.id});
+if(pred&&pred.ok&&Array.isArray(pred.items)){
+pred.items.filter((it)=>it.status==='lewat').forEach((it)=>overdue.push({vehicleName:v.name,categoryName:it.categoryName,sisaKm:it.sisaKm}));
+}
+});
+return{trigger:overdue.length>0,overdue};
+}
+
+// ---------------------------------------------------------------------------
+// Rule kedua VEHICLE (keputusan produk dikonfirmasi user):
+// 'vehicle-fuel-efficiency-drop' — konsumsi BBM (km/liter) pengisian FULL
+// TANK terakhir turun ≥20% dari rata-rata histori sebelumnya. SENGAJA tidak
+// menduplikasi/mengubah fuelEfficiency()/estimateRpPerKm() di atas (yang
+// menghitung km/liter GABUNGAN semua histori, bukan per-segmen) —
+// _vehicleFuelEfficiencyDropCheck() menghitung km/liter PER PASANGAN log full
+// tank berurutan sendiri, lalu membandingkan segmen TERAKHIR vs rata-rata
+// segmen SEBELUMNYA. Ambang drop (default 20%) BISA DIATUR user (Sesi
+// lanjutan, pola sama dgn getAIFinanceOverspendThreshold/getAIDeliveryThin-
+// MarginThreshold) lewat D.profile.aiVehicleFuelDropThresholdPct, field baru
+// di Pengaturan > 🤖 AI Asisten. Minimal 3 segmen historis TETAP DIHARDCODE
+// (bukan ambang sensitivitas, tapi syarat data cukup secara statistik).
+// ---------------------------------------------------------------------------
+const AI_VEHICLE_FUEL_DROP_DEFAULT_PCT=20;
+
+// getAIVehicleFuelDropThreshold()/setAIVehicleFuelDropThreshold(pct) —
+// getter/setter D.profile.aiVehicleFuelDropThresholdPct, dipakai field
+// Pengaturan (renderSettings()/autoSaveProfile()) & rule di bawah. Dijaga
+// di rentang 5-90 (di bawah 5% terlalu sensitif/noise wajar, di atas 90%
+// nyaris tidak pernah trigger).
+function getAIVehicleFuelDropThreshold(){
+const v=D.profile&&D.profile.aiVehicleFuelDropThresholdPct;
+return(typeof v==='number'&&v>=5&&v<=90)?v:AI_VEHICLE_FUEL_DROP_DEFAULT_PCT;
+}
+function setAIVehicleFuelDropThreshold(pct){
+const n=parseFloat(pct);
+D.profile.aiVehicleFuelDropThresholdPct=(Number.isFinite(n)&&n>=5&&n<=90)?n:AI_VEHICLE_FUEL_DROP_DEFAULT_PCT;
+return D.profile.aiVehicleFuelDropThresholdPct;
+}
+
+function _vehicleFuelEfficiencyDropCheck(){
+const thresholdPct=getAIVehicleFuelDropThreshold();
+const drops=[];
+(D.vehicles||[]).forEach((v)=>{
+const logs=(D.bbmLogs||[]).filter((b)=>b.vehicleId===v.id&&b.fullTank&&isFinite(b.km)&&b.km>0&&b.liter>0).sort((a,b)=>a.km-b.km);
+if(logs.length<4)return; // butuh min. 3 segmen historis + 1 segmen terakhir yg dibandingkan
+const segments=[];
+for(let i=1;i<logs.length;i++){
+const kmDiff=logs[i].km-logs[i-1].km;
+if(kmDiff<=0)continue;
+segments.push(kmDiff/logs[i].liter);
+}
+if(segments.length<4)return;
+const last=segments[segments.length-1];
+const prevSegs=segments.slice(0,-1);
+const avgPrev=prevSegs.reduce((s,x)=>s+x,0)/prevSegs.length;
+if(avgPrev<=0)return;
+const dropPct=Math.round((1-last/avgPrev)*100);
+if(dropPct>=thresholdPct)drops.push({vehicleId:v.id,vehicleName:v.name,dropPct,last,avgPrev,thresholdPct});
+});
+return{trigger:drops.length>0,drops,thresholdPct};
+}
+
+let _vehicleAIRulesRegistered=false;
+// registerVehicleAIRules() — dipanggil sekali saat boot (self-test.js
+// init()), idempotent lewat guard, return false kalau AIDecision belum ada.
+function registerVehicleAIRules(){
+if(_vehicleAIRulesRegistered)return false;
+if(typeof AIDecision==='undefined'||!AIDecision.rules||typeof AIDecision.rules.register!=='function')return false;
+AIDecision.rules.register({
+id:'vehicle-service-overdue',
+category:'vehicle',
+severity:'warning',
+weight:5,
+cooldownHours:24,
+description:'Ada kendaraan dengan item servis yang sudah lewat jatuh tempo (predictService status="lewat").',
+condition:()=>_vehicleOverdueCheck().trigger,
+action:()=>{
+const c=_vehicleOverdueCheck();
+const first=c.overdue[0];
+const extra=c.overdue.length>1?` (+${c.overdue.length-1} item lain)`:'';
+return{message:`Servis lewat jatuh tempo: ${first.vehicleName} — ${first.categoryName} (${Math.abs(first.sisaKm)} km lewat batas)${extra}.`};
+},
+});
+AIDecision.rules.register({
+id:'vehicle-fuel-efficiency-drop',
+category:'vehicle',
+severity:'info',
+weight:3,
+cooldownHours:72,
+description:'Konsumsi BBM (km/liter) pengisian Full Tank terakhir turun ≥ambang % (bisa diatur user) dari rata-rata histori sebelumnya (min. 4 log Isi Full Tank berurutan).',
+condition:()=>_vehicleFuelEfficiencyDropCheck().trigger,
+action:()=>{
+const c=_vehicleFuelEfficiencyDropCheck();
+const first=c.drops[0];
+const extra=c.drops.length>1?` (+${c.drops.length-1} kendaraan lain)`:'';
+const message=`Konsumsi BBM ${first.vehicleName} turun ${first.dropPct}% dari biasanya (skrg ${first.last.toFixed(1)} km/L vs rata-rata ${first.avgPrev.toFixed(1)} km/L, ambang ${first.thresholdPct}%)${extra}.`;
+// Sesi 12 — cross-engine: LogisticsEngine.fuelCalculator() (Tahap 3, sudah
+// ADA & teruji) dipakai di sini utk hitung selisih biaya BBM per 100km
+// akibat penurunan efisiensi, BUKAN rumus baru yg ditulis ulang di sini.
+// Guard typeof supaya fallback ke message-only (perilaku lama) kalau
+// LogisticsEngine/estimateRpPerKm belum ter-load atau histori harga BBM
+// kendaraan ini belum cukup (estimateRpPerKm return null).
+if(typeof LogisticsEngine==='undefined'||typeof LogisticsEngine.fuelCalculator!=='function'||typeof estimateRpPerKm!=='function'){
+return{message};
+}
+const est=estimateRpPerKm(first.vehicleId);
+if(!est||!est.avgHarga){
+return{message};
+}
+const fmt=typeof fmtFull==='function'?fmtFull:(n=>'Rp '+Math.round(n||0).toLocaleString('id-ID'));
+const sekarang=LogisticsEngine.fuelCalculator({jarak:100,konsumsiKmPerLiter:first.last,hargaBBM:est.avgHarga});
+const biasanya=LogisticsEngine.fuelCalculator({jarak:100,konsumsiKmPerLiter:first.avgPrev,hargaBBM:est.avgHarga});
+const selisih=sekarang.biayaBBM-biasanya.biayaBBM;
+return{
+message,
+title:'Cek performa BBM kendaraan',
+affectedModules:['vehicle','finance'],
+estimatedImpact:{
+biayaBBMPer100kmSekarang:fmt(sekarang.biayaBBM),
+biayaBBMPer100kmBiasanya:fmt(biasanya.biayaBBM),
+selisihPer100km:(selisih>=0?'+':'')+fmt(selisih),
+},
+actions:['Cek filter udara & tekanan ban','Jadwalkan servis bila performa terus turun'],
+};
+},
+});
+_vehicleAIRulesRegistered=true;
+return true;
 }

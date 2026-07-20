@@ -2,8 +2,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const vm = require('node:vm');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 // Lanjutan tests/refleksi-selfcare.test.js: bagian "berat" yang sengaja
 // disisakan di situ -- Catatan Privat (addNote/toggleNoteView/deleteNote),

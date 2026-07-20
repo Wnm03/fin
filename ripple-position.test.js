@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // ripple-position.js mengecek `typeof document!=='undefined'` sebelum memasang listener --
 // di vm context (Node, tanpa DOM) itu langsung false, jadi file ini aman dimuat apa adanya
@@ -66,7 +66,7 @@ test('applyRipplePosition — elemen tanpa getBoundingClientRect (bukan elemen D
 
 test('RIPPLE_SELECTOR — daftar selector sama persis dengan yang dipakai styles.css Tahap 7 (ripple asli)', () => {
   const fs = require('node:fs');
-  const css = fs.readFileSync(require('node:path').join(__dirname, '..', 'styles.css'), 'utf8');
+  const css = fs.readFileSync(require('node:path').join(__dirname, '..', '..', 'styles.css'), 'utf8');
   // Ambil daftar selector dari rule `.btn::after, .chip-btn::after, ...` di styles.css,
   // lalu bandingkan (tanpa "::after") dengan RIPPLE_SELECTOR di ripple-position.js -- kalau
   // salah satu file diubah tanpa yang lain, ripple akan berhenti muncul di sebagian tombol

@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const { createFakeElement } = require('./helpers/fakeDom');
+const { createFakeElement } = require('../helpers/fakeDom');
 
 // Tahap 4 — blueprint-dashboard-hub.md §5 "Ganti default". Dashboard Hub
 // sekarang jadi halaman yang dibuka saat startup, murni lewat markup statis
@@ -16,11 +16,11 @@ const { createFakeElement } = require('./helpers/fakeDom');
 // 'dashboard-hub' supaya konsisten dgn landing page baru (Langkah 3).
 
 const HTML_FILES = ['index.html', 'app_production.html'];
-const MODULES_RENDER = fs.readFileSync(path.join(__dirname, '..', 'modules/shared/modules-render.js'), 'utf8');
-const MODAL_NAVIGASI = fs.readFileSync(path.join(__dirname, '..', 'modules/shared/modal-navigasi.js'), 'utf8');
+const MODULES_RENDER = fs.readFileSync(path.join(__dirname, '..', '..', 'modules/shared/modules-render.js'), 'utf8');
+const MODAL_NAVIGASI = fs.readFileSync(path.join(__dirname, '..', '..', 'modules/shared/modal-navigasi.js'), 'utf8');
 
 function readHtml(file) {
-  return fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
+  return fs.readFileSync(path.join(__dirname, '..', '..', file), 'utf8');
 }
 
 // ---------------------------------------------------------------------------

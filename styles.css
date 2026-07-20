@@ -958,6 +958,23 @@ textarea.fi { resize: vertical; min-height: 80px; }
 .dashhub-analytics-label{font-size:var(--fs-caption);color:var(--text2);margin-bottom:2px;white-space:nowrap;}
 .dashhub-analytics-val{font-size:var(--fs-title-sm);font-weight:700;color:var(--text);white-space:nowrap;}
 
+/* FINANCE DASHBOARD & AI HOOK FOUNDATION (Sesi 75, Batch 6). Grid kartu di
+   dalam #findashWrap, tepat sama pola dgn .dashhub-summary-grid/
+   .dashhub-analytics-card di atas — murni tambahan CSS baru, scoped
+   seluruhnya ke class .findash-*. Semua nilai pakai token yang SUDAH ADA
+   (--r-*/--sp-*/--fs-*), warna angka pakai utility .green/.red/.orange
+   yang sudah ada (lihat baris ".green"/".red"/".orange" di atas file ini)
+   — bukan token/warna baru. */
+.findash-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp-3);}
+.findash-card{display:flex;gap:var(--sp-3);align-items:flex-start;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-xl);padding:var(--sp-5);}
+.findash-card-icon{font-size:var(--fs-icon-lg);line-height:1;}
+.findash-card-label{font-size:var(--fs-caption);color:var(--text2);margin-bottom:2px;}
+.findash-card-val{font-size:var(--fs-title-sm);font-weight:700;color:var(--text);}
+.findash-card-sub{font-size:11px;color:var(--text2);opacity:.75;margin-top:2px;}
+@media (min-width:600px){
+  .findash-grid{grid-template-columns:repeat(4,1fr);}
+}
+
 /* PINNED WIDGETS MODERN (Sprint 1 Tahap 6, lihat PINNED-WIDGETS.md). Murni
    modernisasi visual widget LAMA di dalam #dashboardHubPinnedWrap
    (advisorCard, lifeBalanceCard, refleksiCard, dashFiCard, dashPensiunCard,
@@ -1201,6 +1218,13 @@ textarea.fi { resize: vertical; min-height: 80px; }
 .lifeos-knowledge-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--sp-5) var(--sp-6);margin-bottom:var(--sp-3);}
 .lifeos-knowledge-title{font-size:var(--fs-body);font-weight:700;color:var(--text);margin-bottom:3px;}
 .lifeos-knowledge-tags{font-size:var(--fs-caption);color:var(--text2);}
+
+/* --- Area Summary (Sesi 39) --- */
+.lifeos-areas-grid,#lifeOSAreasGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp-4);}
+.lifeos-area-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-xl);padding:var(--sp-6) var(--sp-5);text-align:center;}
+.lifeos-area-icon{font-size:22px;margin-bottom:var(--sp-2);}
+.lifeos-area-name{font-size:var(--fs-body);font-weight:700;color:var(--text);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lifeos-area-count{font-size:var(--fs-label);font-weight:700;color:var(--accent);}
 
 /* ===== Tangga Keuangan (fitur baru, murni additive) ===== */
 .tk-row{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.08);}

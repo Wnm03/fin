@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // diagnostik-versi.js punya IIFE top-level (_checkModuleVersionSync) yang
 // JALAN OTOMATIS begitu file di-load (bukan cuma deklarasi function) & butuh

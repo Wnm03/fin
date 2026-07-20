@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // Cakupan file ini: IDBStore (helper generik penyimpanan IndexedDB, co-located
 // di aset.js — lihat CATATAN di aset.js baris 3) — _open/get/set/_withRetry,

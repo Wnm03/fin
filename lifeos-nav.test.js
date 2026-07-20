@@ -7,8 +7,8 @@
 // seperti sebelumnya krn beda kebutuhan dari goTo generik dashHubNavigateToFeature.
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 function makeDoc(initial = {}, queryGroups = {}) {
   return createFakeDocument(initial, queryGroups);
@@ -51,9 +51,15 @@ test('sourceKind "bills": showPage terpanggil dgn page "settings" (lewat dashHub
 
 test('LIFEOS_NAV_MAP entri page-based TIDAK lagi punya field navIndex (dipindah ke PAGE_NAV_IDX via dashHubNavigateToFeature)', () => {
   const { ctx } = loadLifeOSNav();
-  for (const key of ['bills', 'reminders', 'target', 'eduFund']) {
+  const expectedPage = {
+    bills: 'settings', reminders: 'settings',
+    selfcare: 'dashboard-hub', payroll: 'dashboard-hub',
+    target: 'settings', eduFund: 'settings',
+    fi: 'dashboard-hub',
+  };
+  for (const key of Object.keys(expectedPage)) {
     assert.equal(ctx.LIFEOS_NAV_MAP[key].navIndex, undefined, `${key} tidak boleh punya navIndex lagi`);
-    assert.equal(ctx.LIFEOS_NAV_MAP[key].page, 'settings');
+    assert.equal(ctx.LIFEOS_NAV_MAP[key].page, expectedPage[key]);
   }
 });
 
@@ -89,12 +95,116 @@ test('sourceKind "reminders": kartu Setelan (#reminderList) tetap disorot + dibu
   assert.equal(scrolled, true, 'kartu target harus di-scrollIntoView');
 });
 
+test('sourceKind "selfcare": showPage terpanggil dgn page "dashboard-hub" (lewat dashHubNavigateToFeature)', () => {
+  const fakeDocument = makeDoc({}, { '.nav-item': [] });
+  const { ctx, calls } = loadLifeOSNav({ document: fakeDocument });
+  ctx.lifeOSNavigateToSource('selfcare');
+  assert.equal(calls.showPage.length, 1);
+  assert.equal(calls.showPage[0][0], 'dashboard-hub');
+});
+
+test('sourceKind "selfcare": kartu #refleksiCard tetap disorot + di-scroll (reuse _lifeOSHighlightSettingsCard generik, bukan mekanisme baru)', () => {
+  const refleksiCard = { closest: () => card };
+  const card = {
+    classList: { contains: () => false, add() {}, remove() {}, toggle() {} },
+    id: 'refleksiCard',
+    style: {},
+    closest: () => null, // bukan di dalam .stg-tabpanel/.stg-group (bukan halaman Setelan)
+    scrollIntoView: () => { scrolled = true; },
+  };
+  let scrolled = false;
+
+  const fakeDocument = {
+    getElementById: () => null,
+    querySelectorAll: () => [],
+    querySelector: (sel) => (sel === '#refleksiCard' ? refleksiCard : null),
+  };
+
+  const { ctx } = loadLifeOSNav({ document: fakeDocument });
+  ctx.lifeOSNavigateToSource('selfcare');
+  assert.equal(scrolled, true, 'kartu refleksiCard harus di-scrollIntoView walau bukan di halaman Setelan');
+});
+
+test('sourceKind "payroll": showPage terpanggil dgn page "dashboard-hub", cardSelector #dashAbsensiCard', () => {
+  const fakeDocument = makeDoc({}, { '.nav-item': [] });
+  const { ctx, calls } = loadLifeOSNav({ document: fakeDocument });
+  ctx.lifeOSNavigateToSource('payroll');
+  assert.equal(calls.showPage.length, 1);
+  assert.equal(calls.showPage[0][0], 'dashboard-hub');
+  assert.equal(ctx.LIFEOS_NAV_MAP.payroll.cardSelector, '#dashAbsensiCard');
+});
+
+test('sourceKind "tukang" (openFn): TIDAK memanggil showPage sama sekali, langsung Tukang.openModal()', () => {
+  let opened = false;
+  const { ctx, calls } = loadLifeOSNav({ Tukang: { openModal: () => { opened = true; } } });
+  ctx.lifeOSNavigateToSource('tukang');
+  assert.equal(opened, true);
+  assert.equal(calls.showPage.length, 0);
+});
+
+test('sourceKind "tukang": Tukang tidak tersedia (belum ter-load) -> tidak throw, tidak error', () => {
+  const { ctx } = loadLifeOSNav();
+  assert.doesNotThrow(() => ctx.lifeOSNavigateToSource('tukang'));
+});
+
 test('sourceKind "wishlist" (openFn): TIDAK memanggil showPage sama sekali, langsung WorthIt.open()', () => {
   let opened = false;
   const { ctx, calls } = loadLifeOSNav({ WorthIt: { open: () => { opened = true; } } });
   ctx.lifeOSNavigateToSource('wishlist');
   assert.equal(opened, true);
   assert.equal(calls.showPage.length, 0);
+});
+
+test('sourceKind "pensiun" (openFn): reuse goToList() apa adanya (targetId, page, navIdx null, keuTabName "asetproyek")', () => {
+  const calls = { goToList: [] };
+  const { ctx } = loadLifeOSNav({ goToList: (...args) => calls.goToList.push(args) });
+  ctx.lifeOSNavigateToSource('pensiun');
+  assert.equal(calls.goToList.length, 1);
+  assert.deepEqual(calls.goToList[0], ['pensiunBody', 'keuangan', null, null, null, 'asetproyek']);
+});
+
+test('sourceKind "pensiun": goToList tidak tersedia (belum ter-load) -> tidak throw, tidak error', () => {
+  const { ctx } = loadLifeOSNav();
+  assert.doesNotThrow(() => ctx.lifeOSNavigateToSource('pensiun'));
+});
+
+test('sourceKind "debt" (openFn): reuse goToList() apa adanya (targetId, page, navIdx null, keuTabName "utangpiutang")', () => {
+  const calls = { goToList: [] };
+  const { ctx } = loadLifeOSNav({ goToList: (...args) => calls.goToList.push(args) });
+  ctx.lifeOSNavigateToSource('debt');
+  assert.equal(calls.goToList.length, 1);
+  assert.deepEqual(calls.goToList[0], ['debtList', 'keuangan', null, null, null, 'utangpiutang']);
+});
+
+test('sourceKind "debt": goToList tidak tersedia (belum ter-load) -> tidak throw, tidak error', () => {
+  const { ctx } = loadLifeOSNav();
+  assert.doesNotThrow(() => ctx.lifeOSNavigateToSource('debt'));
+});
+
+test('sourceKind "fi": showPage terpanggil dgn page "dashboard-hub", cardSelector #dashFiCard', () => {
+  const fakeDocument = makeDoc({}, { '.nav-item': [] });
+  const { ctx, calls } = loadLifeOSNav({ document: fakeDocument });
+  ctx.lifeOSNavigateToSource('fi');
+  assert.equal(calls.showPage.length, 1);
+  assert.equal(calls.showPage[0][0], 'dashboard-hub');
+  assert.equal(ctx.LIFEOS_NAV_MAP.fi.cardSelector, '#dashFiCard');
+});
+
+test('sourceKind "renovasi" (openFn, Projects — lifeos/ui/projects.js LifeOSProjects.open()): TIDAK memanggil showPage sama sekali, langsung Renov.openDetail(sourceId)', () => {
+  // Ditambahkan Sesi 54 (Batch 3, audit LifeOS Projects) — sebelumnya sourceKind
+  // 'renovasi' TIDAK punya test di file ini sama sekali (gap dicatat di
+  // docs/NEXT_SESSION.md), padahal ini satu-satunya sourceKind yang dipetakan
+  // untuk jalur LifeOSProjects.open() -> lifeOSNavigateToSource().
+  const opened = [];
+  const { ctx, calls } = loadLifeOSNav({ Renov: { openDetail: (id) => opened.push(id) } });
+  ctx.lifeOSNavigateToSource('renovasi', 'r1');
+  assert.deepEqual(opened, ['r1']);
+  assert.equal(calls.showPage.length, 0);
+});
+
+test('sourceKind "renovasi": Renov tidak tersedia (belum ter-load) -> tidak throw, tidak error', () => {
+  const { ctx } = loadLifeOSNav();
+  assert.doesNotThrow(() => ctx.lifeOSNavigateToSource('renovasi', 'r1'));
 });
 
 test('sourceKind "generic": tidak error, toast peringatan "belum ada halaman lama"', () => {

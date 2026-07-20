@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // Fungsi2 pengingat servis (servisLogMatchesCat, getEffectiveIntervalKm,
 // hasIntervalOverride, getLastServiceKm) ada di sparepart-servis.js (dipisah
@@ -235,7 +235,7 @@ test('Servis.revertStockUsage — partId/qty kosong atau part tidak ketemu => no
 // keuangan, & urus stok sparepart. Di-tes lewat fakeDocument + stub semua
 // dependency lintas-file (uid, askConfirm, resolveVehicleTxCategory,
 // matchingVehicleName, dst) -- BUKAN test integrasi lintas file sungguhan.
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 function servisFormFields(overrides = {}) {
   return {

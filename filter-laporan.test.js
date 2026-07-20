@@ -2,8 +2,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const vm = require('node:vm');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument, createFakeElement } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument, createFakeElement } = require('../helpers/fakeDom');
 
 // filter-laporan.js (220 baris di v187, 221 di versi sebelum redesign etalase
 // -> cobek/#page-cobek/setCobekTab jadi shop/#page-shop/setShopTab): filter

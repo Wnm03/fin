@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // Cakupan file ini: TanggaKeuangan._isKprLike (tangga-keuangan.js) — dulu
 // KPR dideteksi dari nama cicilan (regex "kpr|rumah|properti|apartemen|ruko"),

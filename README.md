@@ -123,6 +123,7 @@ lifeos/
 ├── lifeos-link-registry.js  # Relasi cross-domain implisit-by-convention
 ├── adapters/                # Menerjemahkan data D.* -> bentuk LifeOS (read-only terhadap D)
 │   ├── goal-adapter.js
+│   ├── area-adapter.js
 │   ├── project-adapter.js
 │   ├── today-adapter.js
 │   ├── review-adapter.js
@@ -185,8 +186,8 @@ ui/*.js
 | Integrasi ke `scripts/build.js` (GROUP_B) | ✅ Terpasang — seluruh 17 file `lifeos/*.js` masuk manifest build |
 | Markup host (`#lifeOSWrap`, `.lifeos-panel`, dll.) di `index.html` / `app_production.html` | ✅ Ada |
 | Pemanggilan `LifeOSHome.render()` dari `dashboard-hub.js` | ✅ Ada |
-| `LIFEOS_AREAS` / `LIFEOS_TODAY_SOURCES` dibaca terprogram oleh adapter | ⚠️ Belum — registry saat ini bersifat deklaratif/dokumentatif, belum dikonsumsi otomatis oleh `adapters/*.js` |
-| Test suite khusus untuk `lifeos/` | ❌ Belum ada (`tests/` saat ini mencakup modul aplikasi inti) |
+| `LIFEOS_AREAS` / `LIFEOS_TODAY_SOURCES` / `LIFEOS_GOAL_SOURCES` / `LIFEOS_PROJECT_LEGACY_SOURCE` / `LIFEOS_REVIEW_SOURCES` / `LIFEOS_KNOWLEDGE_REF_SOURCE` dibaca terprogram oleh adapter | ✅ Sudah — SEMUA 6 adapter (`area-adapter.js`/`today-adapter.js` Sesi 24, `goal-adapter.js` Sesi 25, `project-adapter.js` Sesi 36 bagian legacy, `review-adapter.js` Sesi 37 `reviewAdapterLatestSnapshots()`, `knowledge-adapter.js` Sesi 38 `knowledgeAdapterCatatanRef()`) sekarang registry-driven (dispatch ke `*_BUILDERS` per key; key tanpa builder dilewati aman). `goal-adapter.js`: 3 dari 6 key (`target`/`eduFund`/`wishlist`) punya builder — 3 sisanya (`pensiun`/`fi`/`debt`) sengaja belum, butuh keputusan produk/arsitektur (lihat `TODO.md`) |
+| Test suite khusus untuk `lifeos/` | ✅ Ada — `tests/lifeos-area-adapter.test.js`, `tests/lifeos-today-adapter.test.js`, `tests/lifeos-goal-adapter.test.js`, `tests/lifeos-project-adapter.test.js`, `tests/lifeos-review-adapter.test.js`, `tests/lifeos-knowledge-adapter.test.js` (BARU Sesi 38), `tests/lifeos-nav.test.js` |
 | Zero-touch terhadap `D` | ✅ Diverifikasi — tidak ditemukan penulisan ke `D` di modul `lifeos/` |
 
 ---

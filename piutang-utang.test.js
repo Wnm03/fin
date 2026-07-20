@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument, createFakeElement } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument, createFakeElement } = require('../helpers/fakeDom');
 
 // Cakupan file ini: seluruh fungsi di piutang-utang.js —
 // Piutang.{openModal,toggleLunas,save,delete,totalValue,overdueDays,
