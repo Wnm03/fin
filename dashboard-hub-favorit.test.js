@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // dashboard-hub-favorit.js — storage + service MURNI (Langkah 6, ADR-001
 // §3/§4/§5, blueprint Favorit final). Tidak baca/tulis DOM, jadi dites lewat
@@ -114,7 +114,7 @@ test('window.DashboardHubFavorit HANYA mengekspos getFavoritKeys & toggleFavorit
 // ---------- Guard ADR: satu pintu mutasi (blueprint final §3) ----------
 
 test('guard — hanya dashboard-hub-favorit.js yang boleh menulis ke D.favoritKeys (tidak ada push/splice/assign langsung dari file lain)', () => {
-  const ROOT = path.join(__dirname, '..');
+  const ROOT = path.join(__dirname, '..', '..');
   const EXCLUDE_DIRS = new Set(['node_modules', 'tests', 'archive', 'backups', '.github']);
 
   function walk(dir, acc) {

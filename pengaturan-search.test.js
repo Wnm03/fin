@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument, createFakeElement } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument, createFakeElement } = require('../helpers/fakeDom');
 
 // pengaturan-search.js — Domain Pencarian Pengaturan (toggleStgGroup,
 // toggleSingleCardCollapse, stgSearch) + 1 listener keydown top-level.

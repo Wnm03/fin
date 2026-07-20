@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // Cakupan file ini: PajakInsight.compute(), ShopInsight.compute(), MobilInsight.compute() di
 // feature-insights.js (kartu "💡 Insight ..." di paling atas halaman Pajak & Zakat/Shop/Car Notes,

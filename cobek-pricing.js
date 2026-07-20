@@ -501,3 +501,222 @@ save();this.render();renderProductList();
 toast(`✅ Stok ${count} produk diperbarui (+${totalQty} unit total)`);
 }
 };
+
+// ---------------------------------------------------------------------------
+// Smart Delivery Engine, Sesi 4/6: fungsi kalkulasi Shop yang menjembatani
+// data produk/kendaraan (D.products/D.vehicles) ke LogisticsEngine (Sesi 3)
+// & packingCalculator (cobek-etalase.js, Sesi 4 juga). Lihat
+// RENCANA-SESI-RINGKAS.md untuk peta 6 sesi. PURE seperti LogisticsEngine —
+// parameter murni (TIDAK baca DOM), boleh baca D read-only, TIDAK PERNAH
+// memanggil save()/mengubah D — supaya bisa dipanggil dari UI mana pun
+// (Sesi 6) maupun rule AI (Sesi 5-6) tanpa modal tertentu harus terbuka
+// dulu. PENTING (masih "senyap"): tidak ada UI/tombol baru di sini, tidak
+// ada wiring otomatis.
+// ---------------------------------------------------------------------------
+
+// calculateFuel(vehicleId) — bungkus LogisticsEngine.fuel() versi Shop:
+// balikin {ok:false, reason} kalau data belum cukup (bukan null polos),
+// supaya pemanggil (UI/AI) bisa kasih pesan yang jelas kenapa gagal.
+function calculateFuel(vehicleId) {
+  if (typeof LogisticsEngine === 'undefined') {
+    return { ok: false, reason: 'LogisticsEngine belum dimuat' };
+  }
+  if (!vehicleId) {
+    return { ok: false, reason: 'Kendaraan belum dipilih' };
+  }
+  const fuel = LogisticsEngine.fuel(vehicleId);
+  if (!fuel) {
+    return { ok: false, reason: 'Histori BBM kendaraan ini belum cukup (minimal 2 catatan Isi Full Tank)' };
+  }
+  return Object.assign({ ok: true }, fuel);
+}
+
+// calculateProfit({productId, qty, deliveryPlan}) — profit bersih dari
+// penjualan qty unit produk (D.products), dikurangi ongkir per pcs (dari
+// deliveryPlan.route.totalPerPcs kalau dikasih, lihat LogisticsEngine.route()
+// / .plan()) — TIDAK mengurangi biaya BBM lagi terpisah (BBM sudah
+// termasuk di dalam ongkos/km yang dipakai hitung ongkir lewat OngkirCalc,
+// lihat catatan di atas), supaya tidak dobel hitung. productId yang tidak
+// ketemu di D.products -> null (bukan lempar error).
+function calculateProfit({ productId, qty, deliveryPlan } = {}) {
+  const product = (D.products || []).find((p) => p.id === productId);
+  if (!product) return null;
+  const q = Math.max(0, parseFloat(qty) || 0);
+  const hargaBeli = product.hargaBeli || 0;
+  const hargaJual = product.hargaJual || 0;
+  const ongkirPerPcs = (deliveryPlan && deliveryPlan.route && isFinite(deliveryPlan.route.totalPerPcs))
+    ? deliveryPlan.route.totalPerPcs : 0;
+  const revenue = hargaJual * q;
+  const modal = hargaBeli * q;
+  const ongkir = ongkirPerPcs * q;
+  const profit = revenue - modal - ongkir;
+  const marginPct = revenue > 0 ? (profit / revenue) * 100 : 0;
+  return { productId, qty: q, revenue, modal, ongkir, profit, marginPct };
+}
+
+// calculateVehicleCapacity({vehicleId, items, capacityKg, capacityM3}) —
+// gabungkan packingCalculator() (cobek-etalase.js) dgn info BBM kendaraan
+// (calculateFuel() di atas) jadi satu ringkasan "muat berapa rit, kendaraan
+// mana". capacityKg/capacityM3 WAJIB dikasih pemanggil (D.vehicles belum
+// punya field kapasitas muat — lihat catatan yang sama di
+// LogisticsEngine.load()).
+function calculateVehicleCapacity({
+  vehicleId, items, capacityKg, capacityM3, kmPerTrip,
+} = {}) {
+  if (typeof packingCalculator !== 'function') {
+    return { ok: false, reason: 'packingCalculator belum dimuat' };
+  }
+  const packing = packingCalculator({ items, capacityKg, capacityM3 });
+  const fuel = vehicleId ? calculateFuel(vehicleId) : { ok: false, reason: 'Kendaraan belum dipilih' };
+
+  // Status per-rit (AMAN/HAMPIR OVERLOAD/OVERLOAD) — dari sisi persen
+  // pemakaian kapasitas TERKETAT (berat atau volume, mana yg lebih penuh),
+  // beda dari packing.trips (itu hitungan rit multi-trip). capKg/capM3
+  // yang tidak dikasih (<=0/undefined) dianggap tidak membatasi (diskip
+  // dari perhitungan persen), sama seperti packingCalculator.
+  const capKg = parseFloat(capacityKg);
+  const capM3 = parseFloat(capacityM3);
+  const percentKg = (isFinite(capKg) && capKg > 0) ? (packing.totalKg / capKg) * 100 : null;
+  const percentM3 = (isFinite(capM3) && capM3 > 0) ? (packing.totalM3 / capM3) * 100 : null;
+  const percents = [percentKg, percentM3].filter((p) => p !== null);
+  const percentUsed = percents.length ? Math.max(...percents) : null;
+  const status = percentUsed === null ? null
+    : percentUsed > 100 ? 'OVERLOAD'
+    : percentUsed >= 80 ? 'HAMPIR OVERLOAD'
+    : 'AMAN';
+  const sisaKapasitasKg = (isFinite(capKg) && capKg > 0) ? capKg - packing.totalKg : null;
+  const sisaKapasitasM3 = (isFinite(capM3) && capM3 > 0) ? capM3 - packing.totalM3 : null;
+
+  // Estimasi biaya BBM sekali rit — cuma dihitung kalau vehicleId (utk
+  // rpPerKm) & kmPerTrip (jarak sekali jalan) dua-duanya dikasih pemanggil.
+  const km = parseFloat(kmPerTrip);
+  const biayaBBMPerTrip = (fuel.ok && isFinite(km) && km > 0) ? Math.round(fuel.rpPerKm * km) : null;
+
+  return Object.assign({ ok: true, vehicleId: vehicleId || null }, packing, {
+    fuel: fuel.ok ? fuel : null,
+    fuelReason: fuel.ok ? null : fuel.reason,
+    status,
+    percentUsed: percentUsed !== null ? Math.round(percentUsed * 10) / 10 : null,
+    sisaKapasitasKg,
+    sisaKapasitasM3,
+    biayaBBMPerTrip,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Smart Delivery Engine, Sesi 8: rule domain DELIVERY utk AIDecision
+// (lanjutan Sesi 7 — lihat RENCANA-SESI-RINGKAS.md). Rule: "margin transaksi
+// Cobek yang baru disimpan (event 'delivery.created') di bawah ambang %".
+// BEDA dari rule finance/asset/vehicle di atas: rule ini HANYA relevan pada
+// event 'delivery.created' itu sendiri (marginPct dihitung sekali saat order
+// disimpan, lihat cobek-order.js _saveInner()) -- condition() mengecek
+// ctx.event dulu, supaya decide() yang dipicu event lain (finance.updated
+// dkk) tidak ikut nge-trigger rule ini pakai data delivery yang sudah basi.
+// Ambang default 10% (Sesi 9: BISA DIATUR user, sama pola dgn
+// getAIFinanceOverspendThreshold() di tx-list-cashflow.js) lewat
+// D.profile.aiDeliveryThinMarginThresholdPct, field baru di Pengaturan >
+// 🤖 AI Asisten. Dijaga di rentang 0-100 (persen margin valid).
+// ---------------------------------------------------------------------------
+const AI_DELIVERY_THIN_MARGIN_DEFAULT_PCT = 10;
+
+// getAIDeliveryThinMarginThreshold()/setAIDeliveryThinMarginThreshold(pct) —
+// getter/setter D.profile.aiDeliveryThinMarginThresholdPct, dipakai field
+// Pengaturan (renderSettings()/autoSaveProfile()) & rule di bawah.
+function getAIDeliveryThinMarginThreshold() {
+  const v = D.profile && D.profile.aiDeliveryThinMarginThresholdPct;
+  return (typeof v === 'number' && v >= 0 && v <= 100) ? v : AI_DELIVERY_THIN_MARGIN_DEFAULT_PCT;
+}
+function setAIDeliveryThinMarginThreshold(pct) {
+  const n = parseFloat(pct);
+  D.profile.aiDeliveryThinMarginThresholdPct = (Number.isFinite(n) && n >= 0 && n <= 100) ? n : AI_DELIVERY_THIN_MARGIN_DEFAULT_PCT;
+  return D.profile.aiDeliveryThinMarginThresholdPct;
+}
+
+// _deliveryThinMarginCheck(ctx) — helper dipakai condition()/action().
+function _deliveryThinMarginCheck(ctx) {
+  if (!ctx || ctx.event !== 'delivery.created' || !ctx.payload) return { trigger: false };
+  const marginPct = ctx.payload.marginPct;
+  if (typeof marginPct !== 'number' || !isFinite(marginPct)) return { trigger: false };
+  const thresholdPct = getAIDeliveryThinMarginThreshold();
+  return {
+    trigger: marginPct < thresholdPct,
+    marginPct,
+    total: ctx.payload.total,
+    thresholdPct,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Rule kedua DELIVERY (keputusan produk dikonfirmasi user): 'delivery-low-stock'
+// — ada produk Shop/Cobek dgn stok menipis. Ambang default 2 masih SELARAS
+// dgn badge "Menipis" yang SUDAH ADA di kartu produk (cobek-etalase.js,
+// stockCls/stockLbl: p.stock<=2 -> 'low'/'Menipis'), tapi sekarang BISA
+// DIATUR user (Sesi lanjutan, pola sama dgn getAIDeliveryThinMarginThreshold
+// Sesi 9) lewat D.profile.aiDeliveryLowStockThreshold, field baru di
+// Pengaturan > 🤖 AI Asisten — TIDAK mengubah badge "Menipis" itu sendiri
+// (tetap hardcode <=2 di cobek-etalase.js), cuma ambang rule AI ini. Beda
+// dari delivery-thin-margin: rule ini baca D.products langsung (state
+// terkini, bukan payload 1 event), sama pola dgn vehicle-service-overdue/
+// asset-networth-declining yang juga baca D langsung tanpa syarat ctx.event
+// tertentu.
+// ---------------------------------------------------------------------------
+const AI_DELIVERY_LOW_STOCK_DEFAULT_THRESHOLD = 2;
+
+// getAIDeliveryLowStockThreshold()/setAIDeliveryLowStockThreshold(n) —
+// getter/setter D.profile.aiDeliveryLowStockThreshold, dipakai field
+// Pengaturan (renderSettings()/autoSaveProfile()) & rule di bawah. Dijaga
+// >=0 (integer, jumlah stok pcs).
+function getAIDeliveryLowStockThreshold() {
+  const v = D.profile && D.profile.aiDeliveryLowStockThreshold;
+  return (typeof v === 'number' && v >= 0) ? v : AI_DELIVERY_LOW_STOCK_DEFAULT_THRESHOLD;
+}
+function setAIDeliveryLowStockThreshold(n) {
+  const parsed = parseInt(n, 10);
+  D.profile.aiDeliveryLowStockThreshold = (Number.isFinite(parsed) && parsed >= 0) ? parsed : AI_DELIVERY_LOW_STOCK_DEFAULT_THRESHOLD;
+  return D.profile.aiDeliveryLowStockThreshold;
+}
+
+function _deliveryLowStockCheck() {
+  const threshold = getAIDeliveryLowStockThreshold();
+  const low = (D.products || []).filter((p) => (p.stock || 0) <= threshold);
+  return { trigger: low.length > 0, low, threshold };
+}
+
+let _deliveryAIRulesRegistered = false;
+// registerDeliveryAIRules() — dipanggil sekali saat boot (self-test.js
+// init()), idempotent lewat guard, return false kalau AIDecision belum ada.
+function registerDeliveryAIRules() {
+  if (_deliveryAIRulesRegistered) return false;
+  if (typeof AIDecision === 'undefined' || !AIDecision.rules || typeof AIDecision.rules.register !== 'function') return false;
+  AIDecision.rules.register({
+    id: 'delivery-thin-margin',
+    category: 'delivery',
+    severity: 'info',
+    weight: 3,
+    cooldownHours: 6,
+    description: 'Margin transaksi Cobek yang baru disimpan di bawah ambang % (bisa diatur user).',
+    condition: (ctx) => _deliveryThinMarginCheck(ctx).trigger,
+    action: (ctx) => {
+      const c = _deliveryThinMarginCheck(ctx);
+      const fmt = typeof fmtFull === 'function' ? fmtFull : (n => 'Rp ' + Math.round(n || 0).toLocaleString('id-ID'));
+      return { message: `Margin transaksi terbaru (${fmt(c.total)}) cuma ${c.marginPct.toFixed(1)}%, di bawah ambang ${c.thresholdPct}%.` };
+    },
+  });
+  AIDecision.rules.register({
+    id: 'delivery-low-stock',
+    category: 'delivery',
+    severity: 'warning',
+    weight: 4,
+    cooldownHours: 24,
+    description: 'Ada produk Shop/Cobek dengan stok menipis (<=ambang, bisa diatur user, default sama dgn badge "Menipis" di kartu produk).',
+    condition: () => _deliveryLowStockCheck().trigger,
+    action: () => {
+      const c = _deliveryLowStockCheck();
+      const first = c.low[0];
+      const extra = c.low.length > 1 ? ` (+${c.low.length - 1} produk lain)` : '';
+      return { message: `Stok produk "${first.name}" menipis (${first.stock} pcs)${extra}.` };
+    },
+  });
+  _deliveryAIRulesRegistered = true;
+  return true;
+}

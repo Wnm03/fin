@@ -3,8 +3,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 // Tahap 3a — migrasi 4 widget registry-driven (Refleksi, Kebebasan Finansial/FI,
 // Dana Pensiun, Absensi) dari `#page-dashboard` (lama) ke section "Pinned
@@ -20,7 +20,7 @@ const { createFakeDocument } = require('./helpers/fakeDom');
 //      re-implementasi) lewat loadSource(), memverifikasi isDashCardOn() tetap
 //      mengontrol ke-4 widget itu & urutan DASH_RENDER_ORDER tidak berubah.
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(__dirname, '..', '..');
 const HTML_FILES = ['index.html', 'app_production.html'];
 
 // key -> elId, diambil dari sumber asli (bukan angka hardcode) supaya test

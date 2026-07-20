@@ -6,7 +6,7 @@
 // ditampilkan ke user ikut salah walau rumus scoring-nya sendiri benar.
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 function load(D, worthItIncomeAvg) {
   return loadSource(

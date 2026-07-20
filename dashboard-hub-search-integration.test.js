@@ -3,8 +3,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 // dashboard-hub-search-integration.test.js — Tahap 2 (Final) blueprint-dashboard-hub.md
 // §5 Langkah 5. Test INTEGRASI RINGAN: menyambungkan dashboard-hub-registry.js +
@@ -15,7 +15,7 @@ const { createFakeDocument } = require('./helpers/fakeDom');
 // utk masing2 fungsi TETAP di tests/dashboard-hub-search.test.js &
 // tests/dashboard-hub.test.js — file ini tidak mengulanginya.
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(__dirname, '..', '..');
 
 function makeIntegration() {
   const fakeDocument = createFakeDocument();
@@ -87,6 +87,64 @@ test('integrasi — klik hasil (data-action/data-args yang ke-render) memanggil 
   const resultsEl = fakeDocument.getElementById('dashHubSearchResults');
   assert.equal(resultsEl.innerHTML, '');
   assert.equal(resultsEl.classList.contains('u-dnone'), true);
+});
+
+// ---------- Sesi 27 (TODO.md #6b, Tahap 2 Navigation wiring) ----------
+// Registry entry dash-ai-rekomendasi/dash-ai-ringkasan-harian (Sesi 22) &
+// dash-lifeos sudah ADA di FEATURE_REGISTRY & lolos test struktural generik
+// (tests/dashboard-hub-registry.test.js), TAPI belum ada test yang
+// memverifikasi jalur nyata search -> select -> DashboardHub.open() ->
+// showPage() end-to-end utk ketiganya secara spesifik (beda dari cek
+// struktural yang cuma validasi bentuk target, bukan perilaku navigasi
+// beneran) — 3 test ini menutup gap itu, pola SAMA PERSIS dgn test
+// "shop-sewakios" di atas, TIDAK ada mekanisme baru.
+
+test('Sesi 27 — search "rekomendasi ai" -> select() -> DashboardHub.open("dash-ai-rekomendasi") -> showPage("dashboard-hub")', () => {
+  const { ctx, fakeDocument, calls } = makeIntegration();
+
+  ctx.DashboardHubSearch.render('rekomendasi ai');
+  const html = fakeDocument.getElementById('dashHubSearchResults').innerHTML;
+  const m = html.match(/data-args='(\[[^']+\])'/);
+  assert.ok(m, 'data-args tidak ditemukan di hasil render "rekomendasi ai"');
+  const [featureKey] = JSON.parse(m[1]);
+  assert.equal(featureKey, 'dash-ai-rekomendasi');
+
+  ctx.DashboardHubSearch.select(featureKey);
+
+  assert.equal(calls.showPage.length, 1);
+  assert.equal(calls.showPage[0][0], 'dashboard-hub');
+});
+
+test('Sesi 27 — search "ringkasan harian" -> select() -> DashboardHub.open("dash-ai-ringkasan-harian") -> showPage("dashboard-hub")', () => {
+  const { ctx, fakeDocument, calls } = makeIntegration();
+
+  ctx.DashboardHubSearch.render('ringkasan harian');
+  const html = fakeDocument.getElementById('dashHubSearchResults').innerHTML;
+  const m = html.match(/data-args='(\[[^']+\])'/);
+  assert.ok(m, 'data-args tidak ditemukan di hasil render "ringkasan harian"');
+  const [featureKey] = JSON.parse(m[1]);
+  assert.equal(featureKey, 'dash-ai-ringkasan-harian');
+
+  ctx.DashboardHubSearch.select(featureKey);
+
+  assert.equal(calls.showPage.length, 1);
+  assert.equal(calls.showPage[0][0], 'dashboard-hub');
+});
+
+test('Sesi 27 — search "life os" -> select() -> DashboardHub.open("dash-lifeos") -> showPage("dashboard-hub")', () => {
+  const { ctx, fakeDocument, calls } = makeIntegration();
+
+  ctx.DashboardHubSearch.render('life os');
+  const html = fakeDocument.getElementById('dashHubSearchResults').innerHTML;
+  const m = html.match(/data-args='(\[[^']+\])'/);
+  assert.ok(m, 'data-args tidak ditemukan di hasil render "life os"');
+  const [featureKey] = JSON.parse(m[1]);
+  assert.equal(featureKey, 'dash-lifeos');
+
+  ctx.DashboardHubSearch.select(featureKey);
+
+  assert.equal(calls.showPage.length, 1);
+  assert.equal(calls.showPage[0][0], 'dashboard-hub');
 });
 
 // ---------- empty state ----------

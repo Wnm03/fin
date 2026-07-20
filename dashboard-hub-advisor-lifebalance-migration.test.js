@@ -3,8 +3,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 // Tahap 3b — migrasi 2 widget "inti" Dashboard (AI Advisor/`advisorCard` &
 // Skor Hidup Seimbang/`lifeBalanceCard`) dari `#page-dashboard` (lama) ke
@@ -24,7 +24,7 @@ const { createFakeDocument } = require('./helpers/fakeDom');
 //      FinCoach/LifeBalance tetap terpanggil TEPAT SEKALI dari
 //      renderDashboard() (tidak double-render, tidak hilang).
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(__dirname, '..', '..');
 const HTML_FILES = ['index.html', 'app_production.html'];
 const MIGRATED = { advisor: 'advisorCard', lifeBalance: 'lifeBalanceCard' };
 

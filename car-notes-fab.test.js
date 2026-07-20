@@ -16,7 +16,7 @@ const path = require('node:path');
 // ini tidak punya elemen fixed lain yang bisa tumpang tindih (tidak ada
 // `.kasir-floatbar` di Car Notes).
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(__dirname, '..', '..');
 const HTML_FILES = ['index.html', 'app_production.html'];
 
 function readHtml(file) {

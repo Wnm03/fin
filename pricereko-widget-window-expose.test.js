@@ -25,7 +25,7 @@ const path = require('path');
 const SELFTEST_FILE = 'app-bootstrap.js';
 
 function getExposedWindowNames() {
-  const src = fs.readFileSync(path.join(__dirname, '..', SELFTEST_FILE), 'utf8');
+  const src = fs.readFileSync(path.join(__dirname, '..', '..', SELFTEST_FILE), 'utf8');
   const m = src.match(/Object\.assign\(window,\{([\s\S]*?)\}\);/);
   assert.ok(m, 'Blok Object.assign(window,{...}) harus ditemukan di ' + SELFTEST_FILE);
   return m[1].split(',').map((s) => s.trim()).filter(Boolean);
@@ -50,14 +50,14 @@ test('Object.assign(window,{...}) harus menyertakan StockRekoWidget', () => {
 });
 
 test('Semua data-action="PriceRekoWidget.*"/"StockRekoWidget.*" yang dipakai di index.html harus punya method yang cocok di cobek-pricing.js', () => {
-  const htmlSrc = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const htmlSrc = fs.readFileSync(path.join(__dirname, '..', '..', 'index.html'), 'utf8');
   const usedMethods = new Set();
   const re = /data-action="(PriceRekoWidget|StockRekoWidget)\.([A-Za-z0-9_]+)"/g;
   let m;
   while ((m = re.exec(htmlSrc))) usedMethods.add(m[1] + '.' + m[2]);
   assert.ok(usedMethods.size > 0, 'Tidak ketemu data-action="PriceRekoWidget.*"/"StockRekoWidget.*" di index.html — cek regex kalau markup berubah');
 
-  const pricingSrc = fs.readFileSync(path.join(__dirname, '..', 'modules/shop/cobek-pricing.js'), 'utf8');
+  const pricingSrc = fs.readFileSync(path.join(__dirname, '..', '..', 'modules/shop/cobek-pricing.js'), 'utf8');
 
   for (const full of usedMethods) {
     const [modName, method] = full.split('.');

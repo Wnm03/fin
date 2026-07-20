@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // investasi.js — modul BARU, murni logic (tidak ada DOM), jadi dites lewat
 // loadSource() biasa. `const Investment={...}` butuh expose:['Investment']

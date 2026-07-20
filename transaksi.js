@@ -596,6 +596,7 @@ txEditId=null;
 rememberLastAccForCat(cat,accId);
 if(_txCatLearnSource){learnCatFromItemName(_txCatLearnSource,cat);_txCatLearnSource=null;}
 save();closeModal('txModal');renderDashboard();renderKeuangan();renderBillList();checkBills();
+if(typeof AIBus!=="undefined")AIBus.emit("finance.updated",{category:cat,kind:"cicilan-lama"});
 if(isLatestInstallment)toast('✅ Cicilan/tagihan diperbarui');
 return;
 }
@@ -630,6 +631,7 @@ txEditId=null;
 rememberLastAccForCat(cat,accId);
 if(_txCatLearnSource){learnCatFromItemName(_txCatLearnSource,cat);_txCatLearnSource=null;}
 save();closeModal('txModal');renderDashboard();renderKeuangan();renderBillList();checkBills();
+if(typeof AIBus!=="undefined")AIBus.emit("finance.updated",{category:cat,kind:"cicilan-baru"});
 toast(cicilanShared?`✅ Cicilan ${nama} ${tenor}x dimulai! Porsi kamu ${fmtFull(perBulanMine)}/bulan (total ${fmtFull(perBulan)}/bulan)`:`✅ Cicilan ${nama} ${tenor}x dimulai! ${fmtFull(perBulan)}/bulan`);
 return;
 }
@@ -655,6 +657,7 @@ txEditId=null;
 rememberLastAccForCat(cat,accId);
 if(_txCatLearnSource){learnCatFromItemName(_txCatLearnSource,cat);_txCatLearnSource=null;}
 save();closeModal('txModal');renderDashboard();renderKeuangan();renderBillList();checkBills();
+if(typeof AIBus!=="undefined")AIBus.emit("finance.updated",{category:cat,kind:"langganan"});
 toast(`✅ ${nama} dicatat & dijadwalkan ${freq}`);
 return;
 }
@@ -710,7 +713,9 @@ applyTxShopSaleFromTx(savedTxId,date,accId,note,existingTx);
 txEditId=null;
 rememberLastAccForCat(cat,accId);
 if(_txCatLearnSource){learnCatFromItemName(_txCatLearnSource,cat);_txCatLearnSource=null;}
-save();closeModal('txModal');renderDashboard();renderKeuangan();renderCnTab();toast(existingTx?'✅ Transaksi diperbarui':'✅ Transaksi tersimpan');
+save();closeModal('txModal');renderDashboard();renderKeuangan();renderCnTab();
+if(typeof AIBus!=="undefined")AIBus.emit("finance.updated",{txId:savedTxId,category:cat,type:curTxType,amount:amt});
+toast(existingTx?'✅ Transaksi diperbarui':'✅ Transaksi tersimpan');
 }
 function saveCatatan(){
 const text=document.getElementById('catatanText').value;

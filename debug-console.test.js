@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // debug-console.js pakai document.getElementById/createElement, localStorage,
 // window.eruda (pre-check) & bare `eruda` global (init/destroy -- di browser

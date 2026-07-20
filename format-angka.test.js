@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // format-tema.js juga berisi toast/setTheme/applyEffectiveTheme yang pakai
 // DOM (D, document) — di luar cakupan test murni-logika ini, cuma dimuat
