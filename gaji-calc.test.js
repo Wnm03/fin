@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 // fmtFull DIBUAT identity (bukan format rupiah asli) supaya assertion di
 // bawah bisa cek ANGKA HASIL PERSIS lewat textContent, tanpa terikat ke

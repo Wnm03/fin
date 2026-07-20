@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // error-handler.js pakai `Date.now()` (throttle 3 detik) & `window.addEventListener`
 // (2 listener global) — default stub `loadSource` (permissive no-op) tidak cukup utk

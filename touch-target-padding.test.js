@@ -9,7 +9,7 @@ const path = require('node:path');
 // tap target, tanpa mengubah font-size (ukuran visual teks/ikon tetap).
 
 function readCss() {
-  return fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
+  return fs.readFileSync(path.join(__dirname, '..', '..', 'styles.css'), 'utf8');
 }
 
 test('styles.css: .chip-btn padding vertikal diperbesar ke 11px, font-size tetap 12px', () => {

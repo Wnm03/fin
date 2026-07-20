@@ -20,7 +20,7 @@ const path = require('node:path');
 // disentuh). #keuFab (Tahap 1) tetap tampil di kedua tab seperti
 // sebelumnya, tidak diubah struktur/actionnya.
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(__dirname, '..', '..');
 const HTML_FILES = ['index.html', 'app_production.html'];
 
 function readHtml(file) {

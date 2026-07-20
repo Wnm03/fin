@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument, createFakeElement } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument, createFakeElement } = require('../helpers/fakeDom');
 
 // self-reward-view.js — UI layer utk self-reward-engine.js (logic TETAP murni,
 // tidak disentuh/dites ulang di sini — sudah dites tersendiri di

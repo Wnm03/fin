@@ -87,6 +87,10 @@ const GROUP_A = [
   'modules/asset/invest-ai-widget.js',
   'modules/asset/penyusutan-ai-widget.js',
   'modules/asset/aset-emas-impor.js',
+  'modules/asset/asset-portfolio-api.js',
+  'modules/asset/property-management-api.js',
+  'modules/asset/rental-management-api.js',
+  'modules/asset/asset-maintenance-api.js',
   'modules/finance/worthit.js',
   'modules/shared/ripple-position.js',
 ];
@@ -139,6 +143,8 @@ const GROUP_B = [
   'pwa-setup.js',
   'self-test.js',
   'pajak-aset-ui-wrappers.js',
+  'modules/finance/finance-intelligence.js',
+  'modules/finance/finance-dashboard.js',
   'app-bootstrap.js',
   'modules/shared/feature-icons.js',
   'modules/dashboard-hub/dashboard-hub-registry.js',
@@ -158,19 +164,30 @@ const GROUP_B = [
   'lifeos/lifeos-store.js',
   'lifeos/lifeos-registry.js',
   'lifeos/lifeos-link-registry.js',
+  'lifeos/plugins/lifeos-plugin-manifest.js',
+  'lifeos/plugins/lifeos-plugin-validation.js',
+  'lifeos/plugins/lifeos-plugin-registry.js',
+  'lifeos/plugins/lifeos-plugin-loader.js',
+  'lifeos/plugins/lifeos-plugin-runtime.js',
+  'lifeos/adapters/area-adapter.js',
   'lifeos/adapters/goal-adapter.js',
   'lifeos/adapters/project-adapter.js',
   'lifeos/adapters/today-adapter.js',
   'lifeos/adapters/review-adapter.js',
   'lifeos/adapters/knowledge-adapter.js',
+  'lifeos/lifeos-object-ref.js',
   'lifeos/services/project-service.js',
   'lifeos/services/review-service.js',
   'lifeos/services/knowledge-service.js',
+  'lifeos/services/life-object-service.js',
   'lifeos/ui/lifeos-home.js',
+  'lifeos/ui/areas.js',
   'lifeos/ui/today.js',
   'lifeos/ui/goals.js',
   'lifeos/ui/projects.js',
   'lifeos/ui/review.js',
+  'lifeos/ui/life-objects.js',
+  'lifeos/ui/plugins.js',
   'lifeos/ui/knowledge.js',
   'lifeos/lifeos-nav.js',
 
@@ -199,6 +216,23 @@ const GROUP_B = [
   'economic-intelligence/ui/eie-insight-feed.js',
   'economic-intelligence/ui/eie-notif-settings.js',
   'economic-intelligence/eie-registry.js',
+
+  // --- Smart Delivery Engine: AI decision layer + logistics layer, semua
+  // additive (lihat RENCANA-SESI-RINGKAS.md). Sesi 1 MVP: cuma fondasi
+  // (bus + storage + context), TANPA fitur, TANPA wiring ke modul lain.
+  // Urutan file sesi berikutnya WAJIB ditambah SETELAH ai-core.js (decision
+  // engine & service butuh AIBus/AIStore/AIContext sudah ada).
+  'modules/ai/ai-core.js',
+  'modules/ai/ai-decision-engine.js',
+  'modules/ai/ai-service.js',
+
+  // Sesi 3/6: logistics-engine.js/logistics-service.js TIDAK butuh ai-core
+  // dkk di atas (murni baca OngkirCalc/PriceReko dari GROUP_A +
+  // estimateRpPerKm dari modules/vehicle/vehicle-core.js, keduanya sudah
+  // dimuat lebih dulu) — ditaruh sesudah AI cuma supaya semua "Smart
+  // Delivery Engine" berurutan di satu tempat, bukan karena ketergantungan.
+  'modules/logistics/logistics-engine.js',
+  'modules/logistics/logistics-service.js',
 ];
 const ALL_SOURCE = [...GROUP_A, ...GROUP_B];
 const HTML_FILES = ['index.html', 'app_production.html'];

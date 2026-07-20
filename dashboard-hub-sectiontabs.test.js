@@ -3,8 +3,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeElement } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeElement } = require('../helpers/fakeDom');
 
 // dashboard-hub-sectiontabs.test.js — Fase 1, split tab 🧭 Dashboard Hub
 // (landing page), lihat CLAUDE.md "AUDIT + RENCANA KERJA BERTAHAP — Split
@@ -26,11 +26,11 @@ const { createFakeElement } = require('./helpers/fakeDom');
 const HTML_FILES = ['index.html', 'app_production.html'];
 
 function readHtml(file) {
-  return fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
+  return fs.readFileSync(path.join(__dirname, '..', '..', file), 'utf8');
 }
 
 function readCss() {
-  return fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
+  return fs.readFileSync(path.join(__dirname, '..', '..', 'styles.css'), 'utf8');
 }
 
 // ---------------------------------------------------------------------------

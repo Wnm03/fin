@@ -69,6 +69,17 @@ const LifeOSHome = {
     const goals = goalAdapterList(D);
     const projects = projectAdapterList(D, store);
     const knowledge = knowledgeAdapterList(store);
+    const areas = areaAdapterList(D);
+    const lifeObjects = typeof lifeObjectServiceList === 'function' ? lifeObjectServiceList() : [];
+    const plugins = typeof LifeOSPluginRegistry !== 'undefined' ? LifeOSPluginRegistry.list() : [];
+    // Reuse reviewAdapterIsOverdue() (review-adapter.js, sudah dipakai
+    // LifeOSReview.render()) supaya caption kartu Review di grid ini juga
+    // data-driven lewat adapter — bukan teks statis "Weekly/Monthly" yang
+    // tidak mencerminkan status sebenarnya.
+    const reviewOverdueCount = ['weekly', 'monthly'].filter((period) => {
+      const threshold = period === 'weekly' ? 7 : 30;
+      return reviewAdapterIsOverdue(store, period, threshold);
+    }).length;
 
     // Reuse class dashhub-feature-card/-name (sudah ada di styles.css,
     // dipakai DashboardHub.render()) + modifier --icon (icon-grid) supaya
@@ -76,6 +87,12 @@ const LifeOSHome = {
     // baru selain .dashhub-feature-count kecil utk angka count (info yang
     // sebelumnya ada di .dashhub-feature-desc, tetap dipertahankan, cuma
     // dipindah ke caption pendek di bawah nama).
+    //
+    // Sesi 39 (target eksplisit user: "Executive Dashboard Integration"):
+    // kartu "Area Summary" ditambahkan di sini — area-adapter.js sudah ada
+    // & sudah dites sejak Sesi 24 tapi sebelumnya TIDAK PERNAH dikonsumsi
+    // UI manapun. Sekarang seluruh 6 adapter LifeOS (area/today/goal/
+    // project/review/knowledge) benar-benar terpakai di satu grid ini.
     el.innerHTML = `
       <div class="dashhub-feature-card dashhub-feature-card--icon" data-action="LifeOSHome.switchPanel" data-args='["today"]'>
         <div class="dashhub-feature-icon">📅</div>
@@ -95,12 +112,27 @@ const LifeOSHome = {
       <div class="dashhub-feature-card dashhub-feature-card--icon" data-action="LifeOSHome.switchPanel" data-args='["review"]'>
         <div class="dashhub-feature-icon">🔁</div>
         <div class="dashhub-feature-name">Review</div>
-        <div class="dashhub-feature-count">Weekly/Monthly</div>
+        <div class="dashhub-feature-count">${reviewOverdueCount > 0 ? reviewOverdueCount + ' jatuh tempo' : 'Up to date'}</div>
       </div>
       <div class="dashhub-feature-card dashhub-feature-card--icon" data-action="LifeOSHome.switchPanel" data-args='["knowledge"]'>
         <div class="dashhub-feature-icon">💡</div>
         <div class="dashhub-feature-name">Knowledge</div>
         <div class="dashhub-feature-count">${knowledge.length} insight</div>
+      </div>
+      <div class="dashhub-feature-card dashhub-feature-card--icon" data-action="LifeOSHome.switchPanel" data-args='["areas"]'>
+        <div class="dashhub-feature-icon">🗂️</div>
+        <div class="dashhub-feature-name">Area Summary</div>
+        <div class="dashhub-feature-count">${areas.length} area</div>
+      </div>
+      <div class="dashhub-feature-card dashhub-feature-card--icon" data-action="LifeOSHome.switchPanel" data-args='["life-objects"]'>
+        <div class="dashhub-feature-icon">🧩</div>
+        <div class="dashhub-feature-name">Life Object</div>
+        <div class="dashhub-feature-count">${lifeObjects.length} object</div>
+      </div>
+      <div class="dashhub-feature-card dashhub-feature-card--icon" data-action="LifeOSHome.switchPanel" data-args='["plugins"]'>
+        <div class="dashhub-feature-icon">🔌</div>
+        <div class="dashhub-feature-name">Plugin</div>
+        <div class="dashhub-feature-count">${plugins.length} plugin</div>
       </div>
     `;
 
@@ -111,10 +143,13 @@ const LifeOSHome = {
     if (typeof LifeOSProjects !== 'undefined') LifeOSProjects.render();
     if (typeof LifeOSReview !== 'undefined') LifeOSReview.render();
     if (typeof LifeOSKnowledge !== 'undefined') LifeOSKnowledge.render();
+    if (typeof LifeOSAreas !== 'undefined') LifeOSAreas.render();
+    if (typeof LifeOSLifeObjects !== 'undefined') LifeOSLifeObjects.render();
+    if (typeof LifeOSPlugins !== 'undefined') LifeOSPlugins.render();
   },
 
   switchPanel(name) {
-    const panels = ['today', 'goals', 'projects', 'review', 'knowledge'];
+    const panels = ['today', 'goals', 'projects', 'review', 'knowledge', 'areas', 'life-objects', 'plugins'];
     panels.forEach((p) => {
       const panelEl = document.getElementById('lifeOSPanel-' + p);
       if (panelEl) panelEl.classList.toggle('u-dnone', p !== name);

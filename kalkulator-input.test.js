@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 // kalkulator-input.js — parser ekspresi angka aman (safeCalc/normalizeAmtToken),
 // preview nilai input (calcPreviewValue/updateAmtPreview), dan auto-eval saat

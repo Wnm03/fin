@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument, createFakeElement } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument, createFakeElement } = require('../helpers/fakeDom');
 
 // profil-pengaturan.js bergantung ke fungsi/var global dari file lain (D/save dari
 // features-helpers-global-security.js, persistApiKeyEncrypted dari keamanan-pin.js,

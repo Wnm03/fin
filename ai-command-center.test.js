@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // ai-command-center.js — Sprint 3 Tahap 3.1 (AI Command Center Foundation).
 // Murni registry logic (tidak ada DOM), jadi cukup loadSource biasa +

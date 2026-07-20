@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // Cakupan file ini: `delTx` (hapus transaksi + efek samping lintas-modul:
 // stok produk, Shop/Shop, catatan servis, Renov, WorthIt, SewaKios,

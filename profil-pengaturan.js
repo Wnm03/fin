@@ -14,6 +14,18 @@ const apiKeyEl=document.getElementById('sApiKey');
 if(apiKeyEl){ D.profile.apiKey=apiKeyEl.value.trim(); persistApiKeyEncrypted(); }
 const providerEl=document.getElementById('sApiProvider');
 if(providerEl) D.profile.apiProvider=providerEl.value;
+const aiThEl=document.getElementById('sAIFinanceThreshold');
+if(aiThEl&&typeof setAIFinanceOverspendThreshold==='function') setAIFinanceOverspendThreshold(aiThEl.value);
+const aiDelThEl=document.getElementById('sAIDeliveryThreshold');
+if(aiDelThEl&&typeof setAIDeliveryThinMarginThreshold==='function') setAIDeliveryThinMarginThreshold(aiDelThEl.value);
+const aiFinLowBalEl=document.getElementById('sAIFinanceLowBalance');
+if(aiFinLowBalEl&&typeof setAIFinanceLowBalanceMultiplier==='function') setAIFinanceLowBalanceMultiplier(aiFinLowBalEl.value);
+const aiVehFuelDropEl=document.getElementById('sAIVehicleFuelDrop');
+if(aiVehFuelDropEl&&typeof setAIVehicleFuelDropThreshold==='function') setAIVehicleFuelDropThreshold(aiVehFuelDropEl.value);
+const aiDelLowStockEl=document.getElementById('sAIDeliveryLowStock');
+if(aiDelLowStockEl&&typeof setAIDeliveryLowStockThreshold==='function') setAIDeliveryLowStockThreshold(aiDelLowStockEl.value);
+const aiAssetZakatMinEl=document.getElementById('sAIAssetZakatMin');
+if(aiAssetZakatMinEl&&typeof setAIAssetZakatMinThreshold==='function') setAIAssetZakatMinThreshold(aiAssetZakatMinEl.value);
 document.getElementById('hNama').textContent=D.profile.nama;
 updateProfilPTKPPreview();
 updateUsiaPreview();

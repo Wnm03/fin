@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument, createFakeElement } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument, createFakeElement } = require('../helpers/fakeDom');
 
 // Cakupan file ini: seluruh fungsi/namespace di cobek.js (1262 baris, sebelumnya
 // nol test — file terbesar yang belum dites di proyek ini) —
@@ -59,6 +59,8 @@ function baseFields(overrides = {}) {
     'ongkirBiayaKonsumen', 'ongkirBiayaProdusen', 'ongkirBreakdown', 'ongkirCalcPanel',
     'ongkirEtape2Fields', 'ongkirKmKonsumen', 'ongkirKmProdusen', 'ongkirPcs', 'ongkirResult',
     'ongkirProdusenPrefHint',
+    'lapTrip', 'lapOmzet', 'lapUntung', 'lapMargin', 'lapGrafikBars', 'lapTopProduk',
+    'lapTopPelanggan', 'lapFrom', 'lapTo', 'lapCustomRange',
     'oProfitDisplay', 'oTotalDisplay', 'orderItemList', 'pAcc', 'pAccHint', 'pBeli', 'pDiskon',
     'pJual', 'pKategori', 'pKategoriList', 'pName', 'pProdusen', 'pReseller', 'pStock',
     'prContact', 'prName', 'prNote', 'priceRekoPanel', 'priceRekoWidgetCard', 'priceRekoWidgetList',
@@ -542,7 +544,7 @@ test('OngkirCalc.calc — pcs kosong => breakdown minta isi pcs dulu, hasil 0', 
 });
 
 test('OngkirCalc.setMetode — ganti active class di toggle & nonaktifkan field etape 2 saat "ambil"', () => {
-  const { createFakeElement } = require('./helpers/fakeDom');
+  const { createFakeElement } = require('../helpers/fakeDom');
   const btnAntar = createFakeElement({ classList: ['chip-btn', 'active'] });
   const btnAmbil = createFakeElement({ classList: ['chip-btn'] });
   const { ctx, fakeDocument } = makeCtx(baseD(), {
@@ -1152,6 +1154,25 @@ test('Order.changeQty — qty turun ke 0 atau kurang => item terhapus', () => {
   assert.equal(ctx.Order.items.length, 0);
 });
 
+test('Order.removeItem — hapus item pada index tertentu & render ulang list', () => {
+  const D = baseD({ products: [{ id: 'p1', name: 'A', stock: 5, hargaJual: 1000 }, { id: 'p2', name: 'B', stock: 5, hargaJual: 2000 }] });
+  const { ctx, fakeDocument } = makeCtx(D);
+  ctx.Order.items = [{ productId: 'p1', qty: 1, hargaOverride: null }, { productId: 'p2', qty: 1, hargaOverride: null }];
+  ctx.Order.removeItem(0);
+  assert.equal(ctx.Order.items.length, 1);
+  assert.equal(ctx.Order.items[0].productId, 'p2');
+  assert.ok(fakeDocument.getElementById('orderItemList').innerHTML.includes('B'));
+  assert.ok(!fakeDocument.getElementById('orderItemList').innerHTML.includes('A</'));
+});
+
+test('removeOrderItem — wrapper tipis, memanggil Order.removeItem', () => {
+  const D = baseD({ products: [{ id: 'p1', name: 'A', stock: 5, hargaJual: 1000 }] });
+  const { ctx } = makeCtx(D);
+  ctx.Order.items = [{ productId: 'p1', qty: 1, hargaOverride: null }];
+  ctx.removeOrderItem(0);
+  assert.equal(ctx.Order.items.length, 0);
+});
+
 test('Order.computeTotals — hitung subtotal/modal/diskon/ongkir/total/profit dgn priceType reseller & diskon persen produk', () => {
   const D = baseD({ products: [{ id: 'p1', name: 'A', hargaBeli: 1000, hargaJual: 2000, hargaReseller: 1500, diskonPersen: 10 }] });
   const { ctx } = makeCtx(D, {
@@ -1315,6 +1336,64 @@ test('Laporan.renderGrafik — agregasi 6 bulan terakhir per set/margin', () => 
   const { ctx, fakeDocument } = makeCtx(D);
   ctx.Laporan.renderGrafik();
   assert.equal(fakeDocument.getElementById('shopGrafikBars').innerHTML.split('grafik-col').length - 1, 6);
+});
+
+test('Laporan.renderTab — hitung trip/omzet/untung/margin dalam rentang periodeLap, render grafik & top produk/pelanggan', () => {
+  const D = baseD({
+    cobek: [
+      { id: 1, date: '2026-01-01', total: 10000, profit: 4000, items: [{ productId: 'p1', name: 'Shop A', qty: 2, harga: 5000 }], customer: { name: 'Budi', phone: '0812' } },
+      { id: 2, date: '2026-01-05', total: 20000, profit: 6000, items: [{ productId: 'p1', name: 'Shop A', qty: 3, harga: 5000 }], customer: { name: 'Budi', phone: '0812' } },
+    ],
+  });
+  const { ctx, fakeDocument } = makeCtx(D);
+  ctx.Laporan.periodeLap = 'selamanya';
+  ctx.Laporan.renderTab();
+  assert.equal(fakeDocument.getElementById('lapTrip').textContent, 2);
+  assert.equal(fakeDocument.getElementById('lapOmzet').textContent, 'Rp30000');
+  assert.equal(fakeDocument.getElementById('lapUntung').textContent, 'Rp10000');
+  assert.equal(fakeDocument.getElementById('lapMargin').textContent, Math.round((10000 / 30000) * 100) + '%');
+  const topProdukHtml = fakeDocument.getElementById('lapTopProduk').innerHTML;
+  assert.ok(topProdukHtml.includes('Shop A'));
+  assert.ok(topProdukHtml.includes('5 terjual')); // 2+3
+  const topPelangganHtml = fakeDocument.getElementById('lapTopPelanggan').innerHTML;
+  assert.ok(topPelangganHtml.includes('Budi'));
+  assert.ok(topPelangganHtml.includes('2x')); // 2 order
+});
+
+test('Laporan.renderTab — periodeLap tidak mempengaruhi/menimpa Laporan.periode (state filter Riwayat terpisah)', () => {
+  const D = baseD({
+    cobek: [{ id: 1, date: '2026-01-01', total: 10000, profit: 4000, items: [] }],
+  });
+  const { ctx, fakeDocument } = makeCtx(D);
+  ctx.Laporan.periode = 'bulan';
+  ctx.Laporan.periodeLap = 'selamanya';
+  ctx.Laporan.renderTab();
+  assert.equal(ctx.Laporan.periode, 'bulan'); // state tab Riwayat tidak berubah
+  assert.equal(fakeDocument.getElementById('lapTrip').textContent, 1);
+});
+
+test('Laporan.renderTab — tidak ada data di periode => trip/omzet/untung 0%, top produk/pelanggan tampilkan pesan kosong', () => {
+  const D = baseD({ cobek: [] });
+  const { ctx, fakeDocument } = makeCtx(D);
+  ctx.Laporan.periodeLap = 'selamanya';
+  ctx.Laporan.renderTab();
+  assert.equal(fakeDocument.getElementById('lapTrip').textContent, 0);
+  assert.equal(fakeDocument.getElementById('lapMargin').textContent, '0%');
+  assert.ok(fakeDocument.getElementById('lapTopProduk').innerHTML.includes('Belum ada data'));
+  assert.ok(fakeDocument.getElementById('lapTopPelanggan').innerHTML.includes('Belum ada data'));
+});
+
+test('Laporan.setPeriodeLap — set periodeLap aktif & panggil renderTab (state terpisah dari setPeriode/periode tab Riwayat)', () => {
+  const D = baseD({ cobek: [{ id: 1, date: '2026-01-01', total: 5000, profit: 1000, items: [] }] });
+  const els = [createFakeElement(), createFakeElement()];
+  const { ctx, fakeDocument } = makeCtx(D, {
+    queryGroups: { '#lapPeriodeChips .chip-btn': els },
+  });
+  const clickedEl = createFakeElement();
+  ctx.Laporan.setPeriodeLap('selamanya', clickedEl);
+  assert.equal(ctx.Laporan.periodeLap, 'selamanya');
+  assert.ok(clickedEl.classList.contains('active'));
+  assert.equal(fakeDocument.getElementById('lapTrip').textContent, 1);
 });
 
 // ================= Pelanggan =================
@@ -1591,7 +1670,70 @@ test('recordShopSale — edit existingShopId dgn bundle => stok base/alu lama ju
   assert.equal(D.products.find(p => p.id === 'aluBesar').stock, 4);
 });
 
-// ================= Cart Stok (form Transaksi gabungan) =================
+// ================= applyBundleLinkedStock (dites langsung, bukan cuma lewat recordShopSale) =================
+
+test('applyBundleLinkedStock — product null/undefined => no-op, tidak melempar error', () => {
+  const D = baseD({ products: [] });
+  const { ctx } = makeCtx(D);
+  assert.doesNotThrow(() => ctx.applyBundleLinkedStock(null, 2, -1));
+  assert.doesNotThrow(() => ctx.applyBundleLinkedStock(undefined, 2, -1));
+});
+
+test('applyBundleLinkedStock — produk bukan bundle (bundleAddonShape null) => tidak mengubah stok produk lain', () => {
+  const D = baseD({
+    products: [
+      { id: 'p1', name: 'Lumpang 20cm', stock: 5 },
+      { id: 'alu1', name: 'alu 25cm', stock: 5 },
+    ],
+  });
+  const { ctx } = makeCtx(D);
+  ctx.applyBundleLinkedStock(D.products[0], 2, -1);
+  assert.equal(D.products.find(p => p.id === 'p1').stock, 5); // fungsi ini sendiri tidak menyentuh product yg dipassing
+  assert.equal(D.products.find(p => p.id === 'alu1').stock, 5); // & tidak ada efek samping krn bukan bundle
+});
+
+test('applyBundleLinkedStock — sign -1 (jual): kurangi stok base bracket sama & 1 kandidat alu yg stoknya cukup', () => {
+  const D = baseD({
+    products: [
+      { id: 'bundle', name: 'Lumpang 19-20cm+alu', stock: 5 },
+      { id: 'base', name: 'Lumpang 20cm', stock: 5 },
+      { id: 'aluKecil', name: 'alu 20cm', stock: 1 }, // tidak cukup utk qty 3
+      { id: 'aluBesar', name: 'alu 25cm', stock: 5 },
+    ],
+  });
+  const { ctx } = makeCtx(D);
+  ctx.applyBundleLinkedStock(D.products.find(p => p.id === 'bundle'), 3, -1);
+  assert.equal(D.products.find(p => p.id === 'base').stock, 2); // 5-3
+  assert.equal(D.products.find(p => p.id === 'aluKecil').stock, 1); // dilewati, stok tidak cukup
+  assert.equal(D.products.find(p => p.id === 'aluBesar').stock, 2); // 5-3, yg dipilih
+});
+
+test('applyBundleLinkedStock — sign +1 (undo/kembalikan): tambah stok base & kandidat pertama yg cocok', () => {
+  const D = baseD({
+    products: [
+      { id: 'bundle', name: 'Cobek 19-20cm+muntu', stock: 5 },
+      { id: 'base', name: 'Cobek 20cm', stock: 2 },
+      { id: 'muntu1', name: 'Muntu', stock: 2 },
+    ],
+  });
+  const { ctx } = makeCtx(D);
+  ctx.applyBundleLinkedStock(D.products.find(p => p.id === 'bundle'), 1, 1);
+  assert.equal(D.products.find(p => p.id === 'base').stock, 3); // 2+1
+  assert.equal(D.products.find(p => p.id === 'muntu1').stock, 3); // 2+1
+});
+
+test('applyBundleLinkedStock — tidak ada produk dasar/alu-muntu yg cocok => dilewati diam-diam (tidak error)', () => {
+  const D = baseD({
+    products: [
+      { id: 'bundle', name: 'Lumpang 19-20cm+alu', stock: 5 },
+    ],
+  });
+  const { ctx } = makeCtx(D);
+  assert.doesNotThrow(() => ctx.applyBundleLinkedStock(D.products[0], 2, -1));
+  assert.equal(D.products.find(p => p.id === 'bundle').stock, 5); // stok bundle sendiri TIDAK disentuh fungsi ini
+});
+
+
 
 test('addShopStockCartItem — validasi produk & qty, lalu tambah ke cart & render', () => {
   const D = baseD({ products: [{ id: 'p1', name: 'Shop A', stock: 5 }] });
@@ -1611,6 +1753,105 @@ test('addShopStockCartItem — validasi produk & qty, lalu tambah ke cart & rend
   ctx.addShopStockCartItem();
   assert.ok(calls.toast[2].includes('ditambahkan'));
   assert.ok(fakeDocument.getElementById('txShopStockCartList').innerHTML.includes('Shop A'));
+});
+
+test('populateTxShopStockSelect — bangun opsi dari D.products/produsen/cobekKategori, pertahankan pilihan valid', () => {
+  const D = baseD({
+    products: [{ id: 'p1', name: 'Shop A', stock: 3 }],
+    produsen: [{ id: 'prd1', name: 'Supplier X' }],
+    cobekKategori: [{ id: 'ck1', name: 'Kategori A' }],
+  });
+  const { ctx, fakeDocument } = makeCtx(D, { domValues: { txShopStockItem: { value: 'p1' } } });
+  ctx.populateTxShopStockSelect();
+  const sel = fakeDocument.getElementById('txShopStockItem');
+  assert.ok(sel.innerHTML.includes('Shop A (stok 3)'));
+  assert.ok(sel.innerHTML.includes('➕ Produk Baru'));
+  assert.equal(sel.value, 'p1'); // pilihan lama masih valid -> dipertahankan
+  const prodSel = fakeDocument.getElementById('txShopStockProdusen');
+  assert.ok(prodSel.innerHTML.includes('Supplier X'));
+  assert.ok(prodSel.innerHTML.includes('➕ Produsen Baru'));
+  const katList = fakeDocument.getElementById('txShopKategoriList');
+  assert.ok(katList.innerHTML.includes('Kategori A'));
+});
+
+test('populateTxShopStockSelect — pilihan lama tidak valid lagi (produk sudah dihapus) => reset ke "__new__"', () => {
+  const D = baseD({ products: [{ id: 'p1', name: 'Shop A', stock: 3 }] });
+  const { ctx, fakeDocument } = makeCtx(D, { domValues: { txShopStockItem: { value: 'produk-sudah-hilang' } } });
+  ctx.populateTxShopStockSelect();
+  assert.equal(fakeDocument.getElementById('txShopStockItem').value, '__new__');
+});
+
+test('onTxShopStockItemChange — pilih "__new__": tampilkan field baru, prefill nama dari catatan transaksi kalau kosong', () => {
+  const D = baseD();
+  const { ctx, fakeDocument } = makeCtx(D, {
+    domValues: {
+      txShopStockItem: { value: '__new__' }, txNote: { value: 'Belanja bulanan' },
+      txShopStockNewName: { value: '' },
+    },
+  });
+  ctx.onTxShopStockItemChange();
+  assert.equal(fakeDocument.getElementById('txShopStockNewWrap').style.display, 'block');
+  assert.equal(fakeDocument.getElementById('txShopStockJualWrap').style.display, 'block');
+  assert.equal(fakeDocument.getElementById('txShopStockNewName').value, 'Belanja bulanan');
+  assert.equal(fakeDocument.getElementById('txShopStockKategori').value, '');
+  assert.equal(fakeDocument.getElementById('txShopStockHarga').value, '');
+});
+
+test('onTxShopStockItemChange — pilih "__new__" tapi nama sudah diisi manual => TIDAK ditimpa oleh catatan transaksi', () => {
+  const D = baseD();
+  const { ctx, fakeDocument } = makeCtx(D, {
+    domValues: {
+      txShopStockItem: { value: '__new__' }, txNote: { value: 'Belanja bulanan' },
+      txShopStockNewName: { value: 'Nama Sudah Diisi' },
+    },
+  });
+  ctx.onTxShopStockItemChange();
+  assert.equal(fakeDocument.getElementById('txShopStockNewName').value, 'Nama Sudah Diisi');
+});
+
+test('onTxShopStockItemChange — pilih produk existing: sembunyikan field baru, isi kategori & harga beli default', () => {
+  const D = baseD({
+    products: [{ id: 'p1', name: 'Shop A', stock: 3, kategoriId: 'ck1', hargaBeli: 5000 }],
+    cobekKategori: [{ id: 'ck1', name: 'Kategori A' }],
+  });
+  const { ctx, fakeDocument } = makeCtx(D, { domValues: { txShopStockItem: { value: 'p1' } } });
+  ctx.onTxShopStockItemChange();
+  assert.equal(fakeDocument.getElementById('txShopStockNewWrap').style.display, 'none');
+  assert.equal(fakeDocument.getElementById('txShopStockJualWrap').style.display, 'none');
+  assert.equal(fakeDocument.getElementById('txShopStockKategori').value, 'Kategori A');
+  assert.equal(fakeDocument.getElementById('txShopStockHarga').value, 5000);
+});
+
+test('onTxShopStockItemChange — produsen aktif punya harga khusus (hargaByProdusen) => dipakai, bukan hargaBeli default', () => {
+  const D = baseD({
+    products: [{ id: 'p1', name: 'Shop A', stock: 3, hargaBeli: 5000, hargaByProdusen: { prd1: 4000 } }],
+  });
+  const { ctx, fakeDocument } = makeCtx(D, {
+    domValues: { txShopStockItem: { value: 'p1' }, txShopStockProdusen: { value: 'prd1' } },
+  });
+  ctx.onTxShopStockItemChange();
+  assert.equal(fakeDocument.getElementById('txShopStockHarga').value, 4000);
+});
+
+test('removeShopStockCartItem — hapus item dari cart, list & sinkron txAmt ikut ter-update', () => {
+  const D = baseD({ products: [{ id: 'p1', name: 'Shop A', stock: 5 }, { id: 'p2', name: 'Shop B', stock: 5 }] });
+  const { ctx, fakeDocument } = makeCtx(D, {
+    domValues: {
+      txShopStockItem: { value: 'p1' }, txShopStockQty: { value: '2' }, txShopStockHarga: { value: '1000' },
+      txAddShopStock: { checked: true },
+    },
+  });
+  ctx.addShopStockCartItem(); // Shop A, 2x @1000
+  fakeDocument.getElementById('txShopStockItem').value = 'p2';
+  fakeDocument.getElementById('txShopStockQty').value = '3';
+  fakeDocument.getElementById('txShopStockHarga').value = '2000';
+  ctx.addShopStockCartItem(); // Shop B, 3x @2000
+  assert.equal(fakeDocument.getElementById('txAmt').value, 2000 + 6000);
+  ctx.removeShopStockCartItem(0); // hapus Shop A
+  const html = fakeDocument.getElementById('txShopStockCartList').innerHTML;
+  assert.ok(!html.includes('Shop A'));
+  assert.ok(html.includes('Shop B'));
+  assert.equal(fakeDocument.getElementById('txAmt').value, 6000); // total txAmt ikut disinkronkan ulang
 });
 
 test('applyTxShopStockFromTx — checkbox tidak dicentang => tidak melakukan apa-apa', () => {
@@ -1649,6 +1890,54 @@ test('applyTxShopStockFromTx — produk baru dari cart => tambah ke D.products d
   assert.ok(calls.toast.some((t) => t.includes('Stok bertambah')));
 });
 
+test('applyTxShopStockFromTx — edit tx dgn stockItems (array baru): kembalikan stok lama dulu sebelum terapkan cart baru', () => {
+  const D = baseD({ products: [{ id: 'p1', name: 'Shop A', stock: 10, hargaBeli: 1000, hargaJual: 2000 }], produsen: [], cobekKategori: [] });
+  const { ctx, calls } = makeCtx(D, {
+    domValues: {
+      txAddShopStock: { checked: true }, txShopStockPanel: { style: { display: 'block' } },
+      txShopStockItem: { value: 'p1' }, txShopStockQty: { value: '3' }, txShopStockHarga: { value: '1500' },
+    },
+  });
+  ctx.addShopStockCartItem(); // cart baru: p1 +3
+  const tx = { id: 'tx1', stockItems: [{ productId: 'p1', qty: 5 }] }; // stok 10 = hasil +5 sebelumnya
+  ctx.applyTxShopStockFromTx('tx1', 'note', tx);
+  // 10 - 5 (restore lama) + 3 (cart baru) = 8
+  assert.equal(D.products[0].stock, 8);
+  assert.equal(tx.stockItems.length, 1);
+  assert.equal(tx.stockItems[0].qty, 3);
+  assert.ok(calls.toast.some((t) => t.includes('Stok bertambah')));
+});
+
+test('applyTxShopStockFromTx — edit tx format lama (stockProductId tunggal): kembalikan stok lama dulu', () => {
+  const D = baseD({ products: [{ id: 'p1', name: 'Shop A', stock: 10, hargaBeli: 1000, hargaJual: 2000 }], produsen: [], cobekKategori: [] });
+  const { ctx } = makeCtx(D, {
+    domValues: {
+      txAddShopStock: { checked: true }, txShopStockPanel: { style: { display: 'block' } },
+      txShopStockItem: { value: 'p1' }, txShopStockQty: { value: '2' }, txShopStockHarga: { value: '1500' },
+    },
+  });
+  ctx.addShopStockCartItem(); // cart baru: p1 +2
+  const tx = { id: 'tx1', stockProductId: 'p1', stockQty: 4 }; // stok 10 = hasil +4 sebelumnya (format lama)
+  ctx.applyTxShopStockFromTx('tx1', 'note', tx);
+  // 10 - 4 (restore lama) + 2 (cart baru) = 8
+  assert.equal(D.products[0].stock, 8);
+});
+
+test('applyTxShopStockFromTx — edit tx: stok lama tidak boleh minus walau restore lebih besar dari stok saat ini', () => {
+  const D = baseD({ products: [{ id: 'p1', name: 'Shop A', stock: 2, hargaBeli: 1000, hargaJual: 2000 }], produsen: [], cobekKategori: [] });
+  const { ctx } = makeCtx(D, {
+    domValues: {
+      txAddShopStock: { checked: true }, txShopStockPanel: { style: { display: 'block' } },
+      txShopStockItem: { value: 'p1' }, txShopStockQty: { value: '1' }, txShopStockHarga: { value: '1500' },
+    },
+  });
+  ctx.addShopStockCartItem(); // cart baru: p1 +1
+  const tx = { id: 'tx1', stockItems: [{ productId: 'p1', qty: 5 }] }; // restore 5 tapi stok cuma 2
+  ctx.applyTxShopStockFromTx('tx1', 'note', tx);
+  // max(0, 2-5)=0, lalu +1 dari cart baru = 1
+  assert.equal(D.products[0].stock, 1);
+});
+
 // ================= Cart Jual (form Transaksi gabungan) =================
 
 test('addTxShopSaleCartItem — validasi produk/qty/harga, lalu masuk cart', () => {
@@ -1667,6 +1956,56 @@ test('addTxShopSaleCartItem — sukses => tambah ke cart, render, & sinkron txAm
   assert.ok(calls.toast[0].includes('ditambahkan'));
   assert.ok(fakeDocument.getElementById('txShopSaleCartList').innerHTML.includes('Shop A'));
   assert.equal(fakeDocument.getElementById('txAmt').value, 4000);
+});
+
+test('populateTxShopSaleSelect — belum ada produk di Etalase => opsi placeholder, tidak mengisi harga', () => {
+  const D = baseD({ products: [] });
+  const { ctx, fakeDocument } = makeCtx(D);
+  ctx.populateTxShopSaleSelect();
+  assert.ok(fakeDocument.getElementById('txShopSaleItem').innerHTML.includes('Belum ada produk di Etalase'));
+});
+
+test('populateTxShopSaleSelect — ada produk: bangun opsi, pertahankan pilihan valid & isi harga jual', () => {
+  const D = baseD({ products: [{ id: 'p1', name: 'Shop A', stock: 3, hargaJual: 2500 }, { id: 'p2', name: 'Shop B', stock: 1, hargaJual: 1000 }] });
+  const { ctx, fakeDocument } = makeCtx(D, { domValues: { txShopSaleItem: { value: 'p2' } } });
+  ctx.populateTxShopSaleSelect();
+  const sel = fakeDocument.getElementById('txShopSaleItem');
+  assert.ok(sel.innerHTML.includes('Shop A (stok 3)'));
+  assert.ok(sel.innerHTML.includes('Shop B (stok 1)'));
+  assert.equal(sel.value, 'p2'); // pilihan lama masih valid -> dipertahankan
+  assert.equal(fakeDocument.getElementById('txShopSaleHarga').value, 1000); // ikut disinkronkan (onTxShopSaleItemChange)
+});
+
+test('populateTxShopSaleSelect — pilihan lama tidak valid => default ke produk pertama', () => {
+  const D = baseD({ products: [{ id: 'p1', name: 'Shop A', stock: 3, hargaJual: 2500 }] });
+  const { ctx, fakeDocument } = makeCtx(D, { domValues: { txShopSaleItem: { value: 'produk-hilang' } } });
+  ctx.populateTxShopSaleSelect();
+  assert.equal(fakeDocument.getElementById('txShopSaleItem').value, 'p1');
+  assert.equal(fakeDocument.getElementById('txShopSaleHarga').value, 2500);
+});
+
+test('onTxShopSaleItemChange — sel tidak ada value => no-op (tidak error)', () => {
+  const D = baseD({ products: [] });
+  const { ctx, fakeDocument } = makeCtx(D, { domValues: { txShopSaleItem: { value: '' } } });
+  assert.doesNotThrow(() => ctx.onTxShopSaleItemChange());
+  assert.equal(fakeDocument.getElementById('txShopSaleHarga').value, '');
+});
+
+test('removeTxShopSaleCartItem — hapus item dari cart, list & sinkron txAmt ikut ter-update', () => {
+  const D = baseD({ products: [{ id: 'p1', name: 'Shop A', hargaJual: 2000 }, { id: 'p2', name: 'Shop B', hargaJual: 3000 }] });
+  const { ctx, fakeDocument } = makeCtx(D, {
+    domValues: { txShopSaleItem: { value: 'p1' }, txShopSaleQty: { value: '1' }, txShopSaleHarga: { value: '2000' }, txAddShopSale: { checked: true } },
+  });
+  ctx.addTxShopSaleCartItem(); // Shop A, 1x @2000
+  fakeDocument.getElementById('txShopSaleItem').value = 'p2';
+  fakeDocument.getElementById('txShopSaleHarga').value = '3000';
+  ctx.addTxShopSaleCartItem(); // Shop B, 1x @3000
+  assert.equal(fakeDocument.getElementById('txAmt').value, 5000);
+  ctx.removeTxShopSaleCartItem(0); // hapus Shop A
+  const html = fakeDocument.getElementById('txShopSaleCartList').innerHTML;
+  assert.ok(!html.includes('Shop A'));
+  assert.ok(html.includes('Shop B'));
+  assert.equal(fakeDocument.getElementById('txAmt').value, 3000); // txAmt ikut disinkronkan ulang
 });
 
 test('computeTxShopSaleTotals — hitung subtotal/modal/profit dari isi cart (diisi lewat addTxShopSaleCartItem)', () => {
@@ -1719,6 +2058,49 @@ test('applyTxShopSaleFromTx — cart terisi => catat penjualan ke D.cobek & link
   assert.equal(D.products[0].stock, 8);
   assert.equal(tx.cobekLinkId, D.cobek[0].id);
   assert.ok(calls.toast.some((t) => t.includes('Penjualan tercatat')));
+});
+
+test('applyTxShopSaleFromTx — edit tx dgn cobekLinkId: update in-place di D.cobek (bukan push baru), stok lama dikembalikan dulu', () => {
+  const D = baseD({
+    products: [{ id: 'p1', name: 'Shop A', hargaJual: 2000, hargaBeli: 1000, stock: 8 }], // 8 = 10 awal - 2 terjual sebelumnya
+    cobek: [{ id: 'shop1', date: '2026-01-01', items: [{ productId: 'p1', qty: 2, name: 'Shop A', harga: 2000 }], subtotal: 4000, total: 4000, profit: 2000, accountId: 'acc1', txLinkId: 'tx1' }],
+  });
+  const { ctx, calls } = makeCtx(D, {
+    domValues: {
+      txAddShopSale: { checked: true }, txShopSalePanel: { style: { display: 'block' } },
+      txShopSaleItem: { value: 'p1' }, txShopSaleQty: { value: '3' }, txShopSaleHarga: { value: '2000' },
+    },
+  });
+  ctx.addTxShopSaleCartItem(); // cart baru: p1 x3
+  const tx = { id: 'tx1', cobekLinkId: 'shop1' };
+  ctx.applyTxShopSaleFromTx('tx1', '2026-01-02', 'acc1', 'note baru', tx);
+  // tidak ada order baru dibuat, hanya update in-place
+  assert.equal(D.cobek.length, 1);
+  assert.equal(D.cobek[0].id, 'shop1');
+  assert.equal(D.cobek[0].date, '2026-01-02');
+  assert.equal(D.cobek[0].items[0].qty, 3);
+  // stok: 8 + 2 (restore lama) - 3 (jual baru) = 7
+  assert.equal(D.products[0].stock, 7);
+  assert.equal(tx.cobekLinkId, 'shop1');
+  assert.ok(calls.toast.some((t) => t.includes('Penjualan tercatat')));
+});
+
+test('applyTxShopSaleFromTx — edit tx dgn cobekLinkId tapi stok baru tidak cukup => gagal, toast pesan dari recordShopSale', () => {
+  const D = baseD({
+    products: [{ id: 'p1', name: 'Shop A', hargaJual: 2000, hargaBeli: 1000, stock: 1 }], // stok sisa sedikit
+    cobek: [{ id: 'shop1', date: '2026-01-01', items: [{ productId: 'p1', qty: 2, name: 'Shop A', harga: 2000 }], subtotal: 4000, total: 4000, profit: 2000, accountId: 'acc1', txLinkId: 'tx1' }],
+  });
+  const { ctx, calls } = makeCtx(D, {
+    domValues: {
+      txAddShopSale: { checked: true }, txShopSalePanel: { style: { display: 'block' } },
+      txShopSaleItem: { value: 'p1' }, txShopSaleQty: { value: '50' }, txShopSaleHarga: { value: '2000' },
+    },
+  });
+  ctx.addTxShopSaleCartItem(); // cart baru: p1 x50 (lebih besar dari stok yg tersedia bahkan setelah restore)
+  const tx = { id: 'tx1', cobekLinkId: 'shop1' };
+  ctx.applyTxShopSaleFromTx('tx1', '2026-01-02', 'acc1', 'note', tx);
+  assert.ok(calls.toast.some((t) => t.includes('Stok') && t.includes('tidak cukup')));
+  assert.equal(D.cobek[0].items[0].qty, 2); // order lama TIDAK berubah karena gagal
 });
 
 // ================= setShopTab & render wrapper =================

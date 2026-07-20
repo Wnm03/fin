@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 // reset-gaji-mingguan.js pakai `new Date()` (waktu "sekarang") yg WAJIB bisa
 // dikontrol (deteksi hari Sabtu, hitung rentang minggu) — default stub `loadSource`

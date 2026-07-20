@@ -42,7 +42,7 @@ const path = require('node:path');
 // 4. Setiap root identifier yang dipakai tapi TIDAK ada di daftar
 //    "ke-expose" = bug nyata (tombol akan diam saat diklik).
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(__dirname, '..', '..');
 
 function readSourceOrder() {
   const buildSrc = fs.readFileSync(path.join(ROOT, 'scripts/build.js'), 'utf8');

@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // Cakupan file ini: penyusutan-ai-widget.js (PenyusutanAI) — widget "🤖
 // Rekomendasi AI" di kartu 📉 Penyusutan Aset (target #assetPenyusutanAI,

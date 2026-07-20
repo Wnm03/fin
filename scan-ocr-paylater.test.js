@@ -14,7 +14,7 @@
  */
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // scan-ocr.js memakai normalizeOcrNumber() (didefinisikan di
 // pajak-aset-ui-wrappers.js, dimuat belakangan di urutan build.js —

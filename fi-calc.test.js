@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // `const FI={...}` di top-level modules-calc.js butuh expose:['FI'] karena vm
 // TIDAK menempelkan binding const ke context secara otomatis (beda dari
@@ -219,7 +219,7 @@ test('FI.estimateMonthsToTarget — null (>100 tahun) kalau surplus 0 & target t
 // langsung (bukan return value), jadi butuh fakeDom.js seperti pola di
 // gaji-calc.test.js / pph21-pbb.test.js.
 
-const { createFakeDocument, createFakeElement } = require('./helpers/fakeDom');
+const { createFakeDocument, createFakeElement } = require('../helpers/fakeDom');
 
 function makeFIWithDom(D, stubs = {}, domValues = {}, queryGroups = {}) {
   const fakeDocument = createFakeDocument({

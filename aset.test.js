@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument, createFakeElement } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument, createFakeElement } = require('../helpers/fakeDom');
 
 // Cakupan file ini: seluruh fungsi SYNC di aset.js kecuali IDBStore (dites
 // terpisah di idb-store.test.js krn butuh mock indexedDB async tersendiri —

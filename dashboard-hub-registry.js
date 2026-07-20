@@ -81,10 +81,39 @@ const FEATURE_REGISTRY = [
     navIdx: 0,
     features: [
       { key: 'dash-penasihat', label: 'Penasihat AI', icon: '🧠', desc: 'Insight Cepat & Laporan AI', target: { page: 'dashboard-hub', goTo: 'advisorCard' } },
+      // Sesi 22 (TODO.md, Tahap 2 Registry) — 2 sub-bagian DI DALAM kartu
+      // "advisorCard" di atas, sumber data AIService (modules/ai/*, Smart
+      // Delivery Engine): AIRecommendCard.render() -> #aiRecommendBody,
+      // AIDailyBriefingCard.render() -> #aiBriefingBody (lihat ai-chat.js).
+      // Sebelumnya HANYA kartu induk (dash-penasihat) yang terdaftar,
+      // 2 sub-bagian ini belum bisa ditemukan sendiri lewat pencarian
+      // (mis. cari "rekomendasi ai"/"ringkasan harian" tidak nemu apa-apa
+      // krn cuma cocok ke label generik "Penasihat AI"). Target tetap
+      // page:'dashboard-hub' (SAMA dgn dash-penasihat), goTo beda —
+      // keduanya render KOSONG (innerHTML='') kalau tidak ada apa pun
+      // buat ditampilkan (lihat render() masing-masing), jadi goTo yang
+      // scroll ke situ tetap aman walau body sedang kosong.
+      { key: 'dash-ai-rekomendasi', label: 'Rekomendasi AI', icon: '💡', desc: 'Saran otomatis dari rule AI lintas modul', target: { page: 'dashboard-hub', goTo: 'aiRecommendBody' } },
+      { key: 'dash-ai-ringkasan-harian', label: 'Ringkasan Harian AI', icon: '📋', desc: 'Jumlah keputusan AI terbaru & ringkasan pengiriman pending', target: { page: 'dashboard-hub', goTo: 'aiBriefingBody' } },
       { key: 'dash-hidup-seimbang', label: 'Skor Hidup Seimbang', icon: '⚖️', desc: 'Dana Darurat, DSR, No-Spend, kerja-istirahat', target: { page: 'dashboard-hub', goTo: 'lifeBalanceCard' } },
       { key: 'dash-refleksi', label: 'Refleksi & Self-Care', icon: '📝', desc: 'Jurnal syukur & checklist harian', target: { page: 'dashboard-hub', dashKey: 'refleksi', goTo: 'refleksiCard' } },
       { key: 'dash-laporan-mini', label: 'Ringkasan Laporan Bulan Ini', icon: '📊', desc: 'Pemasukan/pengeluaran bulan berjalan', target: { page: 'dashboard', dashKey: 'laporanMini', goTo: 'dashLaporanMiniCard' } },
       { key: 'dash-fi', label: 'Kebebasan Finansial (FI)', icon: '🎯', desc: 'Progres menuju financial independence', target: { page: 'dashboard-hub', dashKey: 'fi', goTo: 'dashFiCard' } },
+      // Sesi 27 (TODO.md #6b, Tahap 2 Navigation wiring — lihat
+      // docs/PRODUCT_DECISIONS.md) — Life OS (lifeos/ui/lifeos-home.js)
+      // sebelumnya TIDAK terdaftar sama sekali di FEATURE_REGISTRY, jadi
+      // tidak bisa ditemukan lewat pencarian/Favorit walau section-nya
+      // sudah lama ada & berfungsi (#lifeOSWrap, dirender LifeOSHome.render()
+      // dari DashboardHub.render(), lihat dashboard-hub.js). Target menunjuk
+      // ke wrapper section-nya (grid 5 kartu Today/Goals/Projects/Review/
+      // Knowledge, tiap kartu pindah panel lewat LifeOSHome.switchPanel() —
+      // BUKAN showPage(), lihat catatan navigasi di lifeos-home.js), sama
+      // seperti pola dashKey card lain di kategori ini yang bisa
+      // disembunyikan (di sini lewat toggle Setelan > Profil & Tampilan >
+      // Life OS di Dashboard Hub, default OFF) — goTo tetap valid begitu
+      // section-nya ditampilkan user, pola sama dgn dash-fi/dash-refleksi
+      // di atas yang juga menunjuk dashKey card yang bisa dimatikan.
+      { key: 'dash-lifeos', label: 'Life OS', icon: '🌱', desc: 'Today, Goals, Projects, Review & Knowledge personal', target: { page: 'dashboard-hub', goTo: 'lifeOSWrap' } },
     ],
   },
   {

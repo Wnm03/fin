@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 // dashboard-hub-hero.test.js — Sprint 1 Tahap 2 (HERO-CARD.md).
 // DashboardHubHero dites di sini SENDIRI (bukan digabung ke

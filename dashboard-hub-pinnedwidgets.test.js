@@ -15,11 +15,11 @@ const path = require('node:path');
 const HTML_FILES = ['index.html', 'app_production.html'];
 
 function readHtml(file) {
-  return fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
+  return fs.readFileSync(path.join(__dirname, '..', '..', file), 'utf8');
 }
 
 function readCss() {
-  return fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
+  return fs.readFileSync(path.join(__dirname, '..', '..', 'styles.css'), 'utf8');
 }
 
 for (const file of HTML_FILES) {

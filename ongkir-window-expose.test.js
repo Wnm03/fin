@@ -28,7 +28,7 @@ const path = require('path');
 const SELFTEST_FILE = 'app-bootstrap.js';
 
 function getExposedWindowNames() {
-  const src = fs.readFileSync(path.join(__dirname, '..', SELFTEST_FILE), 'utf8');
+  const src = fs.readFileSync(path.join(__dirname, '..', '..', SELFTEST_FILE), 'utf8');
   const m = src.match(/Object\.assign\(window,\{([\s\S]*?)\}\);/);
   assert.ok(m, 'Blok Object.assign(window,{...}) harus ditemukan di ' + SELFTEST_FILE);
   return m[1].split(',').map((s) => s.trim()).filter(Boolean);
@@ -44,14 +44,14 @@ test('Object.assign(window,{...}) di features-sheets-pwa-selftest.js harus menye
 });
 
 test('Semua data-action="OngkirCalc.*" yang dipakai di modals.js harus punya method yang cocok di OngkirCalc (cobek-pricing.js)', () => {
-  const modalsSrc = fs.readFileSync(path.join(__dirname, '..', 'modules/shared/modals.js'), 'utf8');
+  const modalsSrc = fs.readFileSync(path.join(__dirname, '..', '..', 'modules/shared/modals.js'), 'utf8');
   const usedMethods = new Set();
   const re = /data-action=\\?"OngkirCalc\.([A-Za-z0-9_]+)\\?"/g;
   let m;
   while ((m = re.exec(modalsSrc))) usedMethods.add(m[1]);
   assert.ok(usedMethods.size > 0, 'Tidak ketemu data-action="OngkirCalc.*" di modals.js — cek regex kalau markup berubah');
 
-  const pricingSrc = fs.readFileSync(path.join(__dirname, '..', 'modules/shop/cobek-pricing.js'), 'utf8');
+  const pricingSrc = fs.readFileSync(path.join(__dirname, '..', '..', 'modules/shop/cobek-pricing.js'), 'utf8');
   const ongkirBlockMatch = pricingSrc.match(/const OngkirCalc=\{([\s\S]*?)\n\};/);
   assert.ok(ongkirBlockMatch, 'Blok const OngkirCalc={...} tidak ketemu di cobek-pricing.js');
   const ongkirBlock = ongkirBlockMatch[1];

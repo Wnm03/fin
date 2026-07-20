@@ -368,3 +368,74 @@ return`<div class="shop-product-card stock-${stockCls}">
 // Sumber angka bantu: rata-rata margin produk lain di kategori sama (D.products), rata-rata harga/liter BBM
 // terakhir (D.bbmLogs) sbg estimasi kasar biaya transport, & opsional cek kisaran harga pasar lewat AI+web search
 // (pola sama seperti RefAI/EduFund.checkAI yg sudah ada — pakai D.profile.apiKey/apiProvider).
+
+// ---------------------------------------------------------------------------
+// Smart Delivery Engine, Sesi 4/6: kalkulator berat/volume/packing utk
+// pengiriman produk Shop. Lihat RENCANA-SESI-RINGKAS.md untuk peta 6 sesi.
+// Semua fungsi di bawah PURE (parameter murni, TIDAK baca DOM/D) — sama
+// prinsipnya dgn LogisticsEngine (modules/logistics/logistics-engine.js,
+// Sesi 3), supaya bisa dipanggil dari UI Shop mana pun & rule AI (Sesi 5-6)
+// serta dites tanpa DOM. D.products BELUM punya field berat/volume/dimensi
+// sama sekali, jadi fungsi ini TIDAK membaca D.products — pemanggil yang
+// kasih angkanya lewat parameter, sama seperti LogisticsEngine.load()
+// menerima capacityPerTrip sbg parameter (bukan baca D.vehicles).
+// PENTING (masih "senyap" seperti Sesi 1-3): tidak ada UI/tombol baru,
+// tidak ada wiring otomatis — baru "hidup" kalau dipanggil eksplisit oleh
+// calculateVehicleCapacity() (cobek-pricing.js) atau kode Sesi 5-6.
+// ---------------------------------------------------------------------------
+
+// weightCalculator({beratPerUnit, qty}) — total berat (kg) dari qty unit @
+// beratPerUnit kg. Input negatif/NaN dipaksa jadi 0, tidak throw.
+function weightCalculator({ beratPerUnit, qty } = {}) {
+  const berat = Math.max(0, parseFloat(beratPerUnit) || 0);
+  const q = Math.max(0, parseFloat(qty) || 0);
+  return { beratPerUnit: berat, qty: q, totalKg: berat * q };
+}
+
+// volumeCalculator({panjang, lebar, tinggi, qty}) — dimensi dalam cm,
+// balikin volume per unit (cm3 & m3) & total (dikali qty). Dimensi
+// negatif/NaN dipaksa jadi 0 (bukan NaN merambat ke hasil).
+function volumeCalculator({ panjang, lebar, tinggi, qty } = {}) {
+  const p = Math.max(0, parseFloat(panjang) || 0);
+  const l = Math.max(0, parseFloat(lebar) || 0);
+  const t = Math.max(0, parseFloat(tinggi) || 0);
+  const q = Math.max(0, parseFloat(qty) || 0);
+  const cm3PerUnit = p * l * t;
+  const m3PerUnit = cm3PerUnit / 1000000;
+  return { panjang: p, lebar: l, tinggi: t, qty: q, cm3PerUnit, m3PerUnit, totalM3: m3PerUnit * q };
+}
+
+// packingCalculator({items, capacityKg, capacityM3}) — dari daftar item
+// (masing-masing boleh punya {beratPerUnit, qty} dan/atau
+// {panjang, lebar, tinggi, qty}), hitung total berat & volume gabungan,
+// lalu berapa kali rit (trip) dibutuhkan berdasar batas TERKETAT (berat
+// ATAU volume, mana yg butuh rit lebih banyak). capacityKg/capacityM3 yg
+// tidak dikasih (undefined/<=0) dianggap TIDAK membatasi (trips dari sisi
+// itu = 0), bukan bikin fungsi gagal — supaya tetap bisa dipakai walau
+// baru salah satu kapasitas yang diketahui. Item tanpa beratPerUnit atau
+// tanpa dimensi diabaikan dari sisi itu (dianggap 0), tidak bikin error.
+function packingCalculator({ items = [], capacityKg, capacityM3 } = {}) {
+  let totalKg = 0;
+  let totalM3 = 0;
+  let totalQty = 0;
+  (items || []).forEach((it) => {
+    if (!it) return;
+    const qty = Math.max(0, parseFloat(it.qty) || 0);
+    totalQty += qty;
+    if (it.beratPerUnit !== undefined) {
+      totalKg += weightCalculator({ beratPerUnit: it.beratPerUnit, qty }).totalKg;
+    }
+    if (it.panjang !== undefined || it.lebar !== undefined || it.tinggi !== undefined) {
+      totalM3 += volumeCalculator({ panjang: it.panjang, lebar: it.lebar, tinggi: it.tinggi, qty }).totalM3;
+    }
+  });
+  const capKg = parseFloat(capacityKg);
+  const capM3 = parseFloat(capacityM3);
+  const tripsByWeight = (isFinite(capKg) && capKg > 0 && totalKg > 0) ? Math.ceil(totalKg / capKg) : 0;
+  const tripsByVolume = (isFinite(capM3) && capM3 > 0 && totalM3 > 0) ? Math.ceil(totalM3 / capM3) : 0;
+  const trips = Math.max(tripsByWeight, tripsByVolume);
+  const limitingFactor = tripsByWeight === tripsByVolume
+    ? (tripsByWeight > 0 ? 'berat/volume (sama)' : null)
+    : (tripsByWeight > tripsByVolume ? 'berat' : 'volume');
+  return { totalQty, totalKg, totalM3, tripsByWeight, tripsByVolume, trips, limitingFactor };
+}

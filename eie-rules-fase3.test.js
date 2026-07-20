@@ -8,7 +8,7 @@
 //    suite ini (loadSource dari tests/helpers/).
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 function loadRules() {
   const ctx = loadSource(

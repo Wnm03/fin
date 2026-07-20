@@ -254,6 +254,7 @@ Object.assign(a,{name,jenis,lokasi,nilai,tanggal,zakatable:Aset._zakatableState,
 D.assets.push(Object.assign({id:uid(),name,jenis,lokasi,nilai,tanggal,zakatable:Aset._zakatableState,accountId},extra));
 }
 save();
+if(typeof AIBus!=="undefined")AIBus.emit("asset.updated",{jenis,nilai,editId:Aset.editId});
 closeModal('assetModal');
 Aset.renderList();renderKekayaanBersih();hitungZakatMaal();renderAccGrid();renderDashAccList();renderLapAccList();
 if(typeof populateAccFilters==='function')populateAccFilters();
@@ -263,6 +264,7 @@ async delete(id){
 if(!await askConfirm('Hapus aset ini dari Buku Aset?',{okText:'Ya, Hapus'}))return;
 D.assets=D.assets.filter(a=>!sameId(a.id,id));
 save();
+if(typeof AIBus!=="undefined")AIBus.emit("asset.updated",{deletedId:id});
 Aset.renderList();renderKekayaanBersih();hitungZakatMaal();renderAccGrid();renderDashAccList();renderLapAccList();
 },
 renderList(){
@@ -1070,6 +1072,22 @@ tx.onerror=()=>reject(tx.error||new Error('Gagal menulis ke IndexedDB'));
 });
 },'set("'+key+'")',false);
 },
+// BARU (item "BELUM DIKERJAKAN" resetApp(): dulu resetApp() cuma localStorage.clear(),
+// tidak pernah menyentuh IndexedDB -- lihat docs/CATATAN-CEK-CLAUDE.md). Mengosongkan
+// SELURUH object store 'kv' (termasuk kw_v4_mirror, lifeos:store, eie:store, ai:store,
+// dst -- semua key yg lewat IDBStore.set()), bukan cuma 1 key, karena reset total memang
+// harus membersihkan semua mirror data, bukan cuma mirror utama.
+async clear(){
+return IDBStore._withRetry(async()=>{
+const db=await IDBStore._open();
+return await new Promise((resolve,reject)=>{
+const tx=db.transaction(IDBStore.STORE,'readwrite');
+tx.objectStore(IDBStore.STORE).clear();
+tx.oncomplete=()=>resolve(true);
+tx.onerror=()=>reject(tx.error||new Error('Gagal mengosongkan IndexedDB'));
+});
+},'clear()',false);
+},
 // BUGFIX: pembungkus retry -- kalau kegagalan disebabkan koneksi yg lagi
 // closing/invalid (InvalidStateError, atau nama "closing" khas Safari),
 // buang cache _dbPromise & coba SEKALI lagi dgn koneksi baru sebelum
@@ -1214,4 +1232,180 @@ document.getElementById('asetTab-analisis').classList.toggle('u-dnone', t!=='ana
 // langsung lewat context, bukan lewat window). Pola sama persis dgn bug
 // OngkirCalc di cobek-pricing.js yg sudah pernah kejadian & diperbaiki
 // sebelumnya — lihat CLAUDE.md.
+// ---------------------------------------------------------------------------
+// Smart Delivery Engine, Sesi 5/6: fungsi prediktif domain ASSET.
+// Lihat RENCANA-SESI-RINGKAS.md untuk peta 6 sesi. "Inventory" SENGAJA
+// DI-SKIP sesi ini (keputusan eksplisit) — lihat catatan sama di
+// modules/finance/tx-list-cashflow.js. PURE/read-only, TIDAK PERNAH
+// memanggil save(). Belum ada UI/tombol baru, belum ada wiring otomatis
+// (itu tugas Sesi 6).
+//
+// predictAssetValue() SENGAJA tidak menduplikasi Penyusutan.hitung() —
+// dia cuma memanggil fungsi itu dengan tanggalHitung di MASA DEPAN (bukan
+// hari ini), karena Penyusutan.hitung() memang sudah menerima parameter
+// tanggal sembarang, bukan cuma "sekarang". Kalau aset TIDAK punya
+// penyusutan aktif, tidak ada model pertumbuhan/penurunan nilai yang bisa
+// dipakai (rule-based, bukan tebak-tebakan) — nilai diasumsikan flat, sama
+// filosofinya dgn estimateKmPerDay() yg balikin null kalau histori kurang.
+// ---------------------------------------------------------------------------
+
+// predictAssetValue({assetId, monthsAhead}) — proyeksi nilai buku 1 aset N
+// bulan ke depan. Kalau aset punya penyusutan aktif (a.penyusutan.aktif),
+// nilai prediksi = Penyusutan.hitung(a, tanggalMasaDepan).nilaiBuku (metode
+// Garis Lurus/Saldo Menurun/Manual sesuai setting aset itu). Kalau tidak,
+// balikin nilai flat (nilai sekarang) dgn metode:'flat' supaya pemanggil
+// tahu ini bukan proyeksi asli, cuma nilai apa adanya.
+function predictAssetValue({assetId,monthsAhead=12}={}){
+const a=(D.assets||[]).find(x=>sameId(x.id,assetId));
+if(!a)return{ok:false,reason:'Aset tidak ditemukan'};
+const now=new Date();
+const target=new Date(now.getFullYear(),now.getMonth()+monthsAhead,now.getDate());
+const targetISO=dateToISO(target);
+if(a.penyusutan&&a.penyusutan.aktif&&typeof Penyusutan!=='undefined'){
+const hasil=Penyusutan.hitung(a,targetISO);
+return{ok:true,assetId,assetName:a.name,nilaiSaatIni:a.nilai,nilaiPrediksi:hasil.nilaiBuku,metode:hasil.metode,monthsAhead,targetDate:targetISO};
+}
+return{ok:true,assetId,assetName:a.name,nilaiSaatIni:a.nilai,nilaiPrediksi:a.nilai,metode:'flat',monthsAhead,targetDate:targetISO};
+}
+
+// netWorthForecast({monthsAhead}) — proyeksi Kekayaan Bersih N bulan ke
+// depan, dari Kekayaan.currentNetWorth() (nilai sekarang) di-compound pakai
+// dua sumber, sesuai data yang tersedia (fallback berjenjang, tidak pernah
+// mengarang angka):
+//  1) Kekayaan.actualCAGR() — kalau histori snapshot (D.wealthSnapshots)
+//     cukup (≥2 titik, rentang ≥25 hari, baseline & terakhir positif),
+//     pakai growth rate historis nyata (metode:'cagr-snapshot').
+//  2) predictCashflow() (tx-list-cashflow.js) — kalau snapshot belum cukup,
+//     pakai proyeksi surplus/defisit kas bulanan (incAvg-expAvg) sbg
+//     pertumbuhan kekayaan bersih linear (metode:'cashflow-delta'). Ini
+//     TIDAK memperhitungkan perubahan nilai aset non-kas (mis. penyusutan),
+//     jadi lebih kasar drpd opsi 1.
+//  3) Kalau keduanya tidak tersedia, balikin {ok:false} apa adanya.
+function netWorthForecast({monthsAhead=6}={}){
+if(typeof Kekayaan==='undefined')return{ok:false,reason:'Kekayaan belum dimuat'};
+const netWorthNow=Kekayaan.currentNetWorth();
+const cagrResult=Kekayaan.actualCAGR();
+const now=new Date();
+const months=[];
+if(cagrResult&&cagrResult.cagr!=null){
+const monthlyRate=Math.pow(1+cagrResult.cagr,1/12)-1;
+let nw=netWorthNow;
+for(let i=1;i<=monthsAhead;i++){
+nw=nw*(1+monthlyRate);
+const d=new Date(now.getFullYear(),now.getMonth()+i,1);
+months.push({month:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),netWorthProjected:nw});
+}
+return{ok:true,netWorthNow,metode:'cagr-snapshot',monthlyRate,months,projectedEnd:nw};
+}
+if(typeof predictCashflow==='function'){
+const cf=predictCashflow({monthsAhead});
+if(cf.ok){
+let nw=netWorthNow;
+cf.months.forEach((m)=>{
+nw+=cf.monthlyNet;
+months.push({month:m.month,netWorthProjected:nw});
+});
+return{ok:true,netWorthNow,metode:'cashflow-delta',monthlyNet:cf.monthlyNet,months,projectedEnd:nw};
+}
+}
+return{ok:false,reason:'Data histori (snapshot kekayaan / transaksi) belum cukup untuk proyeksi'};
+}
+
+// ---------------------------------------------------------------------------
+// Smart Delivery Engine, Sesi 8: rule domain ASSET utk AIDecision (lanjutan
+// Sesi 7 — lihat RENCANA-SESI-RINGKAS.md). Rule: "proyeksi Kekayaan Bersih N
+// bulan ke depan (netWorthForecast()) TURUN dari nilai sekarang" — dgn kata
+// lain, tren negatif (bukan ambang nominal, karena "berapa Rp yang wajar
+// turun" beda-beda per orang; tren negatif sudah cukup jadi sinyal awal).
+// Cooldown lebih panjang (168 jam = mingguan) drpd rule finance karena aset &
+// kekayaan bersih berubah lambat, tidak perlu re-alert tiap kali ada 1
+// transaksi aset. TIDAK menduplikasi apa pun di UI Laporan Aset — rule ini
+// masuk decisionLog AIDecision (dailyBriefing/simulate), bukan render kartu.
+// ---------------------------------------------------------------------------
+
+// _assetNetWorthDeclineCheck() — helper dipakai condition() & action().
+function _assetNetWorthDeclineCheck(){
+if(typeof netWorthForecast!=='function')return{trigger:false};
+const fc=netWorthForecast({monthsAhead:6});
+if(!fc.ok)return{trigger:false};
+return{trigger:fc.projectedEnd<fc.netWorthNow,netWorthNow:fc.netWorthNow,projectedEnd:fc.projectedEnd,metode:fc.metode};
+}
+
+// ---------------------------------------------------------------------------
+// Rule kedua ASSET (keputusan produk dikonfirmasi user): 'asset-zakat-due' —
+// ada aset zakatable di Buku Aset dgn estimasi Zakat Maal (PajakAset.
+// hitungZakatAset(), sudah ada) > 0. Ini PENGINGAT BERKALA (cooldown
+// mingguan, sama spt asset-networth-declining), BUKAN pengecekan "sudah/belum
+// dibayar" — app ini TIDAK menyimpan histori tanggal pembayaran zakat/haul
+// sama sekali (dicek: tidak ada field itu di data manapun), jadi rule ini
+// SENGAJA tidak berpura-pura tahu status bayar, cuma mengingatkan berkala
+// selama estimasi Zakat Maal >= ambang nominal (default Rp0, artinya sama
+// spt semula: trigger begitu ada zakat sama sekali) — sama semangatnya dgn
+// hitungZakatAset() sendiri yang juga "TANPA cek haul/nishab terpisah".
+// Ambang BISA DIATUR user (Sesi lanjutan, pola sama dgn getAIFinance-
+// OverspendThreshold/getAIDeliveryThinMarginThreshold) lewat
+// D.profile.aiAssetZakatMinThresholdRp, field baru di Pengaturan > 🤖 AI
+// Asisten — berguna kalau user mau di-skip untuk zakat estimasi yang masih
+// kecil/receh.
+// ---------------------------------------------------------------------------
+const AI_ASSET_ZAKAT_MIN_DEFAULT_RP=0;
+
+// getAIAssetZakatMinThreshold()/setAIAssetZakatMinThreshold(rp) — getter/
+// setter D.profile.aiAssetZakatMinThresholdRp, dipakai field Pengaturan
+// (renderSettings()/autoSaveProfile()) & rule di bawah. Dijaga >=0.
+function getAIAssetZakatMinThreshold(){
+const v=D.profile&&D.profile.aiAssetZakatMinThresholdRp;
+return(typeof v==='number'&&v>=0)?v:AI_ASSET_ZAKAT_MIN_DEFAULT_RP;
+}
+function setAIAssetZakatMinThreshold(rp){
+const n=parseFloat(rp);
+D.profile.aiAssetZakatMinThresholdRp=(Number.isFinite(n)&&n>=0)?n:AI_ASSET_ZAKAT_MIN_DEFAULT_RP;
+return D.profile.aiAssetZakatMinThresholdRp;
+}
+
+function _assetZakatDueCheck(){
+if(typeof PajakAset==='undefined'||typeof PajakAset.hitungZakatAset!=='function')return{trigger:false};
+const z=PajakAset.hitungZakatAset();
+const minThreshold=getAIAssetZakatMinThreshold();
+return{trigger:z.totalZakat>minThreshold,totalNilai:z.totalNilai,totalZakat:z.totalZakat,jumlah:z.list.length,minThreshold};
+}
+
+let _assetAIRulesRegistered=false;
+// registerAssetAIRules() — dipanggil sekali saat boot (self-test.js init()),
+// idempotent lewat guard, return false kalau AIDecision belum ada.
+function registerAssetAIRules(){
+if(_assetAIRulesRegistered)return false;
+if(typeof AIDecision==='undefined'||!AIDecision.rules||typeof AIDecision.rules.register!=='function')return false;
+AIDecision.rules.register({
+id:'asset-networth-declining',
+category:'asset',
+severity:'warning',
+weight:4,
+cooldownHours:168,
+description:'Proyeksi Kekayaan Bersih 6 bulan ke depan (netWorthForecast) turun dari nilai sekarang.',
+condition:()=>_assetNetWorthDeclineCheck().trigger,
+action:()=>{
+const c=_assetNetWorthDeclineCheck();
+const fmt=typeof fmtFull==='function'?fmtFull:(n=>'Rp '+Math.round(n||0).toLocaleString('id-ID'));
+return{message:`Proyeksi Kekayaan Bersih 6 bulan ke depan turun dari ${fmt(c.netWorthNow)} ke ${fmt(c.projectedEnd)} (metode: ${c.metode}).`};
+},
+});
+AIDecision.rules.register({
+id:'asset-zakat-due',
+category:'asset',
+severity:'info',
+weight:3,
+cooldownHours:168,
+description:'Ada aset zakatable di Buku Aset dengan estimasi Zakat Maal di atas ambang nominal (bisa diatur user, default Rp0) — pengingat berkala, TIDAK mengecek status sudah/belum dibayar (app belum menyimpan histori pembayaran zakat).',
+condition:()=>_assetZakatDueCheck().trigger,
+action:()=>{
+const c=_assetZakatDueCheck();
+const fmt=typeof fmtFull==='function'?fmtFull:(n=>'Rp '+Math.round(n||0).toLocaleString('id-ID'));
+return{message:`Estimasi Zakat Maal dari ${c.jumlah} aset zakatable (total nilai ${fmt(c.totalNilai)}) sekitar ${fmt(c.totalZakat)} — cek kartu 🧾 Pajak Aset kalau belum dibayar tahun ini.`};
+},
+});
+_assetAIRulesRegistered=true;
+return true;
+}
+
 Object.assign(window,{ALOKASI_PRESETS,AlokasiAset,AssetInsight,Aset,Penyusutan,PajakAset,LaporanAset,IDBStore,PORTFOLIO_LABELS,TimelineW});

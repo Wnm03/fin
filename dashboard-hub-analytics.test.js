@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 // dashboard-hub-analytics.test.js — Sprint 1 Tahap 7 (DASHBOARD-ANALYTICS.md).
 // DashboardHubAnalytics dites di sini SENDIRI (bukan digabung ke

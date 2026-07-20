@@ -3,8 +3,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { loadSource } = require('./helpers/loadSource.js');
-const { createFakeDocument, createFakeElement } = require('./helpers/fakeDom.js');
+const { loadSource } = require('../helpers/loadSource.js');
+const { createFakeDocument, createFakeElement } = require('../helpers/fakeDom.js');
 
 // modal-close-animation.test.js — ROADMAP-v1.1.md item #2 (High Priority,
 // KNOWN-ISSUES.md §5.1): exit/closing animation untuk overlay & bottom
@@ -20,7 +20,7 @@ const { createFakeDocument, createFakeElement } = require('./helpers/fakeDom.js'
 // classList & panggil setTimeout/addEventListener — persis kasus yang
 // fakeDom.js didesain untuk itu (lihat catatan di helpers/fakeDom.js).
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(__dirname, '..', '..');
 
 function makeManualTimer() {
   const queue = [];
