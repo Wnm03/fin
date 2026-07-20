@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // Cakupan file ini: migrasi data baru di features-helpers-global-security.js
 // (DATA_MIGRATIONS, toVersion:2) yang menambahkan 2 kategori pengeluaran baku

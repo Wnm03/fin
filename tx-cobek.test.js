@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // isShopStockCatName (tx-cobek.js) adalah fungsi murni (tidak baca/tulis
 // DOM, cuma baca D.categories) yang dipakai updateTxVehiclePanels() di

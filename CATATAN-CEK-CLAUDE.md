@@ -13,6 +13,26 @@
 
 ## SUDAH SELESAI (terverifikasi)
 
+- ✅ **[2026-07-18] Fix `resetApp()` — sekarang ikut mengosongkan IndexedDB (bukan cuma localStorage).**
+  Item lama "BELUM DIKERJAKAN": `resetApp()` (`reminder-notif.js`) sebelumnya cuma
+  `localStorage.clear()`, tidak pernah menyentuh `kw_v4_mirror` (mirror IndexedDB milik `D`)
+  atau key IDBStore lain (`lifeos:store`/`eie:store`/`ai:store`) — karena `load()` cek
+  `kw_v4_mirror` di IndexedDB LEBIH DULU sebelum localStorage, reset lama berisiko "gagal
+  senyap" (data `D` muncul lagi utuh setelah reload).
+  **Perbaikan**: tambah `IDBStore.clear()` (method baru, `modules/asset/aset.js` — mengosongkan
+  SELURUH object store `kv`, bukan cuma 1 key) dipanggil di `resetApp()` sebelum
+  `localStorage.clear()`/`location.reload()`, guard `typeof IDBStore!=='undefined'` + try/catch
+  supaya tetap aman kalau IDBStore belum sempat dimuat atau gagal.
+  **Test baru**: `tests/reset-app.test.js` (4 test, sebelumnya nol coverage untuk `resetApp()`)
+  — urutan panggilan (IDBStore.clear() sebelum localStorage.clear()), batal kalau konfirmasi
+  pertama ditolak, tetap lanjut reset kalau IDBStore.clear() reject, tetap aman kalau IDBStore
+  tidak ada.
+  **Diverifikasi**: `node --test tests/*.test.js` → **2130/2130 pass**, 0 regresi. `node --check`
+  lolos di kedua file yang diubah (`reminder-notif.js`, `modules/asset/aset.js`).
+  **Belum dikerjakan (di luar scope fix ini)**: verifikasi manual end-to-end di browser
+  (Playwright) belum dijalankan ulang di sandbox ini (tanpa Chrome) — disarankan sebelum rilis
+  produksi, sesuai catatan "wajib verifikasi manual" di item lama.
+
 - ✅ **[2026-07-17] Restrukturisasi folder — Sesi 17+18 (FASE 4, TERAKHIR): bersihkan referensi basi + regresi penuh.**
   Lanjutan Sesi 15–18. Dibersihkan 12 komentar "Urutan grup ini: ..." yang masih menyebut
   `features-aiwidget-reminder-gdrive-search.js`/`features-sheets-pwa-selftest.js` di ekor
@@ -1171,22 +1191,6 @@
 
 ## BELUM DIKERJAKAN (butuh tindak lanjut di sesi berikutnya)
 
-- ⏳ **[2026-07-17] `resetApp()` ("Reset Aplikasi", `features-aiwidget-reminder-gdrive-search.js`)
-  cuma `localStorage.clear()`, TIDAK PERNAH menyentuh IndexedDB sama sekali.**
-  Ini bukan cuma soal `lifeos:store`/`eie:store` — bahkan `kw_v4_mirror`
-  (mirror IndexedDB milik `D` sendiri, lihat migrasi storage di
-  `features-helpers-global-security.js`) juga tidak dibersihkan. Karena
-  `load()` cek `kw_v4_mirror` di IndexedDB LEBIH DULU sebelum localStorage,
-  dugaan kuat: user tekan "Reset Aplikasi" → reload → `D` (bukan cuma
-  LifeOS/EIE) kemungkinan besar muncul lagi utuh dari mirror IndexedDB —
-  reset jadi tidak benar-benar mengosongkan data. Nol test coverage untuk
-  `resetApp()` saat ini (`grep -rl resetApp tests/` kosong).
-  **Rencana**: tambahkan `indexedDB.deleteDatabase('kw_idb_v1')` (atau
-  `IDBStore` clear helper baru) ke `resetApp()` sebelum `location.reload()`,
-  lalu tulis test regresi (belum ada sama sekali sebelumnya) yg memverifikasi
-  IndexedDB ikut kebersih — WAJIB diverifikasi manual di browser (Playwright)
-  juga, bukan cuma lewat mock, karena `resetApp()` sendiri belum pernah
-  dites end-to-end.
 - ⏳ **[2026-07-17] `EIEScheduler.start()`/`stop()` (`economic-intelligence/scheduler/eie-scheduler.js`)
   tidak pernah dipanggil di mana pun di seluruh codebase.** Kemungkinan besar
   ini SENGAJA (komentar file: "FASE 1 senyap") — sinkronisasi macro saat ini

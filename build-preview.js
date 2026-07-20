@@ -35,7 +35,11 @@ function main() {
     if (!re.test(html)) {
       throw new Error(`build-preview: tag <link rel="stylesheet" href="${file}?v=..."> tidak ditemukan di index.html`);
     }
-    html = html.replace(re, `<style>\n${css}\n</style>`);
+    // PENTING: pakai replacer FUNCTION, bukan string langsung. Kalau ${css} dipakai
+    // di dalam string replacement literal, pola spesial String.replace() seperti
+    // $&, $`, $', $1 dst akan diinterpretasi kalau kebetulan muncul di dalam isi
+    // file yang di-inline, dan merusak output (ditemukan manual, 2026-07-21).
+    html = html.replace(re, () => `<style>\n${css}\n</style>`);
     count++;
   }
 
@@ -47,7 +51,9 @@ function main() {
     if (!re.test(html)) {
       throw new Error(`build-preview: tag <script src="${file}?v=..."> tidak ditemukan di index.html`);
     }
-    html = html.replace(re, `<script>\n${js}\n</script>`);
+    // Replacer function (lihat catatan di atas) -- WAJIB, jangan pakai string
+    // template langsung sbg argumen ke-2 replace().
+    html = html.replace(re, () => `<script>\n${js}\n</script>`);
     count++;
   }
   fs.writeFileSync(OUT_HTML, html, 'utf8');

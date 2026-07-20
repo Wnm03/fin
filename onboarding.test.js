@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 // onboarding.js bergantung ke banyak fungsi/variabel global dari file lain (D/save/
 // fmtFull/fmtFullSigned/safeSetItem/showMain dari features-helpers-global-security.js,

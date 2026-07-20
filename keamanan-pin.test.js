@@ -2,7 +2,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const vm = require('node:vm');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // Cakupan file ini: hashPin, gantiPin, loadAndMigrateApiKeyOnUnlock (+
 // encryptApiKeyWithPin/decryptApiKeyWithPin sbg fungsi pendukung, sudah

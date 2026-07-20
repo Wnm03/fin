@@ -19,7 +19,7 @@ const path = require('node:path');
 // (pola sama dgn renderShop()/renderShopGrafik() yang sudah ada) supaya
 // input tanggal custom range bisa memanggil Laporan.renderTab().
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(__dirname, '..', '..');
 const HTML_FILES = ['index.html', 'app_production.html'];
 
 function readHtml(file) {

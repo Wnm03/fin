@@ -8,8 +8,8 @@
 // datang dari EIE_RECOMMENDATIONS yang sebenarnya.
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 function loadFeed({ insights, extraGlobals = {}, useRealRecommendationService = true } = {}) {
   const fakeDocument = createFakeDocument({ eieInsightFeed: {} });

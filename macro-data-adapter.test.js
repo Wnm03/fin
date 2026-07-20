@@ -9,7 +9,7 @@
 // seperti test EIE lain, lihat tests/helpers/loadSource.js).
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 function makeFakeIDBStore(initial = {}) {
   const data = { ...initial };

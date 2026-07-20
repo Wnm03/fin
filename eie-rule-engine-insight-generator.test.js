@@ -6,7 +6,7 @@
 // reimplementasi logic — pola sama seperti test EIE lain.
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 function fakeStore(initial = {}) {
   return { ruleCooldowns: {}, insights: [], ...initial };

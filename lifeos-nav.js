@@ -17,11 +17,59 @@
 // Kalau nanti nambah sumber baru di todayAdapterList/goalAdapterList/
 // projectAdapterList, tambahkan entri sourceKind yang cocok di
 // LIFEOS_NAV_MAP di bawah — jangan hardcode navigasi di file adapter/ui.
+//
+// Status cakupan (Sesi 27): SEMUA 5 sourceKind dari LIFEOS_TODAY_SOURCES
+// (bills/reminders/selfcare/payroll/tukang) sudah punya entri di bawah —
+// sebelum sesi ini selfcare/payroll/tukang belum dipetakan (jatuh ke
+// cabang "sourceKind tidak dikenal"). Goal (target/eduFund/wishlist)
+// sudah dipetakan sejak sebelumnya.
+//
+// Status cakupan (Sesi 50): pensiun/fi/debt SEKARANG dipetakan juga —
+// builder-nya di goal-adapter.js selesai Sesi 49
+// (`docs/PRODUCT_DECISIONS.md` § LifeOS — Goal source, final), tapi nav
+// map-nya belum ikut diperbarui saat itu (di luar scope 1-sub-item Sesi
+// 49). Kartu "referensi asli" pensiun/debt ada di DALAM tab
+// `#page-keuangan` (`keuanganTab-asetproyek`/`keuanganTab-utangpiutang`,
+// disembunyikan lewat `u-dnone` biasa, BUKAN `.stg-tabpanel`) — pola
+// tab-switch keuangan ini SUDAH ADA (`setKeuanganTab()`,
+// `tx-list-cashflow.js`) & sudah dipakai lintas-halaman lewat
+// `goToList(targetId, pageName, navIdx, shopTabName, cnTabName,
+// keuTabName)` (`filter-laporan.js`) — dipakai APA ADANYA di sini lewat
+// `openFn` (persis pola tukang/wishlist di bawah, guard `typeof`),
+// BUKAN menulis ulang logic switch-tab keuangan sendiri (itu akan
+// duplicate, dilarang). `navIdx` sengaja dikosongkan (`null`) — pola
+// SAMA PERSIS dgn `goToList("assetList","aset")` yang sudah ada
+// (app_production.html #405): `showPage()` sendiri sudah fallback cari
+// nav-item yang cocok kalau `el` tidak dikirim (lihat komentar
+// `lifeOSNavigateToSource` bagian `conf.page` di bawah). FI (`#dashFiCard`)
+// tidak perlu openFn — kartunya ada langsung di `page-dashboard-hub`
+// (tidak di dalam tab keuangan), jadi cukup pola page+cardSelector biasa
+// sama seperti selfcare/payroll.
 
 const LIFEOS_NAV_MAP = {
   // --- Today (adapters/today-adapter.js) ---
   bills: { page: 'settings', cardSelector: '#billList' },
   reminders: { page: 'settings', cardSelector: '#reminderList' },
+  // selfcare/payroll: reuse pola { page, cardSelector } yang sama persis dgn
+  // bills/reminders di atas — _lifeOSHighlightSettingsCard() sebenarnya
+  // generik (bukan cuma utk page:'settings'; closest('.stg-tabpanel')/
+  // closest('.stg-group') otomatis no-op kalau kartu tujuan bukan di
+  // Setelan), jadi aman dipakai jg utk kartu di page:'dashboard-hub'.
+  // Kartu tujuan (`refleksiCard`/`dashAbsensiCard`) SUDAH ADA & sudah jadi
+  // target navigasi terverifikasi di FEATURE_REGISTRY (lihat
+  // dashboard-hub-registry.js key 'dash-refleksi' & 'per-absensi') — dipakai
+  // ulang di sini, bukan target baru.
+  selfcare: { page: 'dashboard-hub', cardSelector: '#refleksiCard' },
+  payroll: { page: 'dashboard-hub', cardSelector: '#dashAbsensiCard' },
+  // tukang — sourceKind ini murni modal (Tukang.openModal, data-action sama
+  // persis dgn tombol "👷 Absensi Tukang" di kartu Renovasi index.html),
+  // tidak attach ke page/kartu manapun — pola openFn SAMA PERSIS dgn
+  // wishlist/renovasi di bawah.
+  tukang: {
+    openFn() {
+      if (typeof Tukang !== 'undefined' && typeof Tukang.openModal === 'function') Tukang.openModal();
+    },
+  },
 
   // --- Goals (adapters/goal-adapter.js) ---
   target: { page: 'settings', cardSelector: '#targetList' },
@@ -29,6 +77,22 @@ const LIFEOS_NAV_MAP = {
   wishlist: {
     openFn() {
       if (typeof WorthIt !== 'undefined' && typeof WorthIt.open === 'function') WorthIt.open();
+    },
+  },
+  // pensiun/debt — kartu aslinya ada di dalam tab #page-keuangan (bukan
+  // stg-tabpanel), jadi reuse goToList() (filter-laporan.js) apa adanya
+  // supaya tab keuangan yang benar ikut kebuka sebelum scroll+flash,
+  // BUKAN nulis ulang logic switch-tab. Guard typeof sama pola dgn
+  // tukang/wishlist di atas.
+  pensiun: {
+    openFn() {
+      if (typeof goToList === 'function') goToList('pensiunBody', 'keuangan', null, null, null, 'asetproyek');
+    },
+  },
+  fi: { page: 'dashboard-hub', cardSelector: '#dashFiCard' },
+  debt: {
+    openFn() {
+      if (typeof goToList === 'function') goToList('debtList', 'keuangan', null, null, null, 'utangpiutang');
     },
   },
 

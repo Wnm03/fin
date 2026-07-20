@@ -34,8 +34,8 @@
 
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { loadSource } = require('./helpers/loadSource.js');
-const { createFakeDocument } = require('./helpers/fakeDom.js');
+const { loadSource } = require('../helpers/loadSource.js');
+const { createFakeDocument } = require('../helpers/fakeDom.js');
 
 function setup(initialDom = {}) {
   // Sengaja TIDAK menyuntik classList/style custom lewat initial values di

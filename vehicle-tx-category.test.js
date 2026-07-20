@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // resolveVehicleTxCategory (transaksi.js) adalah fungsi murni (tidak
 // baca/tulis DOM) yang menentukan kategori Keuangan mana yang dipakai saat

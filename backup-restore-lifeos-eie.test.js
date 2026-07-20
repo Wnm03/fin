@@ -17,7 +17,7 @@ const vm = require('vm');
 // palsu + stub applyRestoredDataMigrations/runDataMigrations supaya tidak
 // perlu memuat seluruh rantai data-default.js/features-helpers-global-security.js).
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(__dirname, '..', '..');
 
 function extractFn(src, fnName) {
   const asyncMarker = `async function ${fnName}(`;
