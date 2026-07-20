@@ -12,7 +12,7 @@ const path = require('node:path');
 // fungsi/class CSS baru sama sekali: 100% reuse `.keu-fab*` (CSS) dan
 // openOrderModal()/openProductModal() (JS, tidak disentuh).
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(__dirname, '..', '..');
 const HTML_FILES = ['index.html', 'app_production.html'];
 
 function readHtml(file) {

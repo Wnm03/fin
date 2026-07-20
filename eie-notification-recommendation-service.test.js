@@ -6,7 +6,7 @@
 // (services/recommendation-service.js). Keduanya sebelumnya 0 test.
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 function load(toastFn) {
   return loadSource(
@@ -109,7 +109,7 @@ test('RecommendationService — setiap recommendationId yg dipakai rule-definiti
   const { RecommendationService } = loadRec();
   const fs = require('fs');
   const path = require('path');
-  const src = fs.readFileSync(path.join(__dirname, '..', 'economic-intelligence', 'rules', 'rule-definitions.js'), 'utf8');
+  const src = fs.readFileSync(path.join(__dirname, '..', '..', 'economic-intelligence', 'rules', 'rule-definitions.js'), 'utf8');
   const ids = new Set([...src.matchAll(/recommendationId:\s*'([^']+)'/g)].map((m) => m[1]));
   const missing = [...ids].filter((id) => !RecommendationService.getById(id));
   assert.deepEqual(missing, []);

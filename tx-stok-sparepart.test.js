@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 // tx-stok-sparepart.js — panel "Tambah ke Stok Sparepart juga?" pada txModal.
 // Sebelumnya nol test (lihat tab Shop di CLAUDE.md — cobek.js/kasir.js/

@@ -3,8 +3,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeElement } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeElement } = require('../helpers/fakeDom');
 
 // dashboard-hub.js baca/tulis DOM (getElementById/querySelectorAll) — bukan
 // modul murni — jadi dites pakai document tiruan sendiri (pola sama dgn
@@ -13,7 +13,7 @@ const { createFakeElement } = require('./helpers/fakeDom');
 // (FEATURE_REGISTRY asli) — dipakai FEATURE_REGISTRY tiruan kecil di sini
 // supaya test tidak ikut berubah kalau taksonomi Tahap 0 direvisi nanti.
 
-const SRC = fs.readFileSync(path.join(__dirname, '..', 'modules/dashboard-hub/dashboard-hub.js'), 'utf8');
+const SRC = fs.readFileSync(path.join(__dirname, '..', '..', 'modules/dashboard-hub/dashboard-hub.js'), 'utf8');
 
 // document tiruan: getElementById auto-vivify (butuh utk id goTo/group yang
 // muncul on-the-fly dari target registry), querySelectorAll dikontrol manual

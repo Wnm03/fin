@@ -34,9 +34,12 @@ const LifeOSKnowledge = {
 // rumpun lifeos/ui/*, jadi keenamnya sudah pasti ada saat baris ini jalan).
 if (typeof window !== 'undefined') {
   window.LifeOSHome = LifeOSHome;
+  window.LifeOSAreas = LifeOSAreas;
   window.LifeOSToday = LifeOSToday;
   window.LifeOSGoals = LifeOSGoals;
   window.LifeOSProjects = LifeOSProjects;
   window.LifeOSReview = LifeOSReview;
   window.LifeOSKnowledge = LifeOSKnowledge;
+  window.LifeOSLifeObjects = typeof LifeOSLifeObjects !== 'undefined' ? LifeOSLifeObjects : undefined;
+  window.LifeOSPlugins = typeof LifeOSPlugins !== 'undefined' ? LifeOSPlugins : undefined;
 }

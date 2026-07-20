@@ -14,10 +14,14 @@ let LifeOSStore = {
   projects: [],   // lihat adapters/project-adapter.js — kind:'generic'|'renovasi'
   reviewLog: [],  // lihat adapters/review-adapter.js
   knowledge: [],  // lihat adapters/knowledge-adapter.js
+  objects: [],    // Life Object CRUD (Sesi 58) — lihat services/life-object-service.js.
+                  // kind:'generic'|'ref' (kind lain belum didesain). kind:'ref' ->
+                  // sourceRef divalidasi via lifeOSObjectRefValidate() (lifeos-object-ref.js)
+                  // sebelum ditulis di sini.
 };
 
 const LIFEOS_STORE_KEY = 'lifeos:store';
-const LIFEOS_STORE_DEFAULT = { projects: [], reviewLog: [], knowledge: [] };
+const LIFEOS_STORE_DEFAULT = { projects: [], reviewLog: [], knowledge: [], objects: [] };
 
 async function lifeOSLoad() {
   // CATATAN: IDBStore.get() cuma terima 1 argumen (lihat aset.js / tests/idb-store.test.js

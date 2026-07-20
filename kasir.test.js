@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument, createFakeElement } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument, createFakeElement } = require('../helpers/fakeDom');
 
 // Cakupan file ini: kasir.js (sebelumnya nol test) — fokus ke jalur inti (renderGrid/renderCart/
 // addToCart/changeQty/computeTotals/_checkoutInner) DAN fitur baru sesi ini: integrasi dgn

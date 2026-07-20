@@ -242,7 +242,10 @@ accountId:accId,txId,existingShopId:null
 if(!result.ok){toast('⚠️ '+result.message);return;}
 const itemSummary=items.map(it=>it.name+' x'+it.qty).join(', ');
 D.transactions.push({id:txId,type:'income',amount:total,category:'Bisnis',subcategory:'Cobek',accountId:accId,payMethod:'tunai',note:(customer.name?customer.name+' - ':'')+itemSummary,date,cobekLinkId:result.shopId});
-save();closeModal('orderModal');renderProductList();renderShop();Order.renderRecent();renderDashboard();renderKeuangan();renderSiapPulang();toast('✅ Transaksi tersimpan & tersinkron ke Keuangan');
+save();
+const marginPct=total>0?(profit/total)*100:0;
+if(typeof AIBus!=="undefined")AIBus.emit("delivery.created",{orderId:txId,total,ongkir,delivered,date,marginPct});
+closeModal('orderModal');renderProductList();renderShop();Order.renderRecent();renderDashboard();renderKeuangan();renderSiapPulang();toast('✅ Transaksi tersimpan & tersinkron ke Keuangan');
 },
 renderRecent(){
 const el=document.getElementById('shopRecentList');
@@ -538,4 +541,105 @@ if(addrEl)addrEl.value=address;
 ['txShopSaleCustNameBox','txShopSaleCustPhoneBox','txShopSaleCustAddrBox'].forEach(hideSuggestBox);
 }
 };
+
+// ---------------------------------------------------------------------------
+// Smart Delivery Engine, Sesi 4/6: orkestrator "rencana pengiriman pintar"
+// utk order Shop — menjembatani data Produsen (D.produsen, rute Etape 1
+// tersimpan, lihat OngkirCalc.prefillFromProdusen() di cobek-pricing.js) &
+// produk (D.products) ke LogisticsService (Sesi 3) & AIService (Sesi 2).
+// Lihat RENCANA-SESI-RINGKAS.md untuk peta 6 sesi. PURE/read-only seperti
+// fungsi Sesi 4 lain di cobek-pricing.js — TIDAK PERNAH memanggil save()
+// atau menulis ke D/AIStore. PENTING (masih "senyap"): tidak ada UI/tombol
+// baru, tidak ada wiring otomatis — baru "hidup" kalau dipanggil eksplisit
+// (Sesi 6).
+// ---------------------------------------------------------------------------
+
+// calculateSmartDelivery({productId, qty, produsenId, kmKonsumen,
+// biayaPerKmKonsumen, metode, vehicleId, marginPct}) — satu panggilan buat
+// dapat rencana pengiriman lengkap (rute+BBM+harga+profit) utk 1 produk,
+// dgn km/biaya Etape 1 diambil OTOMATIS dari preferensi Produsen kalau ada
+// (D.produsen[].jarakKm/biayaPerKm) — pemanggil cuma wajib kasih Etape 2
+// (kmKonsumen/biayaPerKmKonsumen) kalau metode "antar". modal utk rekomendasi
+// harga diambil dari product.hargaBeli, transport otomatis dari hasil
+// route (lihat LogisticsEngine.plan()).
+function calculateSmartDelivery({
+  productId, qty, produsenId, kmKonsumen, biayaPerKmKonsumen,
+  metode, vehicleId, marginPct,
+} = {}) {
+  if (typeof LogisticsService === 'undefined' || typeof LogisticsEngine === 'undefined') {
+    return { ok: false, reason: 'LogisticsService/LogisticsEngine belum dimuat' };
+  }
+  const product = (D.products || []).find((p) => p.id === productId);
+  if (!product) return { ok: false, reason: 'Produk tidak ditemukan' };
+  const produsen = produsenId ? (D.produsen || []).find((pr) => pr.id === produsenId) : null;
+  const kmProdusen = produsen && produsen.jarakKm > 0 ? produsen.jarakKm : 0;
+  const biayaPerKmProdusen = produsen && produsen.biayaPerKm > 0 ? produsen.biayaPerKm : 0;
+  const pcs = Math.max(0, parseFloat(qty) || 0);
+  // capacityPerTrip SENGAJA tidak dikasih ke plan() (kapasitas kendaraan
+  // belum ada datanya di sini) -> LogisticsEngine.plan() otomatis skip
+  // bagian `load` (lihat catatan di plan()); pakai calculateVehicleCapacity()
+  // di cobek-pricing.js terpisah kalau butuh hitung rit.
+  const plan = LogisticsEngine.plan({
+    kmProdusen, biayaPerKmProdusen, kmKonsumen, biayaPerKmKonsumen,
+    metode, pcs, vehicleId, modal: product.hargaBeli, marginPct,
+  });
+  const profit = (typeof calculateProfit === 'function')
+    ? calculateProfit({ productId, qty: pcs, deliveryPlan: plan })
+    : null;
+  return {
+    ok: true,
+    productId,
+    productName: product.name,
+    produsenId: produsenId || null,
+    plan,
+    profit,
+    summary: LogisticsService.formatSummary(plan),
+  };
+}
+
+// requestAIRecommendation({productId, qty, produsenId, kmKonsumen,
+// biayaPerKmKonsumen, metode, vehicleId, marginPct}) — bangun rencana lewat
+// calculateSmartDelivery() di atas, lalu rangkai jadi prompt siap-pakai
+// lewat AIService.buildPrompt() (Sesi 2). Kalau D.profile.apiKey sudah
+// diisi, prompt itu langsung dikirim ke AI (pola sama dgn
+// PriceReko.checkMarketAI() di cobek-pricing.js) supaya user dapat
+// rekomendasi bahasa natural; kalau belum, function ini tetap balikin
+// prompt-nya (aiText:null) supaya tetap berguna tanpa memaksa isi API Key
+// dulu. TIDAK PERNAH menulis ke D/AIStore (wiring beneran baru Sesi 6) —
+// murni baca + maksimal 1x panggilan API kalau API Key ada.
+async function requestAIRecommendation({
+  productId, qty, produsenId, kmKonsumen, biayaPerKmKonsumen,
+  metode, vehicleId, marginPct,
+} = {}) {
+  const delivery = calculateSmartDelivery({
+    productId, qty, produsenId, kmKonsumen, biayaPerKmKonsumen, metode, vehicleId, marginPct,
+  });
+  if (!delivery.ok) return delivery;
+  const prompt = (typeof AIService !== 'undefined')
+    ? await AIService.buildPrompt('rekomendasi-pengiriman', {
+      produk: delivery.productName,
+      qty,
+      ringkasan: delivery.summary,
+    })
+    : null;
+  const apiKey = D.profile && D.profile.apiKey;
+  if (!apiKey || typeof callAIProviderRaw !== 'function' || !prompt) {
+    return Object.assign({}, delivery, {
+      prompt, aiText: null, aiOk: false, aiReason: !apiKey ? 'Belum ada API Key' : 'Prompt/AI belum siap',
+    });
+  }
+  try {
+    const r = await callAIProviderRaw(
+      'Kamu asisten logistik & harga utk toko batu cobek. Jawab ringkas & actionable dalam Bahasa Indonesia berdasarkan data yang diberikan.',
+      [{ role: 'user', content: prompt }],
+      { maxTokens: 512 },
+    );
+    if (!r.ok) {
+      return Object.assign({}, delivery, { prompt, aiText: null, aiOk: false, aiReason: r.errMsg || 'Gagal hubungi AI' });
+    }
+    return Object.assign({}, delivery, { prompt, aiText: r.text, aiOk: true, aiReason: null });
+  } catch (e) {
+    return Object.assign({}, delivery, { prompt, aiText: null, aiOk: false, aiReason: String((e && e.message) || e) });
+  }
+}
 

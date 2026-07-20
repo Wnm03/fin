@@ -401,6 +401,14 @@ const DashboardHub = {
     // tidak mengubah baris manapun sebelum ini.
     if (typeof DashboardHubAnalytics !== 'undefined') DashboardHubAnalytics.render();
 
+    // Finance Dashboard & AI Hook Foundation (Sesi 75, Batch 6, lihat
+    // modules/finance/finance-dashboard.js & #findashWrap di
+    // index.html/app_production.html). Tambahan murni, pola sama dgn
+    // DashboardHubAnalytics.render() di atas — tidak mengubah baris
+    // manapun sebelum ini. 100% reuse FinanceIntelligence.summary()
+    // (Sesi 74), UI hanya presenter.
+    if (typeof FinanceDashboard !== 'undefined') FinanceDashboard.render();
+
     // Economic Intelligence Engine (fase 2, lihat
     // Economic-Intelligence-Engine-Technical-Design.md & #eieWrap di
     // index.html/app_production.html). Tambahan murni, pola sama dgn
@@ -438,7 +446,7 @@ const DashboardHub = {
       ringkasan: ['dashHubSummaryGrid', 'dashHubAnalyticsRow'],
       fitur: ['dashHubFavoritSection', 'dashHubMainGridCard'],
       widget: ['dashboardHubPinnedWrap'],
-      insight: ['lifeOSWrap', 'eieWrap'],
+      insight: ['lifeOSWrap', 'eieWrap', 'findashWrap'],
     };
     Object.keys(SECTION_GROUPS).forEach((t) => {
       SECTION_GROUPS[t].forEach((id) => {

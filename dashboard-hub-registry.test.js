@@ -3,10 +3,10 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
-const { loadSource } = require('./helpers/loadSource');
-const { getAllSourceFiles } = require('../scripts/collect-app-globals');
+const { loadSource } = require('../helpers/loadSource');
+const { getAllSourceFiles } = require('../../scripts/collect-app-globals');
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(__dirname, '..', '..');
 const INDEX_HTML = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const APP_PRODUCTION_HTML = fs.readFileSync(path.join(ROOT, 'app_production.html'), 'utf8');
 

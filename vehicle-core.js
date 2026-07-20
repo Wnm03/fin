@@ -377,6 +377,33 @@ if(!recentHarga.length)return null;
 const avgHarga=recentHarga.reduce((s,b)=>s+b.harga,0)/recentHarga.length;
 return{rpPerKm:avgHarga/kmPerLiter,kmPerLiter,avgHarga};
 }
+// ---------------------------------------------------------------------------
+// Smart Delivery Engine, Sesi 5/6: fuelEfficiency() — fungsi prediktif
+// domain VEHICLE (bagian BBM). Lihat RENCANA-SESI-RINGKAS.md untuk peta 6
+// sesi. SENGAJA tidak menduplikasi estimateRpPerKm()/estimateKmPerDay() di
+// atas — cuma MEMBUNGKUS keduanya jadi proyeksi biaya BBM bulanan. Rule-
+// based & gratis (rata-rata historis), PURE/read-only. predictService() &
+// maintenanceForecast() (fungsi prediktif VEHICLE lainnya, bagian servis)
+// ada di modules/vehicle/sparepart-servis.js — file itu di-load SETELAH
+// file ini, lihat urutan di scripts/build.js.
+// ---------------------------------------------------------------------------
+
+// fuelEfficiency(vehicleId) — konsumsi BBM (km/liter, Rp/km) dari
+// estimateRpPerKm(), digabung dgn estimateKmPerDay() buat proyeksi
+// pemakaian & biaya BBM SEBULAN ke depan (asumsi 30 hari, pemakaian flat
+// sesuai rata-rata histori). Balikin {ok:false} kalau data BBM (min. 2 log
+// "Isi Full Tank") atau histori km (min. 2 titik, rentang ≥3 hari) kurang —
+// sama seperti alasan null di estimateRpPerKm()/estimateKmPerDay() sendiri.
+function fuelEfficiency(vehicleId){
+const est=estimateRpPerKm(vehicleId);
+if(!est)return{ok:false,reason:'Data BBM kurang (butuh min. 2 log "Isi Full Tank" dgn km naik)'};
+const kmPerDay=estimateKmPerDay(vehicleId);
+const estMonthlyKm=kmPerDay?kmPerDay*30:null;
+const estMonthlyLiter=estMonthlyKm?estMonthlyKm/est.kmPerLiter:null;
+const estMonthlyCost=estMonthlyLiter?estMonthlyLiter*est.avgHarga:null;
+return{ok:true,vehicleId,kmPerLiter:est.kmPerLiter,rpPerKm:est.rpPerKm,avgHarga:est.avgHarga,kmPerDay,estMonthlyKm,estMonthlyLiter,estMonthlyCost};
+}
+
 /* moved to sparepart-servis.js (2026-07-12, split file besar bagian ke-3): servisLogMatchesCat,
    getEffectiveIntervalKm, hasIntervalOverride, editVehicleIntervalOverride, getLastServiceKm —
    interval servis per-kategori & override per-kendaraan. */

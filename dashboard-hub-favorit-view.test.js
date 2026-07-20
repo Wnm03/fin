@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 // dashboard-hub-favorit-view.js — render + toggle (Tahap 3, Langkah 7-8).
 // Dites dgn document tiruan sendiri (pola sama dgn tests/dashboard-hub.test.js)

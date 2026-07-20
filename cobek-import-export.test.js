@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 // cobek-import-export.test.js — lanjutan cakupan cobek-io.js (5 file hasil split
 // cobek.js) yang BELUM disentuh tests/cobek.test.js: ImportKatalog (impor massal
@@ -12,9 +12,10 @@ const { createFakeDocument } = require('./helpers/fakeDom');
 // pustaka XLSX & file download nyata — di luar cakupan harness vm murni ini,
 // sama alasannya dgn kenapa Order.save/withSaveGuard tidak dites di
 // cobek.test.js, cuma _saveInner-nya), dan ImportShopExcel (kebalikan
-// ShopExport: baca hasil parse baris Excel yg SUDAH di-array-kan — HANYA
-// _parse()/commit()/setTarget()/open(), BUKAN onFileSelected() yang butuh
-// stub File/XLSX.read() nyata).
+// ShopExport: baca hasil parse baris Excel yg SUDAH di-array-kan — _parse()/
+// commit()/setTarget()/open(), DAN onFileSelected() — di-stub pakai fake
+// File{arrayBuffer()} + global XLSX{read,utils.sheet_to_json} yg di-inject
+// lewat opts.XLSX ke loadSource() (lihat makeCtx), bukan pustaka XLSX asli).
 //
 // `ImportKatalog`/`ShopExport`/`ImportShopExcel` dideklarasikan `const` di
 // top-level cobek-io.js (bukan `function`), jadi HARUS di-expose eksplisit
@@ -67,6 +68,7 @@ function makeCtx(D, opts = {}) {
     withSaveGuard: (key, modalId, fn) => fn(),
     withSaveGuardAsync: async (key, modalId, fn) => await fn(),
     ensureXLSX: opts.ensureXLSX || (async () => {}),
+    ...(opts.XLSX !== undefined ? { XLSX: opts.XLSX } : {}),
   }, [
     'Etalase', 'PriceReko', 'OngkirCalc', 'PriceRekoWidget', 'StockRekoWidget', 'Produsen',
     'SiapPulang', 'Order', 'Laporan', 'Pelanggan',
@@ -412,4 +414,128 @@ test('ImportShopExcel.open — default target "etalase", reset parsedRows, koson
   assert.equal(ctx.ImportShopExcel.parsedRows.length, 0);
   assert.equal(fakeDocument.getElementById('importShopExcelFile').value, '');
   assert.ok(calls.openModal.includes('importShopExcelModal'));
+});
+
+// ================= ImportShopExcel.onFileSelected (fake File + global XLSX) =================
+
+function fakeFile(rows) {
+  return { files: undefined, arrayBuffer: async () => ({ __rows: rows }) };
+}
+function fakeXLSX(rows, opts = {}) {
+  return {
+    read: (buf) => {
+      if (opts.readThrows) throw new Error(opts.readThrows);
+      return { SheetNames: ['Sheet1'], Sheets: { Sheet1: { __rows: buf.__rows } } };
+    },
+    utils: { sheet_to_json: (ws) => ws.__rows },
+  };
+}
+
+test('ImportShopExcel.onFileSelected — tidak ada file dipilih => kosongkan preview & disable commit, tidak error', async () => {
+  const D = baseD();
+  const { ctx, fakeDocument } = makeCtx(D, {
+    domValues: { importShopExcelPreview: { innerHTML: 'sisa' }, importShopExcelCommitBtn: { disabled: false } },
+  });
+  await ctx.ImportShopExcel.onFileSelected({ target: { files: [] } });
+  assert.equal(fakeDocument.getElementById('importShopExcelPreview').innerHTML, '');
+  assert.equal(fakeDocument.getElementById('importShopExcelCommitBtn').disabled, true);
+});
+
+test('ImportShopExcel.onFileSelected — XLSX belum termuat & ensureXLSX gagal => toast error, preview dikosongkan', async () => {
+  const D = baseD();
+  const { ctx, fakeDocument, calls } = makeCtx(D, {
+    ensureXLSX: async () => { throw new Error('network'); },
+    domValues: { importShopExcelPreview: { innerHTML: '' } },
+  });
+  const file = { arrayBuffer: async () => ({ __rows: [] }) };
+  await ctx.ImportShopExcel.onFileSelected({ target: { files: [file] } });
+  assert.ok(calls.toast.some((t) => t.includes('Gagal memuat pustaka Excel')));
+  assert.equal(fakeDocument.getElementById('importShopExcelPreview').innerHTML, '');
+});
+
+test('ImportShopExcel.onFileSelected — XLSX belum termuat tapi ensureXLSX sukses (tidak throw) => lanjut baca file (bukan berhenti di toast gagal muat)', async () => {
+  const D = baseD();
+  const rows = [{ 'Nama Produk': 'Batu A', Kategori: '', Produsen: '', Stok: 5, 'Harga Beli': 1000, 'Harga Jual': 2000, 'Harga Reseller': '', 'Diskon %': 0 }];
+  let ensureCalled = 0;
+  const { ctx, calls } = makeCtx(D, {
+    ensureXLSX: async () => { ensureCalled++; }, // sukses, tidak throw (spt saat ensureXLSX() di app nyata berhasil inject <script> XLSX)
+    domValues: { importShopExcelPreview: { innerHTML: '' } },
+  });
+  const file = fakeFile(rows);
+  await ctx.ImportShopExcel.onFileSelected({ target: { files: [file] } });
+  assert.equal(ensureCalled, 1);
+  // Catatan: di harness vm ini, efek samping ensureXLSX() (mis. window.XLSX = ...) tidak bisa
+  // menembus balik ke variabel global sandbox lewat closure biasa (lihat catatan header file) —
+  // jadi setelah ensureXLSX() sukses, `typeof XLSX` di source ASLI tetap 'undefined' di sini, dan
+  // alurnya lanjut ke toast "Pustaka Excel tidak tersedia" (BUKAN "Gagal memuat pustaka Excel" yg
+  // muncul kalau ensureXLSX() sendiri yang gagal/throw — itu dites terpisah di atas). Yang penting
+  // dites di sini: ensureXLSX() dipanggil & TIDAK melempar exception ke atas (jalur try/catch-nya
+  // aman), bukan hasil parse-nya (itu dites lewat opts.XLSX langsung di test lain).
+  assert.ok(calls.toast.some((t) => t.includes('Pustaka Excel tidak tersedia')));
+});
+
+test('ImportShopExcel.onFileSelected — XLSX sudah tersedia: baca file, parse baris, render preview & aktifkan commit', async () => {
+  const D = baseD({ products: [{ id: 'p1', name: 'Batu A', stock: 1, hargaBeli: 500, hargaJual: 1000 }] });
+  const rows = [
+    { 'Nama Produk': 'Batu A', Kategori: '', Produsen: '', Stok: 5, 'Harga Beli': 1000, 'Harga Jual': 2000, 'Harga Reseller': '', 'Diskon %': 0 },
+    { 'Nama Produk': 'Batu B', Kategori: '', Produsen: '', Stok: 3, 'Harga Beli': 1500, 'Harga Jual': 2500, 'Harga Reseller': '', 'Diskon %': 0 },
+  ];
+  const { ctx, fakeDocument } = makeCtx(D, {
+    XLSX: fakeXLSX(rows),
+    domValues: { importShopExcelPreview: { innerHTML: '' }, importShopExcelCommitBtn: { disabled: true } },
+  });
+  ctx.ImportShopExcel.target = 'etalase';
+  const file = fakeFile(rows);
+  await ctx.ImportShopExcel.onFileSelected({ target: { files: [file] } });
+  assert.equal(ctx.ImportShopExcel.parsedRows.length, 2);
+  assert.equal(ctx.ImportShopExcel.parsedRows[0].name, 'Batu A');
+  const html = fakeDocument.getElementById('importShopExcelPreview').innerHTML;
+  assert.ok(html.includes('2 baris kebaca'));
+  assert.ok(html.includes('Batu A'));
+  assert.ok(html.includes('🔄 update')); // Batu A sudah ada di D.products
+  assert.ok(html.includes('🆕 baru')); // Batu B belum ada
+  assert.equal(fakeDocument.getElementById('importShopExcelCommitBtn').disabled, false);
+});
+
+test('ImportShopExcel.onFileSelected — target produsen: parse & preview pakai kolom kontak', async () => {
+  const D = baseD();
+  const rows = [{ 'Nama Produsen': 'Supplier C', Kontak: '0812', Catatan: '', 'Jarak (km)': '', 'Biaya/km': '' }];
+  const { ctx, fakeDocument } = makeCtx(D, {
+    XLSX: fakeXLSX(rows),
+    domValues: { importShopExcelPreview: { innerHTML: '' } },
+  });
+  ctx.ImportShopExcel.target = 'produsen';
+  const file = fakeFile(rows);
+  await ctx.ImportShopExcel.onFileSelected({ target: { files: [file] } });
+  assert.equal(ctx.ImportShopExcel.parsedRows.length, 1);
+  assert.equal(ctx.ImportShopExcel.parsedRows[0].name, 'Supplier C');
+  assert.ok(fakeDocument.getElementById('importShopExcelPreview').innerHTML.includes('0812'));
+});
+
+test('ImportShopExcel.onFileSelected — file tidak valid (XLSX.read gagal parse) => toast pesan error, preview kosong, commit disabled', async () => {
+  const D = baseD();
+  const { ctx, fakeDocument, calls } = makeCtx(D, {
+    XLSX: fakeXLSX([], { readThrows: 'file rusak' }),
+    domValues: { importShopExcelPreview: { innerHTML: '' }, importShopExcelCommitBtn: { disabled: false } },
+  });
+  const file = fakeFile([]);
+  await ctx.ImportShopExcel.onFileSelected({ target: { files: [file] } });
+  assert.ok(calls.toast.some((t) => t.includes('Gagal membaca file Excel') && t.includes('file rusak')));
+  assert.equal(fakeDocument.getElementById('importShopExcelPreview').innerHTML, '');
+  assert.equal(fakeDocument.getElementById('importShopExcelCommitBtn').disabled, true);
+});
+
+test('ImportShopExcel.onFileSelected — tidak ada baris valid terbaca => pesan kosong di preview, commit tetap disabled', async () => {
+  const D = baseD();
+  const rows = [{ 'Nama Produk': '', Stok: 5 }]; // tanpa nama -> dibuang oleh _parse
+  const { ctx, fakeDocument } = makeCtx(D, {
+    XLSX: fakeXLSX(rows),
+    domValues: { importShopExcelPreview: { innerHTML: '' }, importShopExcelCommitBtn: { disabled: false } },
+  });
+  ctx.ImportShopExcel.target = 'etalase';
+  const file = fakeFile(rows);
+  await ctx.ImportShopExcel.onFileSelected({ target: { files: [file] } });
+  assert.equal(ctx.ImportShopExcel.parsedRows.length, 0);
+  assert.ok(fakeDocument.getElementById('importShopExcelPreview').innerHTML.includes('Tidak ada baris valid terbaca'));
+  assert.equal(fakeDocument.getElementById('importShopExcelCommitBtn').disabled, true);
 });

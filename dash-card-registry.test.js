@@ -11,7 +11,7 @@ const path = require('node:path');
 // berisi key yang PERSIS sama (registry generalisasi di renderDashboard()
 // bergantung padanya — lihat catatan di dekat DASH_RENDER_ORDER di source).
 const SRC = fs.readFileSync(
-  path.join(__dirname, '..', 'modules/shared/modules-render.js'),
+  path.join(__dirname, '..', '..', 'modules/shared/modules-render.js'),
   'utf8'
 );
 

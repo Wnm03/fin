@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 // parsePzNum "asli" (angka murni dari string ber-format ribuan/tanda minus),
 // dipakai berulang sbg stub di beberapa setup* di bawah supaya konsisten dgn

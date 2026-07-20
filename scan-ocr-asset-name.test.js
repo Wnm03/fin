@@ -15,7 +15,7 @@
  */
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 const ctx = loadSource(['modules/shared/scan-ocr.js']);
 

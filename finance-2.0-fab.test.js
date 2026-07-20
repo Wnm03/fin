@@ -14,7 +14,7 @@ const path = require('node:path');
 // Pola cek "index.html vs app_production.html harus identik" mengikuti
 // tests/modal-html-parity.test.js yang sudah ada.
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(__dirname, '..', '..');
 const HTML_FILES = ['index.html', 'app_production.html'];
 
 function readHtml(file) {

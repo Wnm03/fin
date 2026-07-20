@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 // Cakupan file ini SENGAJA dibatasi ke bagian yang "ringan": logic murni
 // (computeStreak, SelfCareReko.compute) + gratitude/checklist CRUD yang cuma

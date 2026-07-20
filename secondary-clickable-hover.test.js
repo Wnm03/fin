@@ -10,7 +10,7 @@ const path = require('node:path');
 // tidak menambah media query baru.
 
 function readCss() {
-  return fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
+  return fs.readFileSync(path.join(__dirname, '..', '..', 'styles.css'), 'utf8');
 }
 
 test('styles.css: hover elevation ditambah utk tap-target sekunder di dalam @media (hover:hover) existing', () => {

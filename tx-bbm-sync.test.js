@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 // _saveTxInner (transaksi.js) adalah fungsi utama form Tambah/Edit Transaksi
 // Keuangan -- BELUM ada test otomatis sama sekali sebelumnya (lihat catatan

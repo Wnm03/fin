@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { extractFunction } = require('./helpers/loadSource');
+const { extractFunction } = require('../helpers/loadSource');
 
 // Diambil langsung dari source file asli (bukan disalin manual) via
 // extractFunction, karena pajak-aset-ui-wrappers.js sendiri

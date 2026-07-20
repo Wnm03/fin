@@ -12,7 +12,7 @@ const path = require('node:path');
 // pada properti lain), pola sama dengan tests/finance-2.0-fab.test.js.
 // Rumus kontras: WCAG relative luminance + contrast ratio standar.
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(__dirname, '..', '..');
 
 function readCss() {
   return fs.readFileSync(path.join(ROOT, 'styles.css'), 'utf8');

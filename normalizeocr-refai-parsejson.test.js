@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource, extractFunction } = require('./helpers/loadSource');
+const { loadSource, extractFunction } = require('../helpers/loadSource');
 
 // normalizeOcrNumber() sebelum ini cuma pernah "dites" via reimplementasi
 // sederhana yg di-stub manual di tests/scan-ocr-paylater.test.js &

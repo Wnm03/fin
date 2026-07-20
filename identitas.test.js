@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadSource } = require('./helpers/loadSource');
+const { loadSource } = require('../helpers/loadSource');
 
 // File ini besar & bergantung ke banyak hal (D, IndexedDB, dst) untuk fungsi
 // lain, tapi sameId()/uid() sendiri murni. File cuma di-load (bukan

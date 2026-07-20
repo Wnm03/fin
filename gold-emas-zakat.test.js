@@ -3,8 +3,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
 
 // Cakupan file ini:
 // 1. GoldImport/GoldZakat (aset-emas-impor.js) harus ke-expose ke `window` lewat
@@ -24,7 +24,7 @@ const { createFakeDocument } = require('./helpers/fakeDom');
 const SELFTEST_FILE = 'app-bootstrap.js';
 
 test('Object.assign(window,{...}) di features-sheets-pwa-selftest.js harus menyertakan GoldImport & GoldZakat', () => {
-  const src = fs.readFileSync(path.join(__dirname, '..', SELFTEST_FILE), 'utf8');
+  const src = fs.readFileSync(path.join(__dirname, '..', '..', SELFTEST_FILE), 'utf8');
   const m = src.match(/Object\.assign\(window,\{([\s\S]*?)\}\);/);
   assert.ok(m, 'Blok Object.assign(window,{...}) harus ditemukan di ' + SELFTEST_FILE);
   const names = m[1].split(',').map((s) => s.trim()).filter(Boolean);
@@ -33,7 +33,7 @@ test('Object.assign(window,{...}) di features-sheets-pwa-selftest.js harus menye
 });
 
 test('Setiap modul (const Nama={...}) yang dipakai lewat data-action="Nama.method" harus ke-expose ke window', () => {
-  const root = path.join(__dirname, '..');
+  const root = path.join(__dirname, '..', '..');
   const srcFiles = fs.readdirSync(root).filter((f) => f.endsWith('.js') && !f.includes('app-bundle'));
   const htmlFiles = ['index.html'];
   const usedModules = new Set();

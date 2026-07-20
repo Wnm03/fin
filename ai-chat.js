@@ -439,7 +439,7 @@ function aiErrorHint(provider,status){
 if(provider==='gemini')return(status===400||status===403)?' (cek API key di Pengaturan)':'';
 return status===401?' (API key salah/expired, cek di Pengaturan)':'';
 }
-// Advisor — pengatur tab utk card gabungan "🧭 Penasihat" (v124, kw99-sesi25-fix-gdrive-backup-await-5):
+// Advisor — pengatur tab utk card gabungan "🧭 Penasihat" (v124, kw75-batch6-finance-dashboard-ai-hook-1):
 // dulu FinCoach ("🩺 Insight Cepat", rule-based-gratis-instan) & AIWidget ("🔍 Laporan AI",
 // panggil Claude/Gemini, wajib API key) tampil sbg 2 card TERPISAH di Dashboard — sekarang
 // digabung jadi SATU card dgn 2 tab, supaya tidak terasa ada "2 penasihat AI" yang mirip2.
@@ -462,6 +462,375 @@ bC.classList.toggle('active',tab==='coach');
 bR.classList.toggle('active',tab==='report');
 pC.classList.toggle('u-dnone',tab!=='coach');pC.style.display=tab==='coach'?'block':'none';
 pR.classList.toggle('u-dnone',tab!=='report');pR.style.display=tab==='report'?'block':'none';
+}
+};
+// AIRecommendCard — Sesi 14 (TODO.md #1, wiring recordOutcome() dari 1 titik UI nyata): kartu
+// kecil di dalam "🧭 Penasihat" > tab "🩺 Insight Cepat" (di bawah FinCoach), khusus buat
+// rekomendasi dari AIDecision (mesin Rule/Cross-Module Tahap 4, TERPISAH dari FinCoach yg
+// rule-based lama/tidak pakai AIDecision sama sekali). Tombol Terima/Tolak/Abaikan manggil
+// AIDecision.learn.recordOutcome(ruleId,'accepted'|'rejected'|'ignored') SUNGGUHAN — sebelum
+// sesi ini, recordOutcome() cuma pernah dipanggil dari test, TIDAK PERNAH dari UI nyata manapun.
+// Pola dismiss (LS_KEY per id, bukan per ruleId — 1 rule bisa trigger ulang lain waktu dgn
+// decision id baru) SENGAJA disalin dari FinCoach.dismiss()/dismissedIds() yang sudah ada,
+// BUKAN mekanisme baru.
+//
+// Sesi 32 (Tahap 6 — AI Learning, TARGET sesi ini): tambah tombol ketiga "✗ Tolak" (outcome
+// 'rejected'). SEBELUM sesi ini cuma 'accepted'/'ignored' yang bisa dipicu dari UI nyata —
+// padahal AIDecision.learn.getConfidence() (Sesi 19, dipakai buat urutan tampil) rumusnya
+// accepted/(accepted+rejected) dan SENGAJA MENGABAIKAN 'ignored' (lihat komentar getConfidence
+// di ai-decision-engine.js: "belum tentu penolakan"). Akibatnya sebelum sesi ini, confidence
+// adaptif TIDAK PERNAH bisa turun dari histori pemakaian nyata (rejected selalu 0) — rule yang
+// rekomendasinya berulang kali di-"Abaikan" user tetap dianggap confidence netral/tinggi,
+// AI Learning secara efektif belum benar-benar "belajar". Tombol "Tolak" mengisi celah itu
+// TANPA UI baru (masih dalam kartu yang sama) & TANPA logic baru (outcome 'rejected' sudah ada
+// di AI_VALID_OUTCOMES sejak Sesi 2, reuse act() yang sudah generic menerima outcome apa pun).
+// "Abaikan" TETAP ada & TETAP tidak mempengaruhi confidence (dismiss netral, pola lama tidak
+// berubah) — beda semantik dgn "Tolak" yang eksplisit menyatakan rekomendasi ini tidak relevan/
+// tidak dipercaya.
+const AIRecommendCard={
+DISMISS_LS_KEY:'kw_ai_recommend_dismissed',
+dismissedIds(){
+try{return JSON.parse(localStorage.getItem(AIRecommendCard.DISMISS_LS_KEY)||'[]');}catch(e){return[];}
+},
+markDismissed(id){
+const cur=AIRecommendCard.dismissedIds();
+if(!cur.includes(id))cur.push(id);
+try{localStorage.setItem(AIRecommendCard.DISMISS_LS_KEY,JSON.stringify(cur.slice(-40)));}catch(e){}
+},
+// act(id, ruleId, outcome) — dipanggil tombol Terima/Abaikan. recordOutcome() SELALU dipanggil
+// dulu (persist ke AIStore.learningData) baru SETELAH itu disembunyikan dari kartu (dismiss),
+// supaya kalau recordOutcome() gagal (mis. ruleId kosong/tidak valid), kartu TETAP tampil —
+// tidak diam-diam kehilangan rekomendasi tanpa ke-catat.
+async act(id,ruleId,outcome){
+try{
+if(typeof AIDecision!=='undefined')await AIDecision.learn.recordOutcome(ruleId,outcome);
+}catch(e){console.warn('AIRecommendCard: gagal recordOutcome',e);}
+AIRecommendCard.markDismissed(id);
+toast(outcome==='accepted'?'✅ Oke, dicatat sebagai rekomendasi yang membantu.':outcome==='rejected'?'👎 Oke, dicatat — rule ini akan lebih jarang tampil ke depannya.':'👍 Oke, tidak akan diprioritaskan lagi.');
+AIRecommendCard.render();
+},
+// render() — async (beda dari FinCoach.renderDash() yg sync) krn AIDecision.decide() sendiri
+// async (baca/tulis IndexedDB via AIStore, pola sama dgn AIWidget.generate()). Dipanggil TANPA
+// await dari renderDashboard() (fire-and-forget, DOM diisi begitu Promise selesai) — pola yang
+// SAMA PERSIS dgn cara AIWidget/EIEDashboard dipanggil di file ini & modules-render.js.
+async render(){
+const body=document.getElementById('aiRecommendBody');
+if(!body)return;
+if(typeof AIDecision==='undefined')return; // ai-decision-engine.js belum di-load, diam saja
+let recommendations=[];
+try{
+const result=await AIDecision.decide({});
+recommendations=(result&&Array.isArray(result.recommendations))?result.recommendations:[];
+}catch(e){console.warn('AIRecommendCard: gagal ambil rekomendasi',e);return;}
+const dismissed=AIRecommendCard.dismissedIds();
+recommendations=recommendations.filter(r=>r&&r.id&&!dismissed.includes(r.id));
+if(!recommendations.length){body.innerHTML='';return;}
+// Sesi 19 (TODO.md Tahap 6, getConfidence() dipakai buat urutan tampil): sebelum sesi ini
+// getConfidence() cuma dicatat (dipanggil dari test), TIDAK dipakai buat apa pun di UI —
+// urutan tampil murni urutan trigger rule dari decide(). Sekarang, sebelum dipotong ke 2
+// teratas, rekomendasi diurutkan descending berdasar skor gabungan: confidence dari weight
+// rule (r.confidence, sudah ada di formatRecommendation) DIKALI confidence adaptif dari
+// histori Terima/Abaikan user (AIDecision.learn.getConfidence(ruleId), rasio accepted/
+// (accepted+rejected), default 0.5 netral kalau belum ada histori). Guard: kalau
+// AIDecision.learn/getConfidence tidak ada (mock lama/versi AIDecision lain), skip sorting —
+// urutan asli dari decide() dipakai apa adanya, TIDAK error.
+if(recommendations.length>1&&typeof AIDecision.learn!=='undefined'&&typeof AIDecision.learn.getConfidence==='function'){
+try{
+const scored=await Promise.all(recommendations.map(async r=>({
+rec:r,
+score:(typeof r.confidence==='number'?r.confidence:0.5)*(r.ruleId?await AIDecision.learn.getConfidence(r.ruleId):0.5),
+})));
+scored.sort((a,b)=>b.score-a.score);
+recommendations=scored.map(s=>s.rec);
+}catch(e){console.warn('AIRecommendCard: gagal urutkan berdasar confidence',e);}
+}
+const top=recommendations.slice(0,2);
+// Sesi 42 (Tahap 6 AI Learning lanjutan, TARGET sesi ini — keputusan final
+// docs/PRODUCT_DECISIONS.md § "Tahap 6 AI Learning lanjutan"): baris statistik
+// histori Terima/Tolak/Abaikan per rule, baris kecil TAMBAHAN di kartu yang
+// SUDAH ADA ini — BUKAN halaman/route/chart/modal baru. Reuse PENUH
+// AIDecision.learn.getStats(ruleId) (sudah ada sejak Sesi 14, balikin
+// {accepted,rejected,ignored}) — TIDAK ada storage/helper baru. Guard: kalau
+// getStats tidak tersedia (versi AIDecision lama/mock) ATAU rule belum
+// pernah punya histori sama sekali (accepted+rejected+ignored===0), baris
+// statistik TIDAK ditampilkan (bukan 0/0/0 kosong) — sama pola "TIDAK
+// menebak/menampilkan data yang belum ada" dgn deliverySummary/dst.
+const statsByRuleId={};
+if(typeof AIDecision.learn!=='undefined'&&typeof AIDecision.learn.getStats==='function'){
+try{
+await Promise.all(top.filter(r=>r&&r.ruleId).map(async r=>{
+const s=await AIDecision.learn.getStats(r.ruleId);
+if(s&&((s.accepted||0)+(s.rejected||0)+(s.ignored||0))>0)statsByRuleId[r.ruleId]=s;
+}));
+}catch(e){console.warn('AIRecommendCard: gagal ambil statistik histori',e);}
+}
+body.innerHTML=`<div class="u-fs11 u-fw700 u-t2 u-mb6 u-mt10">🤖 Rekomendasi AI</div>`
++top.map(r=>{
+const s=statsByRuleId[r.ruleId];
+return `
+      <div class="u-mb8" style="border-left:3px solid var(--accent);padding-left:8px">
+        <div class="u-fs12 u-lh15 u-mb6">${escapeHtml(r.title||'')} — ${escapeHtml(r.reason||'')}</div>
+        ${s?`<div class="u-fs10 u-t2 u-mb6">📊 ✓ Terima ${s.accepted||0} · ✗ Tolak ${s.rejected||0} · Abaikan ${s.ignored||0}</div>`:''}
+        <div class="u-flex u-gap8">
+          <button class="btn btn-primary btn-sm u-flex1" data-action="AIRecommendCard.act" data-args="${escapeHtml(JSON.stringify([r.id,r.ruleId,'accepted']))}">✓ Terima</button>
+          <button class="btn btn-ghost btn-sm u-flex1" data-action="AIRecommendCard.act" data-args="${escapeHtml(JSON.stringify([r.id,r.ruleId,'rejected']))}">✗ Tolak</button>
+          <button class="btn btn-ghost btn-sm u-flex1" data-action="AIRecommendCard.act" data-args="${escapeHtml(JSON.stringify([r.id,r.ruleId,'ignored']))}">Abaikan</button>
+        </div>
+      </div>`;}).join('');
+}
+};
+// AIDailyBriefingCard — Dashboard/nav wiring dailyBriefing() (TODO.md #2, lanjutan Sesi 15).
+// Kartu kecil di dalam "🧭 Penasihat" > tab "🩺 Insight Cepat", DI BAWAH AIRecommendCard —
+// reuse pola card yang sudah ada di file ini (container khusus, guard typeof, fire-and-forget
+// dari renderDashboard(), sembunyikan diri kalau tidak ada apa pun buat ditampilkan), BUKAN
+// mekanisme baru. Sumber data: AIService.dailyBriefing() (sudah ada sejak Sesi 2, "senyap" karena
+// belum pernah dipanggil dari UI mana pun sampai sesi ini) — murni MEMBACA (dailyBriefing() sendiri
+// tidak memicu evaluasi rule baru/tidak menulis apa pun), jadi aman dipanggil tiap render Beranda.
+// Beda dari AIRecommendCard (rekomendasi individual + tombol Terima/Abaikan): kartu ini ringkasan
+// (jumlah keputusan AI terbaru + ringkasan pengiriman kalau ada order Cobek pending) — TIDAK ada
+// interaksi/tombol, murni display, jadi TIDAK butuh localStorage dismiss.
+const AIDailyBriefingCard={
+async render(){
+const body=document.getElementById('aiBriefingBody');
+if(!body)return;
+if(typeof AIService==='undefined'){body.innerHTML='';return;} // ai-service.js belum di-load, diam saja
+let briefing=null;
+try{
+briefing=await AIService.dailyBriefing({limit:5});
+}catch(e){console.warn('AIDailyBriefingCard: gagal ambil dailyBriefing',e);return;}
+if(!briefing){body.innerHTML='';return;}
+const decisionCount=(briefing.recentDecisions||[]).length;
+const ds=briefing.deliverySummary;
+// Tidak ada apa pun buat ditampilkan (0 keputusan terbaru & tidak ada ringkasan pengiriman) ->
+// kosongkan body (pola sama dgn AIRecommendCard.render() saat recommendations kosong), supaya
+// tidak nambah ruang kosong di Beranda kalau AI belum "punya cerita" apa-apa.
+if(!decisionCount&&!ds){body.innerHTML='';return;}
+let html=`<div class="u-fs11 u-fw700 u-t2 u-mb6 u-mt10">📋 Ringkasan Harian AI</div>`;
+html+=`<div class="u-fs12 u-lh15 u-mb6 u-t2">${decisionCount} keputusan AI terbaru tercatat.</div>`;
+if(ds){
+const totalPenjualan=(ds.profit&&typeof ds.profit.totalPenjualan==='number')?ds.profit.totalPenjualan:0;
+html+=`<div class="u-fs12 u-lh15 u-mb6" style="border-left:3px solid var(--accent);padding-left:8px">📦 Order Cobek #${escapeHtml(String(ds.sourceOrderId))} belum dikirim — estimasi penjualan ${escapeHtml(fmt(totalPenjualan))}.</div>`;
+}
+body.innerHTML=html;
+}
+};
+// AIStatusCard — Service Layer wiring healthCheck() (Sesi 28 lanjutan, TODO.md #6b/Tahap 2 sisa
+// sub-item). Kartu status kecil di dalam "🧭 Penasihat" > tab "🩺 Insight Cepat", DI BAWAH
+// AIDailyBriefingCard — reuse pola card yang sudah ada di file ini (container khusus, guard
+// typeof, fire-and-forget dari renderDashboard()), BUKAN mekanisme baru. Sumber data:
+// AIService.healthCheck() (sudah ada sejak Sesi 8, "senyap" karena belum pernah dipanggil dari UI
+// mana pun sampai sesi ini, persis pola AIDailyBriefingCard dgn dailyBriefing()) — murni MEMBACA,
+// TIDAK menulis apa pun, aman dipanggil tiap render Beranda. Silent kalau semua sehat & tidak ada
+// temuan informasional (duplikat/dead rule/broken ref/orphaned storage) — supaya tidak nambah
+// ruang kosong tiap buka Beranda kalau AI memang tidak "punya cerita" apa-apa, sama seperti
+// AIDailyBriefingCard saat kosong.
+const AIStatusCard={
+async render(){
+const body=document.getElementById('aiStatusBody');
+if(!body)return;
+if(typeof AIService==='undefined'||typeof AIService.healthCheck!=='function'){body.innerHTML='';return;}
+let health=null;
+try{
+health=await AIService.healthCheck();
+}catch(e){console.warn('AIStatusCard: gagal ambil healthCheck',e);return;}
+if(!health){body.innerHTML='';return;}
+const c=health.checks||{};
+const issues=[];
+if(health.ok===false)issues.push('⚠️ Ada bagian AI yang belum siap (cek console utk detail).');
+if((c.duplicateRuleIds||[]).length)issues.push(`${c.duplicateRuleIds.length} rule terdaftar dobel.`);
+if((c.duplicateRecommendations||[]).length)issues.push(`${c.duplicateRecommendations.length} rekomendasi terdaftar dobel.`);
+if((c.brokenRecommendationRefs||[]).length)issues.push(`${c.brokenRecommendationRefs.length} referensi rekomendasi rusak.`);
+const orphaned=c.orphanedStorageKeys||{};
+const orphanedCount=(orphaned.orphanedCooldownRuleIds||[]).length+(orphaned.orphanedLearningDataRuleIds||[]).length;
+if(orphanedCount)issues.push(`${orphanedCount} data tersimpan milik rule yang sudah dihapus.`);
+if(!issues.length){body.innerHTML='';return;}
+body.innerHTML=`<div class="u-fs11 u-fw700 u-t2 u-mb6 u-mt10">🩺 Status AI</div>`
++`<div class="u-fs12 u-lh15 u-t2" style="border-left:3px solid var(--accent4);padding-left:8px">${issues.map(i=>escapeHtml(i)).join('<br>')}</div>`;
+}
+};
+// AISimulateWidget — Service Layer wiring simulate() (Sesi 28 lanjutan, TODO.md #6b/Tahap 2 sisa
+// sub-item). Tombol "🧪 Simulasi Cepat (What-If)" di dalam "🧭 Penasihat" > tab "🔍 Laporan AI",
+// DI BAWAH tombol Buat/Perbarui Analisis & Konsultasi AI — reuse panel & tombol yang sudah ada,
+// BUKAN halaman baru. Sumber: AIService.simulate() (sudah ada sejak Sesi 15, "senyap" karena belum
+// pernah dipanggil dari UI mana pun sampai sesi ini) — dipanggil TANPA ctx tambahan (What-If atas
+// kondisi data SEKARANG, bukan skenario manual — input skenario manual belum ada UI-nya, di luar
+// scope sub-item ini), murni MEMBACA & TIDAK menulis apa pun ke store (simulated:true, lihat
+// ai-decision-engine.js decide()). Hasil ditulis ke #aiSimulateBody, TIDAK dipersist (beda dari
+// AIWidget.generate() yang nyimpan D.aiWidgetReport), supaya jelas ini cuma simulasi sekali-tap.
+const AISimulateWidget={
+running:false,
+async run(){
+if(AISimulateWidget.running)return;
+const btn=document.getElementById('aiSimulateBtn');
+const body=document.getElementById('aiSimulateBody');
+if(typeof AIService==='undefined'||typeof AIService.simulate!=='function'){
+if(typeof toast==='function')toast('⚠️ Fitur simulasi AI belum tersedia');
+return;
+}
+AISimulateWidget.running=true;
+if(btn){btn.disabled=true;btn.textContent='⏳ Mensimulasikan...';}
+try{
+const result=await AIService.simulate({});
+const recs=(result&&result.recommendations)||[];
+if(body){
+if(!recs.length){
+body.innerHTML=`<div class="u-fs12 u-t2 u-mt8">Simulasi selesai — tidak ada rule yang terpicu dari kondisi data sekarang.</div>`;
+} else {
+body.innerHTML=`<div class="u-fs11 u-fw700 u-t2 u-mb6 u-mt8">🧪 Hasil Simulasi (${recs.length} rule terpicu, tidak disimpan)</div>`
++recs.map(r=>`<div class="u-mb6 u-fs12 u-lh15" style="border-left:3px solid var(--accent4);padding-left:8px">${escapeHtml(r.title||r.label||'')}${r.reason?' — '+escapeHtml(r.reason):''}</div>`).join('');
+}
+}
+}catch(e){
+console.warn('AISimulateWidget: gagal jalankan simulate()',e);
+if(typeof toast==='function')toast('⚠️ Gagal jalankan simulasi: '+((e&&e.message)||'error tidak diketahui'));
+}
+AISimulateWidget.running=false;
+if(btn){btn.disabled=false;btn.textContent='🧪 Simulasi Cepat (What-If)';}
+}
+};
+// AIScenarioWidget — UI wiring AIService.simulateScenarios() (Sesi 48, kandidat Batch 2 #1
+// "UI wiring simulateScenarios()", `docs/BATCH_PLAN.md`/`docs/NEXT_SESSION.md`). Tombol "📊
+// Bandingkan Skenario Pengiriman" DI BAWAH tombol AISimulateWidget, tab yang SAMA "🔍 Laporan
+// AI" — reuse panel yang sudah ada, BUKAN halaman/route baru. Pola widget (running guard,
+// btn/body pair, disable-saat-jalan, try/catch+toast) DISALIN PERSIS dari AISimulateWidget di
+// atas, BUKAN mekanisme baru.
+//
+// Sumber skenario (KENAPA bukan preset bisnis yang ditebak — lihat catatan `simulateScenarios()`
+// di modules/ai/ai-service.js soal "TIDAK butuh keputusan produk baru soal skenario apa yang
+// benar"): widget ini TIDAK menebak angka BBM/margin/ongkir apa pun. Setiap order Cobek yang
+// BELUM diserahkan (`c.items && c.delivered===false`, filter SAMA PERSIS dgn yang sudah dipakai
+// `_aiLastPendingCobekOrder()` di ai-service.js & `cobek-order.js` #106 — bukan rumus baru,
+// filter yang sama direplikasi APA ADANYA persis pola yang sudah dipraktikkan di 2 tempat itu)
+// jadi SATU skenario berlabel "Order Cobek #<id>", ctx `{delivery:{totalPenjualan,diskon}}` —
+// field yang SAMA PERSIS dgn yang sudah dipakai `simulate()` untuk baseline order terakhir,
+// cuma sekarang SEMUA order pending dijalankan sekaligus lewat `simulateScenarios()` (bukan cuma
+// yang terakhir) supaya user bisa membandingkan lebih dari 1 order nyata dalam 1 tampilan. Kalau
+// tidak ada order Cobek pending SAMA SEKALI, body menampilkan pesan kosong (TIDAK menebak data,
+// pola sama dgn `deliverySimulation`/`profitSimulation` balik null saat tidak ada baseline).
+const AIScenarioWidget={
+running:false,
+// buildScenariosFromPendingCobek() — pure (tidak menyentuh DOM), gampang dites sendiri.
+// Guard `typeof D==='undefined'` sama persis dgn `_aiLastPendingCobekOrder()`.
+buildScenariosFromPendingCobek(){
+if(typeof D==='undefined'||!D||!Array.isArray(D.cobek))return[];
+return D.cobek
+.filter(c=>c.items&&c.delivered===false)
+.sort((a,b)=>(b.id||0)-(a.id||0))
+.map(c=>({name:`Order Cobek #${c.id}`,ctx:{delivery:{totalPenjualan:c.total,diskon:c.diskon}}}));
+},
+async run(){
+if(AIScenarioWidget.running)return;
+const btn=document.getElementById('aiScenarioBtn');
+const body=document.getElementById('aiScenarioBody');
+if(typeof AIService==='undefined'||typeof AIService.simulateScenarios!=='function'){
+if(typeof toast==='function')toast('⚠️ Fitur perbandingan skenario AI belum tersedia');
+return;
+}
+const scenarios=AIScenarioWidget.buildScenariosFromPendingCobek();
+if(!scenarios.length){
+if(body)body.innerHTML='<div class="u-fs12 u-t2 u-mt8">Tidak ada order Cobek pending untuk dibandingkan sebagai skenario.</div>';
+return;
+}
+AIScenarioWidget.running=true;
+if(btn){btn.disabled=true;btn.textContent='⏳ Membandingkan...';}
+try{
+const results=await AIService.simulateScenarios(scenarios);
+if(body){
+body.innerHTML=`<div class="u-fs11 u-fw700 u-t2 u-mb6 u-mt8">📊 Hasil Perbandingan (${results.length} skenario, tidak disimpan)</div>`
++results.map(item=>{
+if(item.error){
+return `<div class="u-mb8 u-fs12 u-lh15" style="border-left:3px solid var(--accent4);padding-left:8px"><b>${escapeHtml(item.name)}</b> — gagal: ${escapeHtml(item.error)}</div>`;
+}
+const recs=(item.result&&item.result.recommendations)||[];
+const recLine=recs.length
+?recs.map(r=>escapeHtml(r.title||r.label||'')).join(', ')
+:'tidak ada rule terpicu';
+return `<div class="u-mb8 u-fs12 u-lh15" style="border-left:3px solid var(--accent);padding-left:8px"><b>${escapeHtml(item.name)}</b> — ${recs.length} rule terpicu (${recLine})</div>`;
+}).join('');
+}
+}catch(e){
+console.warn('AIScenarioWidget: gagal jalankan simulateScenarios()',e);
+if(typeof toast==='function')toast('⚠️ Gagal jalankan perbandingan skenario: '+((e&&e.message)||'error tidak diketahui'));
+}
+AIScenarioWidget.running=false;
+if(btn){btn.disabled=false;btn.textContent='📊 Bandingkan Skenario Pengiriman';}
+}
+};
+// AIHealthCheckWidget — Tahap 8 "pusat diagnostik" (Sesi 34, TODO.md #4e lanjutan). Tombol
+// "🩺 Health Check Lengkap" di dalam "🧭 Penasihat" > tab "🔍 Laporan AI", DI BAWAH tombol
+// AISimulateWidget — reuse pola tombol on-demand yang sudah ada (fire-on-click, bukan
+// fire-and-forget tiap render Beranda seperti AIStatusCard, krn healthCheck() lengkap
+// menjalankan 5 fungsi read-only sekaligus utk pengukuran performance, sengaja tidak dipanggil
+// otomatis tiap buka Beranda spy tidak nambah beban). Sumber data SATU-SATUNYA:
+// AIService.healthCheck() (sudah ada sejak Sesi 8, disempurnakan Sesi 30 dgn field
+// `checks.performance`) — TIDAK ada engine/helper/storage baru, murni menyusun ulang field yang
+// SUDAH ADA di return healthCheck() jadi 7 checkmark yang diminta target sesi ini: Context
+// Collector/Rule Evaluation/Recommendation Engine/Daily Briefing/Simulation/Performance
+// Timing/Overall Status. Beda dari AIStatusCard (silent kecuali ada temuan masalah, dipanggil
+// tiap render Beranda) — widget ini SELALU menampilkan status lengkap (termasuk saat sehat),
+// makanya dipisah sbg aksi manual, BUKAN menggantikan/mengubah perilaku AIStatusCard yang sudah
+// ada & sudah dites (backward compatible penuh).
+const AIHealthCheckWidget={
+running:false,
+// Kelima fungsi ini SAMA PERSIS dgn 5 fungsi yang diukur healthCheck() sendiri (lihat
+// modules/ai/ai-service.js) — daftar di sini murni utk label tampilan+urutan checklist,
+// TIDAK menjalankan ulang/mengukur ulang apa pun (nilai `ms` dibaca dari checks.performance
+// yang sudah dihitung 1x oleh healthCheck()).
+items(health){
+const checks=(health&&health.checks)||{};
+const perf=checks.performance||{};
+const isMs=(v)=>typeof v==='number'&&isFinite(v);
+return[
+{label:'Context Collector',ready:checks.contextReady===true,ms:perf.contextCollectorMs},
+{label:'Rule Evaluation',ready:isMs(perf.ruleEvaluationMs),ms:perf.ruleEvaluationMs},
+{label:'Recommendation Engine',ready:isMs(perf.recommendationMs),ms:perf.recommendationMs},
+{label:'Daily Briefing',ready:isMs(perf.dailyBriefingMs),ms:perf.dailyBriefingMs},
+{label:'Simulation',ready:isMs(perf.simulationMs),ms:perf.simulationMs},
+];
+},
+async run(){
+if(AIHealthCheckWidget.running)return;
+const btn=document.getElementById('aiHealthCheckBtn');
+const body=document.getElementById('aiHealthCheckBody');
+if(typeof AIService==='undefined'||typeof AIService.healthCheck!=='function'){
+if(typeof toast==='function')toast('⚠️ Fitur health check AI belum tersedia');
+return;
+}
+AIHealthCheckWidget.running=true;
+if(btn){btn.disabled=true;btn.textContent='⏳ Memeriksa...';}
+try{
+const health=await AIService.healthCheck();
+if(body)body.innerHTML=AIHealthCheckWidget.renderHtml(health);
+}catch(e){
+console.warn('AIHealthCheckWidget: gagal jalankan healthCheck()',e);
+if(typeof toast==='function')toast('⚠️ Gagal jalankan health check: '+((e&&e.message)||'error tidak diketahui'));
+}
+AIHealthCheckWidget.running=false;
+if(btn){btn.disabled=false;btn.textContent='🩺 Health Check Lengkap';}
+},
+// renderHtml — pure function (tidak menyentuh DOM sendiri) supaya gampang dites lewat
+// pemanggilan langsung, dipanggil run() di atas SEBELUM ditulis ke #aiHealthCheckBody.
+renderHtml(health){
+if(!health)return'<div class="u-fs12 u-t2 u-mt8">Health check gagal diambil.</div>';
+const checks=health.checks||{};
+const rows=AIHealthCheckWidget.items(health);
+const perfReady=rows.every((r)=>r.ready);
+const fmtMs=(v)=>(typeof v==='number'&&isFinite(v))?v.toFixed(2)+'ms':'-';
+const line=(mark,label,detail)=>`<div class="u-fs12 u-lh15 u-mb4">${mark} ${escapeHtml(label)}${detail?' — '+escapeHtml(detail):''}</div>`;
+let html=`<div class="u-fs11 u-fw700 u-t2 u-mb6 u-mt8">🩺 Hasil Health Check</div>`;
+rows.forEach((r)=>{html+=line(r.ready?'✓':'✗',r.label,fmtMs(r.ms));});
+html+=line(perfReady?'✓':'✗','Performance Timing',rows.map((r)=>r.label+':'+fmtMs(r.ms)).join(', '));
+html+=line(health.ok?'✓':'✗','Overall Status',(health.ok?'Sehat':'Ada bagian belum siap')+(health.checkedAt?' — '+health.checkedAt:''));
+const issues=[];
+if((checks.duplicateRuleIds||[]).length)issues.push(`${checks.duplicateRuleIds.length} rule dobel`);
+if((checks.duplicateRecommendations||[]).length)issues.push(`${checks.duplicateRecommendations.length} rekomendasi dobel`);
+if((checks.deadRuleIds||[]).length)issues.push(`${checks.deadRuleIds.length} rule mati`);
+if((checks.brokenRecommendationRefs||[]).length)issues.push(`${checks.brokenRecommendationRefs.length} referensi rusak`);
+const orphaned=checks.orphanedStorageKeys||{};
+const orphanedCount=(orphaned.orphanedCooldownRuleIds||[]).length+(orphaned.orphanedLearningDataRuleIds||[]).length;
+if(orphanedCount)issues.push(`${orphanedCount} data storage yatim`);
+if(issues.length)html+=`<div class="u-fs12 u-lh15 u-t2 u-mt4" style="opacity:.8">ℹ️ ${escapeHtml(issues.join(', '))}.</div>`;
+return html;
 }
 };
 const AIWidget={

@@ -2,9 +2,9 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const vm = require('node:vm');
-const { loadSource } = require('./helpers/loadSource');
-const { createFakeDocument } = require('./helpers/fakeDom');
-const { makeFakeTimer } = require('./helpers/fakeTimer');
+const { loadSource } = require('../helpers/loadSource');
+const { createFakeDocument } = require('../helpers/fakeDom');
+const { makeFakeTimer } = require('../helpers/fakeTimer');
 
 // Cakupan file ini: layar PIN interaktif & lockout percobaan salah —
 // showPinScreen, _pinLockState, _pinLockRemainingMs, _formatLockDuration,

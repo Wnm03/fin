@@ -201,3 +201,201 @@ document.getElementById('kelolaTab-ringkasan').classList.toggle('u-dnone', t!=='
 document.getElementById('kelolaTab-transaksi').classList.toggle('u-dnone', t!=='transaksi');
 document.getElementById('kelolaTab-pengaturan').classList.toggle('u-dnone', t!=='pengaturan');
 }
+
+// ---------------------------------------------------------------------------
+// Smart Delivery Engine, Sesi 5/6: fungsi prediktif domain FINANCE.
+// Lihat RENCANA-SESI-RINGKAS.md untuk peta 6 sesi. "Inventory" (baris §4
+// dokumen) SENGAJA DI-SKIP sesi ini (keputusan eksplisit: dikerjakan
+// Finance/Asset/Vehicle dulu) — TIDAK ada stockPrediction/deadStockDetector/
+// restockRecommendation di sini atau di modul manapun sesi ini.
+//
+// Ketiga fungsi di bawah SENGAJA tidak menduplikasi computeCashflowForecast()
+// di atas (rata-rata income/expense N bulan terakhir dari BudgetReko, kalau
+// ada) — mereka MEMBUNGKUS hasilnya jadi proyeksi bulan-demi-bulan ke DEPAN.
+// Rule-based & gratis (rata-rata historis flat, bukan panggilan AI/ML),
+// konsisten dgn gaya estimateKmPerDay/estimateRpPerKm (vehicle-core.js).
+// PURE/read-only — TIDAK PERNAH memanggil save() atau menulis ke D. Belum
+// ada UI/tombol baru, belum ada wiring otomatis (itu tugas Sesi 6).
+// ---------------------------------------------------------------------------
+
+// _predictMonthlySeries(startAmount, monthsAhead) — helper internal: bangun
+// array {month:'YYYY-MM', amount} unt N bulan ke depan (bulan berjalan+1..+N)
+// dgn nilai flat (rata-rata historis diasumsikan konstan). Dipakai oleh
+// predictIncome/predictExpense di bawah supaya bentuk outputnya konsisten.
+function _predictMonthlySeries(amount,monthsAhead){
+const out=[];
+const now=new Date();
+for(let i=1;i<=monthsAhead;i++){
+const d=new Date(now.getFullYear(),now.getMonth()+i,1);
+out.push({month:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),amount});
+}
+return out;
+}
+
+// predictIncome({monthsAhead}) — proyeksi pemasukan N bulan ke depan, dari
+// rata-rata pemasukan historis (incAvg, computeCashflowForecast()). Balikin
+// {ok:false} kalau computeCashflowForecast belum dimuat (guard urutan load).
+function predictIncome({monthsAhead=3}={}){
+if(typeof computeCashflowForecast!=='function')return{ok:false,reason:'computeCashflowForecast belum dimuat'};
+const cf=computeCashflowForecast();
+return{ok:true,monthlyAvg:cf.incAvg,basedOnMonths:cf.months,months:_predictMonthlySeries(cf.incAvg,monthsAhead)};
+}
+
+// predictExpense({monthsAhead}) — sama seperti predictIncome, tapi dari
+// rata-rata pengeluaran historis (expAvg). billsDue (tagihan jatuh tempo
+// 30 hari ke depan) TIDAK dimasukkan ke sini (itu bagian predictCashflow()
+// di bawah, biar predictExpense murni cerminan pola pengeluaran historis).
+function predictExpense({monthsAhead=3}={}){
+if(typeof computeCashflowForecast!=='function')return{ok:false,reason:'computeCashflowForecast belum dimuat'};
+const cf=computeCashflowForecast();
+return{ok:true,monthlyAvg:cf.expAvg,basedOnMonths:cf.months,months:_predictMonthlySeries(cf.expAvg,monthsAhead)};
+}
+
+// predictCashflow({monthsAhead}) — proyeksi saldo akun bulan-demi-bulan ke
+// depan: mulai dari saldoNow (computeCashflowForecast()), tiap bulan
+// ditambah incAvg dikurang expAvg; billsDue (tagihan jatuh tempo 30 hari
+// ke depan, sudah dihitung computeCashflowForecast()) dikurangkan HANYA di
+// bulan pertama (sesuai jendela 30 hari-nya) supaya tidak dobel-hitung di
+// bulan-bulan berikutnya.
+function predictCashflow({monthsAhead=3}={}){
+if(typeof computeCashflowForecast!=='function')return{ok:false,reason:'computeCashflowForecast belum dimuat'};
+const cf=computeCashflowForecast();
+const monthlyNet=cf.incAvg-cf.expAvg;
+let saldo=cf.saldoNow;
+const months=[];
+const now=new Date();
+for(let i=1;i<=monthsAhead;i++){
+saldo+=monthlyNet;
+if(i===1)saldo-=cf.billsDue;
+const d=new Date(now.getFullYear(),now.getMonth()+i,1);
+months.push({month:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),income:cf.incAvg,expense:cf.expAvg,saldoProjected:saldo});
+}
+return{ok:true,saldoNow:cf.saldoNow,monthlyNet,billsDue:cf.billsDue,basedOnMonths:cf.months,months,projectedEnd:saldo};
+}
+
+// ---------------------------------------------------------------------------
+// Smart Delivery Engine, Sesi 7: rule domain FINANCE pertama utk AIDecision
+// (lihat RENCANA-SESI-RINGKAS.md — "Status nyata setelah Sesi 6": bus sudah
+// hidup dari Sesi 6 tapi AIDecision.rules._rules masih kosong). Rule ini:
+// "pengeluaran bulan berjalan > X% dari rata-rata pengeluaran computeCashflow-
+// Forecast()". X BISA DIATUR user (bukan hardcode) lewat
+// D.profile.aiFinanceOverspendThresholdPct, field baru di Pengaturan > 🤖 AI
+// Asisten (default 150 = 1.5x rata-rata).
+// TIDAK menduplikasi FinCoach (modules-calc.js) — FinCoach itu insight instan
+// di Dashboard (tidak dipersist). Rule ini masuk decisionLog lewat
+// AIDecision.decide() supaya muncul juga di AIService.dailyBriefing()/.simulate().
+// Additive murni: TIDAK mengubah computeCashflowForecast/predict* di atas.
+// ---------------------------------------------------------------------------
+const AI_FINANCE_OVERSPEND_DEFAULT_PCT=150;
+
+// getAIFinanceOverspendThreshold()/setAIFinanceOverspendThreshold(pct) —
+// getter/setter D.profile.aiFinanceOverspendThresholdPct, dipakai field
+// Pengaturan (renderSettings()/autoSaveProfile() di modules-render.js /
+// profil-pengaturan.js) & rule di bawah. Minimum dipaksa 100 (di bawah itu
+// rule akan selalu trigger begitu ada pengeluaran sama sekali).
+function getAIFinanceOverspendThreshold(){
+const v=D.profile&&D.profile.aiFinanceOverspendThresholdPct;
+return(typeof v==='number'&&v>=100)?v:AI_FINANCE_OVERSPEND_DEFAULT_PCT;
+}
+function setAIFinanceOverspendThreshold(pct){
+const n=parseInt(pct,10);
+D.profile.aiFinanceOverspendThresholdPct=(Number.isFinite(n)&&n>=100)?n:AI_FINANCE_OVERSPEND_DEFAULT_PCT;
+return D.profile.aiFinanceOverspendThresholdPct;
+}
+
+// _financeOverspendCheck() — helper dipakai condition() & action() rule di
+// bawah supaya angka yang dievaluasi & yang ditampilkan di message konsisten
+// (satu sumber hitung, tidak dihitung ulang beda cara di 2 tempat).
+function _financeOverspendCheck(){
+if(typeof computeCashflowForecast!=='function')return{trigger:false};
+const cf=computeCashflowForecast();
+if(!cf.expAvg||cf.expAvg<=0)return{trigger:false};
+const now=new Date();
+const monthExpense=(D.transactions||[]).filter(t=>{
+if(t.type!=='expense')return false;
+const d=new Date(t.date);
+return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
+}).reduce((s,t)=>s+t.amount,0);
+const thresholdPct=getAIFinanceOverspendThreshold();
+const pct=Math.round((monthExpense/cf.expAvg)*100);
+return{trigger:pct>thresholdPct,monthExpense,expAvg:cf.expAvg,pct,thresholdPct};
+}
+
+// ---------------------------------------------------------------------------
+// Rule kedua FINANCE (keputusan produk dikonfirmasi user): 'finance-low-balance'
+// — saldo total akun (totalSaldoAkun(), akun.js) jatuh di bawah X kali
+// rata-rata pengeluaran bulanan (computeCashflowForecast().expAvg). Ambang X
+// (default 0.5) BISA DIATUR user (pola sama dgn getAIFinanceOverspendThreshold
+// di atas / getAIDeliveryThinMarginThreshold Sesi 9) lewat
+// D.profile.aiFinanceLowBalanceMultiplier, field baru di Pengaturan > 🤖 AI
+// Asisten. _financeLowBalanceCheck() dipisah dari _financeOverspendCheck()
+// krn beda sumber data (saldo akun, bukan pengeluaran bulan berjalan) —
+// tidak menduplikasi hitungan yang sama.
+// ---------------------------------------------------------------------------
+const AI_FINANCE_LOW_BALANCE_DEFAULT_MULTIPLIER=0.5;
+
+// getAIFinanceLowBalanceMultiplier()/setAIFinanceLowBalanceMultiplier(mult) —
+// getter/setter D.profile.aiFinanceLowBalanceMultiplier, dipakai field
+// Pengaturan (renderSettings()/autoSaveProfile()) & rule di bawah. Dijaga
+// di rentang 0.1-2 (di luar itu rule jadi tidak berguna: <=0 selalu trigger,
+// >2 nyaris tidak pernah trigger untuk kondisi wajar).
+function getAIFinanceLowBalanceMultiplier(){
+const v=D.profile&&D.profile.aiFinanceLowBalanceMultiplier;
+return(typeof v==='number'&&v>=0.1&&v<=2)?v:AI_FINANCE_LOW_BALANCE_DEFAULT_MULTIPLIER;
+}
+function setAIFinanceLowBalanceMultiplier(mult){
+const n=parseFloat(mult);
+D.profile.aiFinanceLowBalanceMultiplier=(Number.isFinite(n)&&n>=0.1&&n<=2)?n:AI_FINANCE_LOW_BALANCE_DEFAULT_MULTIPLIER;
+return D.profile.aiFinanceLowBalanceMultiplier;
+}
+
+function _financeLowBalanceCheck(){
+if(typeof totalSaldoAkun!=='function'||typeof computeCashflowForecast!=='function')return{trigger:false};
+const cf=computeCashflowForecast();
+if(!cf.expAvg||cf.expAvg<=0)return{trigger:false};
+const saldo=totalSaldoAkun();
+const multiplier=getAIFinanceLowBalanceMultiplier();
+return{trigger:saldo<cf.expAvg*multiplier,saldo,expAvg:cf.expAvg,multiplier};
+}
+
+let _financeAIRulesRegistered=false;
+// registerFinanceAIRules() — dipanggil sekali saat boot (init() di
+// self-test.js, persis setelah AIService.wireEvents() — lihat komentar di
+// sana). Idempotent lewat guard _financeAIRulesRegistered supaya aman kalau
+// termanggil dobel. Return false (bukan throw) kalau AIDecision belum ada
+// (mis. urutan load lain di test) — sama pola dgn guard fungsi lain di file
+// ini (typeof computeCashflowForecast!=='function').
+function registerFinanceAIRules(){
+if(_financeAIRulesRegistered)return false;
+if(typeof AIDecision==='undefined'||!AIDecision.rules||typeof AIDecision.rules.register!=='function')return false;
+AIDecision.rules.register({
+id:'finance-overspend-month',
+category:'finance',
+severity:'warning',
+weight:5,
+cooldownHours:24,
+description:'Pengeluaran bulan berjalan melebihi ambang % dari rata-rata pengeluaran (computeCashflowForecast).',
+condition:()=>_financeOverspendCheck().trigger,
+action:()=>{
+const c=_financeOverspendCheck();
+const fmt=typeof fmtFull==='function'?fmtFull:(n=>'Rp '+Math.round(n||0).toLocaleString('id-ID'));
+return{message:`Pengeluaran bulan ini sudah ${fmt(c.monthExpense)} (${c.pct}% dari rata-rata ${fmt(Math.round(c.expAvg))}/bulan, ambang ${c.thresholdPct}%).`};
+},
+});
+AIDecision.rules.register({
+id:'finance-low-balance',
+category:'finance',
+severity:'warning',
+weight:4,
+cooldownHours:24,
+description:'Saldo total akun (totalSaldoAkun) di bawah X kali rata-rata pengeluaran bulanan (computeCashflowForecast().expAvg, X bisa diatur user).',
+condition:()=>_financeLowBalanceCheck().trigger,
+action:()=>{
+const c=_financeLowBalanceCheck();
+const fmt=typeof fmtFull==='function'?fmtFull:(n=>'Rp '+Math.round(n||0).toLocaleString('id-ID'));
+return{message:`Saldo total akun cuma ${fmt(c.saldo)}, di bawah ${c.multiplier}x rata-rata pengeluaran bulanan (${fmt(Math.round(c.expAvg))}).`};
+},
+});
+_financeAIRulesRegistered=true;
+return true;
+}

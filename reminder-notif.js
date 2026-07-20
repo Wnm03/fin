@@ -8,7 +8,13 @@
 // D.bills/D.vehicles/D.simList dll) jadi file ini taruh di /modules/shared, bukan salah satu
 // domain spesifik.
 
-async function resetApp(){if(!await askConfirm('YAKIN? Semua data (transaksi, catatan, pengaturan) akan dihapus permanen.',{title:'Reset Aplikasi',okText:'Ya, Reset'}))return;if(!await askConfirm('Ini tidak bisa dibatalkan setelah dilanjutkan. Yakin mau lanjut?',{title:'Konfirmasi Terakhir',okText:'Ya, Hapus Semua'}))return;localStorage.clear();location.reload();}
+async function resetApp(){if(!await askConfirm('YAKIN? Semua data (transaksi, catatan, pengaturan) akan dihapus permanen.',{title:'Reset Aplikasi',okText:'Ya, Reset'}))return;if(!await askConfirm('Ini tidak bisa dibatalkan setelah dilanjutkan. Yakin mau lanjut?',{title:'Konfirmasi Terakhir',okText:'Ya, Hapus Semua'}))return;
+// BUGFIX (docs/CATATAN-CEK-CLAUDE.md "BELUM DIKERJAKAN"): sebelumnya cuma localStorage.clear(),
+// TIDAK PERNAH menyentuh IndexedDB (kw_v4_mirror dkk). Karena load() cek kw_v4_mirror DULUAN
+// sebelum localStorage, reset lama bisa "gagal senyap" -- data D muncul lagi utuh dari mirror
+// IndexedDB setelah reload. Guard typeof supaya tetap aman kalau IDBStore belum sempat dimuat.
+if(typeof IDBStore!=='undefined'&&IDBStore.clear){try{await IDBStore.clear();}catch(e){console.error('Gagal mengosongkan IndexedDB saat reset:',e);}}
+localStorage.clear();location.reload();}
 function phoneToWaId(phone){
 if(!phone) return '';
 let p=String(phone).replace(/[^0-9+]/g,'');

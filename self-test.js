@@ -1965,6 +1965,33 @@ toast('⚠️ Tes diagnostik otomatis: '+data.failCount+' dari '+data.total+' ga
 }
 async function init(){
 await load();
+if(typeof AIService!=='undefined'&&typeof AIService.wireEvents==='function'){
+try{AIService.wireEvents();}catch(e){console.warn('[AIService] wireEvents gagal:',e);}
+}
+// Sesi 7: daftarkan rule domain FINANCE pertama ke AIDecision (lihat komentar
+// registerFinanceAIRules() di modules/finance/tx-list-cashflow.js). Sama
+// pola guard/try-catch dgn wireEvents() di atas — 1 domain gagal register
+// tidak boleh menjatuhkan boot.
+if(typeof registerFinanceAIRules==='function'){
+try{registerFinanceAIRules();}catch(e){console.warn('[AIDecision] registerFinanceAIRules gagal:',e);}
+}
+// Sesi 8: lanjutan Sesi 7 — rule domain VEHICLE/ASSET/DELIVERY (lihat
+// komentar masing-masing register*AIRules() di file domainnya).
+if(typeof registerVehicleAIRules==='function'){
+try{registerVehicleAIRules();}catch(e){console.warn('[AIDecision] registerVehicleAIRules gagal:',e);}
+}
+if(typeof registerAssetAIRules==='function'){
+try{registerAssetAIRules();}catch(e){console.warn('[AIDecision] registerAssetAIRules gagal:',e);}
+}
+if(typeof registerDeliveryAIRules==='function'){
+try{registerDeliveryAIRules();}catch(e){console.warn('[AIDecision] registerDeliveryAIRules gagal:',e);}
+}
+// TODO.md #1: rule Cross Module pertama (Finance + Delivery), lihat komentar
+// registerCrossModuleAIRules() di modules/ai/ai-decision-engine.js. Dipanggil
+// setelah domain rules di atas (urutan tidak wajib, tapi lebih runut dibaca).
+if(typeof registerCrossModuleAIRules==='function'){
+try{registerCrossModuleAIRules();}catch(e){console.warn('[AIDecision] registerCrossModuleAIRules gagal:',e);}
+}
 applyEffectiveTheme();
 setupPWA();
 enableSwipeToDismiss('txModal');
