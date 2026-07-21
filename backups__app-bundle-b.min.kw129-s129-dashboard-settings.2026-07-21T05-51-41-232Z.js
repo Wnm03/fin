@@ -1,4 +1,4 @@
-// app-bundle-b.min.js — DIBUAT OTOMATIS oleh build.js dari: modules/shared/data-default.js, modules/shared/features-helpers-global-security.js, diagnostik-versi.js, modules/shared/format-tema.js, modules/shared/error-handler.js, modules/shared/helper-teks.js, modules/shared/keamanan-pin.js, modules/home/refleksi-selfcare.js, modules/shared/modal-navigasi.js, modules/business/reset-gaji-mingguan.js, modules/shared/debug-console.js, modules/shared/pengaturan-search.js, modules/shared/onboarding.js, modules/shared/kalkulator-input.js, modules/shared/scan-ocr.js, modules/finance/filter-laporan.js, modules/finance/akun.js, modules/business/gaji-calc.js, modules/finance/cicilan.js, modules/finance/tx-bbm.js, modules/finance/tx-stok-sparepart.js, modules/finance/tx-transfer.js, modules/finance/tx-cobek.js, modules/finance/tx-target.js, modules/finance/tx-list-cashflow.js, modules/finance/transaksi.js, modules/shared/profil-pengaturan.js, modules/finance/kategori.js, modules/ai/kategorisasi-ai.js, modules/finance/tagihan-kalender.js, modules/shared/backup-restore.js, modules/shared/backup-history-api.js, modules/shared/backup-health-api.js, modules/shared/backup-history-presenter.js, modules/shared/backup-health-presenter.js, modules/business/payroll-absensi.js, modules/business/tukang-absensi.js, modules/vehicle/vehicle-core.js, modules/ai/chat-action.js, modules/shared/data-archive.js, modules/vehicle/sparepart-servis.js, ai-chat.js, reminder-notif.js, laporan-export.js, gdrive-backup.js, data-health-check.js, global-search.js, sheets-schema.js, sheets-sync.js, pwa-setup.js, self-test.js, pajak-aset-ui-wrappers.js, modules/finance/finance-intelligence.js, modules/finance/finance-dashboard.js, modules/finance/financial-forecast-api.js, modules/finance/financial-forecast-presenter.js, modules/finance/budget-recommendation-api.js, modules/finance/budget-recommendation-presenter.js, modules/finance/cashflow-projection-api.js, modules/finance/cashflow-projection-presenter.js, modules/finance/financial-goal-api.js, modules/finance/financial-goal-presenter.js, modules/finance/investment-planner-api.js, modules/finance/investment-planner-presenter.js, modules/finance/debt-optimizer-api.js, modules/finance/debt-optimizer-presenter.js, modules/finance/retirement-planner-api.js, modules/finance/retirement-planner-presenter.js, modules/finance/financial-health-score-api.js, modules/finance/financial-health-score-presenter.js, modules/finance/financial-risk-dashboard-api.js, modules/finance/financial-risk-dashboard-presenter.js, modules/vehicle/vehicle-intelligence.js, modules/vehicle/vehicle-dashboard.js, modules/vehicle/vehicle-reminder.js, modules/vehicle/vehicle-notif-bridge.js, modules/vehicle/vehicle-ai-hook.js, modules/vehicle/vehicle-insight-presenter.js, modules/vehicle/vehicle-daily-brief.js, modules/vehicle/vehicle-alert-panel.js, modules/vehicle/vehicle-insight-feed.js, modules/vehicle/vehicle-trend-api.js, modules/vehicle/vehicle-cost-summary.js, modules/vehicle/vehicle-fuel-trend.js, modules/vehicle/vehicle-service-trend.js, modules/vehicle/vehicle-analytics-presenter.js, modules/vehicle/vehicle-decision-api.js, modules/vehicle/vehicle-recommendation-engine.js, modules/vehicle/vehicle-priority-scoring.js, modules/vehicle/vehicle-action-recommendation.js, modules/vehicle/vehicle-decision-presenter.js, modules/vehicle/vehicle-automation-api.js, modules/vehicle/vehicle-reminder-scheduler.js, modules/vehicle/vehicle-maintenance-automation.js, modules/vehicle/vehicle-tax-document-automation.js, modules/vehicle/vehicle-automation-presenter.js, modules/cross/finance-vehicle-cross-summary.js, modules/cross/cross-ai-hook.js, modules/cross/cross-dashboard-card.js, modules/cross/cross-insight-presenter.js, modules/cross/unified-summary-api.js, modules/cross/unified-ai-briefing.js, modules/cross/unified-briefing-presenter.js, modules/cross/life-dashboard-summary-api.js, modules/cross/priority-engine.js, modules/cross/personal-overview-presenter.js, modules/cross/cross-module-widgets.js, modules/cross/life-priority-panel.js, modules/cross/unified-dashboard-home.js, modules/cross/decision-center-api.js, modules/cross/recommendation-panel.js, modules/cross/action-queue.js, modules/cross/decision-center-home.js, app-bootstrap.js, modules/shared/feature-icons.js, modules/dashboard-hub/dashboard-hub-registry.js, modules/dashboard-hub/dashboard-hub.js, modules/dashboard-hub/dashboard-hub-search.js, modules/dashboard-hub/dashboard-hub-favorit.js, modules/dashboard-hub/dashboard-hub-favorit-view.js, modules/dashboard-hub/dashboard-hub-settings.js, modules/ai/ai-command-center.js, modules/self-reward/self-reward-engine.js, modules/self-reward/self-reward-view.js, modules/self-reward/self-reward-ai-widget.js, modules/asset/investasi.js, modules/asset/asset-portfolio-api.js, lifeos/lifeos-store.js, lifeos/lifeos-registry.js, lifeos/lifeos-link-registry.js, lifeos/plugins/lifeos-plugin-manifest.js, lifeos/plugins/lifeos-plugin-validation.js, lifeos/plugins/lifeos-plugin-registry.js, lifeos/plugins/lifeos-plugin-loader.js, lifeos/plugins/lifeos-plugin-runtime.js, lifeos/adapters/area-adapter.js, lifeos/adapters/goal-adapter.js, lifeos/adapters/project-adapter.js, lifeos/adapters/today-adapter.js, lifeos/adapters/review-adapter.js, lifeos/adapters/knowledge-adapter.js, lifeos/lifeos-object-ref.js, lifeos/services/project-service.js, lifeos/services/review-service.js, lifeos/services/knowledge-service.js, lifeos/services/life-object-service.js, lifeos/ui/lifeos-home.js, lifeos/ui/areas.js, lifeos/ui/today.js, lifeos/ui/goals.js, lifeos/ui/projects.js, lifeos/ui/review.js, lifeos/ui/life-objects.js, lifeos/ui/plugins.js, lifeos/ui/knowledge.js, lifeos/lifeos-nav.js, economic-intelligence/eie-bus.js, economic-intelligence/eie-store.js, economic-intelligence/domain/entities.js, economic-intelligence/domain/scoring-formulas.js, economic-intelligence/domain/status-classifier.js, economic-intelligence/adapters/user-finance-adapter.js, economic-intelligence/adapters/macro-data-adapter.js, economic-intelligence/rules/rule-schema.js, economic-intelligence/rules/rule-definitions.js, economic-intelligence/engine/rule-engine.js, economic-intelligence/engine/scoring-engine.js, economic-intelligence/engine/insight-generator.js, economic-intelligence/services/macro-sync-service.js, economic-intelligence/services/notification-service.js, economic-intelligence/services/recommendation-service.js, economic-intelligence/scheduler/eie-scheduler.js, economic-intelligence/ui/eie-dashboard.js, economic-intelligence/ui/eie-insight-feed.js, economic-intelligence/ui/eie-notif-settings.js, economic-intelligence/eie-registry.js, modules/ai/ai-core.js, modules/ai/ai-decision-engine.js, modules/ai/ai-service.js, modules/logistics/logistics-engine.js, modules/logistics/logistics-service.js
+// app-bundle-b.min.js — DIBUAT OTOMATIS oleh build.js dari: modules/shared/data-default.js, modules/shared/features-helpers-global-security.js, diagnostik-versi.js, modules/shared/format-tema.js, modules/shared/error-handler.js, modules/shared/helper-teks.js, modules/shared/keamanan-pin.js, modules/home/refleksi-selfcare.js, modules/shared/modal-navigasi.js, modules/business/reset-gaji-mingguan.js, modules/shared/debug-console.js, modules/shared/pengaturan-search.js, modules/shared/onboarding.js, modules/shared/kalkulator-input.js, modules/shared/scan-ocr.js, modules/finance/filter-laporan.js, modules/finance/akun.js, modules/business/gaji-calc.js, modules/finance/cicilan.js, modules/finance/tx-bbm.js, modules/finance/tx-stok-sparepart.js, modules/finance/tx-transfer.js, modules/finance/tx-cobek.js, modules/finance/tx-target.js, modules/finance/tx-list-cashflow.js, modules/finance/transaksi.js, modules/shared/profil-pengaturan.js, modules/finance/kategori.js, modules/ai/kategorisasi-ai.js, modules/finance/tagihan-kalender.js, modules/shared/backup-restore.js, modules/business/payroll-absensi.js, modules/business/tukang-absensi.js, modules/vehicle/vehicle-core.js, modules/ai/chat-action.js, modules/shared/data-archive.js, modules/vehicle/sparepart-servis.js, ai-chat.js, reminder-notif.js, laporan-export.js, gdrive-backup.js, data-health-check.js, global-search.js, sheets-schema.js, sheets-sync.js, pwa-setup.js, self-test.js, pajak-aset-ui-wrappers.js, modules/finance/finance-intelligence.js, modules/finance/finance-dashboard.js, modules/finance/financial-forecast-api.js, modules/finance/financial-forecast-presenter.js, modules/finance/budget-recommendation-api.js, modules/finance/budget-recommendation-presenter.js, modules/finance/cashflow-projection-api.js, modules/finance/cashflow-projection-presenter.js, modules/finance/financial-goal-api.js, modules/finance/financial-goal-presenter.js, modules/finance/investment-planner-api.js, modules/finance/investment-planner-presenter.js, modules/finance/debt-optimizer-api.js, modules/finance/debt-optimizer-presenter.js, modules/finance/retirement-planner-api.js, modules/finance/retirement-planner-presenter.js, modules/finance/financial-health-score-api.js, modules/finance/financial-health-score-presenter.js, modules/finance/financial-risk-dashboard-api.js, modules/finance/financial-risk-dashboard-presenter.js, modules/vehicle/vehicle-intelligence.js, modules/vehicle/vehicle-dashboard.js, modules/vehicle/vehicle-reminder.js, modules/vehicle/vehicle-notif-bridge.js, modules/vehicle/vehicle-ai-hook.js, modules/vehicle/vehicle-insight-presenter.js, modules/vehicle/vehicle-daily-brief.js, modules/vehicle/vehicle-alert-panel.js, modules/vehicle/vehicle-insight-feed.js, modules/vehicle/vehicle-trend-api.js, modules/vehicle/vehicle-cost-summary.js, modules/vehicle/vehicle-fuel-trend.js, modules/vehicle/vehicle-service-trend.js, modules/vehicle/vehicle-analytics-presenter.js, modules/vehicle/vehicle-decision-api.js, modules/vehicle/vehicle-recommendation-engine.js, modules/vehicle/vehicle-priority-scoring.js, modules/vehicle/vehicle-action-recommendation.js, modules/vehicle/vehicle-decision-presenter.js, modules/vehicle/vehicle-automation-api.js, modules/vehicle/vehicle-reminder-scheduler.js, modules/vehicle/vehicle-maintenance-automation.js, modules/vehicle/vehicle-tax-document-automation.js, modules/vehicle/vehicle-automation-presenter.js, modules/cross/finance-vehicle-cross-summary.js, modules/cross/cross-ai-hook.js, modules/cross/cross-dashboard-card.js, modules/cross/cross-insight-presenter.js, modules/cross/unified-summary-api.js, modules/cross/unified-ai-briefing.js, modules/cross/unified-briefing-presenter.js, modules/cross/life-dashboard-summary-api.js, modules/cross/priority-engine.js, modules/cross/personal-overview-presenter.js, modules/cross/cross-module-widgets.js, modules/cross/life-priority-panel.js, modules/cross/unified-dashboard-home.js, modules/cross/decision-center-api.js, modules/cross/recommendation-panel.js, modules/cross/action-queue.js, modules/cross/decision-center-home.js, app-bootstrap.js, modules/shared/feature-icons.js, modules/dashboard-hub/dashboard-hub-registry.js, modules/dashboard-hub/dashboard-hub.js, modules/dashboard-hub/dashboard-hub-search.js, modules/dashboard-hub/dashboard-hub-favorit.js, modules/dashboard-hub/dashboard-hub-favorit-view.js, modules/dashboard-hub/dashboard-hub-settings.js, modules/ai/ai-command-center.js, modules/self-reward/self-reward-engine.js, modules/self-reward/self-reward-view.js, modules/self-reward/self-reward-ai-widget.js, modules/asset/investasi.js, modules/asset/asset-portfolio-api.js, lifeos/lifeos-store.js, lifeos/lifeos-registry.js, lifeos/lifeos-link-registry.js, lifeos/plugins/lifeos-plugin-manifest.js, lifeos/plugins/lifeos-plugin-validation.js, lifeos/plugins/lifeos-plugin-registry.js, lifeos/plugins/lifeos-plugin-loader.js, lifeos/plugins/lifeos-plugin-runtime.js, lifeos/adapters/area-adapter.js, lifeos/adapters/goal-adapter.js, lifeos/adapters/project-adapter.js, lifeos/adapters/today-adapter.js, lifeos/adapters/review-adapter.js, lifeos/adapters/knowledge-adapter.js, lifeos/lifeos-object-ref.js, lifeos/services/project-service.js, lifeos/services/review-service.js, lifeos/services/knowledge-service.js, lifeos/services/life-object-service.js, lifeos/ui/lifeos-home.js, lifeos/ui/areas.js, lifeos/ui/today.js, lifeos/ui/goals.js, lifeos/ui/projects.js, lifeos/ui/review.js, lifeos/ui/life-objects.js, lifeos/ui/plugins.js, lifeos/ui/knowledge.js, lifeos/lifeos-nav.js, economic-intelligence/eie-bus.js, economic-intelligence/eie-store.js, economic-intelligence/domain/entities.js, economic-intelligence/domain/scoring-formulas.js, economic-intelligence/domain/status-classifier.js, economic-intelligence/adapters/user-finance-adapter.js, economic-intelligence/adapters/macro-data-adapter.js, economic-intelligence/rules/rule-schema.js, economic-intelligence/rules/rule-definitions.js, economic-intelligence/engine/rule-engine.js, economic-intelligence/engine/scoring-engine.js, economic-intelligence/engine/insight-generator.js, economic-intelligence/services/macro-sync-service.js, economic-intelligence/services/notification-service.js, economic-intelligence/services/recommendation-service.js, economic-intelligence/scheduler/eie-scheduler.js, economic-intelligence/ui/eie-dashboard.js, economic-intelligence/ui/eie-insight-feed.js, economic-intelligence/ui/eie-notif-settings.js, economic-intelligence/eie-registry.js, modules/ai/ai-core.js, modules/ai/ai-decision-engine.js, modules/ai/ai-service.js, modules/logistics/logistics-engine.js, modules/logistics/logistics-service.js
 // JANGAN diedit manual — edit file source-nya lalu jalankan: node build.js
 // data-default.js — Domain Data Default: kategori shop bawaan (DEFAULT_COBEK_KATEGORI),
 // Dipindah ke modules/shared/data-default.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
@@ -82,8 +82,8 @@ if(location.hostname==='localhost'||location.hostname==='127.0.0.1')return true;
 }catch(e){ /* anggap bukan dev mode kalau gagal deteksi */ }
 return false;
 }
-const APP_BUILD_VERSION = 'kw130-data-management-core-backup-history-health-1';
-const PRODUCTION_BUILD_SYNCED_VERSION = 'kw130-data-management-core-backup-history-health-1';
+const APP_BUILD_VERSION = 'kw129-s129-dashboard-settings';
+const PRODUCTION_BUILD_SYNCED_VERSION = 'kw129-s129-dashboard-settings';
 let D = {
 schemaVersion:SCHEMA_VERSION,
 transactions:[],cobek:[],products:[],produsen:[],cobekKategori:JSON.parse(JSON.stringify(DEFAULT_COBEK_KATEGORI)),targets:[],eduFunds:[],reminders:[],bills:[],billsArchive:[],
@@ -6319,7 +6319,6 @@ D.lastBackup=new Date().toISOString();save();
 document.getElementById('lastBackup').textContent=new Date().toLocaleDateString('id-ID');
 document.getElementById('backupBadge').textContent='💾 Backup';
 document.getElementById('backupBanner').classList.add('hidden');
-if(typeof BackupHistoryAPI!=='undefined')BackupHistoryAPI.recordEntry({type:'local',status:'success',done:['File lokal (JSON)']});
 toast('✅ Backup berhasil!');
 }
 async function runFullBackup(){
@@ -6375,10 +6374,6 @@ let msg='❌ Backup SEBAGIAN gagal. ';
 if(done.length)msg+='Berhasil: '+done.join(', ')+'. ';
 msg+='Gagal: '+errors.join(' | ');
 toast(msg,6000);
-}
-if(typeof BackupHistoryAPI!=='undefined'){
-const status=errors.length?(done.length?'partial':'failed'):'success';
-BackupHistoryAPI.recordEntry({type:'full',status,done,skipped,errors});
 }
 } finally {
 _saveGuards['fullBackup']=false;
@@ -6609,7 +6604,6 @@ D.lastBackup=new Date().toISOString();save();
 const lb=document.getElementById('lastBackup');if(lb)lb.textContent=new Date().toLocaleDateString('id-ID');
 document.getElementById('backupBadge').textContent='💾 Backup';
 document.getElementById('backupBanner').classList.add('hidden');
-if(typeof BackupHistoryAPI!=='undefined')BackupHistoryAPI.recordEntry({type:'custom',status:'success',done:['Backup custom ('+format+')']});
 closeModal('backupModal');
 toast('✅ Backup berhasil di-download!');
 }
@@ -7024,247 +7018,6 @@ return results;
 }
 // (v94): toggleMs/showTargetAccountTx/addTarget/delTarget/delReminder sudah dipindah ke transaksi.js
 // (gabung bareng saveTarget/saveCatatan/saveReminder/saveLDR yang sudah ada di sana sejak v83).
-
-// modules/shared/backup-history-api.js — Backup History API (Data
-// Management Core). Target: catat histori tiap kali proses backup
-// dijalankan (sukses/sebagian/gagal), lalu sediakan API baca murni di
-// atasnya.
-//
-// PRINSIP: REUSE alur backup yang SUDAH ADA (runFullBackup()/
-// exportData()/runBackup() di modules/shared/backup-restore.js) — TIDAK
-// ada mekanisme backup baru, TIDAK duplikasi logic pembuatan file
-// backup. File ini murni menambah PENCATATAN (D.backupHistory, array
-// baru — field baru di D, bukan struktur yang menimpa apa pun yang
-// sudah ada) & API baca di atasnya (list/latest/summary), dipanggil
-// oleh backup-restore.js lewat BackupHistoryAPI.recordEntry() persis di
-// titik yang sudah menandai backup selesai (D.lastBackup=...), pola
-// "tambahan murni" yang sama dgn *-api.js lain di codebase ini (mis.
-// DebtOptimizerAPI — 100% reuse Debt/DebtStrategy, 0 rekalkulasi).
-//
-// Semua method di bawah TIDAK menyentuh DOM. recordEntry() SATU-
-// SATUNYA method yang menulis (ke D.backupHistory) — sisanya read-only.
-const BACKUP_HISTORY_MAX_ENTRIES = 50;
-
-const BackupHistoryAPI = {
-
-  // _ensure() — helper internal: pastikan D.backupHistory ada sbg
-  // array (init kosong kalau belum pernah ada, mis. data lama sebelum
-  // fitur ini). Guard `typeof D==='undefined'` — pola sama persis guard
-  // `typeof Debt==='undefined'` di DebtOptimizerAPI._overview().
-  _ensure() {
-    if (typeof D === 'undefined' || !D) return null;
-    if (!Array.isArray(D.backupHistory)) D.backupHistory = [];
-    return D.backupHistory;
-  },
-
-  // recordEntry(entry) — dipanggil dari backup-restore.js tepat setelah
-  // sebuah proses backup selesai (apa pun hasilnya). entry:
-  //   { type: 'local'|'full'|'custom', status: 'success'|'partial'|'failed',
-  //     done: [...], skipped: [...], errors: [...] }
-  // Entri terbaru ditaruh di depan (index 0, urutan terbaru-dulu — pola
-  // sama dgn D.backupHistory dipakai sbg log, bukan antrian), dipotong
-  // ke BACKUP_HISTORY_MAX_ENTRIES entri terakhir supaya tidak tumbuh
-  // tanpa batas di localStorage.
-  recordEntry(entry) {
-    const hist = this._ensure();
-    if (!hist) return null;
-    const rec = {
-      id: 'bh_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
-      timestamp: new Date().toISOString(),
-      type: (entry && entry.type) || 'unknown',
-      status: (entry && entry.status) || 'unknown',
-      done: (entry && Array.isArray(entry.done)) ? entry.done : [],
-      skipped: (entry && Array.isArray(entry.skipped)) ? entry.skipped : [],
-      errors: (entry && Array.isArray(entry.errors)) ? entry.errors : [],
-    };
-    hist.unshift(rec);
-    if (hist.length > BACKUP_HISTORY_MAX_ENTRIES) hist.length = BACKUP_HISTORY_MAX_ENTRIES;
-    return rec;
-  },
-
-  // list() — seluruh histori, terbaru dulu. Array kosong kalau belum
-  // pernah ada backup tercatat (BUKAN null — aman langsung dipakai
-  // .map()/.length oleh presenter tanpa guard tambahan).
-  list() {
-    return this._ensure() || [];
-  },
-
-  // latest() — entri paling baru, atau null kalau histori kosong.
-  latest() {
-    const hist = this.list();
-    return hist.length ? hist[0] : null;
-  },
-
-  // clear() — kosongkan histori (dipakai mis. dari menu "Bersihkan
-  // Histori Backup" kalau nanti ditambahkan di UI; tidak dipanggil
-  // otomatis di mana pun sesi ini).
-  clear() {
-    if (typeof D === 'undefined' || !D) return;
-    D.backupHistory = [];
-  },
-
-  // summary() — agregat murni dari list() (hitung status, 0 rumus
-  // baru selain penjumlahan sederhana).
-  summary() {
-    const hist = this.list();
-    const total = hist.length;
-    let success = 0, partial = 0, failed = 0;
-    for (const h of hist) {
-      if (h.status === 'success') success++;
-      else if (h.status === 'partial') partial++;
-      else if (h.status === 'failed') failed++;
-    }
-    return { total, success, partial, failed, latest: this.latest() };
-  },
-};
-
-// modules/shared/backup-health-api.js — Backup Health API (Data
-// Management Core). Target: status kesehatan backup (kapan terakhir,
-// terlambat atau tidak) + keandalan (persentase sukses dari histori).
-//
-// PRINSIP: REUSE D.lastBackup (sumber sama yang sudah dipakai
-// checkBackup() di modules/shared/backup-restore.js, ambang 7 hari
-// SAMA PERSIS — TIDAK ada ambang baru yang bisa berbeda dari peringatan
-// banner backup yang sudah ada) + BackupHistoryAPI.summary()
-// (modules/shared/backup-history-api.js, sesi ini) — TIDAK ada
-// duplikasi rumus/state baru di luar keduanya. Semua method PURE
-// (read-only), TIDAK menyentuh DOM, TIDAK menulis ke D/localStorage.
-const BACKUP_HEALTH_OVERDUE_DAYS = 7; // sama persis ambang checkBackup()
-
-const BackupHealthAPI = {
-
-  // daysSinceLastBackup() — null kalau belum pernah backup sama sekali
-  // (D.lastBackup kosong), selain itu jumlah hari bulat ke bawah sejak
-  // backup terakhir (rumus identik dgn checkBackup()).
-  daysSinceLastBackup() {
-    if (typeof D === 'undefined' || !D || !D.lastBackup) return null;
-    const ms = new Date() - new Date(D.lastBackup);
-    return Math.floor(ms / (1000 * 60 * 60 * 24));
-  },
-
-  // status() — level: 'never' (belum pernah backup) | 'overdue' (>=7
-  // hari, ambang SAMA dgn checkBackup()) | 'ok'.
-  status() {
-    const days = this.daysSinceLastBackup();
-    if (days === null) {
-      return { ok: true, level: 'never', days: null, label: 'Belum pernah backup' };
-    }
-    if (days >= BACKUP_HEALTH_OVERDUE_DAYS) {
-      return { ok: true, level: 'overdue', days, label: 'Backup terlambat (' + days + ' hari lalu)' };
-    }
-    return { ok: true, level: 'ok', days, label: 'Backup aman (' + days + ' hari lalu)' };
-  },
-
-  // reliability() — derivatif murni dari BackupHistoryAPI.summary()
-  // (histori backup, sesi ini) — persentase sukses dari histori yang
-  // tercatat. successRate null kalau belum ada histori sama sekali
-  // (BUKAN 0 — beda makna: "belum ada data" vs "0% sukses").
-  reliability() {
-    if (typeof BackupHistoryAPI === 'undefined') {
-      return { ok: false, reason: 'BackupHistoryAPI belum dimuat' };
-    }
-    const s = BackupHistoryAPI.summary();
-    if (!s.total) {
-      return { ok: true, total: 0, success: 0, partial: 0, failed: 0, successRate: null };
-    }
-    const successRate = Math.round((s.success / s.total) * 100);
-    return { ok: true, total: s.total, success: s.success, partial: s.partial, failed: s.failed, successRate };
-  },
-
-  // summary() — gabungan status() + reliability(), 1 titik akses yang
-  // dipakai presenter (BackupHealthPresenter).
-  summary() {
-    return { status: this.status(), reliability: this.reliability() };
-  },
-};
-
-// modules/shared/backup-history-presenter.js — Backup History
-// Presenter (Data Management Core). Lihat catatan lengkap di
-// modules/shared/backup-history-api.js.
-//
-// PRINSIP: UI HANYA presenter. 100% REUSE `BackupHistoryAPI.list()`
-// (modules/shared/backup-history-api.js, sesi ini) — TIDAK ada rumus
-// baru, TIDAK membaca D.backupHistory langsung. Dipanggil dari
-// renderSettings() (modules/shared/modules-render.js), pola guard sama
-// persis presenter *-api.js lain di codebase ini.
-const BACKUP_HISTORY_LIST_LIMIT = 10; // hanya tampilkan N entri terbaru di UI
-
-const BackupHistoryPresenter = {
-
-  render() {
-    const el = document.getElementById('backupHistoryList');
-    if (!el) return; // container belum ada di halaman ini, aman diam2.
-
-    if (typeof BackupHistoryAPI === 'undefined') {
-      el.innerHTML = '<div class="u-fs12 u-ctext3">Histori backup belum tersedia</div>';
-      return;
-    }
-
-    const list = BackupHistoryAPI.list().slice(0, BACKUP_HISTORY_LIST_LIMIT);
-    if (!list.length) {
-      el.innerHTML = '<div class="u-fs12 u-ctext3">Belum ada histori backup</div>';
-      return;
-    }
-
-    el.innerHTML = list.map((h) => this._row(h)).join('');
-  },
-
-  // _row(h) — h = 1 entri dari BackupHistoryAPI.list(), dipakai APA
-  // ADANYA (0 recompute status/tanggal).
-  _row(h) {
-    const dateStr = new Date(h.timestamp).toLocaleString('id-ID');
-    const icon = h.status === 'success' ? '✅' : h.status === 'partial' ? '⚠️' : '❌';
-    const doneText = (h.done && h.done.length) ? h.done.join(', ') : (h.type || '-');
-    return `
-      <div class="bh-row">
-        <div class="bh-row-icon">${icon}</div>
-        <div class="bh-row-body">
-          <div class="bh-row-date u-fs12 u-fw600">${escapeHtml(dateStr)}</div>
-          <div class="bh-row-detail u-fs11 u-ctext3">${escapeHtml(doneText)}</div>
-        </div>
-      </div>
-    `;
-  },
-};
-
-// modules/shared/backup-health-presenter.js — Backup Health Presenter
-// (Data Management Core). Lihat catatan lengkap di
-// modules/shared/backup-health-api.js.
-//
-// PRINSIP: UI HANYA presenter. 100% REUSE `BackupHealthAPI.summary()`
-// (modules/shared/backup-health-api.js, sesi ini — sendiri 100% reuse
-// D.lastBackup/BackupHistoryAPI) — TIDAK ada rumus baru, TIDAK membaca
-// D langsung. Dipanggil dari renderSettings() (modules/shared/
-// modules-render.js), pola guard `typeof X!=='undefined'` sama persis
-// presenter *-api.js lain di codebase ini (mis. DebtOptimizerPresenter).
-const BackupHealthPresenter = {
-
-  render() {
-    const el = document.getElementById('backupHealthCard');
-    if (!el) return; // container belum ada di halaman ini, aman diam2.
-
-    if (typeof BackupHealthAPI === 'undefined') {
-      el.innerHTML = '<div class="u-fs12 u-ctext3">Status backup belum tersedia</div>';
-      return;
-    }
-
-    const s = BackupHealthAPI.summary();
-    const levelCls = s.status.level === 'ok' ? 'bh-health-ok'
-      : s.status.level === 'overdue' ? 'bh-health-overdue'
-      : 'bh-health-never';
-    const rel = s.reliability;
-    const relText = (rel.ok && rel.successRate !== null)
-      ? rel.successRate + '% sukses (' + rel.total + ' backup tercatat)'
-      : 'Belum ada histori backup';
-
-    el.innerHTML = `
-      <div class="bh-health ${levelCls}">
-        <div class="bh-health-label">${escapeHtml(s.status.label)}</div>
-        <div class="bh-health-sub">${escapeHtml(relText)}</div>
-      </div>
-    `;
-  },
-};
 
 // payroll-absensi.js — Payroll: Absensi Harian & Kalkulator Gaji Mingguan (const Payroll={...})
 // Dipindah ke modules/business/payroll-absensi.js (Sesi 15 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
@@ -10366,7 +10119,7 @@ function aiErrorHint(provider,status){
 if(provider==='gemini')return(status===400||status===403)?' (cek API key di Pengaturan)':'';
 return status===401?' (API key salah/expired, cek di Pengaturan)':'';
 }
-// Advisor — pengatur tab utk card gabungan "🧭 Penasihat" (v124, kw130-data-management-core-backup-history-health-1):
+// Advisor — pengatur tab utk card gabungan "🧭 Penasihat" (v124, kw129-s129-dashboard-settings):
 // dulu FinCoach ("🩺 Insight Cepat", rule-based-gratis-instan) & AIWidget ("🔍 Laporan AI",
 // panggil Claude/Gemini, wajib API key) tampil sbg 2 card TERPISAH di Dashboard — sekarang
 // digabung jadi SATU card dgn 2 tab, supaya tidak terasa ada "2 penasihat AI" yang mirip2.

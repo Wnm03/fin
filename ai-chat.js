@@ -5,6 +5,68 @@
 // perubahan perilaku. PENTING: file ini HARUS dimuat sesuai urutan build.js (GROUP_A/GROUP_B) —
 // cek scripts/build.js untuk urutan lengkap terkini.
 
+// unifiedBriefingChatContext() — S111 (Batch 13, AI Daily Briefing Integration: Finance+Vehicle).
+// Jembatan tipis MURNI BACA ke UnifiedAIBriefing.generate() (modules/cross/unified-ai-briefing.js,
+// Sesi 88 — sendiri 100% reuse UnifiedSummaryAPI.summary() -> CrossAIHook.getAIHook() ->
+// FinanceDashboard.getAIHook()+VehicleAIHook.fleetSummary()). TIDAK ada rumus/agregasi baru di
+// sini — fungsi ini HANYA guard typeof + try/catch di sekitar generate() supaya aman dipanggil dari
+// initChat()/sendChat() walau modul briefing belum dimuat di halaman tertentu (pola sama persis
+// guard `typeof AIService==='undefined'` di AIDailyBriefingCard/AIStatusCard). null kalau briefing
+// belum tersedia/gagal — pemanggil (initChat/systemPrompt) TETAP jalan seperti biasa, cuma tanpa
+// baris briefing (silent, bukan error blocking). Scope S111 SENGAJA TIDAK termasuk asset (belum
+// ada AssetAIAdvisor/Asset.getAIHook() terpadu — lihat docs/PRODUCT_DECISIONS.md).
+function unifiedBriefingChatContext(){
+if(typeof UnifiedAIBriefing==='undefined')return null;
+try{
+const b=UnifiedAIBriefing.generate();
+return (b&&b.ok)?b.text:null;
+}catch(e){console.warn('unifiedBriefingChatContext: gagal ambil UnifiedAIBriefing',e);return null;}
+}
+// recommendationPanelChatContext() — S114 (Batch 13, Unified Recommendation
+// Panel Integration). Jembatan tipis MURNI BACA ke RecommendationPanel.
+// getRecommendations() (modules/cross/recommendation-panel.js, sesi ini —
+// sendiri 100% reuse DecisionCenterAPI.summary() -> LifeDashboardSummaryAPI/
+// PriorityEngine/FinanceIntelligence.insights()+VehicleIntelligence.
+// insights()). TIDAK ada rumus/filter baru di sini — hanya guard typeof +
+// try/catch + format teks pakai RecommendationPanel._icon() (helper
+// presentasional yang SUDAH ADA, dipakai apa adanya, BUKAN dibuat ulang),
+// pola sama persis unifiedBriefingChatContext() di atas. null kalau
+// RecommendationPanel belum dimuat/tidak ada rekomendasi/generate() error —
+// pemanggil (initChat()/_sendChatInner()) TETAP jalan seperti biasa, cuma
+// tanpa baris rekomendasi (silent, bukan error blocking). Scope S114
+// SENGAJA TIDAK termasuk asset (sama seperti S111 — belum ada
+// AssetAIAdvisor/Asset.getAIHook() terpadu).
+function recommendationPanelChatContext(){
+if(typeof RecommendationPanel==='undefined'||typeof RecommendationPanel.getRecommendations!=='function')return null;
+try{
+const{ok,recommendations}=RecommendationPanel.getRecommendations();
+if(!ok||!Array.isArray(recommendations)||!recommendations.length)return null;
+return recommendations.map(r=>`${RecommendationPanel._icon(r.type)} ${r.message}`).join('\n');
+}catch(e){console.warn('recommendationPanelChatContext: gagal ambil RecommendationPanel',e);return null;}
+}
+// actionQueueChatContext() — S115 (ActionQueue Public API Integration).
+// Jembatan tipis MURNI BACA ke ActionQueue.getQueue() (modules/cross/
+// action-queue.js — sendiri 100% reuse DecisionCenterAPI.summary() ->
+// LifeDashboardSummaryAPI/PriorityEngine). TIDAK ada rumus/filter/sorting
+// baru di sini — hanya guard typeof + try/catch + format teks pakai
+// ActionQueue._label()/_vehicleIcon() (helper presentasional yang SUDAH
+// ADA, dipakai apa adanya, BUKAN dibuat ulang — sama persis format yang
+// dipakai ActionQueue.render() sendiri utk tiap baris), pola sama persis
+// recommendationPanelChatContext() di atas. null kalau ActionQueue belum
+// dimuat/tidak ada item di queue/getQueue() error — pemanggil
+// (initChat()/_sendChatInner()) TETAP jalan seperti biasa, cuma tanpa
+// baris action queue (silent, bukan error blocking).
+function actionQueueChatContext(){
+if(typeof ActionQueue==='undefined'||typeof ActionQueue.getQueue!=='function')return null;
+try{
+const{ok,priorityItems}=ActionQueue.getQueue();
+if(!ok||!Array.isArray(priorityItems)||!priorityItems.length)return null;
+return priorityItems.map((item,idx)=>{
+const icon=item.kind==='finance'?'💰':ActionQueue._vehicleIcon(item.vehicleType);
+return `${idx+1}. ${icon} ${ActionQueue._label(item)}`;
+}).join('\n');
+}catch(e){console.warn('actionQueueChatContext: gagal ambil ActionQueue',e);return null;}
+}
 function chatActionEditFormHTML(actionId,type,data){
 const fields=CHAT_ACTION_EDIT_FIELDS[type]||[];
 const rows=fields.map(f=>{
@@ -79,6 +141,24 @@ const list=reminders.map(r=>`• ${escapeHtml(r)}`).join('<br>');
 html+=`<div class="chat-bubble ai">📋 <b>Sebelum lanjut, ada yang perlu diperhatikan nih:</b><br>${list}</div>`;
 }
 }catch(e){console.error('Gagal cek reminder proaktif:',e);}
+try{
+const briefingText=unifiedBriefingChatContext();
+if(briefingText){
+html+=`<div class="chat-bubble ai">📋 <b>Ringkasan Harian Finance & Vehicle:</b><br>${escapeHtml(briefingText)}</div>`;
+}
+}catch(e){console.error('Gagal ambil Unified AI Briefing:',e);}
+try{
+const recoText=recommendationPanelChatContext();
+if(recoText){
+html+=`<div class="chat-bubble ai">💡 <b>Rekomendasi utk Anda:</b><br>${escapeHtml(recoText).replace(/\n/g,'<br>')}</div>`;
+}
+}catch(e){console.error('Gagal ambil Recommendation Panel:',e);}
+try{
+const queueText=actionQueueChatContext();
+if(queueText){
+html+=`<div class="chat-bubble ai">🗂️ <b>Antrean Tindakan:</b><br>${escapeHtml(queueText).replace(/\n/g,'<br>')}</div>`;
+}
+}catch(e){console.error('Gagal ambil Action Queue:',e);}
 document.getElementById('chatBox').innerHTML=html;
 }
 function aiQ(q){document.getElementById('chatInput').value=q;sendChat();}
@@ -253,6 +333,9 @@ const scope=(D.finansialFreedom&&D.finansialFreedom.assetScope==='semua')?'semua
 fiInfo=`Target FI (${(100/swr).toFixed(1)}x pengeluaran tahunan, SWR ${swr}%): ${fmtFull(fiTarget)} (pengeluaran tahunan acuan ${fmtFull(fiAnnualExp)}). Dana FI saat ini (${scope}, dikurangi utang ${fmtFull(fiUtang)}): ${fmtFull(fiAsetBersih)} → progress ${progPct}%. Surplus/bulan (pemasukan-pengeluaran rata-rata): ${fmtFull(fiSurplus)}. Asumsi Return ${ret}%/th, Asumsi Inflasi ${inf}%/th (return riil ${((( 1+ret/100)/(1+inf/100)-1)*100).toFixed(1)}%/th, dipakai supaya target & estimasi tetap dlm nilai uang hari ini). Estimasi waktu capai FI dgn asumsi ini: ${monthsToGo===0?'🎉 sudah tercapai':monthsToGo===null?'>100 tahun (surplus/return kurang, atau minus)':fiFormatMonths(monthsToGo)}.`;
 }
 }catch(e){ console.warn('Gagal hitung ringkasan FI utk konteks chat AI:',e); }
+const unifiedBriefingText=unifiedBriefingChatContext();
+const recommendationText=recommendationPanelChatContext();
+const actionQueueText=actionQueueChatContext();
 const systemPrompt=`Kamu adalah PENASIHAT KEUANGAN PRIBADI sekaligus asisten all-in-one untuk ${D.profile.nama||'W'}, pria Indonesia kerja di toko mebel Borobudur, LDR dengan keluarga di Pekalongan.
 
 PERANMU:
@@ -311,7 +394,7 @@ KEBEBASAN FINANSIAL (FI) & INFLASI:
 ${fiInfo}
 Kalau user tanya soal "kapan bisa pensiun/FIRE/kebebasan finansial", "cukup gak tabunganku buat FI", atau minta analisa dampak inflasi ke rencana keuangannya, JAWAB pakai angka-angka di atas (jangan bilang tidak tahu / minta dia buka menu lain) — kamu SUDAH punya datanya. Kalau progress masih jauh, kasih saran konkret (naikkan surplus bulanan, kurangi pengeluaran kategori tertentu, atau evaluasi asumsi return/inflasi) — bukan cuma restate angka.
 
-PENGELUARAN 3 BULAN TERAKHIR PER KATEGORI:
+${unifiedBriefingText?`RINGKASAN AI HARIAN (Finance & Vehicle terpadu):\n${unifiedBriefingText}\n\n`:''}${recommendationText?`REKOMENDASI AI (Finance & Vehicle terpadu):\n${recommendationText}\n\n`:''}${actionQueueText?`ANTREAN TINDAKAN (Action Queue):\n${actionQueueText}\n\n`:''}PENGELUARAN 3 BULAN TERAKHIR PER KATEGORI:
 ${Object.entries(katMap).map(([k,v])=>`  ${k}: pemasukan ${fmtFull(v.inc)}, pengeluaran ${fmtFull(v.exp)}`).join('\n')}
 
 BISNIS SHOP (batu shop PO system):
@@ -439,7 +522,7 @@ function aiErrorHint(provider,status){
 if(provider==='gemini')return(status===400||status===403)?' (cek API key di Pengaturan)':'';
 return status===401?' (API key salah/expired, cek di Pengaturan)':'';
 }
-// Advisor — pengatur tab utk card gabungan "🧭 Penasihat" (v124, kw75-batch6-finance-dashboard-ai-hook-1):
+// Advisor — pengatur tab utk card gabungan "🧭 Penasihat" (v124, kw130-data-management-core-backup-history-health-1):
 // dulu FinCoach ("🩺 Insight Cepat", rule-based-gratis-instan) & AIWidget ("🔍 Laporan AI",
 // panggil Claude/Gemini, wajib API key) tampil sbg 2 card TERPISAH di Dashboard — sekarang
 // digabung jadi SATU card dgn 2 tab, supaya tidak terasa ada "2 penasihat AI" yang mirip2.

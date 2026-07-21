@@ -1,4 +1,4 @@
-// app-bundle-b.min.js — DIBUAT OTOMATIS oleh build.js dari: modules/shared/data-default.js, modules/shared/features-helpers-global-security.js, diagnostik-versi.js, modules/shared/format-tema.js, modules/shared/error-handler.js, modules/shared/helper-teks.js, modules/shared/keamanan-pin.js, modules/home/refleksi-selfcare.js, modules/shared/modal-navigasi.js, modules/business/reset-gaji-mingguan.js, modules/shared/debug-console.js, modules/shared/pengaturan-search.js, modules/shared/onboarding.js, modules/shared/kalkulator-input.js, modules/shared/scan-ocr.js, modules/finance/filter-laporan.js, modules/finance/akun.js, modules/business/gaji-calc.js, modules/finance/cicilan.js, modules/finance/tx-bbm.js, modules/finance/tx-stok-sparepart.js, modules/finance/tx-transfer.js, modules/finance/tx-cobek.js, modules/finance/tx-target.js, modules/finance/tx-list-cashflow.js, modules/finance/transaksi.js, modules/shared/profil-pengaturan.js, modules/finance/kategori.js, modules/ai/kategorisasi-ai.js, modules/finance/tagihan-kalender.js, modules/shared/backup-restore.js, modules/shared/backup-history-api.js, modules/shared/backup-health-api.js, modules/shared/backup-history-presenter.js, modules/shared/backup-health-presenter.js, modules/business/payroll-absensi.js, modules/business/tukang-absensi.js, modules/vehicle/vehicle-core.js, modules/ai/chat-action.js, modules/shared/data-archive.js, modules/vehicle/sparepart-servis.js, ai-chat.js, reminder-notif.js, laporan-export.js, gdrive-backup.js, data-health-check.js, global-search.js, sheets-schema.js, sheets-sync.js, pwa-setup.js, self-test.js, pajak-aset-ui-wrappers.js, modules/finance/finance-intelligence.js, modules/finance/finance-dashboard.js, modules/finance/financial-forecast-api.js, modules/finance/financial-forecast-presenter.js, modules/finance/budget-recommendation-api.js, modules/finance/budget-recommendation-presenter.js, modules/finance/cashflow-projection-api.js, modules/finance/cashflow-projection-presenter.js, modules/finance/financial-goal-api.js, modules/finance/financial-goal-presenter.js, modules/finance/investment-planner-api.js, modules/finance/investment-planner-presenter.js, modules/finance/debt-optimizer-api.js, modules/finance/debt-optimizer-presenter.js, modules/finance/retirement-planner-api.js, modules/finance/retirement-planner-presenter.js, modules/finance/financial-health-score-api.js, modules/finance/financial-health-score-presenter.js, modules/finance/financial-risk-dashboard-api.js, modules/finance/financial-risk-dashboard-presenter.js, modules/vehicle/vehicle-intelligence.js, modules/vehicle/vehicle-dashboard.js, modules/vehicle/vehicle-reminder.js, modules/vehicle/vehicle-notif-bridge.js, modules/vehicle/vehicle-ai-hook.js, modules/vehicle/vehicle-insight-presenter.js, modules/vehicle/vehicle-daily-brief.js, modules/vehicle/vehicle-alert-panel.js, modules/vehicle/vehicle-insight-feed.js, modules/vehicle/vehicle-trend-api.js, modules/vehicle/vehicle-cost-summary.js, modules/vehicle/vehicle-fuel-trend.js, modules/vehicle/vehicle-service-trend.js, modules/vehicle/vehicle-analytics-presenter.js, modules/vehicle/vehicle-decision-api.js, modules/vehicle/vehicle-recommendation-engine.js, modules/vehicle/vehicle-priority-scoring.js, modules/vehicle/vehicle-action-recommendation.js, modules/vehicle/vehicle-decision-presenter.js, modules/vehicle/vehicle-automation-api.js, modules/vehicle/vehicle-reminder-scheduler.js, modules/vehicle/vehicle-maintenance-automation.js, modules/vehicle/vehicle-tax-document-automation.js, modules/vehicle/vehicle-automation-presenter.js, modules/cross/finance-vehicle-cross-summary.js, modules/cross/cross-ai-hook.js, modules/cross/cross-dashboard-card.js, modules/cross/cross-insight-presenter.js, modules/cross/unified-summary-api.js, modules/cross/unified-ai-briefing.js, modules/cross/unified-briefing-presenter.js, modules/cross/life-dashboard-summary-api.js, modules/cross/priority-engine.js, modules/cross/personal-overview-presenter.js, modules/cross/cross-module-widgets.js, modules/cross/life-priority-panel.js, modules/cross/unified-dashboard-home.js, modules/cross/decision-center-api.js, modules/cross/recommendation-panel.js, modules/cross/action-queue.js, modules/cross/decision-center-home.js, app-bootstrap.js, modules/shared/feature-icons.js, modules/dashboard-hub/dashboard-hub-registry.js, modules/dashboard-hub/dashboard-hub.js, modules/dashboard-hub/dashboard-hub-search.js, modules/dashboard-hub/dashboard-hub-favorit.js, modules/dashboard-hub/dashboard-hub-favorit-view.js, modules/dashboard-hub/dashboard-hub-settings.js, modules/ai/ai-command-center.js, modules/self-reward/self-reward-engine.js, modules/self-reward/self-reward-view.js, modules/self-reward/self-reward-ai-widget.js, modules/asset/investasi.js, modules/asset/asset-portfolio-api.js, lifeos/lifeos-store.js, lifeos/lifeos-registry.js, lifeos/lifeos-link-registry.js, lifeos/plugins/lifeos-plugin-manifest.js, lifeos/plugins/lifeos-plugin-validation.js, lifeos/plugins/lifeos-plugin-registry.js, lifeos/plugins/lifeos-plugin-loader.js, lifeos/plugins/lifeos-plugin-runtime.js, lifeos/adapters/area-adapter.js, lifeos/adapters/goal-adapter.js, lifeos/adapters/project-adapter.js, lifeos/adapters/today-adapter.js, lifeos/adapters/review-adapter.js, lifeos/adapters/knowledge-adapter.js, lifeos/lifeos-object-ref.js, lifeos/services/project-service.js, lifeos/services/review-service.js, lifeos/services/knowledge-service.js, lifeos/services/life-object-service.js, lifeos/ui/lifeos-home.js, lifeos/ui/areas.js, lifeos/ui/today.js, lifeos/ui/goals.js, lifeos/ui/projects.js, lifeos/ui/review.js, lifeos/ui/life-objects.js, lifeos/ui/plugins.js, lifeos/ui/knowledge.js, lifeos/lifeos-nav.js, economic-intelligence/eie-bus.js, economic-intelligence/eie-store.js, economic-intelligence/domain/entities.js, economic-intelligence/domain/scoring-formulas.js, economic-intelligence/domain/status-classifier.js, economic-intelligence/adapters/user-finance-adapter.js, economic-intelligence/adapters/macro-data-adapter.js, economic-intelligence/rules/rule-schema.js, economic-intelligence/rules/rule-definitions.js, economic-intelligence/engine/rule-engine.js, economic-intelligence/engine/scoring-engine.js, economic-intelligence/engine/insight-generator.js, economic-intelligence/services/macro-sync-service.js, economic-intelligence/services/notification-service.js, economic-intelligence/services/recommendation-service.js, economic-intelligence/scheduler/eie-scheduler.js, economic-intelligence/ui/eie-dashboard.js, economic-intelligence/ui/eie-insight-feed.js, economic-intelligence/ui/eie-notif-settings.js, economic-intelligence/eie-registry.js, modules/ai/ai-core.js, modules/ai/ai-decision-engine.js, modules/ai/ai-service.js, modules/logistics/logistics-engine.js, modules/logistics/logistics-service.js
+// app-bundle-b.min.js — DIBUAT OTOMATIS oleh build.js dari: modules/shared/data-default.js, modules/shared/features-helpers-global-security.js, diagnostik-versi.js, modules/shared/format-tema.js, modules/shared/error-handler.js, modules/shared/helper-teks.js, modules/shared/keamanan-pin.js, modules/home/refleksi-selfcare.js, modules/shared/modal-navigasi.js, modules/business/reset-gaji-mingguan.js, modules/shared/debug-console.js, modules/shared/pengaturan-search.js, modules/shared/onboarding.js, modules/shared/kalkulator-input.js, modules/shared/scan-ocr.js, modules/finance/filter-laporan.js, modules/finance/akun.js, modules/business/gaji-calc.js, modules/finance/cicilan.js, modules/finance/tx-bbm.js, modules/finance/tx-stok-sparepart.js, modules/finance/tx-transfer.js, modules/finance/tx-cobek.js, modules/finance/tx-target.js, modules/finance/tx-list-cashflow.js, modules/finance/transaksi.js, modules/shared/profil-pengaturan.js, modules/finance/kategori.js, modules/ai/kategorisasi-ai.js, modules/finance/tagihan-kalender.js, modules/shared/backup-restore.js, modules/business/payroll-absensi.js, modules/business/tukang-absensi.js, modules/vehicle/vehicle-core.js, modules/ai/chat-action.js, modules/shared/data-archive.js, modules/vehicle/sparepart-servis.js, ai-chat.js, reminder-notif.js, laporan-export.js, gdrive-backup.js, data-health-check.js, global-search.js, sheets-schema.js, sheets-sync.js, pwa-setup.js, self-test.js, pajak-aset-ui-wrappers.js, modules/finance/finance-intelligence.js, modules/finance/finance-dashboard.js, modules/finance/financial-forecast-api.js, modules/finance/financial-forecast-presenter.js, modules/finance/budget-recommendation-api.js, modules/finance/budget-recommendation-presenter.js, modules/finance/cashflow-projection-api.js, modules/finance/cashflow-projection-presenter.js, modules/finance/financial-goal-api.js, modules/finance/financial-goal-presenter.js, modules/finance/investment-planner-api.js, modules/finance/investment-planner-presenter.js, modules/finance/debt-optimizer-api.js, modules/finance/debt-optimizer-presenter.js, modules/finance/retirement-planner-api.js, modules/finance/retirement-planner-presenter.js, modules/finance/financial-health-score-api.js, modules/finance/financial-health-score-presenter.js, modules/finance/financial-risk-dashboard-api.js, modules/finance/financial-risk-dashboard-presenter.js, modules/vehicle/vehicle-intelligence.js, modules/vehicle/vehicle-dashboard.js, modules/vehicle/vehicle-reminder.js, modules/vehicle/vehicle-notif-bridge.js, modules/vehicle/vehicle-ai-hook.js, modules/vehicle/vehicle-insight-presenter.js, modules/vehicle/vehicle-daily-brief.js, modules/vehicle/vehicle-alert-panel.js, modules/vehicle/vehicle-insight-feed.js, modules/vehicle/vehicle-trend-api.js, modules/vehicle/vehicle-cost-summary.js, modules/vehicle/vehicle-fuel-trend.js, modules/vehicle/vehicle-service-trend.js, modules/vehicle/vehicle-analytics-presenter.js, modules/vehicle/vehicle-decision-api.js, modules/vehicle/vehicle-recommendation-engine.js, modules/vehicle/vehicle-priority-scoring.js, modules/vehicle/vehicle-action-recommendation.js, modules/vehicle/vehicle-decision-presenter.js, modules/vehicle/vehicle-automation-api.js, modules/vehicle/vehicle-reminder-scheduler.js, modules/vehicle/vehicle-maintenance-automation.js, modules/vehicle/vehicle-tax-document-automation.js, modules/vehicle/vehicle-automation-presenter.js, modules/cross/finance-vehicle-cross-summary.js, modules/cross/cross-ai-hook.js, modules/cross/cross-dashboard-card.js, modules/cross/cross-insight-presenter.js, modules/cross/unified-summary-api.js, modules/cross/unified-ai-briefing.js, modules/cross/unified-briefing-presenter.js, modules/cross/life-dashboard-summary-api.js, modules/cross/priority-engine.js, modules/cross/personal-overview-presenter.js, modules/cross/cross-module-widgets.js, modules/cross/life-priority-panel.js, modules/cross/unified-dashboard-home.js, modules/cross/decision-center-api.js, modules/cross/recommendation-panel.js, modules/cross/action-queue.js, modules/cross/decision-center-home.js, app-bootstrap.js, modules/shared/feature-icons.js, modules/dashboard-hub/dashboard-hub-registry.js, modules/dashboard-hub/dashboard-hub.js, modules/dashboard-hub/dashboard-hub-search.js, modules/dashboard-hub/dashboard-hub-favorit.js, modules/dashboard-hub/dashboard-hub-favorit-view.js, modules/ai/ai-command-center.js, modules/self-reward/self-reward-engine.js, modules/self-reward/self-reward-view.js, modules/self-reward/self-reward-ai-widget.js, modules/asset/investasi.js, modules/asset/asset-portfolio-api.js, lifeos/lifeos-store.js, lifeos/lifeos-registry.js, lifeos/lifeos-link-registry.js, lifeos/plugins/lifeos-plugin-manifest.js, lifeos/plugins/lifeos-plugin-validation.js, lifeos/plugins/lifeos-plugin-registry.js, lifeos/plugins/lifeos-plugin-loader.js, lifeos/plugins/lifeos-plugin-runtime.js, lifeos/adapters/area-adapter.js, lifeos/adapters/goal-adapter.js, lifeos/adapters/project-adapter.js, lifeos/adapters/today-adapter.js, lifeos/adapters/review-adapter.js, lifeos/adapters/knowledge-adapter.js, lifeos/lifeos-object-ref.js, lifeos/services/project-service.js, lifeos/services/review-service.js, lifeos/services/knowledge-service.js, lifeos/services/life-object-service.js, lifeos/ui/lifeos-home.js, lifeos/ui/areas.js, lifeos/ui/today.js, lifeos/ui/goals.js, lifeos/ui/projects.js, lifeos/ui/review.js, lifeos/ui/life-objects.js, lifeos/ui/plugins.js, lifeos/ui/knowledge.js, lifeos/lifeos-nav.js, economic-intelligence/eie-bus.js, economic-intelligence/eie-store.js, economic-intelligence/domain/entities.js, economic-intelligence/domain/scoring-formulas.js, economic-intelligence/domain/status-classifier.js, economic-intelligence/adapters/user-finance-adapter.js, economic-intelligence/adapters/macro-data-adapter.js, economic-intelligence/rules/rule-schema.js, economic-intelligence/rules/rule-definitions.js, economic-intelligence/engine/rule-engine.js, economic-intelligence/engine/scoring-engine.js, economic-intelligence/engine/insight-generator.js, economic-intelligence/services/macro-sync-service.js, economic-intelligence/services/notification-service.js, economic-intelligence/services/recommendation-service.js, economic-intelligence/scheduler/eie-scheduler.js, economic-intelligence/ui/eie-dashboard.js, economic-intelligence/ui/eie-insight-feed.js, economic-intelligence/ui/eie-notif-settings.js, economic-intelligence/eie-registry.js, modules/ai/ai-core.js, modules/ai/ai-decision-engine.js, modules/ai/ai-service.js, modules/logistics/logistics-engine.js, modules/logistics/logistics-service.js
 // JANGAN diedit manual — edit file source-nya lalu jalankan: node build.js
 // data-default.js — Domain Data Default: kategori shop bawaan (DEFAULT_COBEK_KATEGORI),
 // Dipindah ke modules/shared/data-default.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
@@ -82,8 +82,8 @@ if(location.hostname==='localhost'||location.hostname==='127.0.0.1')return true;
 }catch(e){ /* anggap bukan dev mode kalau gagal deteksi */ }
 return false;
 }
-const APP_BUILD_VERSION = 'kw130-data-management-core-backup-history-health-1';
-const PRODUCTION_BUILD_SYNCED_VERSION = 'kw130-data-management-core-backup-history-health-1';
+const APP_BUILD_VERSION = 'kw126-batch18-scan-universal-akun';
+const PRODUCTION_BUILD_SYNCED_VERSION = 'kw126-batch18-scan-universal-akun';
 let D = {
 schemaVersion:SCHEMA_VERSION,
 transactions:[],cobek:[],products:[],produsen:[],cobekKategori:JSON.parse(JSON.stringify(DEFAULT_COBEK_KATEGORI)),targets:[],eduFunds:[],reminders:[],bills:[],billsArchive:[],
@@ -2996,12 +2996,9 @@ function scanBillMultiItems(){return BillMultiScan.scan();}
 // Parser di sini bersifat "best effort" (OCR + toleransi noise) -- hasilnya SELALU lewat
 // preview checklist (universalOcrModal) dulu sebelum diimpor, jadi item yang salah baca
 // bisa dicentang-lepas dulu sebelum disimpan ke D.accounts.
-// detectScreenTypeScores(text) -- Batch 19: ekstraksi MURNI dari body scoring yang
-// sebelumnya inline di detectScreenType() (Sesi 125), supaya bisa dipakai ulang oleh
-// detectScreenTypeWithConfidence() tanpa duplikasi aturan skor. detectScreenType() TIDAK
-// berubah kontraknya (tetap return string|null), cuma manggil helper ini sekarang.
-function detectScreenTypeScores(text){
-const t=String(text||'').toLowerCase();
+function detectScreenType(text){
+if(!text)return null;
+const t=String(text).toLowerCase();
 const scores={bank:0,wallet:0,bibit:0,jago_pocket:0};
 if(/kantong\s*utama|kantong\s*bayar|kantong\s*berbagi|cari\s*kantong/.test(t))scores.jago_pocket+=3;
 if(/aset\s*saya/.test(t))scores.jago_pocket+=2;
@@ -3010,37 +3007,15 @@ if(/gopay|\bdana\s*aktif\b|shopeepay|\bovo\b/.test(t))scores.wallet+=3;
 if(/tarik\s*tunai|top\s*up\b/.test(t))scores.wallet+=1;
 if(/no\.?\s*rekening|nomor\s*rekening|total\s*saldo|\btabungan\b|\bdeposito\b/.test(t))scores.bank+=3;
 if(/\brekening\b/.test(t))scores.bank+=1;
-return scores;
-}
-function detectScreenType(text){
-if(!text)return null;
-const scores=detectScreenTypeScores(text);
 let best=null,bestScore=0;
 for(const k in scores){if(scores[k]>bestScore){bestScore=scores[k];best=k;}}
 return bestScore>0?best:null;
-}
-// detectScreenTypeWithConfidence(text) -- Batch 19 Tahap 1, item 1 (Confidence Score).
-// REUSE detectScreenTypeScores()/detectScreenType(), TIDAK mengganti keduanya. confidence
-// dihitung dari margin antara skor tertinggi & skor kedua tertinggi (skor tinggi + margin
-// lebar = yakin; skor tinggi tapi mepet dgn kandidat lain = ragu-ragu), dinormalisasi ke
-// rentang 0..1 lewat pembagi tetap (4 -- margin terbesar yang mungkin dari aturan skor di
-// detectScreenTypeScores()).
-function detectScreenTypeWithConfidence(text){
-const scores=detectScreenTypeScores(text);
-const sorted=Object.keys(scores).map(k=>scores[k]).sort((a,b)=>b-a);
-const type=detectScreenType(text);
-if(!type)return{type:null,confidence:0,scores};
-const best=sorted[0],second=sorted[1]||0;
-const margin=best-second;
-const confidence=Math.max(0,Math.min(1,margin/4));
-return{type,confidence:Math.round(confidence*100)/100,scores};
 }
 // parseBankScreen(text) -- 1 akun: nama pemilik/bank (ditebak dari baris sebelum "No.
 // Rekening") + nominal dari "Total Saldo" (fallback "Saldo" polos).
 function parseBankScreen(text){
 if(!text)return null;
-const mPrimary=text.match(/total\s*saldo[^\d]{0,20}(\d[\d.,]*)/i);
-const m=mPrimary||text.match(/\bsaldo\b[^\d]{0,20}(\d[\d.,]*)/i);
+const m=text.match(/total\s*saldo[^\d]{0,20}(\d[\d.,]*)/i)||text.match(/\bsaldo\b[^\d]{0,20}(\d[\d.,]*)/i);
 const nominalRaw=m?normalizeOcrNumber(m[1]):NaN;
 const lines=String(text).split('\n').map(l=>l.trim()).filter(Boolean);
 const relIdx=lines.findIndex(l=>/no\.?\s*rekening|nomor\s*rekening/i.test(l));
@@ -3050,44 +3025,30 @@ for(let j=relIdx-1;j>=Math.max(0,relIdx-3);j--){
 if(lines[j]&&!/\d{4,}/.test(lines[j])){nama=lines[j];break;}
 }
 }
-// confidence (Batch 19 item 1): nominal via "Total Saldo" (pola paling spesifik) = 0.9,
-// via fallback "Saldo" polos = 0.6, nominal tidak ketemu = 0. nama ketemu dari baris
-// sebelum "No. Rekening" -> +0.1 (default label "Rekening Bank" generik -> tanpa bonus).
-if(isNaN(nominalRaw))return{nama:nama||'Rekening Bank',nominal:null,confidence:0};
-let confidence=mPrimary?0.9:0.6;
-if(nama)confidence=Math.min(1,confidence+0.1);
-return{nama:nama||'Rekening Bank',nominal:Math.round(nominalRaw),confidence:Math.round(confidence*100)/100};
+return{nama:nama||'Rekening Bank',nominal:isNaN(nominalRaw)?null:Math.round(nominalRaw)};
 }
 // parseWalletScreen(text) -- 1 akun: nama e-wallet ditebak dari brand yang kedetek
 // (GoPay/DANA/OVO/ShopeePay), nominal dari angka "Rp..." pertama yang match (biasanya
 // saldo besar di bagian atas layar).
 function parseWalletScreen(text){
 if(!text)return null;
-const mPrimary=text.match(/\bRp\.?\s*(\d[\d.,]*)\s*(?:\n|$)/i);
-const m=mPrimary||text.match(/Rp\.?\s*(\d[\d.,]*)/i);
+let m=text.match(/\bRp\.?\s*(\d[\d.,]*)\s*(?:\n|$)/i);
+if(!m)m=text.match(/Rp\.?\s*(\d[\d.,]*)/i);
 const nominalRaw=m?normalizeOcrNumber(m[1]):NaN;
-let nama='E-Wallet',brandMatched=false;
-if(/gopay/i.test(text)){nama='GoPay';brandMatched=true;}
-else if(/\bdana\b/i.test(text)){nama='DANA';brandMatched=true;}
-else if(/\bovo\b/i.test(text)){nama='OVO';brandMatched=true;}
-else if(/shopeepay/i.test(text)){nama='ShopeePay';brandMatched=true;}
-// confidence (Batch 19 item 1): brand e-wallet kedetek (GoPay/DANA/OVO/ShopeePay) +
-// nominal via pola "Rp... di akhir baris" (biasanya saldo besar paling atas) = 0.9;
-// brand tidak kedetek (fallback nama generik "E-Wallet") atau nominal via fallback "Rp..."
-// bebas posisi = confidence lebih rendah.
-if(isNaN(nominalRaw))return{nama,nominal:null,confidence:0};
-let confidence=(brandMatched?0.7:0.4)+(mPrimary?0.2:0);
-return{nama,nominal:Math.round(nominalRaw),confidence:Math.round(Math.min(1,confidence)*100)/100};
+let nama='E-Wallet';
+if(/gopay/i.test(text))nama='GoPay';
+else if(/\bdana\b/i.test(text))nama='DANA';
+else if(/\bovo\b/i.test(text))nama='OVO';
+else if(/shopeepay/i.test(text))nama='ShopeePay';
+return{nama,nominal:isNaN(nominalRaw)?null:Math.round(nominalRaw)};
 }
 // parseBibitScreen(text) -- 1 akun: nominal dari "Total Investasi"/"Portofolio"/"Total
 // Aset".
 function parseBibitScreen(text){
 if(!text)return null;
-const mPrimary=text.match(/total\s*(?:investasi|portofolio|aset)[^\d]{0,20}(\d[\d.,]*)/i);
-const m=mPrimary||text.match(/portofolio[^\d]{0,20}(\d[\d.,]*)/i);
+const m=text.match(/total\s*(?:investasi|portofolio|aset)[^\d]{0,20}(\d[\d.,]*)/i)||text.match(/portofolio[^\d]{0,20}(\d[\d.,]*)/i);
 const nominalRaw=m?normalizeOcrNumber(m[1]):NaN;
-if(isNaN(nominalRaw))return{nama:'Bibit',nominal:null,confidence:0};
-return{nama:'Bibit',nominal:Math.round(nominalRaw),confidence:mPrimary?0.9:0.6};
+return{nama:'Bibit',nominal:isNaN(nominalRaw)?null:Math.round(nominalRaw)};
 }
 // parseJagoPocketScreen(text) -- BANYAK akun sekaligus (1 per "Kantong"): cari tiap baris
 // nominal "Rp...", lalu cari nama kantong mundur 1-2 baris (skip label umum "Aset Saya"/
@@ -3103,125 +3064,21 @@ const m=lines[i].match(JAGO_POCKET_AMOUNT_RE);
 if(!m)continue;
 const nominalRaw=normalizeOcrNumber(m[1]);
 if(isNaN(nominalRaw))continue;
-let nama=null,dist=0;
+let nama=null;
 for(let j=i-1;j>=Math.max(0,i-2);j--){
 const cand=lines[j];
 if(!cand||JAGO_POCKET_NOISE_LINE_RE.test(cand))continue;
 if(JAGO_POCKET_AMOUNT_RE.test(cand))continue;
-nama=cand;dist=i-j;break;
+nama=cand;break;
 }
 if(!nama)continue;
-// confidence (Batch 19 item 1): nama 1 baris di atas nominal (dist===1, pola paling
-// umum) = 0.9; 2 baris di atas (ada baris noise yang dilompati) = 0.7.
-items.push({nama,nominal:Math.round(nominalRaw),confidence:dist===1?0.9:0.7});
+items.push({nama,nominal:Math.round(nominalRaw)});
 }
 return items;
 }
 function _universalScanEmoji(screenType){
 return{bank:'🏦',wallet:'📱',bibit:'🌱',jago_pocket:'👝'}[screenType]||'💰';
 }
-// UNIVERSAL_SCAN_PARSERS -- Batch 19 Tahap 1, item 4 (Parser Registry). REUSE 100%
-// parseBankScreen()/parseWalletScreen()/parseBibitScreen()/parseJagoPocketScreen() yang
-// SUDAH ADA (Sesi 125) -- registry ini cuma peta screenType->parser supaya UniversalScan
-// tidak perlu if/else berjenjang tiap nambah jenis layar baru. TIDAK ada parser baru,
-// TIDAK ada perubahan aturan parsing (lihat diff parseBankScreen dkk di atas: hanya
-// nambah field `confidence`, bukan ganti logic).
-const UNIVERSAL_SCAN_PARSERS={
-bank:parseBankScreen,
-wallet:parseWalletScreen,
-bibit:parseBibitScreen,
-jago_pocket:parseJagoPocketScreen,
-};
-// runUniversalScanParser(screenType, text) -- lookup di registry lalu normalisasi hasil
-// jadi array (parseJagoPocketScreen sudah array; parseBankScreen/Wallet/Bibit single
-// object -> dibungkus [x]). Dipakai UniversalScan.scan() (lihat di bawah) supaya alur
-// "screenType -> parser -> array item" 1 pintu, bukan diulang di 2 tempat.
-function runUniversalScanParser(screenType,text){
-const parser=UNIVERSAL_SCAN_PARSERS[screenType];
-if(!parser)return[];
-const result=parser(text);
-if(Array.isArray(result))return result;
-return result?[result]:[];
-}
-// validateUniversalScanItem(item) -- Batch 19 Tahap 1, item 2 (Preview Validation). Fungsi
-// MURNI (tidak baca/tulis DOM) yang mengecek 1 item hasil parse SEBELUM ditampilkan di
-// preview checklist (universalOcrModal) / sebelum diimpor ke D.accounts. Tidak mengubah
-// item, cuma melaporkan {valid, issues[]} -- keputusan akhir (tetap ditampilkan tapi
-// dikasih peringatan, vs di-uncheck default) ranah UI (render()), bukan fungsi ini.
-// validateUniversalScanItem(item, minConfidence) -- S128: `minConfidence` sekarang
-// parameter opsional (default OCR_MIN_CONFIDENCE_DEFAULT_PCT/100 = 0.5, SAMA PERSIS
-// angka lama yang tadinya hardcoded), bukan aturan validasi baru -- cuma supaya nilainya
-// bisa disuplai dari Pengaturan (lihat getOcrMinConfidence() di bawah) tanpa mengubah
-// fungsi ini jadi bergantung ke `D` global (tetap murni/gampang dites lewat loadSource(),
-// pemanggil yang urusan baca D.profile).
-function validateUniversalScanItem(item,minConfidence){
-const threshold=typeof minConfidence==='number'&&!isNaN(minConfidence)?minConfidence:(OCR_MIN_CONFIDENCE_DEFAULT_PCT/100);
-const issues=[];
-if(!item||item.nominal==null||isNaN(item.nominal)){
-issues.push('nominal tidak terbaca');
-}else{
-if(item.nominal<=0)issues.push('nominal 0 atau negatif');
-if(item.nominal>100000000000)issues.push('nominal tidak wajar (di atas Rp100 miliar)');
-}
-if(!item||!item.nama||!String(item.nama).trim())issues.push('nama akun kosong');
-else if(String(item.nama).trim().length<2)issues.push('nama akun terlalu pendek, kemungkinan salah baca');
-if(item&&typeof item.confidence==='number'&&item.confidence<threshold)issues.push('confidence rendah, cek ulang manual');
-return{valid:issues.length===0,issues};
-}
-// getOcrMinConfidence()/setOcrMinConfidence(pct) -- S128 (OCR Settings). REUSE 100% pola
-// getter/setter threshold yang SUDAH ADA di project (getAIFinanceOverspendThreshold() di
-// modules/finance/tx-list-cashflow.js, getAIDeliveryThinMarginThreshold() di
-// modules/shop/cobek-pricing.js, dst): simpan sebagai persen (0-100) di
-// D.profile.ocrMinConfidencePct, TIDAK ada struktur data baru (reuse D.profile yang sudah
-// ada, sama seperti threshold AI lainnya), field Pengaturan baca/tulis lewat
-// renderSettings()/autoSaveProfile() (lihat modules/shared/profil-pengaturan.js,
-// modules-render.js) dgn pola persis sama.
-const OCR_MIN_CONFIDENCE_DEFAULT_PCT=50;
-function getOcrMinConfidence(){
-const v=typeof D!=='undefined'&&D.profile&&D.profile.ocrMinConfidencePct;
-return(typeof v==='number'&&v>=0&&v<=100)?v:OCR_MIN_CONFIDENCE_DEFAULT_PCT;
-}
-function setOcrMinConfidence(pct){
-const n=parseInt(pct,10);
-const clamped=(Number.isFinite(n)&&n>=0&&n<=100)?n:OCR_MIN_CONFIDENCE_DEFAULT_PCT;
-if(typeof D!=='undefined'&&D.profile)D.profile.ocrMinConfidencePct=clamped;
-return clamped;
-}
-// UniversalScanHistory -- Batch 19 Tahap 1, item 5 (Universal Scan History). Riwayat
-// ringkas tiap sesi scan (bukan struktur data baru di D -- disimpan terpisah, in-memory +
-// localStorage best-effort, SAMA SEKALI TIDAK menyentuh D.accounts / bentuk akun yang
-// sudah ada, sesuai larangan "JANGAN mengubah struktur data"). add()/list()/clear() murni
-// operasi array biasa, gampang dites lewat loadSource() tanpa stub tambahan.
-const UNIVERSAL_SCAN_HISTORY_KEY='universalScanHistory';
-const UniversalScanHistory={
-_mem:[],
-add(record){
-const entry={
-ts:record&&record.ts?record.ts:Date.now(),
-screenType:record?record.screenType:null,
-totalDetected:record?(record.totalDetected||0):0,
-importedCount:record?(record.importedCount||0):0,
-confidence:record&&typeof record.confidence==='number'?record.confidence:null,
-};
-this._mem.unshift(entry);
-if(this._mem.length>50)this._mem.length=50;
-try{
-if(typeof localStorage!=='undefined'&&localStorage&&typeof localStorage.setItem==='function'){
-localStorage.setItem(UNIVERSAL_SCAN_HISTORY_KEY,JSON.stringify(this._mem));
-}
-}catch(e){/* localStorage tidak tersedia/full -- history in-memory tetap jalan */}
-return entry;
-},
-list(){return this._mem.slice();},
-clear(){
-this._mem=[];
-try{
-if(typeof localStorage!=='undefined'&&localStorage&&typeof localStorage.removeItem==='function'){
-localStorage.removeItem(UNIVERSAL_SCAN_HISTORY_KEY);
-}
-}catch(e){/* no-op */}
-},
-};
 // UniversalScan -- object flow UI (ambil foto -> OCR -> detectScreenType -> parse*Screen ->
 // preview checklist -> import terpilih ke D.accounts), pola sama persis BillMultiScan di
 // atas. Akun yang namanya SUDAH ADA di D.accounts (case-insensitive) di-UPDATE saldonya
@@ -3231,13 +3088,12 @@ localStorage.removeItem(UNIVERSAL_SCAN_HISTORY_KEY);
 const UniversalScan={
 screenType:null,
 items:[],
-scanConfidence:0,
 scan(){
 const inp=document.createElement('input');
 inp.type='file'; inp.accept='image/*';
 inp.onchange=async(e)=>{
 const file=e.target.files[0]; if(!file)return;
-this.items=[]; this.screenType=null; this.scanConfidence=0;
+this.items=[]; this.screenType=null;
 openModal('universalOcrModal');
 this.render();
 const box=document.getElementById('universalOcrBody');
@@ -3246,31 +3102,23 @@ toast('🔍 Memindai gambar, mohon tunggu...',6000);
 try{
 const result=await ocrRecognize(file);
 const text=result&&result.data?result.data.text:'';
-// Batch 19: pakai detectScreenTypeWithConfidence() (bukan detectScreenType() polos)
-// supaya confidence keseluruhan-jenis-layar ikut kesimpan, lalu runUniversalScanParser()
-// (Parser Registry, REUSE parse*Screen() yang sudah ada -- lihat komentar di atasnya).
-const detected=detectScreenTypeWithConfidence(text);
-this.screenType=detected.type;
-this.scanConfidence=detected.confidence;
-const raw=runUniversalScanParser(this.screenType,text);
-this.items=raw.filter(it=>it&&it.nominal!=null&&!isNaN(it.nominal)).map(it=>{
-const validation=validateUniversalScanItem(it,getOcrMinConfidence()/100);
-return{
+this.screenType=detectScreenType(text);
+let raw=[];
+if(this.screenType==='jago_pocket'){
+raw=parseJagoPocketScreen(text);
+} else if(this.screenType==='bank'){
+const s=parseBankScreen(text); if(s)raw=[s];
+} else if(this.screenType==='wallet'){
+const s=parseWalletScreen(text); if(s)raw=[s];
+} else if(this.screenType==='bibit'){
+const s=parseBibitScreen(text); if(s)raw=[s];
+}
+this.items=raw.filter(it=>it&&it.nominal!=null&&!isNaN(it.nominal)).map(it=>({
 nama:it.nama,
 nominal:it.nominal,
-confidence:typeof it.confidence==='number'?it.confidence:null,
-valid:validation.valid,
-issues:validation.issues,
-checked:it.nominal>0&&validation.valid,
-};
-});
+checked:it.nominal>0
+}));
 this.render();
-UniversalScanHistory.add({
-screenType:this.screenType,
-totalDetected:this.items.length,
-importedCount:0,
-confidence:this.scanConfidence,
-});
 toast(this.items.length?'✅ '+this.items.length+' akun terbaca ('+(this.screenType||'?')+') — cek & koreksi sebelum impor':'⚠️ Tidak ada saldo akun yang terbaca dari foto ini, isi manual ya');
 }catch(err){
 toast('❌ Gagal scan: '+scanErrorMessage(err));
@@ -3289,20 +3137,11 @@ return;
 const emoji=_universalScanEmoji(this.screenType);
 box.innerHTML=this.items.map((it,i)=>{
 const existing=D.accounts.find(a=>a.name.trim().toLowerCase()===String(it.nama).trim().toLowerCase());
-const confPct=typeof it.confidence==='number'?Math.round(it.confidence*100):null;
-const confBadge=confPct==null?'':` · <span style="color:${confPct>=70?'var(--green,#2e7d32)':'var(--orange,#b45309)'}">confidence ${confPct}%</span>`;
-const warn=(!it.valid&&it.issues&&it.issues.length)?`<div class="u-t2" style="color:var(--red,#c0392b)">⚠️ ${escapeHtml(it.issues.join('; '))}</div>`:'';
-// Batch 19 item 3 (Editable Preview): nama & nominal jadi <input> (data-action
-// UniversalScan.updateItem), bukan teks statis lagi -- user bisa koreksi hasil OCR yang
-// salah baca langsung di preview, sebelum importSelected() (tidak berubah kontraknya:
-// tetap baca this.items[i].nama/nominal/checked, cuma sumbernya sekarang bisa hasil edit
-// manual juga, bukan cuma hasil OCR).
 return`<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
 <input type="checkbox" ${it.checked?'checked':''} style="width:16px;height:16px;margin-top:2px;flex-shrink:0" data-action="UniversalScan.toggle" data-args="${escapeHtml(JSON.stringify([i]))}">
 <div style="flex:1;font-size:12px">
-<div style="font-weight:700;display:flex;align-items:center;gap:4px">${emoji} <input type="text" value="${escapeHtml(it.nama)}" style="font-weight:700;border:1px solid var(--border);border-radius:4px;padding:2px 4px;flex:1;min-width:0" data-action="UniversalScan.updateItemField" data-args="${escapeHtml(JSON.stringify([i,'nama']))}"></div>
-<div class="u-t2" style="display:flex;align-items:center;gap:4px;margin-top:2px">Rp <input type="number" value="${it.nominal}" style="border:1px solid var(--border);border-radius:4px;padding:2px 4px;width:110px" data-action="UniversalScan.updateItemField" data-args="${escapeHtml(JSON.stringify([i,'nominal']))}">${existing?' · akun sudah ada, saldo akan diupdate':' · akun baru akan dibuat'}${confBadge}</div>
-${warn}
+<div style="font-weight:700">${emoji} ${escapeHtml(it.nama)}</div>
+<div class="u-t2">${fmtFull(it.nominal)}${existing?' · akun sudah ada, saldo akan diupdate':' · akun baru akan dibuat'}</div>
 </div>
 </div>`;
 }).join('');
@@ -3311,27 +3150,6 @@ toggle(i){
 const it=this.items[i];
 if(!it)return;
 it.checked=!it.checked;
-this.render();
-},
-// updateItemField(i, field, value) -- Batch 19 item 3 (Editable Preview). Dipanggil dari
-// <input onchange> lewat data-action (pola sama persis toggle() di atas). field cuma
-// 'nama'|'nominal' (2 kolom yang ditampilkan editable di render()); nominal divalidasi ulang
-// lewat validateUniversalScanItem() (item 2, REUSE, bukan aturan validasi baru) supaya
-// badge ⚠️ & status checked ikut nyesuaian kalau user perbaiki jadi valid (atau sebaliknya).
-updateItemField(i,field,value){
-const it=this.items[i];
-if(!it)return;
-if(field==='nama'){
-it.nama=value;
-}else if(field==='nominal'){
-const n=typeof value==='number'?value:normalizeOcrNumber(String(value));
-it.nominal=isNaN(n)?null:Math.round(n);
-}else{
-return;
-}
-const validation=validateUniversalScanItem(it,getOcrMinConfidence()/100);
-it.valid=validation.valid;
-it.issues=validation.issues;
 this.render();
 },
 importSelected(){
@@ -3357,11 +3175,6 @@ if(typeof renderAccGrid==='function')renderAccGrid();
 if(typeof populateAccFilters==='function')populateAccFilters();
 if(typeof renderDashAccList==='function')renderDashAccList();
 if(typeof renderLapAccList==='function')renderLapAccList();
-// Batch 19 item 5: catat hasil impor di history entry paling baru (dibuat scan() di atas),
-// biar UniversalScanHistory.list() bisa nunjukin "10 terbaca, 8 diimpor" bukan cuma "10
-// terbaca". REUSE entry yang sama (unshift di scan()), bukan bikin entry duplikat.
-const last=UniversalScanHistory._mem[0];
-if(last)last.importedCount=selected.length;
 toast('✅ '+selected.length+' akun diimpor dari scan ('+created+' baru, '+updated+' diupdate)');
 }
 };
@@ -5375,8 +5188,6 @@ const aiDelLowStockEl=document.getElementById('sAIDeliveryLowStock');
 if(aiDelLowStockEl&&typeof setAIDeliveryLowStockThreshold==='function') setAIDeliveryLowStockThreshold(aiDelLowStockEl.value);
 const aiAssetZakatMinEl=document.getElementById('sAIAssetZakatMin');
 if(aiAssetZakatMinEl&&typeof setAIAssetZakatMinThreshold==='function') setAIAssetZakatMinThreshold(aiAssetZakatMinEl.value);
-const ocrMinConfEl=document.getElementById('sOcrMinConfidence');
-if(ocrMinConfEl&&typeof setOcrMinConfidence==='function') setOcrMinConfidence(ocrMinConfEl.value);
 document.getElementById('hNama').textContent=D.profile.nama;
 updateProfilPTKPPreview();
 updateUsiaPreview();
@@ -6319,7 +6130,6 @@ D.lastBackup=new Date().toISOString();save();
 document.getElementById('lastBackup').textContent=new Date().toLocaleDateString('id-ID');
 document.getElementById('backupBadge').textContent='💾 Backup';
 document.getElementById('backupBanner').classList.add('hidden');
-if(typeof BackupHistoryAPI!=='undefined')BackupHistoryAPI.recordEntry({type:'local',status:'success',done:['File lokal (JSON)']});
 toast('✅ Backup berhasil!');
 }
 async function runFullBackup(){
@@ -6375,10 +6185,6 @@ let msg='❌ Backup SEBAGIAN gagal. ';
 if(done.length)msg+='Berhasil: '+done.join(', ')+'. ';
 msg+='Gagal: '+errors.join(' | ');
 toast(msg,6000);
-}
-if(typeof BackupHistoryAPI!=='undefined'){
-const status=errors.length?(done.length?'partial':'failed'):'success';
-BackupHistoryAPI.recordEntry({type:'full',status,done,skipped,errors});
 }
 } finally {
 _saveGuards['fullBackup']=false;
@@ -6609,7 +6415,6 @@ D.lastBackup=new Date().toISOString();save();
 const lb=document.getElementById('lastBackup');if(lb)lb.textContent=new Date().toLocaleDateString('id-ID');
 document.getElementById('backupBadge').textContent='💾 Backup';
 document.getElementById('backupBanner').classList.add('hidden');
-if(typeof BackupHistoryAPI!=='undefined')BackupHistoryAPI.recordEntry({type:'custom',status:'success',done:['Backup custom ('+format+')']});
 closeModal('backupModal');
 toast('✅ Backup berhasil di-download!');
 }
@@ -7024,247 +6829,6 @@ return results;
 }
 // (v94): toggleMs/showTargetAccountTx/addTarget/delTarget/delReminder sudah dipindah ke transaksi.js
 // (gabung bareng saveTarget/saveCatatan/saveReminder/saveLDR yang sudah ada di sana sejak v83).
-
-// modules/shared/backup-history-api.js — Backup History API (Data
-// Management Core). Target: catat histori tiap kali proses backup
-// dijalankan (sukses/sebagian/gagal), lalu sediakan API baca murni di
-// atasnya.
-//
-// PRINSIP: REUSE alur backup yang SUDAH ADA (runFullBackup()/
-// exportData()/runBackup() di modules/shared/backup-restore.js) — TIDAK
-// ada mekanisme backup baru, TIDAK duplikasi logic pembuatan file
-// backup. File ini murni menambah PENCATATAN (D.backupHistory, array
-// baru — field baru di D, bukan struktur yang menimpa apa pun yang
-// sudah ada) & API baca di atasnya (list/latest/summary), dipanggil
-// oleh backup-restore.js lewat BackupHistoryAPI.recordEntry() persis di
-// titik yang sudah menandai backup selesai (D.lastBackup=...), pola
-// "tambahan murni" yang sama dgn *-api.js lain di codebase ini (mis.
-// DebtOptimizerAPI — 100% reuse Debt/DebtStrategy, 0 rekalkulasi).
-//
-// Semua method di bawah TIDAK menyentuh DOM. recordEntry() SATU-
-// SATUNYA method yang menulis (ke D.backupHistory) — sisanya read-only.
-const BACKUP_HISTORY_MAX_ENTRIES = 50;
-
-const BackupHistoryAPI = {
-
-  // _ensure() — helper internal: pastikan D.backupHistory ada sbg
-  // array (init kosong kalau belum pernah ada, mis. data lama sebelum
-  // fitur ini). Guard `typeof D==='undefined'` — pola sama persis guard
-  // `typeof Debt==='undefined'` di DebtOptimizerAPI._overview().
-  _ensure() {
-    if (typeof D === 'undefined' || !D) return null;
-    if (!Array.isArray(D.backupHistory)) D.backupHistory = [];
-    return D.backupHistory;
-  },
-
-  // recordEntry(entry) — dipanggil dari backup-restore.js tepat setelah
-  // sebuah proses backup selesai (apa pun hasilnya). entry:
-  //   { type: 'local'|'full'|'custom', status: 'success'|'partial'|'failed',
-  //     done: [...], skipped: [...], errors: [...] }
-  // Entri terbaru ditaruh di depan (index 0, urutan terbaru-dulu — pola
-  // sama dgn D.backupHistory dipakai sbg log, bukan antrian), dipotong
-  // ke BACKUP_HISTORY_MAX_ENTRIES entri terakhir supaya tidak tumbuh
-  // tanpa batas di localStorage.
-  recordEntry(entry) {
-    const hist = this._ensure();
-    if (!hist) return null;
-    const rec = {
-      id: 'bh_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
-      timestamp: new Date().toISOString(),
-      type: (entry && entry.type) || 'unknown',
-      status: (entry && entry.status) || 'unknown',
-      done: (entry && Array.isArray(entry.done)) ? entry.done : [],
-      skipped: (entry && Array.isArray(entry.skipped)) ? entry.skipped : [],
-      errors: (entry && Array.isArray(entry.errors)) ? entry.errors : [],
-    };
-    hist.unshift(rec);
-    if (hist.length > BACKUP_HISTORY_MAX_ENTRIES) hist.length = BACKUP_HISTORY_MAX_ENTRIES;
-    return rec;
-  },
-
-  // list() — seluruh histori, terbaru dulu. Array kosong kalau belum
-  // pernah ada backup tercatat (BUKAN null — aman langsung dipakai
-  // .map()/.length oleh presenter tanpa guard tambahan).
-  list() {
-    return this._ensure() || [];
-  },
-
-  // latest() — entri paling baru, atau null kalau histori kosong.
-  latest() {
-    const hist = this.list();
-    return hist.length ? hist[0] : null;
-  },
-
-  // clear() — kosongkan histori (dipakai mis. dari menu "Bersihkan
-  // Histori Backup" kalau nanti ditambahkan di UI; tidak dipanggil
-  // otomatis di mana pun sesi ini).
-  clear() {
-    if (typeof D === 'undefined' || !D) return;
-    D.backupHistory = [];
-  },
-
-  // summary() — agregat murni dari list() (hitung status, 0 rumus
-  // baru selain penjumlahan sederhana).
-  summary() {
-    const hist = this.list();
-    const total = hist.length;
-    let success = 0, partial = 0, failed = 0;
-    for (const h of hist) {
-      if (h.status === 'success') success++;
-      else if (h.status === 'partial') partial++;
-      else if (h.status === 'failed') failed++;
-    }
-    return { total, success, partial, failed, latest: this.latest() };
-  },
-};
-
-// modules/shared/backup-health-api.js — Backup Health API (Data
-// Management Core). Target: status kesehatan backup (kapan terakhir,
-// terlambat atau tidak) + keandalan (persentase sukses dari histori).
-//
-// PRINSIP: REUSE D.lastBackup (sumber sama yang sudah dipakai
-// checkBackup() di modules/shared/backup-restore.js, ambang 7 hari
-// SAMA PERSIS — TIDAK ada ambang baru yang bisa berbeda dari peringatan
-// banner backup yang sudah ada) + BackupHistoryAPI.summary()
-// (modules/shared/backup-history-api.js, sesi ini) — TIDAK ada
-// duplikasi rumus/state baru di luar keduanya. Semua method PURE
-// (read-only), TIDAK menyentuh DOM, TIDAK menulis ke D/localStorage.
-const BACKUP_HEALTH_OVERDUE_DAYS = 7; // sama persis ambang checkBackup()
-
-const BackupHealthAPI = {
-
-  // daysSinceLastBackup() — null kalau belum pernah backup sama sekali
-  // (D.lastBackup kosong), selain itu jumlah hari bulat ke bawah sejak
-  // backup terakhir (rumus identik dgn checkBackup()).
-  daysSinceLastBackup() {
-    if (typeof D === 'undefined' || !D || !D.lastBackup) return null;
-    const ms = new Date() - new Date(D.lastBackup);
-    return Math.floor(ms / (1000 * 60 * 60 * 24));
-  },
-
-  // status() — level: 'never' (belum pernah backup) | 'overdue' (>=7
-  // hari, ambang SAMA dgn checkBackup()) | 'ok'.
-  status() {
-    const days = this.daysSinceLastBackup();
-    if (days === null) {
-      return { ok: true, level: 'never', days: null, label: 'Belum pernah backup' };
-    }
-    if (days >= BACKUP_HEALTH_OVERDUE_DAYS) {
-      return { ok: true, level: 'overdue', days, label: 'Backup terlambat (' + days + ' hari lalu)' };
-    }
-    return { ok: true, level: 'ok', days, label: 'Backup aman (' + days + ' hari lalu)' };
-  },
-
-  // reliability() — derivatif murni dari BackupHistoryAPI.summary()
-  // (histori backup, sesi ini) — persentase sukses dari histori yang
-  // tercatat. successRate null kalau belum ada histori sama sekali
-  // (BUKAN 0 — beda makna: "belum ada data" vs "0% sukses").
-  reliability() {
-    if (typeof BackupHistoryAPI === 'undefined') {
-      return { ok: false, reason: 'BackupHistoryAPI belum dimuat' };
-    }
-    const s = BackupHistoryAPI.summary();
-    if (!s.total) {
-      return { ok: true, total: 0, success: 0, partial: 0, failed: 0, successRate: null };
-    }
-    const successRate = Math.round((s.success / s.total) * 100);
-    return { ok: true, total: s.total, success: s.success, partial: s.partial, failed: s.failed, successRate };
-  },
-
-  // summary() — gabungan status() + reliability(), 1 titik akses yang
-  // dipakai presenter (BackupHealthPresenter).
-  summary() {
-    return { status: this.status(), reliability: this.reliability() };
-  },
-};
-
-// modules/shared/backup-history-presenter.js — Backup History
-// Presenter (Data Management Core). Lihat catatan lengkap di
-// modules/shared/backup-history-api.js.
-//
-// PRINSIP: UI HANYA presenter. 100% REUSE `BackupHistoryAPI.list()`
-// (modules/shared/backup-history-api.js, sesi ini) — TIDAK ada rumus
-// baru, TIDAK membaca D.backupHistory langsung. Dipanggil dari
-// renderSettings() (modules/shared/modules-render.js), pola guard sama
-// persis presenter *-api.js lain di codebase ini.
-const BACKUP_HISTORY_LIST_LIMIT = 10; // hanya tampilkan N entri terbaru di UI
-
-const BackupHistoryPresenter = {
-
-  render() {
-    const el = document.getElementById('backupHistoryList');
-    if (!el) return; // container belum ada di halaman ini, aman diam2.
-
-    if (typeof BackupHistoryAPI === 'undefined') {
-      el.innerHTML = '<div class="u-fs12 u-ctext3">Histori backup belum tersedia</div>';
-      return;
-    }
-
-    const list = BackupHistoryAPI.list().slice(0, BACKUP_HISTORY_LIST_LIMIT);
-    if (!list.length) {
-      el.innerHTML = '<div class="u-fs12 u-ctext3">Belum ada histori backup</div>';
-      return;
-    }
-
-    el.innerHTML = list.map((h) => this._row(h)).join('');
-  },
-
-  // _row(h) — h = 1 entri dari BackupHistoryAPI.list(), dipakai APA
-  // ADANYA (0 recompute status/tanggal).
-  _row(h) {
-    const dateStr = new Date(h.timestamp).toLocaleString('id-ID');
-    const icon = h.status === 'success' ? '✅' : h.status === 'partial' ? '⚠️' : '❌';
-    const doneText = (h.done && h.done.length) ? h.done.join(', ') : (h.type || '-');
-    return `
-      <div class="bh-row">
-        <div class="bh-row-icon">${icon}</div>
-        <div class="bh-row-body">
-          <div class="bh-row-date u-fs12 u-fw600">${escapeHtml(dateStr)}</div>
-          <div class="bh-row-detail u-fs11 u-ctext3">${escapeHtml(doneText)}</div>
-        </div>
-      </div>
-    `;
-  },
-};
-
-// modules/shared/backup-health-presenter.js — Backup Health Presenter
-// (Data Management Core). Lihat catatan lengkap di
-// modules/shared/backup-health-api.js.
-//
-// PRINSIP: UI HANYA presenter. 100% REUSE `BackupHealthAPI.summary()`
-// (modules/shared/backup-health-api.js, sesi ini — sendiri 100% reuse
-// D.lastBackup/BackupHistoryAPI) — TIDAK ada rumus baru, TIDAK membaca
-// D langsung. Dipanggil dari renderSettings() (modules/shared/
-// modules-render.js), pola guard `typeof X!=='undefined'` sama persis
-// presenter *-api.js lain di codebase ini (mis. DebtOptimizerPresenter).
-const BackupHealthPresenter = {
-
-  render() {
-    const el = document.getElementById('backupHealthCard');
-    if (!el) return; // container belum ada di halaman ini, aman diam2.
-
-    if (typeof BackupHealthAPI === 'undefined') {
-      el.innerHTML = '<div class="u-fs12 u-ctext3">Status backup belum tersedia</div>';
-      return;
-    }
-
-    const s = BackupHealthAPI.summary();
-    const levelCls = s.status.level === 'ok' ? 'bh-health-ok'
-      : s.status.level === 'overdue' ? 'bh-health-overdue'
-      : 'bh-health-never';
-    const rel = s.reliability;
-    const relText = (rel.ok && rel.successRate !== null)
-      ? rel.successRate + '% sukses (' + rel.total + ' backup tercatat)'
-      : 'Belum ada histori backup';
-
-    el.innerHTML = `
-      <div class="bh-health ${levelCls}">
-        <div class="bh-health-label">${escapeHtml(s.status.label)}</div>
-        <div class="bh-health-sub">${escapeHtml(relText)}</div>
-      </div>
-    `;
-  },
-};
 
 // payroll-absensi.js — Payroll: Absensi Harian & Kalkulator Gaji Mingguan (const Payroll={...})
 // Dipindah ke modules/business/payroll-absensi.js (Sesi 15 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
@@ -10366,7 +9930,7 @@ function aiErrorHint(provider,status){
 if(provider==='gemini')return(status===400||status===403)?' (cek API key di Pengaturan)':'';
 return status===401?' (API key salah/expired, cek di Pengaturan)':'';
 }
-// Advisor — pengatur tab utk card gabungan "🧭 Penasihat" (v124, kw130-data-management-core-backup-history-health-1):
+// Advisor — pengatur tab utk card gabungan "🧭 Penasihat" (v124, kw126-batch18-scan-universal-akun):
 // dulu FinCoach ("🩺 Insight Cepat", rule-based-gratis-instan) & AIWidget ("🔍 Laporan AI",
 // panggil Claude/Gemini, wajib API key) tampil sbg 2 card TERPISAH di Dashboard — sekarang
 // digabung jadi SATU card dgn 2 tab, supaya tidak terasa ada "2 penasihat AI" yang mirip2.
@@ -21276,22 +20840,7 @@ const DashboardHub = {
     // Hub" & #dashHubSectionTabBtn-* di index.html/app_production.html).
     // Tambahan murni, dipanggil PALING AKHIR — pola "render semua dulu, baru
     // toggle visibility" yang sama.
-    // S129 (Dashboard Settings): fallback 'ringkasan' hardcode sebelumnya
-    // sekarang bisa dikonfigurasi user lewat DashboardSettings.getDefaultTab()
-    // (Pengaturan → Tampilan → ⚙️ Pengaturan Dashboard → Tab Default). Tab
-    // TERAKHIR dipakai (dashHubSectionTab) TETAP menang kalau sudah pernah
-    // ada — ini cuma mengganti nilai fallback-nya, BUKAN mekanisme baru.
-    // Guard typeof: DashboardSettings opsional, fallback ke 'ringkasan' persis
-    // seperti sebelumnya kalau modul itu belum dimuat.
-    const dashDefaultTab=(typeof DashboardSettings!=='undefined'&&typeof DashboardSettings.getDefaultTab==='function')?DashboardSettings.getDefaultTab():'ringkasan';
-    this.applySectionTab(localStorage.getItem('dashHubSectionTab') || dashDefaultTab);
-
-    // S129 (Dashboard Settings): terapkan Compact Mode/Card Density ke
-    // #page-dashboard-hub tiap kali Dashboard Hub dirender ulang — tambahan
-    // murni, tidak mengubah baris manapun di atas. Guard typeof sama pola
-    // dgn pemanggilan widget opsional lain di render() ini (mis.
-    // EIEDashboard.render()).
-    if(typeof DashboardSettings!=='undefined')DashboardSettings.applyDashDisplayPrefs();
+    this.applySectionTab(localStorage.getItem('dashHubSectionTab') || 'ringkasan');
   },
 
   // Ganti sub-tab aktif & simpan pilihannya (localStorage key:
@@ -21662,199 +21211,6 @@ const DashboardHubFavoritView = {
 if (typeof window !== 'undefined') {
   window.DashboardHubFavoritView = DashboardHubFavoritView;
 }
-
-// dashboard-hub-settings.js — S129: "Pengaturan Dashboard" (Dashboard
-// Settings). Presenter layer MURNI di atas mekanisme yang SUDAH ADA — RULE
-// #1 sesi ini: ZIP sesi lalu adalah source of truth, 100% reuse modul
-// existing, ZERO formula/framework baru, cuma UI presenter.
-//
-// Reuse map (semua SUDAH ADA sebelum sesi ini, TIDAK diubah strukturnya):
-//   - DASH_CARD_DEFS / DASH_CARD_BY_KEY / DASH_RENDER_ORDER
-//     (modules/shared/modules-render.js, fitur "Kartu di Beranda") — dipakai
-//     ulang sbg SATU-SATUNYA sumber key+label kartu. Sesi ini TIDAK
-//     menambah kartu baru, cuma menambah lapisan "urutan custom" di ATAS
-//     DASH_RENDER_ORDER (default) yang sudah ada.
-//   - D.dashCardPrefs (sudah ada, on/off kartu) — pola PERSIS sama dipakai
-//     utk D.dashCardOrder (field baru, murni data urutan) supaya otomatis
-//     ikut backup/restore TANPA menyentuh backup-restore.js sama sekali:
-//     buildBackupPayload() sudah spread `{...D}` & applyRestoredData() sudah
-//     merge `D={...D,...imp}` generik (lihat backup-restore.js) — field baru
-//     apa pun di D otomatis ikut, ini bukan mekanisme baru.
-//   - Preferensi TAMPILAN device-local (compact mode/density/tab default)
-//     sengaja disimpan di localStorage, BUKAN di D — pola PERSIS sama dgn
-//     LIFEOS_VISIBLE_KEY (lifeos/ui/lifeos-home.js) & dashHubSectionTab
-//     (dashboard-hub.js applySectionTab()/setSectionTab()): preferensi
-//     tampilan murni, bukan data pengguna, tidak perlu ikut siklus
-//     save()/backup.
-//   - askConfirm()/toast()/escapeHtml()/save() — semua fungsi shared yang
-//     sudah ada, dipakai apa adanya.
-
-const DASH_COMPACT_KEY = 'dashCompactMode';
-const DASH_DENSITY_KEY = 'dashCardDensity';
-const DASH_DEFAULT_TAB_KEY = 'dashDefaultSectionTab';
-const DASH_DENSITY_VALUES = ['nyaman', 'normal', 'rapat'];
-const DASH_DEFAULT_TAB_VALUES = ['ringkasan', 'fitur', 'widget', 'insight'];
-
-const DashboardSettings = {
-
-  // =====================================================================
-  // Compact Mode — toggle boolean tunggal (device-local, localStorage).
-  // =====================================================================
-  isCompactMode() {
-    return localStorage.getItem(DASH_COMPACT_KEY) === '1';
-  },
-  toggleCompactMode(checked) {
-    localStorage.setItem(DASH_COMPACT_KEY, checked ? '1' : '0');
-    this.applyDashDisplayPrefs();
-    if (typeof toast === 'function') {
-      toast(checked ? '🧩 Mode ringkas Dashboard Hub diaktifkan' : '🧩 Mode ringkas Dashboard Hub dimatikan');
-    }
-  },
-
-  // =====================================================================
-  // Card Density — 3 level kepadatan (device-local, localStorage). Invalid/
-  // belum diset -> fallback 'normal' (perilaku existing sebelum sesi ini,
-  // TIDAK berubah default-nya).
-  // =====================================================================
-  getDensity() {
-    const v = localStorage.getItem(DASH_DENSITY_KEY);
-    return DASH_DENSITY_VALUES.includes(v) ? v : 'normal';
-  },
-  setDensity(value) {
-    if (!DASH_DENSITY_VALUES.includes(value)) return;
-    localStorage.setItem(DASH_DENSITY_KEY, value);
-    this.applyDashDisplayPrefs();
-  },
-
-  // =====================================================================
-  // Default Landing Tab — sub-tab Dashboard Hub (ringkasan/fitur/widget/
-  // insight, lihat DashboardHub.applySectionTab()) yang jadi FALLBACK kalau
-  // belum pernah ada `dashHubSectionTab` (pilihan terakhir user) tersimpan.
-  // TIDAK menggantikan/menghapus mekanisme `dashHubSectionTab` yang sudah
-  // ada (tab TERAKHIR dipakai tetap menang) — cuma mengganti hardcode
-  // fallback 'ringkasan' jadi bisa dipilih user. Sengaja TIDAK menyentuh
-  // landing PAGE startup (page-dashboard-hub) — itu dikunci murni lewat
-  // markup statis (lihat tests/dashboard-hub-default-landing.test.js §7),
-  // TIDAK boleh ada mekanisme JS baru yang menentukan halaman awal.
-  // =====================================================================
-  getDefaultTab() {
-    const v = localStorage.getItem(DASH_DEFAULT_TAB_KEY);
-    return DASH_DEFAULT_TAB_VALUES.includes(v) ? v : 'ringkasan';
-  },
-  setDefaultTab(value) {
-    if (!DASH_DEFAULT_TAB_VALUES.includes(value)) return;
-    localStorage.setItem(DASH_DEFAULT_TAB_KEY, value);
-    if (typeof toast === 'function') toast('🏠 Tab default Dashboard Hub disimpan');
-  },
-
-  // Terapkan Compact Mode + Card Density ke DOM (#page-dashboard-hub) lewat
-  // class CSS (styles.css) — dipanggil saat render Dashboard Hub & tiap kali
-  // salah satu preferensi berubah, pola sama dgn LifeOSHome.applyVisibility().
-  applyDashDisplayPrefs() {
-    const el = document.getElementById('page-dashboard-hub');
-    if (!el) return;
-    el.classList.toggle('dash-compact', this.isCompactMode());
-    DASH_DENSITY_VALUES.forEach((v) => el.classList.remove('dash-density-' + v));
-    el.classList.add('dash-density-' + this.getDensity());
-  },
-
-  // =====================================================================
-  // Card Order — urutan custom kartu Beranda (D.dashCardOrder, IKUT
-  // backup/restore, lihat catatan header file). Sumber key/label TETAP
-  // DASH_CARD_DEFS/DASH_CARD_BY_KEY yang sudah ada (modules-render.js) —
-  // sesi ini TIDAK menambah/menghapus satu kartu pun dari daftar itu.
-  // =====================================================================
-
-  // Urutan EFEKTIF: custom order tervalidasi (cuma key yang MASIH ada di
-  // DASH_CARD_BY_KEY — kartu yang sudah dihapus dari registry otomatis
-  // gugur) + key yang belum/tidak masuk custom order (kartu baru dari sesi
-  // lain, atau sebelum user pernah menyusun ulang), fallback ke urutan
-  // default DASH_RENDER_ORDER supaya tidak ada satu kartu pun yang "hilang"
-  // (invariant yang sama dijaga tests/dash-card-registry.test.js utk
-  // DASH_CARD_DEFS<->DASH_RENDER_ORDER).
-  applyDashCardOrder() {
-    const custom = Array.isArray(D.dashCardOrder) ? D.dashCardOrder : [];
-    const validCustom = custom.filter((k) => DASH_CARD_BY_KEY[k]);
-    const remaining = DASH_RENDER_ORDER.filter((k) => !validCustom.includes(k));
-    return [...validCustom, ...remaining];
-  },
-
-  // Tukar posisi 1 kartu dgn tetangganya (naik/turun). Batas array dicek
-  // dulu (kartu pertama tidak bisa naik, kartu terakhir tidak bisa turun) —
-  // tidak melakukan apa pun kalau di luar batas, bukan error.
-  reorderCard(key, direction) {
-    const order = this.applyDashCardOrder();
-    const idx = order.indexOf(key);
-    if (idx === -1) return;
-    const swapWith = direction === 'up' ? idx - 1 : idx + 1;
-    if (swapWith < 0 || swapWith >= order.length) return;
-    const tmp = order[idx];
-    order[idx] = order[swapWith];
-    order[swapWith] = tmp;
-    D.dashCardOrder = order;
-    save();
-    this.renderDashCardOrderUI();
-    if (document.getElementById('page-dashboard')) renderDashboard();
-  },
-
-  // Render checklist urutan (id=dashCardOrderList, lihat Pengaturan → Kartu
-  // di Beranda) — tiap baris punya tombol ▲▼, pola tombol sama dgn
-  // tgl-switch/btn-ghost yang sudah dipakai di seluruh Pengaturan.
-  renderDashCardOrderUI() {
-    const wrap = document.getElementById('dashCardOrderList');
-    if (!wrap) return;
-    const order = this.applyDashCardOrder();
-    wrap.innerHTML = order.map((key, i) => {
-      const def = DASH_CARD_BY_KEY[key];
-      if (!def) return '';
-      return `
-      <div class="setting-item">
-        <div class="setting-label">${escapeHtml(def.label)}</div>
-        <div class="u-flex u-gap6">
-          <button type="button" class="btn btn-ghost btn-sm" ${i === 0 ? 'disabled' : ''} onclick="DashboardSettings.reorderCard('${key}','up')" aria-label="Pindah ke atas">▲</button>
-          <button type="button" class="btn btn-ghost btn-sm" ${i === order.length - 1 ? 'disabled' : ''} onclick="DashboardSettings.reorderCard('${key}','down')" aria-label="Pindah ke bawah">▼</button>
-        </div>
-      </div>`;
-    }).join('');
-  },
-
-  // =====================================================================
-  // Reset — kembalikan SEMUA preferensi Dashboard Settings sesi ini
-  // (urutan/density/compact/tab default) ke nilai awal. SENGAJA TIDAK
-  // menyentuh D.dashCardPrefs (on/off kartu, fitur sesi lain) — scope reset
-  // ini murni tampilan/urutan, bukan visibility kartu.
-  // =====================================================================
-  async resetDashboardLayout() {
-    const ok = await askConfirm(
-      'Kembalikan tata letak & tampilan Dashboard Hub ke pengaturan awal? (urutan kartu, kepadatan kartu, mode ringkas, tab default)',
-      { title: 'Reset Tata Letak Dashboard', okText: 'Ya, Reset', icon: '↩️' },
-    );
-    if (!ok) return;
-    delete D.dashCardOrder;
-    save();
-    localStorage.removeItem(DASH_COMPACT_KEY);
-    localStorage.removeItem(DASH_DENSITY_KEY);
-    localStorage.removeItem(DASH_DEFAULT_TAB_KEY);
-    this.applyDashDisplayPrefs();
-    this.renderSettingsUI();
-    if (document.getElementById('page-dashboard')) renderDashboard();
-    if (typeof toast === 'function') toast('↩️ Tata letak Dashboard Hub dikembalikan ke default');
-  },
-
-  // Sinkronkan kontrol di Pengaturan (checkbox/select) supaya menunjukkan
-  // nilai TERSIMPAN saat halaman Pengaturan dibuka/di-render ulang — dipanggil
-  // dari renderSettings() (modules-render.js), pola sama dgn
-  // renderDashCardPrefsUI() yang sudah ada.
-  renderSettingsUI() {
-    const compactEl = document.getElementById('dashCompactModeToggle');
-    if (compactEl) compactEl.checked = this.isCompactMode();
-    const densityEl = document.getElementById('dashCardDensitySelect');
-    if (densityEl) densityEl.value = this.getDensity();
-    const defTabEl = document.getElementById('dashDefaultTabSelect');
-    if (defTabEl) defTabEl.value = this.getDefaultTab();
-    this.renderDashCardOrderUI();
-  },
-};
 
 // ai-command-center.js — Sprint 3 Tahap 3.1: AI Command Center Foundation.
 // Dipindah ke modules/ai/ai-command-center.js (Sesi 14 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).

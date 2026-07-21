@@ -4597,3 +4597,165 @@ node scripts/build.js kw74-batch6-finance-intelligence-foundation
 node --test tests/*.test.js   (setelah build)
 # tests 2583 / pass 2583 / fail 0
 ```
+
+## Sesi 76 (2026-07-20) — Vehicle Intelligence Foundation (Batch 7)
+
+Keputusan produk FINAL eksplisit user (target baru Batch 7, di luar
+kandidat Batch 6 lama). Target: lapisan agregasi PURE domain VEHICLE —
+vehicle overview, health score per kendaraan, ringkasan armada (fleet),
+insight dasar — pola SAMA PERSIS `FinanceIntelligence` (Sesi 74, Batch 6),
+cuma dipindah ke domain vehicle. TIDAK ada Dashboard, TIDAK ada
+HTML/CSS, TIDAK ada AI Hook, TIDAK ada Reminder (eksplisit di luar scope
+sesi ini).
+
+### Ditambahkan (PURE/read-only, tidak ada UI/tombol/wiring baru)
+
+- `modules/vehicle/vehicle-intelligence.js` — objek `VehicleIntelligence`:
+  - `vehicleOverview(vehicleId)` — ringkasan 1 kendaraan: KM saat ini
+    (`getVehicleKm()`), prediksi servis (`predictService()`), efisiensi
+    BBM (`fuelEfficiency()`) — semua reuse murni, `{ok:false}` kalau
+    kendaraan tidak ditemukan.
+  - `healthScore(vehicleId)` — skor 0-100 komposit 2 komponen (service
+    adherence dari status `predictService().items` — aman/segera/lewat,
+    ketersediaan data BBM dari `fuelEfficiency()` ok/tidak), bobot 50/50,
+    HANYA komponen yang tersedia disertakan (guard `ok`/`length`), skor
+    diskalakan ulang dari bobot yang tersedia — pola sama persis
+    `FinanceIntelligence.healthScore()`.
+  - `fleetSummary()` — agregasi lintas SEMUA `D.vehicles`: total
+    kendaraan, total item servis lewat jatuh tempo (reuse
+    `predictService()` per kendaraan, status yang sama dgn
+    `_vehicleOverdueCheck()`), rata-rata `healthScore()` armada. Belum
+    ada versi murni (non-DOM, lintas-kendaraan) sebelum sesi ini —
+    satu-satunya logic genuinely baru selain skoring komposit.
+  - `insights(vehicleId?)` — insight dasar derivatif. Tanpa `vehicleId`:
+    fleet-level (dari `fleetSummary()`). Dengan `vehicleId`: kendaraan
+    itu saja (servis lewat, estimasi biaya BBM bulanan, skor kesehatan).
+    BUKAN duplikasi rule `AIDecision` (`vehicle-service-overdue`/
+    `vehicle-fuel-efficiency-drop` di `sparepart-servis.js`) — rule itu
+    proaktif dgn cooldown/severity/registrasi, insight di sini derivatif
+    ringan tanpa cooldown/registrasi apa pun.
+  - `summary(vehicleId?)` — satu pintu masuk gabungan (fleet + insights,
+    ditambah vehicle overview/healthScore/insights kendaraan kalau
+    `vehicleId` diisi).
+
+### Diubah
+
+- `scripts/build.js` — `GROUP_B` nambah `modules/vehicle/vehicle-
+  intelligence.js`, diletakkan setelah `modules/finance/finance-
+  dashboard.js` & sebelum `app-bootstrap.js` (dependency `getVehicleKm`/
+  `predictService`/`fuelEfficiency` dari `vehicle-core.js`/`sparepart-
+  servis.js`, keduanya sudah dimuat lebih awal di urutan build).
+
+### Test
+
+- `tests/vehicle-intelligence.test.js` (BARU, 17 test) — pola sama
+  `tests/finance-intelligence.test.js`, dependency (`getVehicleKm`,
+  `predictService`, `fuelEfficiency`) di-mock lewat `loadSource`
+  extraGlobals (isolasi murni per fungsi).
+
+### Hasil test
+
+```
+node --test tests/vehicle-intelligence.test.js
+# tests 17 / pass 17 / fail 0
+
+node --test tests/*.test.js
+# tests 2614 / pass 2614 / fail 0   (naik dari 2597)
+
+node scripts/build.js kw76-batch7-vehicle-intelligence-foundation
+# ✅ Build "kw76-batch7-vehicle-intelligence-foundation" selesai & lolos cek sintaks (?v=500)
+
+node --test tests/*.test.js   (setelah build)
+# tests 2614 / pass 2614 / fail 0
+```
+
+## Catatan dokumentasi — gap Sesi 77–83 (CHANGELOG.md)
+
+`CHANGELOG.md` sempat berhenti di entri Sesi 76 (Vehicle Intelligence
+Foundation) — 7 sesi berikutnya (77 Vehicle Dashboard Foundation, 78
+Vehicle Reminder Foundation, 79 Vehicle AI Hook Foundation, 80 Vehicle
+AI Dashboard Integration, 81 Vehicle Analytics Foundation, 82 Vehicle
+Decision Engine Foundation, 83 Vehicle Automation Foundation) TIDAK
+pernah ditambahkan ke file ini, padahal semuanya sudah lengkap tercatat
+di `docs/CLAUDE.md`/`docs/BATCH_PLAN.md`/`docs/NEXT_SESSION.md` (pola
+gap dokumentasi yang sama seperti insiden Sesi 39/41/44/46/47/60/67 —
+gap murni dokumentasi, BUKAN gap keputusan produk atau kode). Detail
+lengkap ke-7 sesi itu: lihat `docs/BATCH_PLAN.md` § Batch 7 (tabel Sesi
+77-83). Ditandai di sini transparan supaya sesi dokumentasi-sinkronisasi
+berikutnya bisa mengisi retroaktif kalau diperlukan — TIDAK diisi penuh
+di sesi ini (Sesi 84) krn scope sesi ini adalah implementasi Vehicle
+Dashboard Final Integration, bukan audit/backfill dokumentasi lintas-sesi.
+
+## Sesi 84 (2026-07-20) — Vehicle Dashboard Final Integration (Batch 7)
+
+Keputusan produk FINAL eksplisit user: lanjutan Batch 7 setelah Vehicle
+Automation Foundation (Sesi 83) — menutup gap yang dicatat eksplisit
+Sesi 83: Service Reminder & Fuel Reminder (`VehicleReminder`, Sesi 78)
+belum pernah menembak notifikasi browser NYATA (hanya Tax Reminder yang
+sudah, lewat jalur ad-hoc lama di `reminder-notif.js`).
+
+### Ditambahkan
+
+- `modules/vehicle/vehicle-notif-bridge.js` — objek `VehicleNotifBridge`:
+  - `items(vehicleId?, firedIds?)` — lapisan penerjemah PURE (tidak
+    pernah memanggil `fireNotif()`/`Notification`/`localStorage`
+    sendiri), 100% reuse `VehicleReminder.serviceReminders()`/
+    `.fuelReminders()` (Sesi 78) apa adanya. HANYA severity `'overdue'`
+    diambil (pola sama ambang tagihan/pajak yang sudah ada — hanya H-0
+    s/d lewat yang aktif tembak notif push, `'due-soon'`/`'info'` tetap
+    murni domain dashboard/insight feed). Hasil diterjemahkan jadi
+    bentuk generik `{fireKey,title,body}`, difilter `firedIds` (dedupe
+    hari yang sama, disuplai pemanggil dari `kw_notif_fired.ids`).
+    `taxReminders()` SENGAJA TIDAK disertakan — jalur ad-hoc lama di
+    `reminder-notif.js` (baca `D.vehicles`+`VEHTAX_ITEMS` langsung,
+    mendahului `VehicleReminder`) sudah menembak notif pajak;
+    menyertakannya lagi lewat modul ini akan dobel-tembak utk tipe yang
+    sama (format `fireKey` beda, tidak saling terdeteksi lewat
+    `firedIds` yang sama).
+
+### Diubah
+
+- `reminder-notif.js` `checkAndFireReminders()` — 1 blok baru
+  ditambahkan setelah blok SPT Tahunan, SEBELUM
+  `localStorage.setItem('kw_notif_fired'...)`: guard `typeof
+  VehicleNotifBridge!=='undefined'`, panggil
+  `VehicleNotifBridge.items(undefined, fired.ids)`, lalu `fireNotif()`
+  tiap item + push `fireKey` ke `fired.ids` — pola identik blok
+  tagihan/LDR/pajak-kendaraan/SIM/SPT yang sudah ada di file yang sama.
+  TIDAK ada perubahan ke blok pajak kendaraan (`VEHTAX_ITEMS`) yang
+  sudah ada.
+- `scripts/build.js` — `GROUP_B` nambah
+  `modules/vehicle/vehicle-notif-bridge.js`, diletakkan setelah
+  `vehicle-reminder.js`, sebelum `vehicle-ai-hook.js` (posisi
+  `reminder-notif.js` sendiri di `GROUP_B` TIDAK dipindah — referensi
+  `VehicleNotifBridge` di `checkAndFireReminders()` diresolusi saat
+  fungsi DIPANGGIL, bukan saat file di-parse, pola sama persis
+  referensi `VEHTAX_ITEMS`/`predictService` yang sudah ada sebelumnya
+  di file yang sama).
+
+### Test
+
+- `tests/vehicle-notif-bridge.test.js` (BARU, 10 test) — pola sama
+  `tests/vehicle-ai-hook.test.js`, dependency `VehicleReminder`
+  di-mock lewat `loadSource` extraGlobals (isolasi murni). Catatan
+  teknis: 2 assersi awal (array kosong) sempat gagal krn array hasil
+  sandbox `vm` beda realm dari array host (pola sama catatan
+  `tests/vehicle-reminder.test.js` Sesi 78) — diperbaiki pakai
+  `.length===0`/`Array.from()` sebelum `deepEqual`, bukan
+  `deepEqual([],[])` langsung.
+
+### Hasil test
+
+```
+node --test tests/vehicle-notif-bridge.test.js
+# tests 10 / pass 10 / fail 0
+
+node --test tests/*.test.js
+# tests 2826 / pass 2826 / fail 0   (naik dari 2816)
+
+node scripts/build.js kw84-batch7-vehicle-dashboard-final-integration
+# ✅ Build "kw84-batch7-vehicle-dashboard-final-integration" selesai & lolos cek sintaks (?v=508)
+
+node --test tests/*.test.js   (setelah build)
+# tests 2826 / pass 2826 / fail 0
+```
