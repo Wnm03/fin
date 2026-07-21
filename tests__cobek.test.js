@@ -74,6 +74,7 @@ function baseFields(overrides = {}) {
     'txShopStockHarga', 'txShopStockItem', 'txShopStockJual', 'txShopStockJualWrap',
     'txShopStockKategori', 'txShopStockNewName', 'txShopStockNewWrap', 'txShopStockPanel',
     'txShopStockProdusen', 'txShopStockQty', 'txNote',
+    'cobekKategoriNewInput', 'cobekKategoriAddBtn', 'cobekKategoriCancelBtn', 'cobekKategoriList',
   ];
   const fields = {};
   ids.forEach((id) => { fields[id] = {}; });
@@ -322,6 +323,92 @@ test('Etalase.renderList — produk tanpa diskon => tidak ada elemen harga coret
   ctx.Etalase.renderList();
   const html = fakeDocument.getElementById('productList').innerHTML;
   assert.ok(!html.includes('shop-price-strike'));
+});
+
+// ================= Etalase — Kategori Produk (edit/rename, Sesi 132) =================
+// Audit sesi 132 menemukan Kategori Produk sebelumnya cuma bisa Hapus, tidak
+// bisa rename tanpa hapus+buat ulang. Tes di bawah menutupi
+// editKategori/cancelEditKategori/addKategoriManual (cabang edit)/delKategori.
+
+test('Etalase.renderKategoriList — tiap kategori tampil tombol Edit (✏️) & Hapus (🗑)', () => {
+  const D = baseD({ cobekKategori: [{ id: 'k1', name: 'Batu Alam' }] });
+  const { ctx, fakeDocument } = makeCtx(D);
+  ctx.Etalase.renderKategoriList();
+  const html = fakeDocument.getElementById('cobekKategoriList').innerHTML;
+  assert.ok(html.includes('Etalase.editKategori'));
+  assert.ok(html.includes('Etalase.delKategori'));
+});
+
+test('Etalase.editKategori — isi input dgn nama lama, ubah tombol jadi Simpan, tampilkan Batal', () => {
+  const D = baseD({ cobekKategori: [{ id: 'k1', name: 'Batu Alam' }] });
+  const { ctx, fakeDocument } = makeCtx(D);
+  ctx.Etalase.editKategori('k1');
+  assert.equal(ctx.Etalase.katEditId, 'k1');
+  assert.equal(fakeDocument.getElementById('cobekKategoriNewInput').value, 'Batu Alam');
+  assert.equal(fakeDocument.getElementById('cobekKategoriAddBtn').textContent, '💾 Simpan');
+  assert.equal(fakeDocument.getElementById('cobekKategoriCancelBtn').style.display, '');
+});
+
+test('Etalase.editKategori — id tidak ditemukan: tidak ubah state apapun', () => {
+  const D = baseD({ cobekKategori: [] });
+  const { ctx } = makeCtx(D);
+  ctx.Etalase.editKategori('tidak-ada');
+  assert.equal(ctx.Etalase.katEditId, null);
+});
+
+test('Etalase.cancelEditKategori — reset katEditId, kosongkan input, kembalikan tombol & sembunyikan Batal', () => {
+  const D = baseD({ cobekKategori: [{ id: 'k1', name: 'Batu Alam' }] });
+  const { ctx, fakeDocument } = makeCtx(D);
+  ctx.Etalase.editKategori('k1');
+  ctx.Etalase.cancelEditKategori();
+  assert.equal(ctx.Etalase.katEditId, null);
+  assert.equal(fakeDocument.getElementById('cobekKategoriNewInput').value, '');
+  assert.equal(fakeDocument.getElementById('cobekKategoriAddBtn').textContent, '+ Tambah');
+  assert.equal(fakeDocument.getElementById('cobekKategoriCancelBtn').style.display, 'none');
+});
+
+test('Etalase.addKategoriManual — mode edit: rename kategori existing, tidak menambah kategori baru', () => {
+  const D = baseD({ cobekKategori: [{ id: 'k1', name: 'Batu Alam' }], products: [{ id: 'p1', name: 'X', kategoriId: 'k1' }] });
+  const { ctx, fakeDocument, calls } = makeCtx(D);
+  ctx.Etalase.editKategori('k1');
+  fakeDocument.getElementById('cobekKategoriNewInput').value = 'Batu Marmer';
+  ctx.Etalase.addKategoriManual();
+  assert.equal(D.cobekKategori.length, 1);
+  assert.equal(D.cobekKategori[0].name, 'Batu Marmer');
+  assert.equal(ctx.Etalase.katEditId, null);
+  assert.equal(calls.save, 1);
+  assert.ok(calls.toast.some((t) => t.includes('diperbarui')));
+});
+
+test('Etalase.addKategoriManual — mode edit: nama bentrok dgn kategori lain => ditolak, tidak disimpan', () => {
+  const D = baseD({ cobekKategori: [{ id: 'k1', name: 'Batu Alam' }, { id: 'k2', name: 'Kayu Jati' }] });
+  const { ctx, fakeDocument, calls } = makeCtx(D);
+  ctx.Etalase.editKategori('k1');
+  fakeDocument.getElementById('cobekKategoriNewInput').value = 'Kayu Jati';
+  ctx.Etalase.addKategoriManual();
+  assert.equal(D.cobekKategori.find((c) => c.id === 'k1').name, 'Batu Alam');
+  assert.equal(calls.save, 0);
+  assert.ok(calls.toast.some((t) => t.includes('sudah ada')));
+});
+
+test('Etalase.addKategoriManual — mode tambah biasa tidak terpengaruh (katEditId null)', () => {
+  const D = baseD({ cobekKategori: [] });
+  const { ctx, fakeDocument, calls } = makeCtx(D);
+  fakeDocument.getElementById('cobekKategoriNewInput').value = 'Kategori Baru';
+  ctx.Etalase.addKategoriManual();
+  assert.equal(D.cobekKategori.length, 1);
+  assert.equal(D.cobekKategori[0].name, 'Kategori Baru');
+  assert.ok(calls.toast.some((t) => t.includes('ditambahkan')));
+});
+
+test('Etalase.delKategori — hapus kategori yg sedang diedit: otomatis batal edit dulu', async () => {
+  const D = baseD({ cobekKategori: [{ id: 'k1', name: 'Batu Alam' }], products: [] });
+  const { ctx, fakeDocument } = makeCtx(D);
+  ctx.Etalase.editKategori('k1');
+  await ctx.Etalase.delKategori('k1');
+  assert.equal(ctx.Etalase.katEditId, null);
+  assert.equal(D.cobekKategori.length, 0);
+  assert.equal(fakeDocument.getElementById('cobekKategoriCancelBtn').style.display, 'none');
 });
 
 // ================= PriceReko =================
