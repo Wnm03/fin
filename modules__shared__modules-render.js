@@ -2,7 +2,7 @@
 // Dipindah ke modules/shared/modules-render.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Semua fungsi ini murni definisi function global (bukan module), jadi tetap bisa dipanggil dari file manapun
 // yang loadnya belakangan (sama seperti modules-calc.js/features-*.js).
-const MODULE_RENDER_VERSION='kw130-data-management-core-backup-history-health-1';
+const MODULE_RENDER_VERSION='kw130-data-management-core-backup-history-health-6';
 
 function renderPageContent(name){
 if(name==='dashboard')renderDashboard();
@@ -204,6 +204,7 @@ listEl.innerHTML=rows.map(b=>`<div class="bill-item">
     </div>
     <div class="u-flex u-fdcol u-gap4 u-ml4">
       <button class="tx-del u-cacc3" data-action="openBillHistory" data-args="${escapeHtml(JSON.stringify([b.id]))}" title="Riwayat Pembayaran" aria-label="Riwayat Pembayaran">📋</button>
+      <button class="tx-del" data-action="delBillArchive" data-args="${escapeHtml(JSON.stringify([b.id]))}" title="Hapus dari Arsip" aria-label="Hapus dari Arsip">🗑</button>
     </div>
   </div>`).join('');
 }
@@ -617,6 +618,22 @@ save();
 if(document.getElementById('page-dashboard'))renderDashboard();
 }
 
+// runDeferredOrNow(fn) — PERF helper (unblock PIN-unlock/showMain freeze). Menjadwalkan `fn`
+// supaya TIDAK jalan di tumpukan JS yang sama dengan pemanggilnya (browser sempat "napas" &
+// nge-paint dulu), dengan fallback berlapis: requestAnimationFrame (browser modern) -> setTimeout
+// 0ms (browser lama/lingkungan tanpa rAF) -> jalan LANGSUNG-sinkron kalau keduanya tidak ada
+// (mis. lingkungan test Node yang me-load modules-render.js sendirian lewat loadSource() —
+// lihat tests/helpers/loadSource.js, TIDAK menyediakan requestAnimationFrame & men-stub
+// setTimeout jadi no-op yang tidak pernah memanggil callback-nya). Sengaja didefinisikan sendiri
+// di sini (bukan bergantung ke fungsi dari file lain) supaya modules-render.js tetap bisa
+// di-load & renderDashboard() tetap bisa dipanggil berdiri sendiri tanpa ReferenceError, sama
+// seperti sebelum perubahan ini. 0 logika bisnis baru — murni pengaturan KAPAN `fn` dieksekusi.
+function runDeferredOrNow(fn){
+if(typeof requestAnimationFrame==='function'){requestAnimationFrame(fn);return;}
+if(typeof setTimeout==='function'){setTimeout(fn,0);return;}
+fn();
+}
+
 function renderDashboard(){
 LifeBalance.render();
 // Konteks bulan-berjalan dihitung SEKALI di sini (dulu FinCoach & dashBillCard hitung
@@ -690,6 +707,17 @@ console.warn('renderDashboard: card "'+key+'" ('+cardDef.elId+') gagal dirender,
 // jadi aman dipanggil sesering renderDashboard(). Dibungkus try/catch SENDIRI (pola sama dgn
 // loop DASH_RENDER_ORDER di atas) supaya kalau salah satu gagal, TIDAK menjatuhkan sisa
 // renderDashboard() yang dipanggil dari alur simpan data di halaman lain (Keuangan/Shop/dst).
+// PERF (unblock PIN-unlock/showMain freeze, lihat catatan runDeferredOrNow() di
+// features-helpers-global-security.js): blok ~25 presenter di bawah ini TIDAK dicek
+// isDashCardOn() dulu (beda dari loop DASH_RENDER_ORDER di atas) & sebelumnya jalan SINKRON di
+// tumpukan JS yang sama dengan showMain() -> layar PIN "membeku" sampai semuanya selesai baru
+// dashboard-core kelihatan, makin kerasa kalau data besar. Sekarang dijadwalkan lewat
+// runDeferredOrNow() (rAF kalau tersedia, fallback setTimeout 0, fallback jalan LANGSUNG kalau
+// keduanya tidak ada mis. lingkungan test Node) supaya browser sempat "napas" & nge-paint
+// dashboard-core (Advisor/LifeBalance/kartu ringkasan/loop DASH_RENDER_ORDER di atas) dulu
+// sebelum blok ini menyusul sepersekian detik kemudian. 0 perubahan logika/urutan/isi widget —
+// yang berubah cuma KAPAN blok ini dieksekusi, bukan APA yang dieksekusi ataupun isi try/catch-nya.
+runDeferredOrNow(function(){
 try{
 if(typeof DashboardHubHero!=='undefined')DashboardHubHero.render();
 if(typeof DashboardHubSummary!=='undefined')DashboardHubSummary.render();
@@ -704,6 +732,10 @@ if(typeof DebtOptimizerPresenter!=='undefined')DebtOptimizerPresenter.render();
 if(typeof RetirementPlannerPresenter!=='undefined')RetirementPlannerPresenter.render();
 if(typeof FinancialHealthScorePresenter!=='undefined')FinancialHealthScorePresenter.render();
 if(typeof FinancialRiskDashboardPresenter!=='undefined')FinancialRiskDashboardPresenter.render();
+if(typeof PropertyManagementPresenter!=='undefined')PropertyManagementPresenter.render();
+if(typeof RentalManagementPresenter!=='undefined')RentalManagementPresenter.render();
+if(typeof AssetPortfolioPresenter!=='undefined')AssetPortfolioPresenter.render();
+if(typeof AssetMaintenancePresenter!=='undefined')AssetMaintenancePresenter.render();
 if(typeof VehicleDashboard!=='undefined')VehicleDashboard.render();
 if(typeof VehicleInsightPresenter!=='undefined')VehicleInsightPresenter.render();
 if(typeof VehicleDailyBrief!=='undefined')VehicleDailyBrief.render();
@@ -747,6 +779,7 @@ if(typeof TanggaKeuangan!=='undefined')TanggaKeuangan.render();
 }catch(e){
 console.warn('renderDashboard: live-refresh widget Dashboard Hub gagal, dilewati:',e);
 }
+});
 }
 
 function renderDashLaporanMini(inc,exp,txM){
@@ -1020,7 +1053,7 @@ else if(D.vehicles.find(v=>v.id===curVehicleId)) el.value=curVehicleId;
 
 function renderVehicleManageList(){
 const el=document.getElementById('vehicleManageList');
-el.innerHTML=D.vehicles.map((v,i)=>`<div class="tx-item"><div class="tx-icon u-bgaccsoft">${v.emoji}</div><div class="tx-info"><div class="tx-name">${escapeHtml(v.name)}</div><div class="tx-meta">Interval servis: ${(v.serviceIntervalKm||3000).toLocaleString('id-ID')} km</div></div><button class="tx-del u-bgaccsoft u-cacc" style="margin-right:6px" data-action="editVehicleInterval" data-args="${escapeHtml(JSON.stringify([i]))}" aria-label="Edit">✏️</button><button class="tx-del" data-action="delVehicle" data-args="${escapeHtml(JSON.stringify([i]))}" aria-label="Hapus">🗑</button></div>`).join('');
+el.innerHTML=D.vehicles.map((v,i)=>`<div class="tx-item"><div class="tx-icon u-bgaccsoft">${v.emoji}</div><div class="tx-info"><div class="tx-name">${escapeHtml(v.name)}</div><div class="tx-meta">Interval servis: ${(v.serviceIntervalKm||3000).toLocaleString('id-ID')} km</div></div><button class="tx-del u-bgaccsoft u-cacc" style="margin-right:6px" data-action="editVehicle" data-args="${escapeHtml(JSON.stringify([i]))}" aria-label="Edit">✏️</button><button class="tx-del" data-action="delVehicle" data-args="${escapeHtml(JSON.stringify([i]))}" aria-label="Hapus">🗑</button></div>`).join('');
 }
 
 function renderSptLinkStatus(){

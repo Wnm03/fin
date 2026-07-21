@@ -1,6 +1,6 @@
 
 // Dipindah ke modules/shared/modules-calc.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
-const MODULE_CALC_VERSION='kw130-data-management-core-backup-history-health-1';
+const MODULE_CALC_VERSION='kw130-data-management-core-backup-history-health-6';
 const FI={
 assetScopeState:'zakatable',
 investmentAssetValue(){

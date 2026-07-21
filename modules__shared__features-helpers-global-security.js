@@ -43,8 +43,8 @@ if(location.hostname==='localhost'||location.hostname==='127.0.0.1')return true;
 }catch(e){ /* anggap bukan dev mode kalau gagal deteksi */ }
 return false;
 }
-const APP_BUILD_VERSION = 'kw130-data-management-core-backup-history-health-1';
-const PRODUCTION_BUILD_SYNCED_VERSION = 'kw130-data-management-core-backup-history-health-1';
+const APP_BUILD_VERSION = 'kw130-data-management-core-backup-history-health-6';
+const PRODUCTION_BUILD_SYNCED_VERSION = 'kw130-data-management-core-backup-history-health-6';
 let D = {
 schemaVersion:SCHEMA_VERSION,
 transactions:[],cobek:[],products:[],produsen:[],cobekKategori:JSON.parse(JSON.stringify(DEFAULT_COBEK_KATEGORI)),targets:[],eduFunds:[],reminders:[],bills:[],billsArchive:[],
@@ -465,9 +465,26 @@ applyCardCollapsePrefs();
 applyDashHubMainGridDefaultCollapse();
 autoSnapshotWealthIfNeeded();
 autoSnapshotLifeBalanceIfNeeded();
-renderDashboard(); checkBackup(); checkBills(); populateCatFilter(); populateAccFilters();
+// PERF (unblock PIN-unlock freeze): sebelumnya renderDashboard()+checkBackup()+checkBills()+
+// populateCatFilter()+populateAccFilters()+renderSiapPulang()+checkAndFireReminders() semuanya
+// jalan SINKRON balik ke belakang di sini sebelum layar PIN sempat hilang dari layar — makin
+// banyak transaksi/data, makin kerasa jedanya (freeze sesaat pas PIN benar). renderDashboard()
+// sendiri sudah dipecah: bagian intinya (kartu ringkasan/DASH_RENDER_ORDER) tetap sinkron di sini
+// supaya Beranda langsung kelihatan, sedangkan ~25 presenter tambahannya dijadwalkan lewat
+// runDeferredOrNow() di dalam modules-render.js (lihat catatan di sana). 6 pemanggilan di bawah
+// ini (checkBackup/checkBills/populateCatFilter/populateAccFilters/renderSiapPulang/
+// checkAndFireReminders) BUKAN bagian dari tampilan inti Beranda yang langsung terlihat (populate
+// filter dipakai di halaman Laporan, checkBackup/checkBills/checkAndFireReminders cuma
+// menampilkan banner/notifikasi, renderSiapPulang widget halaman Shop) — jadi disusulkan lewat
+// runDeferredOrNow() yang sama supaya tidak ikut menahan cat pertama Beranda. refreshCurrentPage()
+// TETAP sinkron (di bawah, tidak berubah) krn itu yang benar-benar merender halaman aktif yang
+// sedang dilihat user. 0 perubahan logika/hasil masing-masing fungsi — cuma KAPAN dipanggil.
+renderDashboard();
+runDeferredOrNow(function(){
+checkBackup(); checkBills(); populateCatFilter(); populateAccFilters();
 renderSiapPulang();
 checkAndFireReminders();
+});
 setTimeout(checkWeeklySalaryReset,600);
 refreshCurrentPage();
 setTimeout(autoRunSelfTestIfNeeded,800);
