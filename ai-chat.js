@@ -522,7 +522,7 @@ function aiErrorHint(provider,status){
 if(provider==='gemini')return(status===400||status===403)?' (cek API key di Pengaturan)':'';
 return status===401?' (API key salah/expired, cek di Pengaturan)':'';
 }
-// Advisor — pengatur tab utk card gabungan "🧭 Penasihat" (v124, kw130-data-management-core-backup-history-health-1):
+// Advisor — pengatur tab utk card gabungan "🧭 Penasihat" (v124, kw130-data-management-core-backup-history-health-6):
 // dulu FinCoach ("🩺 Insight Cepat", rule-based-gratis-instan) & AIWidget ("🔍 Laporan AI",
 // panggil Claude/Gemini, wajib API key) tampil sbg 2 card TERPISAH di Dashboard — sekarang
 // digabung jadi SATU card dgn 2 tab, supaya tidak terasa ada "2 penasihat AI" yang mirip2.

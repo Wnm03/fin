@@ -35,7 +35,17 @@ function main() {
     if (!re.test(html)) {
       throw new Error(`build-preview: tag <link rel="stylesheet" href="${file}?v=..."> tidak ditemukan di index.html`);
     }
-    html = html.replace(re, `<style>\n${css}\n</style>`);
+    // PENTING: pakai replacer FUNGSI (bukan string) -- kalau replacement
+    // adalah string, JS men-treat pola khusus di dalamnya (mis. $&, $`, $',
+    // $1) sebagai substitusi pattern, BUKAN teks literal. CSS/JS yang
+    // di-inline sering mengandung sekuens seperti itu secara kebetulan
+    // (mis. dari kode regex-escaping `'\\'+...` atau semacamnya), yang
+    // kalau lolos ke replace() akan meng-corrupt HTML hasil build TANPA
+    // ada error apa pun saat build -- baru ketahuan sbg SyntaxError aneh
+    // pas file HTML dibuka di browser (BUG ditemukan manual, 2026-07-21,
+    // gejala: tombol/aksi apa pun tidak merespons krn <script> jadi tidak
+    // valid & gagal total dieksekusi).
+    html = html.replace(re, () => `<style>\n${css}\n</style>`);
     count++;
   }
 
@@ -47,7 +57,8 @@ function main() {
     if (!re.test(html)) {
       throw new Error(`build-preview: tag <script src="${file}?v=..."> tidak ditemukan di index.html`);
     }
-    html = html.replace(re, `<script>\n${js}\n</script>`);
+    // Replacer fungsi -- lihat catatan PENTING di atas (blok CSS).
+    html = html.replace(re, () => `<script>\n${js}\n</script>`);
     count++;
   }
   fs.writeFileSync(OUT_HTML, html, 'utf8');

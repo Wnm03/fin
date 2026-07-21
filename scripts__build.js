@@ -95,6 +95,10 @@ const GROUP_A = [
   // asset-portfolio-api.js (S101) relatif ke dependency-nya.
   'modules/asset/property-management-api.js',
 
+  // Presenter Sesi 132 (audit): ditaruh langsung setelah API-nya, pola
+  // sama persis debt-optimizer-api.js -> debt-optimizer-presenter.js.
+  'modules/asset/property-management-presenter.js',
+
   // S103 (Batch 10): Rental Management Foundation — ditaruh SETELAH
   // property-management-api.js (dependency: RentalManagementAPI._properties()
   // butuh `PropertyManagementAPI.propertyList()`, S102, sudah dimuat
@@ -103,12 +107,18 @@ const GROUP_A = [
   // forward-reference sama sekali.
   'modules/asset/rental-management-api.js',
 
+  // Presenter Sesi 132 (audit): ditaruh langsung setelah API-nya.
+  'modules/asset/rental-management-presenter.js',
+
   // S104 (Batch 10): Asset Maintenance Foundation — ditaruh SETELAH
   // rental-management-api.js, bareng grouping per-domain asset.
   // Dependency `Penyusutan`/`Aset` (modules/asset/aset.js) & `todayStr`
   // (modules/shared/features-helpers-global-security.js) semuanya sudah
   // dimuat lebih dulu — TIDAK perlu forward-reference sama sekali.
   'modules/asset/asset-maintenance-api.js',
+
+  // Presenter Sesi 132 (audit): ditaruh langsung setelah API-nya.
+  'modules/asset/asset-maintenance-presenter.js',
   'modules/finance/worthit.js',
   'modules/shared/ripple-position.js',
 ];
@@ -358,6 +368,10 @@ const GROUP_B = [
   // pola sama persis debt-optimizer-api.js/retirement-planner-api.js
   // yang dependency-nya juga sudah dimuat lebih dulu.
   'modules/asset/asset-portfolio-api.js',
+
+  // Presenter Sesi 132 (audit): ditaruh langsung setelah API-nya, pola
+  // sama persis debt-optimizer-api.js -> debt-optimizer-presenter.js.
+  'modules/asset/asset-portfolio-presenter.js',
 
   // --- LifeOS: layer orkestrasi read-only di atas D (lihat
   // lifeos-data-model.md). Urutan WAJIB: store -> registry -> link-registry
