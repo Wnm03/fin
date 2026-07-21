@@ -79,8 +79,8 @@
 <link rel="preconnect" href="https://accounts.google.com" crossorigin>
 <link rel="dns-prefetch" href="https://accounts.google.com">
 <title>Keluarga W</title>
-<link rel="stylesheet" href="styles.css?v=547">
-<link rel="stylesheet" href="modern-ui-layer.css?v=547">
+<link rel="stylesheet" href="styles.css?v=552">
+<link rel="stylesheet" href="modern-ui-layer.css?v=552">
 <script>
 /* Debug console (Eruda) — aktifkan sekali lewat ?debug=1 di URL, nempel via localStorage.
    Matikan lagi lewat ?debug=0. Tidak aktif buat user biasa. */
@@ -133,8 +133,8 @@ b.appendChild(closeBtn);
 }catch(_e){ console.error('Gagal tampilkan banner error modul:',_e); }
 };
 </script>
-<script src="app-bundle-a.min.js?v=547" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
-<script src="modules/shared/smoke-test.js?v=547" defer></script>
+<script src="app-bundle-a.min.js?v=552" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
+<script src="modules/shared/smoke-test.js?v=552" defer></script>
 <link rel="manifest" id="pwaManifestLink" href="manifest.json">
 </head>
 <body data-theme="fresh">
@@ -1033,6 +1033,16 @@ b.appendChild(closeBtn);
       </div>
     </div>
     <div class="card"><div class="card-title">📦 Etalase Produk</div><div id="productList" class="shop-product-grid"><div class="empty"><div class="empty-icon">📦</div><div class="empty-text">Belum ada produk</div></div></div></div>
+    <div class="card">
+      <div class="card-title">🏷️ Kategori Produk</div>
+      <div class="u-fs12 u-t2 u-mb8">Kategori dipakai buat menandai produk di Etalase & filter Rekomendasi Harga. Hapus kategori tidak menghapus produknya, cuma mengosongkan tag kategori di produk terkait.</div>
+      <div class="u-flex u-gap8 u-mb10">
+        <input type="text" class="fi" id="cobekKategoriNewInput" placeholder="Nama kategori baru...">
+        <button class="btn btn-primary btn-sm" id="cobekKategoriAddBtn" style="white-space:nowrap" data-action="Etalase.addKategoriManual">+ Tambah</button>
+        <button class="btn btn-ghost btn-sm" id="cobekKategoriCancelBtn" style="white-space:nowrap;display:none" data-action="Etalase.cancelEditKategori">Batal</button>
+      </div>
+      <div id="cobekKategoriList"><div class="empty"><div class="empty-icon">🏷️</div><div class="empty-text">Belum ada kategori</div></div></div>
+    </div>
   </div>
 
   <!-- PRODUSEN -->
@@ -2747,6 +2757,83 @@ b.appendChild(closeBtn);
     </div>
     <div class="findash-grid" id="financialRiskDashboardGrid"></div>
   </div>
+  <!-- PROPERTY MANAGEMENT FOUNDATION (S102, Batch 10 — presenter+UI
+       ditambahkan Sesi 132 setelah audit menemukan API-nya belum pernah
+       dipanggil). Section di dalam Dashboard Hub, sama seperti
+       #financialRiskDashboardWrap di atas — diisi oleh
+       PropertyManagementPresenter.render() (dipanggil dari
+       DashboardHub.render() di dashboard-hub.js), 100% reuse
+       PropertyManagementAPI.summary() (S102, sendiri 100% reuse
+       PajakAset/Penyusutan/Aset, modules/asset/aset.js). UI hanya
+       presenter, tidak ada rumus baru di sini. CSS TIDAK baru — reuse
+       penuh class findash-grid/findash-card (grid generik). -->
+  <div class="dashhub-wrap card u-mb12" id="propertyManagementWrap">
+    <div class="dashhub-cat-head">
+      <div class="dashhub-cat-icon">🏠</div>
+      <div>
+        <div class="dashhub-cat-label">Property Management</div>
+        <div class="dashhub-cat-desc">Portofolio, estimasi PBB &amp; penyusutan properti — dari data yang sudah ada</div>
+      </div>
+    </div>
+    <div class="findash-grid" id="propertyManagementGrid"></div>
+  </div>
+  <!-- RENTAL MANAGEMENT FOUNDATION (S103, Batch 10 — presenter+UI
+       ditambahkan Sesi 132). Section di dalam Dashboard Hub, sama
+       seperti #propertyManagementWrap di atas — diisi oleh
+       RentalManagementPresenter.render() (dipanggil dari
+       DashboardHub.render() di dashboard-hub.js), 100% reuse
+       RentalManagementAPI.summary() (S103, sendiri 100% reuse
+       PropertyManagementAPI/LaporanAset.riwayatTransaksi()). UI hanya
+       presenter, tidak ada rumus baru di sini. CSS TIDAK baru — reuse
+       penuh class findash-grid/findash-card (grid generik). -->
+  <div class="dashhub-wrap card u-mb12" id="rentalManagementWrap">
+    <div class="dashhub-cat-head">
+      <div class="dashhub-cat-icon">🏘️</div>
+      <div>
+        <div class="dashhub-cat-label">Rental Management</div>
+        <div class="dashhub-cat-desc">Pendapatan sewa bersih &amp; status penautan unit sewa — dari data yang sudah ada</div>
+      </div>
+    </div>
+    <div class="findash-grid" id="rentalManagementGrid"></div>
+  </div>
+  <!-- ASSET PORTFOLIO FOUNDATION (S101, Batch 10 — presenter+UI
+       ditambahkan Sesi 132). Section di dalam Dashboard Hub, sama
+       seperti #rentalManagementWrap di atas — diisi oleh
+       AssetPortfolioPresenter.render() (dipanggil dari
+       DashboardHub.render() di dashboard-hub.js), 100% reuse
+       AssetPortfolioAPI.summary() (S101, sendiri 100% reuse
+       Aset/Investment/totalSaldoAkun()/Kekayaan.currentNetWorth()). UI
+       hanya presenter, tidak ada rumus baru di sini. CSS TIDAK baru —
+       reuse penuh class findash-grid/findash-card (grid generik). -->
+  <div class="dashhub-wrap card u-mb12" id="assetPortfolioWrap">
+    <div class="dashhub-cat-head">
+      <div class="dashhub-cat-icon">💼</div>
+      <div>
+        <div class="dashhub-cat-label">Asset Portfolio</div>
+        <div class="dashhub-cat-desc">Komposisi &amp; alokasi kekayaan (kas/aset/investasi) — dari data yang sudah ada</div>
+      </div>
+    </div>
+    <div class="findash-grid" id="assetPortfolioGrid"></div>
+  </div>
+  <!-- ASSET MAINTENANCE FOUNDATION (S104, Batch 10 — presenter+UI
+       ditambahkan Sesi 132). Section di dalam Dashboard Hub, sama
+       seperti #assetPortfolioWrap di atas — diisi oleh
+       AssetMaintenancePresenter.render() (dipanggil dari
+       DashboardHub.render() di dashboard-hub.js), 100% reuse
+       AssetMaintenanceAPI.summary() (S104, sendiri 100% reuse
+       Penyusutan.hitung()/Aset). UI hanya presenter, tidak ada rumus
+       baru di sini. CSS TIDAK baru — reuse penuh class
+       findash-grid/findash-card (grid generik). -->
+  <div class="dashhub-wrap card u-mb12" id="assetMaintenanceWrap">
+    <div class="dashhub-cat-head">
+      <div class="dashhub-cat-icon">🔧</div>
+      <div>
+        <div class="dashhub-cat-label">Asset Maintenance</div>
+        <div class="dashhub-cat-desc">Aset yang perlu ditinjau (umur manfaat habis) — dari data yang sudah ada</div>
+      </div>
+    </div>
+    <div class="findash-grid" id="assetMaintenanceGrid"></div>
+  </div>
   <!-- VEHICLE DASHBOARD FOUNDATION (Sesi 77, Batch 7). Section di dalam
        Dashboard Hub, sama seperti #findashWrap di atas — diisi oleh
        VehicleDashboard.render() (dipanggil dari DashboardHub.render() di
@@ -3364,7 +3451,7 @@ b.appendChild(closeBtn);
 <script>document.write(MODAL_HTML[71]);</script><!-- modal:billMultiScanModal (Scan Rincian Tagihan Multi Item) -->
 <script>document.write(MODAL_HTML[72]);</script><!-- modal:universalOcrModal (Scan Universal Bank/E-Wallet/Bibit/Jago) -->
 
-<script src="app-bundle-b.min.js?v=547" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
-<script src="modules/finance/tangga-keuangan.js?v=547"></script>
+<script src="app-bundle-b.min.js?v=552" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
+<script src="modules/finance/tangga-keuangan.js?v=552"></script>
 </body>
 </html>

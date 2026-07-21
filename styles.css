@@ -1168,12 +1168,17 @@ textarea.fi { resize: vertical; min-height: 80px; }
    --fs-*/--z-dropdown/--dur-*/--ease-*/--accent/--surface3/--border2).
    Tidak ada selector lama yang diubah nilainya. */
 .keu-fab{position:fixed;right:var(--sp-9);bottom:84px;z-index:var(--z-dropdown);display:flex;flex-direction:column;align-items:flex-end;gap:var(--sp-4);}
-.keu-fab-main{width:52px;height:52px;border-radius:var(--r-full);border:none;background:var(--accent);color:#fff;font-size:var(--fs-icon-lg);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-card-hover-dark);cursor:pointer;transition:transform var(--dur-fast) var(--ease-standard);}
-.keu-fab-main:active{transform:scale(0.92);}
-.keu-fab.open .keu-fab-main{transform:rotate(45deg);}
+/* 2026-07-21 FIX: tombol "+" (.keu-fab-main) TERBUKTI tidak efektif secara
+   UX (user report: harus tap dulu baru muncul Pemasukan/Pengeluaran/Export
+   dst, extra step yang tidak perlu) -- disembunyikan total, & tombol-tombol
+   aksinya (.keu-fab-actions) dibikin SELALU tampil langsung tanpa perlu
+   toggle. Class .open & JS toggle (data-onclick di index.html) SENGAJA
+   dibiarkan apa adanya (tidak dihapus) supaya tidak ada breakage kalau ada
+   kode lain yang masih reference -- cukup di-override di CSS di sini,
+   aditif murni, tidak ada selector lama yang dihapus.  */
+.keu-fab-main{display:none;}
 .keu-fab-main-icon{line-height:1;}
-.keu-fab-actions{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:flex-end;align-items:flex-end;gap:var(--sp-3);max-width:min(86vw,360px);max-height:0;opacity:0;pointer-events:none;overflow:hidden;transition:opacity var(--dur-fast) var(--ease-standard);}
-.keu-fab.open .keu-fab-actions{max-height:200px;opacity:1;pointer-events:auto;overflow:visible;}
+.keu-fab-actions{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:flex-end;align-items:flex-end;gap:var(--sp-3);max-width:min(86vw,360px);max-height:none;opacity:1;pointer-events:auto;overflow:visible;}
 .keu-fab-action{display:flex;align-items:center;gap:var(--sp-3);border:1px solid var(--border2);background:var(--surface3);color:var(--text);border-radius:var(--r-pill);padding:var(--sp-3) var(--sp-6);box-shadow:var(--shadow-card-hover-dark2);cursor:pointer;font-size:var(--fs-body);font-weight:600;white-space:nowrap;}
 .keu-fab-action:active{transform:scale(0.95);}
 .keu-fab-action-icon{font-size:var(--fs-icon);}

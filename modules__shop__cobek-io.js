@@ -204,7 +204,7 @@ el.innerHTML=lines.map((l,i)=>`
     </div>`).join('')+`<div class="u-fs12 u-t2 u-mt2 u-tar">Subtotal: ${fmtFull(total)} · Estimasi untung: ${fmtFull(profit)}</div>`;
 }
 
-function renderProductList(){Etalase.renderList();Etalase.renderModalStat();PriceRekoWidget.render();StockRekoWidget.render();}
+function renderProductList(){Etalase.renderList();Etalase.renderKategoriList();Etalase.renderModalStat();PriceRekoWidget.render();StockRekoWidget.render();}
 
 function renderProdusenList(){return Produsen.renderList();}
 

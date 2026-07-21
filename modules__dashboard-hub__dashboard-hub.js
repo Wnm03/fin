@@ -492,6 +492,43 @@ const DashboardHub = {
     // TanggaKeuangan.compute()), UI hanya presenter.
     if (typeof FinancialRiskDashboardPresenter !== 'undefined') FinancialRiskDashboardPresenter.render();
 
+    // Property Management Foundation (S102, Batch 10 — presenter+UI
+    // ditambahkan Sesi 132, lihat modules/asset/
+    // property-management-presenter.js & #propertyManagementWrap di
+    // index.html/app_production.html — audit menemukan API-nya sudah
+    // ada sejak S102 tapi belum pernah dipanggil dari mana pun).
+    // Tambahan murni, pola sama dgn FinancialRiskDashboardPresenter.
+    // render() di atas — tidak mengubah baris manapun sebelum ini. 100%
+    // reuse PropertyManagementAPI.summary() (S102), UI hanya presenter.
+    if (typeof PropertyManagementPresenter !== 'undefined') PropertyManagementPresenter.render();
+
+    // Rental Management Foundation (S103, Batch 10 — presenter+UI
+    // ditambahkan Sesi 132, lihat modules/asset/
+    // rental-management-presenter.js & #rentalManagementWrap di
+    // index.html/app_production.html). Tambahan murni, pola sama dgn
+    // PropertyManagementPresenter.render() di atas — tidak mengubah
+    // baris manapun sebelum ini. 100% reuse RentalManagementAPI.summary()
+    // (S103), UI hanya presenter.
+    if (typeof RentalManagementPresenter !== 'undefined') RentalManagementPresenter.render();
+
+    // Asset Portfolio Foundation (S101, Batch 10 — presenter+UI
+    // ditambahkan Sesi 132, lihat modules/asset/
+    // asset-portfolio-presenter.js & #assetPortfolioWrap di
+    // index.html/app_production.html). Tambahan murni, pola sama dgn
+    // RentalManagementPresenter.render() di atas — tidak mengubah baris
+    // manapun sebelum ini. 100% reuse AssetPortfolioAPI.summary()
+    // (S101), UI hanya presenter.
+    if (typeof AssetPortfolioPresenter !== 'undefined') AssetPortfolioPresenter.render();
+
+    // Asset Maintenance Foundation (S104, Batch 10 — presenter+UI
+    // ditambahkan Sesi 132, lihat modules/asset/
+    // asset-maintenance-presenter.js & #assetMaintenanceWrap di
+    // index.html/app_production.html). Tambahan murni, pola sama dgn
+    // AssetPortfolioPresenter.render() di atas — tidak mengubah baris
+    // manapun sebelum ini. 100% reuse AssetMaintenanceAPI.summary()
+    // (S104), UI hanya presenter.
+    if (typeof AssetMaintenancePresenter !== 'undefined') AssetMaintenancePresenter.render();
+
     // Vehicle Dashboard Foundation (Sesi 77, Batch 7, lihat
     // modules/vehicle/vehicle-dashboard.js & #vehdashWrap di
     // index.html/app_production.html). Tambahan murni, pola sama dgn
