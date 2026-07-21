@@ -120,6 +120,12 @@ fireNotif('🧾 Batas Lapor SPT Tahunan',`SPT Tahunan Orang Pribadi jatuh tempo 
 fired.ids.push(fireKey);
 }
 }
+if(typeof VehicleNotifBridge!=='undefined'&&typeof VehicleNotifBridge.items==='function'){
+VehicleNotifBridge.items(undefined,fired.ids).forEach((n)=>{
+fireNotif(n.title,n.body,n.fireKey);
+fired.ids.push(n.fireKey);
+});
+}
 try{localStorage.setItem('kw_notif_fired',JSON.stringify(fired));}catch(e){console.error('Gagal simpan status notifikasi:',e);}
 }
 function shareBillWA(id){

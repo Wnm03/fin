@@ -1067,6 +1067,31 @@ textarea.fi { resize: vertical; min-height: 80px; }
   .bill-action-row:hover{border-color:var(--accent);}
 }
 
+/* S129 — Pengaturan Dashboard (Dashboard Settings): Compact Mode & Card
+   Density. Presenter CSS murni di atas token spacing yang SUDAH ADA
+   (--sp-1..11, lihat :root) — TIDAK ada custom property/nilai baru
+   ditambahkan, cuma override nilai token yang sudah ada, DI-SCOPE ke
+   #page-dashboard-hub supaya halaman lain di luar Dashboard Hub sama
+   sekali tidak terdampak (pola sama persis dgn Tahap 5 di atas). Class
+   'dash-compact'/'dash-density-*' ditoggle oleh
+   DashboardSettings.applyDashDisplayPrefs() (modules/dashboard-hub/
+   dashboard-hub-settings.js).
+   - dash-density-rapat / dash-density-nyaman: 3 level kepadatan (gap grid
+     & padding kartu). 'normal' TIDAK override apa pun -- itu nilai default
+     token asli, dipertahankan apa adanya.
+   - dash-compact: mode ringkas TERPISAH dari density -- menyembunyikan teks
+     deskripsi sekunder (kategori/hint) supaya lebih banyak konten muat di
+     layar, bukan mengubah spacing. */
+#page-dashboard-hub.dash-density-rapat .dashhub-feature-grid{gap:var(--sp-2);}
+#page-dashboard-hub.dash-density-rapat .dashhub-summary-grid{gap:var(--sp-2);}
+#page-dashboard-hub.dash-density-rapat .dashhub-analytics-row{gap:var(--sp-2);}
+#page-dashboard-hub.dash-density-rapat .card{padding:var(--sp-5);margin-bottom:var(--sp-3);}
+#page-dashboard-hub.dash-density-nyaman .dashhub-feature-grid{gap:var(--sp-6);}
+#page-dashboard-hub.dash-density-nyaman .dashhub-summary-grid{gap:var(--sp-5);}
+#page-dashboard-hub.dash-density-nyaman .card{padding:var(--sp-9);margin-bottom:var(--sp-7);}
+#page-dashboard-hub.dash-compact .dashhub-cat-desc{display:none;}
+#page-dashboard-hub.dash-compact .u-hint10{display:none;}
+
 /* ==========================================================
    TAHAP 7 — MICRO INTERACTION & MOTION SYSTEM
    Tambahan murni aditif: focus-visible (a11y) + ripple CSS-only
@@ -1236,3 +1261,18 @@ textarea.fi { resize: vertical; min-height: 80px; }
 .tk-note{font-size:11px;color:#d8d8d8;margin-top:1px;}
 .tk-current .tk-title{color:#ffd76a;}
 .tk-pending{opacity:.55;}
+
+/* ===== Data Management Core: Backup Health & Backup History (fitur baru, murni additive) ===== */
+.bh-health{border-radius:var(--r-lg);padding:var(--sp-4) var(--sp-5);border:1px solid var(--border);background:var(--surface2);}
+.bh-health-label{font-size:var(--fs-body);font-weight:700;color:var(--text);}
+.bh-health-sub{font-size:var(--fs-caption);color:var(--text2);margin-top:2px;}
+.bh-health-ok{border-color:rgba(76,175,80,.35);}
+.bh-health-ok .bh-health-label{color:#4caf50;}
+.bh-health-overdue{border-color:rgba(224,160,48,.35);}
+.bh-health-overdue .bh-health-label{color:#e0a030;}
+.bh-health-never{border-color:rgba(224,160,48,.35);}
+.bh-health-never .bh-health-label{color:#e0a030;}
+.bh-row{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08);}
+.bh-row:last-child{border-bottom:none;}
+.bh-row-icon{font-size:14px;line-height:1.5;flex-shrink:0;}
+.bh-row-body{flex:1;min-width:0;}

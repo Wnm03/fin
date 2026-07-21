@@ -193,7 +193,19 @@ const afterThrow={toVersion:9004,desc:'fake migrasi setelahnya',migrate(){second
 DATA_MIGRATIONS.push(willThrow,afterThrow);
 const savedSchemaVersion2=D.schemaVersion;
 try{
+// Test ini SENGAJA memicu migrate() throw utk cek runDataMigrations() tetap
+// lanjut ke migrasi berikutnya -- tapi catch block aslinya (features-helpers-
+// global-security.js) selalu console.error(), yg kalau dibiarkan bocor ke
+// console asli user akan kelihatan sprt bug produksi padahal cuma noise tes
+// diagnostik. Redam console.error HANYA selama runDataMigrations() ini,
+// selalu dikembalikan lewat finally walau assert di bawah gagal/throw.
+const _origConsoleError=console.error;
+console.error=function(){};
+try{
 runDataMigrations(9002);
+} finally {
+console.error=_origConsoleError;
+}
 _selfTestAssert(secondRan,'runDataMigrations() harus tetap lanjut ke migrasi berikutnya walau ada 1 migrasi yg gagal/throw');
 } finally {
 DATA_MIGRATIONS.length=before;
