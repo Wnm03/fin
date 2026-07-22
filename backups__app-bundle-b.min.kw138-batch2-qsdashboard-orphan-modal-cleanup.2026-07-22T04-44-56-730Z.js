@@ -82,8 +82,8 @@ if(location.hostname==='localhost'||location.hostname==='127.0.0.1')return true;
 }catch(e){ /* anggap bukan dev mode kalau gagal deteksi */ }
 return false;
 }
-const APP_BUILD_VERSION = 'kw139-fix-dashboard-hub-goto-subtab';
-const PRODUCTION_BUILD_SYNCED_VERSION = 'kw139-fix-dashboard-hub-goto-subtab';
+const APP_BUILD_VERSION = 'kw138-batch2-qsdashboard-orphan-modal-cleanup';
+const PRODUCTION_BUILD_SYNCED_VERSION = 'kw138-batch2-qsdashboard-orphan-modal-cleanup';
 let D = {
 schemaVersion:SCHEMA_VERSION,
 transactions:[],cobek:[],products:[],produsen:[],cobekKategori:JSON.parse(JSON.stringify(DEFAULT_COBEK_KATEGORI)),targets:[],eduFunds:[],reminders:[],bills:[],billsArchive:[],
@@ -10444,7 +10444,7 @@ function aiErrorHint(provider,status){
 if(provider==='gemini')return(status===400||status===403)?' (cek API key di Pengaturan)':'';
 return status===401?' (API key salah/expired, cek di Pengaturan)':'';
 }
-// Advisor — pengatur tab utk card gabungan "🧭 Penasihat" (v124, kw139-fix-dashboard-hub-goto-subtab):
+// Advisor — pengatur tab utk card gabungan "🧭 Penasihat" (v124, kw138-batch2-qsdashboard-orphan-modal-cleanup):
 // dulu FinCoach ("🩺 Insight Cepat", rule-based-gratis-instan) & AIWidget ("🔍 Laporan AI",
 // panggil Claude/Gemini, wajib API key) tampil sbg 2 card TERPISAH di Dashboard — sekarang
 // digabung jadi SATU card dgn 2 tab, supaya tidak terasa ada "2 penasihat AI" yang mirip2.
@@ -20854,21 +20854,6 @@ function _dashHubCallAction(name) {
   else console.warn('DashboardHub: action tidak ditemukan:', name);
 }
 
-// BUGFIX (goTo ke widget di sub-tab Dashboard Hub yang sedang tidak aktif):
-// beberapa target.goTo (mis. advisorCard/lifeBalanceCard/refleksiCard/
-// dashFiCard ada di dalam #dashboardHubPinnedWrap -- tab "Widget"; lifeOSWrap
-// ada di dalam grup "Insight") hidup di DALAM container yang di-toggle
-// u-dnone oleh DashboardHub.applySectionTab() (lihat SECTION_GROUPS di
-// method itu). Kalau user sedang di sub-tab lain (mis. "Fitur") lalu klik
-// kartu yang goTo-nya ada di sub-tab "Widget", scrollIntoView() ke elemen
-// yang leluhurnya u-dnone TIDAK melakukan apa-apa (elemen tidak
-// ter-render/invisible) -- showPage() di atas SUDAH keburu reset scroll ke
-// 0 duluan, jadi user cuma mendarat di paling atas halaman (Hero/Tangga
-// Ternak Uang yang SELALU tampil di atas subtab), terlihat seperti "semua
-// kartu Fitur mengarah ke Tangga Keuangan". Peta di bawah 100% REUSE
-// (bukan duplikasi keputusan baru) daftar SECTION_GROUPS yang sudah ada di
-// DashboardHub.applySectionTab() -- kalau salah satu daftar itu berubah,
-// peta ini WAJIB disamakan lagi.
 const DASHHUB_GOTO_SECTION_MAP = {
   dashHubSummaryGrid: 'ringkasan',
   dashHubAnalyticsRow: 'ringkasan',
@@ -20885,10 +20870,6 @@ const DASHHUB_GOTO_SECTION_MAP = {
   lifePriorityWrap: 'insight',
 };
 
-// Jalan naik dari elemen goTo lewat parentElement sampai ketemu id yang
-// terdaftar di DASHHUB_GOTO_SECTION_MAP (atau habis/null kalau memang
-// goTo-nya bukan bagian dari section manapun -- mis. Hero/Tangga Keuangan
-// yang memang selalu tampil, tidak butuh switch tab apa pun).
 function _dashHubResolveGoToSection(goToId) {
   let el = document.getElementById(goToId);
   while (el) {

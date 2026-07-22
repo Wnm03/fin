@@ -82,8 +82,8 @@ if(location.hostname==='localhost'||location.hostname==='127.0.0.1')return true;
 }catch(e){ /* anggap bukan dev mode kalau gagal deteksi */ }
 return false;
 }
-const APP_BUILD_VERSION = 'kw139-fix-dashboard-hub-goto-subtab';
-const PRODUCTION_BUILD_SYNCED_VERSION = 'kw139-fix-dashboard-hub-goto-subtab';
+const APP_BUILD_VERSION = 'kw138-breadcrumb-navigasi-3lapis-1';
+const PRODUCTION_BUILD_SYNCED_VERSION = 'kw138-breadcrumb-navigasi-3lapis-1';
 let D = {
 schemaVersion:SCHEMA_VERSION,
 transactions:[],cobek:[],products:[],produsen:[],cobekKategori:JSON.parse(JSON.stringify(DEFAULT_COBEK_KATEGORI)),targets:[],eduFunds:[],reminders:[],bills:[],billsArchive:[],
@@ -6380,7 +6380,7 @@ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=
 D.lastBackup=new Date().toISOString();save();
 document.getElementById('lastBackup').textContent=new Date().toLocaleDateString('id-ID');
 document.getElementById('backupBadge').textContent='💾 Backup';
-document.getElementById('backupBanner')?.classList.add('hidden');
+document.getElementById('backupBanner').classList.add('hidden');
 if(typeof BackupHistoryAPI!=='undefined')BackupHistoryAPI.recordEntry({type:'local',status:'success',done:['File lokal (JSON)']});
 toast('✅ Backup berhasil!');
 }
@@ -6670,7 +6670,7 @@ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=
 D.lastBackup=new Date().toISOString();save();
 const lb=document.getElementById('lastBackup');if(lb)lb.textContent=new Date().toLocaleDateString('id-ID');
 document.getElementById('backupBadge').textContent='💾 Backup';
-document.getElementById('backupBanner')?.classList.add('hidden');
+document.getElementById('backupBanner').classList.add('hidden');
 if(typeof BackupHistoryAPI!=='undefined')BackupHistoryAPI.recordEntry({type:'custom',status:'success',done:['Backup custom ('+format+')']});
 closeModal('backupModal');
 toast('✅ Backup berhasil di-download!');
@@ -6789,9 +6789,9 @@ toast('📦 Backup otomatis dijalankan (sudah lewat 7 hari)',4000);
 },900);
 }
 function checkBackup(){
-if(!D.lastBackup){document.getElementById('backupBanner')?.classList.remove('hidden');document.getElementById('backupBadge').textContent='⚠️ Backup';_autoBackupIfOverdue();return;}
+if(!D.lastBackup){document.getElementById('backupBanner').classList.remove('hidden');document.getElementById('backupBadge').textContent='⚠️ Backup';_autoBackupIfOverdue();return;}
 const days=Math.floor((new Date()-new Date(D.lastBackup))/(1000*60*60*24));
-if(days>=7){document.getElementById('backupBanner')?.classList.remove('hidden');const lbd=document.getElementById('lastBackupDate');if(lbd)lbd.textContent=new Date(D.lastBackup).toLocaleDateString('id-ID');document.getElementById('backupBadge').textContent='⚠️ Backup';_autoBackupIfOverdue();}
+if(days>=7){document.getElementById('backupBanner').classList.remove('hidden');document.getElementById('lastBackupDate').textContent=new Date(D.lastBackup).toLocaleDateString('id-ID');document.getElementById('backupBadge').textContent='⚠️ Backup';_autoBackupIfOverdue();}
 if(D.lastBackup)document.getElementById('lastBackup').textContent=new Date(D.lastBackup).toLocaleDateString('id-ID');
 }
 function setImportType(type,el){
@@ -10444,7 +10444,7 @@ function aiErrorHint(provider,status){
 if(provider==='gemini')return(status===400||status===403)?' (cek API key di Pengaturan)':'';
 return status===401?' (API key salah/expired, cek di Pengaturan)':'';
 }
-// Advisor — pengatur tab utk card gabungan "🧭 Penasihat" (v124, kw139-fix-dashboard-hub-goto-subtab):
+// Advisor — pengatur tab utk card gabungan "🧭 Penasihat" (v124, kw138-breadcrumb-navigasi-3lapis-1):
 // dulu FinCoach ("🩺 Insight Cepat", rule-based-gratis-instan) & AIWidget ("🔍 Laporan AI",
 // panggil Claude/Gemini, wajib API key) tampil sbg 2 card TERPISAH di Dashboard — sekarang
 // digabung jadi SATU card dgn 2 tab, supaya tidak terasa ada "2 penasihat AI" yang mirip2.
@@ -14054,6 +14054,7 @@ const EXTRA_MODAL_SWEEP_SPECS=[
 {fn:'openQS',args:['qsCarnotes'],id:'qsCarnotes',close:()=>closeQS('qsCarnotes')},
 {fn:'openQS',args:['qsLaporan'],id:'qsLaporan',close:()=>closeQS('qsLaporan')},
 {fn:'openQS',args:['qsAI'],id:'qsAI',close:()=>closeQS('qsAI')},
+{fn:'openQS',args:['qsDashboard'],id:'qsDashboard',close:()=>closeQS('qsDashboard')},
 {fn:'openCalc',args:[undefined],id:'calcModal',close:()=>closeCalc()},
 {fn:'openBillArchive',args:[],id:'billArchiveModal'},
 {fn:'openBillCalendar',args:[],id:'billCalendarModal'},
@@ -20592,6 +20593,7 @@ const FEATURE_REGISTRY = [
       { key: 'dash-ai-ringkasan-harian', label: 'Ringkasan Harian AI', icon: '📋', desc: 'Jumlah keputusan AI terbaru & ringkasan pengiriman pending', target: { page: 'dashboard-hub', goTo: 'aiBriefingBody' } },
       { key: 'dash-hidup-seimbang', label: 'Skor Hidup Seimbang', icon: '⚖️', desc: 'Dana Darurat, DSR, No-Spend, kerja-istirahat', target: { page: 'dashboard-hub', goTo: 'lifeBalanceCard' } },
       { key: 'dash-refleksi', label: 'Refleksi & Self-Care', icon: '📝', desc: 'Jurnal syukur & checklist harian', target: { page: 'dashboard-hub', dashKey: 'refleksi', goTo: 'refleksiCard' } },
+      { key: 'dash-laporan-mini', label: 'Ringkasan Laporan Bulan Ini', icon: '📊', desc: 'Pemasukan/pengeluaran bulan berjalan', target: { page: 'dashboard', dashKey: 'laporanMini', goTo: 'dashLaporanMiniCard' } },
       { key: 'dash-fi', label: 'Kebebasan Finansial (FI)', icon: '🎯', desc: 'Progres menuju financial independence', target: { page: 'dashboard-hub', dashKey: 'fi', goTo: 'dashFiCard' } },
       // Sesi 27 (TODO.md #6b, Tahap 2 Navigation wiring — lihat
       // docs/PRODUCT_DECISIONS.md) — Life OS (lifeos/ui/lifeos-home.js)
@@ -20854,52 +20856,6 @@ function _dashHubCallAction(name) {
   else console.warn('DashboardHub: action tidak ditemukan:', name);
 }
 
-// BUGFIX (goTo ke widget di sub-tab Dashboard Hub yang sedang tidak aktif):
-// beberapa target.goTo (mis. advisorCard/lifeBalanceCard/refleksiCard/
-// dashFiCard ada di dalam #dashboardHubPinnedWrap -- tab "Widget"; lifeOSWrap
-// ada di dalam grup "Insight") hidup di DALAM container yang di-toggle
-// u-dnone oleh DashboardHub.applySectionTab() (lihat SECTION_GROUPS di
-// method itu). Kalau user sedang di sub-tab lain (mis. "Fitur") lalu klik
-// kartu yang goTo-nya ada di sub-tab "Widget", scrollIntoView() ke elemen
-// yang leluhurnya u-dnone TIDAK melakukan apa-apa (elemen tidak
-// ter-render/invisible) -- showPage() di atas SUDAH keburu reset scroll ke
-// 0 duluan, jadi user cuma mendarat di paling atas halaman (Hero/Tangga
-// Ternak Uang yang SELALU tampil di atas subtab), terlihat seperti "semua
-// kartu Fitur mengarah ke Tangga Keuangan". Peta di bawah 100% REUSE
-// (bukan duplikasi keputusan baru) daftar SECTION_GROUPS yang sudah ada di
-// DashboardHub.applySectionTab() -- kalau salah satu daftar itu berubah,
-// peta ini WAJIB disamakan lagi.
-const DASHHUB_GOTO_SECTION_MAP = {
-  dashHubSummaryGrid: 'ringkasan',
-  dashHubAnalyticsRow: 'ringkasan',
-  dashHubFavoritSection: 'fitur',
-  dashHubMainGridCard: 'fitur',
-  dashboardHubPinnedWrap: 'widget',
-  lifeOSWrap: 'insight',
-  eieWrap: 'insight',
-  crossDashWrap: 'insight',
-  crossBriefWrap: 'insight',
-  crossInsightWrap: 'insight',
-  personalOverviewWrap: 'insight',
-  crossWidgetsWrap: 'insight',
-  lifePriorityWrap: 'insight',
-};
-
-// Jalan naik dari elemen goTo lewat parentElement sampai ketemu id yang
-// terdaftar di DASHHUB_GOTO_SECTION_MAP (atau habis/null kalau memang
-// goTo-nya bukan bagian dari section manapun -- mis. Hero/Tangga Keuangan
-// yang memang selalu tampil, tidak butuh switch tab apa pun).
-function _dashHubResolveGoToSection(goToId) {
-  let el = document.getElementById(goToId);
-  while (el) {
-    if (Object.prototype.hasOwnProperty.call(DASHHUB_GOTO_SECTION_MAP, el.id)) {
-      return DASHHUB_GOTO_SECTION_MAP[el.id];
-    }
-    el = el.parentElement;
-  }
-  return null;
-}
-
 function dashHubNavigateToFeature(target) {
   if (!target) return;
   if (!target.page) {
@@ -20953,10 +20909,6 @@ function dashHubNavigateToFeature(target) {
   // filter-laporan.js) supaya DOM halaman tujuan sempat selesai dirender.
   setTimeout(() => {
     if (target.goTo) {
-      if (target.page === 'dashboard-hub' && typeof DashboardHub !== 'undefined' && typeof DashboardHub.setSectionTab === 'function') {
-        const section = _dashHubResolveGoToSection(target.goTo);
-        if (section) DashboardHub.setSectionTab(section);
-      }
       const el = document.getElementById(target.goTo);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });

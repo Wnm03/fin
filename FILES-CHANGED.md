@@ -2864,3 +2864,61 @@ npm run build
 ✓ Sintaks kedua bundle valid (node --check lolos)
 ✓ index.html & app_production.html sudah identik.
 ```
+
+---
+
+# Files Changed — Sesi 139: Bugfix Navigasi "Semua Fitur" Dashboard Hub (goTo ke sub-tab tidak aktif)
+
+Baseline: hasil Sesi 138 (`?v=563`), `node --test tests/*.test.js`
+52/52 PASS sebelum sesi ini (skop test yang tersedia di ZIP kerja ini).
+
+Total file kode yang berubah: **2** (`dashboard-hub.js`,
+`app-bundle-b.min.js`). Total file baru: **1**
+(`tests/dashboard-hub-goto-subtab.test.js`). Total file dibuat ulang
+otomatis oleh `scripts/build.js` (bukan diedit manual): `app-bundle-a.min.js`,
+`index.html`, `app_production.html`, `sw.js`, `docs/FILE-MAP.md`, + 6 file
+konstanta versi source.
+
+| File | Jenis | Ringkasan |
+|---|---|---|
+| `modules/dashboard-hub/dashboard-hub.js` | Diubah (aditif) | Tambah `DASHHUB_GOTO_SECTION_MAP` (reverse-map dari `SECTION_GROUPS` yang sudah ada di `DashboardHub.applySectionTab()`, 0 taksonomi baru) + `_dashHubResolveGoToSection(goToId)` (jalan naik lewat `parentElement` sampai ketemu container section terdaftar, atau `null`). `dashHubNavigateToFeature()`: 1 blok baru di dalam `setTimeout` yang sudah ada, sebelum `scrollIntoView()` — kalau `target.page==='dashboard-hub'` dan section-nya ketemu, panggil `DashboardHub.setSectionTab(section)` dulu. 0 baris lama dihapus/diubah selain penambahan blok ini. |
+| `app-bundle-b.min.js` | Diubah (aditif, lalu dibuat ulang otomatis) | Patch identik ditempel manual dulu (verifikasi cepat `node --check`), lalu `scripts/build.js` dijalankan sungguhan sehingga bundle final = hasil build otomatis dari source yang sudah dipatch (bukan lagi patch manual yang dipertahankan). |
+| `tests/dashboard-hub-goto-subtab.test.js` | **Baru** | 10 test: resolusi `_dashHubResolveGoToSection()` per id (termasuk naik beberapa level ancestor, id di luar `SECTION_GROUPS` manapun → `null`, id yang tidak ada di DOM → `null`, tidak `throw`), serta integrasi penuh `dashHubNavigateToFeature()` (setSectionTab terpanggil dgn tab yang benar SEBELUM scrollIntoView utk kartu Widget/Insight, TIDAK terpanggil sama sekali utk kartu yang sudah di luar section manapun, dan tidak pernah tersentuh sama sekali utk goTo di halaman lain). |
+| `CHANGELOG.md` | Diubah | Entry Sesi 139 ditambahkan di paling atas (konvensi newest-first file ini, riwayat lama tidak diubah). |
+| `FILES-CHANGED.md` | Diubah | Dokumen ini (aditif, append). |
+| `docs/CHECKPOINT.md` | Diubah | Current Session diperbarui ke Sesi 139. |
+
+## File yang TIDAK berubah (ditegaskan)
+
+- `SECTION_GROUPS` di `DashboardHub.applySectionTab()` (dashboard-hub.js)
+  — 0 baris disentuh, `DASHHUB_GOTO_SECTION_MAP` murni REUSE nilainya.
+- `dashboard-hub-registry.js` (`FEATURE_REGISTRY`) — 0 baris disentuh,
+  seluruh `target.goTo`/`target.page` per kartu tetap persis sama dengan
+  sebelum sesi ini.
+- `showPage()`, `applySectionTab()`, `setKeuanganTab()`/`setShopTab()`/
+  `setCnTab()`/`setPajakTab()`/`setAsetTab()` dan seluruh cabang navigasi
+  ke page lain di `dashHubNavigateToFeature()` — 0 baris disentuh, guard
+  baru HANYA aktif utk `target.page==='dashboard-hub'`.
+- `index.html`, `app_production.html` — tidak diedit manual (hanya `?v=`
+  disinkronkan otomatis oleh `scripts/build.js`, 0 markup berubah).
+- Seluruh 62 test lama (52 baseline Sesi 138 + tidak ada yang dihapus) —
+  tidak satu pun diubah, tetap 100% lulus tanpa modifikasi assertion.
+
+## Hasil test
+
+```
+node --test tests/dashboard-hub-goto-subtab.test.js
+# tests 10 / pass 10 / fail 0
+
+node --test tests/*.test.js
+# tests 62 / pass 62 / fail 0
+```
+
+## Build
+
+```
+node scripts/build.js kw139-fix-dashboard-hub-goto-subtab
+# ✓ Sintaks kedua bundle valid (node --check lolos)
+# ✓ index.html & app_production.html sudah identik.
+# Versi baru: ?v=564 / kw-cache-v564
+```

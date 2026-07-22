@@ -1,3 +1,92 @@
+# Changelog — Sesi 139: Bugfix Navigasi "Semua Fitur" Dashboard Hub (goTo ke sub-tab tidak aktif)
+
+## Bug yang diperbaiki
+
+Dilaporkan user (screenshot): klik kartu apa pun di grid "🗂️ Semua Fitur"
+yang targetnya `dash-penasihat`/`dash-ai-rekomendasi`/
+`dash-ai-ringkasan-harian`/`dash-hidup-seimbang`/`dash-refleksi`/`dash-fi`/
+`dash-lifeos` (Penasihat AI, Rekomendasi AI, Ringkasan Harian AI, Skor Hidup
+Seimbang, Refleksi & Self-Care, Kebebasan Finansial, Life OS) selalu terlihat
+"mengarah ke Tangga Ternak Uang", bukan ke kartu yang diklik.
+
+**Root cause**: `target.goTo` ketujuh kartu itu (`advisorCard`/
+`aiRecommendBody`/`aiBriefingBody`/`lifeBalanceCard`/`refleksiCard`/
+`dashFiCard`/`lifeOSWrap`) hidup di dalam container yang ada di
+`SECTION_GROUPS` sub-tab **LAIN** (`#dashboardHubPinnedWrap` → sub-tab
+"📌 Widget"; `#lifeOSWrap` → sub-tab "🌦️ Insight") — bukan di sub-tab
+"🗂️ Fitur" tempat kartunya sendiri berada. `dashHubNavigateToFeature()`
+SEBELUM fix ini tidak pernah memanggil `DashboardHub.setSectionTab()`
+dulu sebelum `scrollIntoView()`, jadi kalau user sedang di sub-tab lain,
+elemen tujuan tetap disembunyikan `u-dnone` → `scrollIntoView()` jadi
+no-op tanpa error apa pun. Yang kelihatan cuma efek sampingan:
+`showPage()` di baris sebelumnya sudah keburu reset scroll ke 0, dan
+karena kartu "Tangga Ternak Uang" (`#tanggaKeuanganCard`) SENGAJA selalu
+tampil di atas seluruh sub-tab (di luar `SECTION_GROUPS` manapun), itulah
+yang selalu terlihat — bukan navigasi yang benar-benar salah arah, murni
+efek "mendarat di posisi paling atas yang kebetulan didominasi kartu itu".
+
+## Diperbaiki
+
+- **`modules/dashboard-hub/dashboard-hub.js`** — tambah
+  `DASHHUB_GOTO_SECTION_MAP` (100% REUSE nilai `SECTION_GROUPS` yang sudah
+  ada di `DashboardHub.applySectionTab()`, dibalik jadi id→tab) +
+  `_dashHubResolveGoToSection(goToId)` (jalan naik lewat `parentElement`
+  dari elemen `goTo` sampai ketemu id yang terdaftar di peta itu, atau
+  `null` kalau memang di luar section manapun — mis. Tangga
+  Keuangan/Hero, yang memang tidak butuh pindah tab). `dashHubNavigateToFeature()`
+  sekarang memanggil `DashboardHub.setSectionTab(section)` (kalau ada)
+  SEBELUM `scrollIntoView()`, hanya utk `target.page==='dashboard-hub'`.
+  0 baris/fungsi lama dihapus, 0 perilaku lain berubah — kartu yang
+  goTo-nya memang sudah di sub-tab aktif (atau di luar section manapun)
+  perilakunya identik dengan sebelumnya.
+- **`app-bundle-b.min.js`** — patch identik ditempel manual ke bundle
+  (bundle ini yang benar-benar dimuat `index.html`/`app_production.html`),
+  supaya tidak perlu menunggu build ulang utk verifikasi manual pertama.
+  `node scripts/build.js` lalu dijalankan sungguhan (lihat di bawah) untuk
+  menghasilkan bundle final dari source yang sudah dipatch — bundle hasil
+  patch manual ini jadi konsisten dgn hasil build otomatis.
+
+## Ditambahkan
+
+- **`tests/dashboard-hub-goto-subtab.test.js`** (10 test baru) — load
+  `dashboard-hub.js` ASLI lewat `vm` dgn DOM tiruan minimal yang meniru
+  struktur nyata (`advisorCard`/`lifeBalanceCard`/`refleksiCard`/
+  `dashFiCard` sbg descendant `#dashboardHubPinnedWrap`, `lifeOSWrap`
+  berdiri sendiri, dst): resolusi section per id (termasuk naik beberapa
+  level ancestor & id yang tidak terdaftar/tidak ada → `null`, tidak
+  throw), serta integrasi `dashHubNavigateToFeature()` penuh
+  (`setSectionTab` terpanggil dgn tab yang benar SEBELUM `scrollIntoView`,
+  kartu yang tidak butuh pindah tab TIDAK memicu `setSectionTab` sama
+  sekali, dan goTo di halaman lain tidak pernah menyentuh sub-tab
+  Dashboard Hub).
+
+## Tidak diubah
+
+- `SECTION_GROUPS` di `DashboardHub.applySectionTab()` — 0 baris
+  disentuh, `DASHHUB_GOTO_SECTION_MAP` murni REUSE nilainya, bukan
+  keputusan taksonomi baru.
+- `FEATURE_REGISTRY` (`dashboard-hub-registry.js`) — 0 baris disentuh,
+  seluruh `target.goTo` per kartu tetap persis sama.
+- Navigasi ke page LAIN (`keuangan`/`shop`/`carnotes`/`pajak`/`aset`/dst)
+  — 0 baris disentuh, guard baru hanya aktif utk
+  `target.page==='dashboard-hub'`.
+- `showPage()`, `applySectionTab()` — 0 baris disentuh, dipanggil apa
+  adanya.
+
+## Test & Build
+
+```
+node --test tests/*.test.js
+# tests 62 / pass 62 / fail 0  (52 lama + 10 baru, semua hijau)
+
+node scripts/build.js kw139-fix-dashboard-hub-goto-subtab
+# ✓ Sintaks kedua bundle valid (node --check lolos)
+# ✓ index.html & app_production.html sudah identik.
+# Versi baru: ?v=564 / kw-cache-v564
+```
+
+---
+
 # Changelog — Smart Delivery Engine, Sesi 4/6: Fungsi Additive Shop + Cobek
 
 Lihat `RENCANA-SESI-RINGKAS.md` untuk peta 6 sesi lengkap. Sesi ini
@@ -4759,3 +4848,300 @@ node scripts/build.js kw84-batch7-vehicle-dashboard-final-integration
 node --test tests/*.test.js   (setelah build)
 # tests 2826 / pass 2826 / fail 0
 ```
+
+## Sesi 133 (2026-07-22) — Reorganisasi Insight AI: Vehicle & Finance dipindah ke tab fitur masing-masing
+
+**Catatan gap dokumentasi:** entri kronologis di `CHANGELOG.md` berhenti
+di Sesi 84 (Batch 7) — source code sudah berjalan sampai `?v=554`
+(build `kw130-data-management-core-backup-history-health-7`) saat sesi
+ini dimulai, gap Sesi 85-132 TIDAK di-backfill di sesi ini (di luar
+scope, lihat `docs/PROJECT_STATE.md` § Backfill S85–S110 untuk gap
+serupa sebelumnya). **Tidak ada folder `tests/` di ZIP yang diterima
+sesi ini** — regression test `node --test` TIDAK BISA dijalankan;
+verifikasi sesi ini murni manual (syntax check `node --check`, audit
+grep referensi ID, verifikasi div balance & keunikan ID di HTML,
+`node scripts/build.js` lolos cek sintaks bundle). **User WAJIB
+menjalankan `npm test` sendiri sebelum menganggap perubahan ini final.**
+
+### Konteks
+
+Permintaan eksplisit user: "pindahkan semua insight AI ke navigasi baru
+atau pindahkan ke tab masing-masing fitur". Audit menemukan sub-tab
+"insight" di Dashboard Hub (`SECTION_GROUPS.insight`,
+`modules/dashboard-hub/dashboard-hub.js`) menumpuk 26 card lintas-domain
+jadi satu (Finance×10, Vehicle×8, Cross×6, LifeOS×1, EIE×1) tanpa
+pengelompokan. Keputusan (dikonfirmasi user): card yang murni 1 domain
+dipindah ke tab fitur terkait; card lintas-domain (Cross/LifeOS/EIE)
+TETAP di sub-tab "insight" Dashboard Hub karena tidak punya "rumah" 1
+fitur tunggal.
+
+### Diubah
+
+- **`modules/dashboard-hub/dashboard-hub.js`** — 18 baris pemanggilan
+  `render()` (`FinanceDashboard`, `FinancialForecastPresenter`,
+  `BudgetRecommendationPresenter`, `CashFlowProjectionPresenter`,
+  `FinancialGoalPresenter`, `InvestmentPlannerPresenter`,
+  `DebtOptimizerPresenter`, `RetirementPlannerPresenter`,
+  `FinancialHealthScorePresenter`, `FinancialRiskDashboardPresenter`,
+  `VehicleDashboard`, `VehicleInsightPresenter`, `VehicleDailyBrief`,
+  `VehicleAlertPanel`, `VehicleInsightFeed`,
+  `VehicleAnalyticsPresenter`, `VehicleDecisionPresenter`,
+  `VehicleAutomationPresenter`) DIHAPUS dari `DashboardHub.render()`
+  (dipindah ke `renderKeuangan()`/`renderCnTab()` — lihat di bawah).
+  `SECTION_GROUPS.insight` dikurangi dari 26 jadi 8 entry (hanya
+  `lifeOSWrap`/`eieWrap`/`crossDashWrap`/`crossBriefWrap`/
+  `crossInsightWrap`/`personalOverviewWrap`/`crossWidgetsWrap`/
+  `lifePriorityWrap` — murni lintas-domain). **TIDAK ADA logic/rumus
+  presenter yang diubah** — murni pindah LOKASI pemanggilan `render()`,
+  fungsi presenter itu sendiri 0 perubahan.
+- **`modules/shared/modules-render.js`** — `renderKeuangan()` nambah 10
+  baris pemanggilan render Finance presenter di atas (persis sama,
+  hanya pindah lokasi panggilan). `renderCnTab()` nambah 8 baris
+  pemanggilan render Vehicle presenter di atas (persis sama, hanya
+  pindah lokasi panggilan).
+- **`index.html` / `app_production.html`** (disinkronkan, 0 diff) — 18
+  container `<div class="dashhub-wrap">` (findashWrap dst, vehdashWrap
+  dst) DIPINDAH dari section Dashboard Hub ke: 10 container Finance →
+  `#page-keuangan` > `#keuanganTab-laporan` (sub-tab "📊 Laporan"); 8
+  container Vehicle → `#page-carnotes` (dekat `#mobilInsightCard`).
+  Lokasi lama diganti komentar penanda (bukan dihapus total tanpa
+  jejak). Verifikasi: 0 ID duplikat, div `<div>`/`</div>` tetap seimbang
+  (1768/1768), tiap 18 ID container muncul tepat 1×.
+- Versi build: `?v=554` → `?v=556` (2× jalan `build.js`, sekali auto-
+  increment tanpa nama eksplisit lalu di-build ulang dgn nama sesi yang
+  benar — lihat catatan di bawah).
+
+### Tidak diubah
+
+Semua fungsi `.render()`/`.summary()`/API presenter (Finance/Vehicle
+Intelligence dkk) — 100% reuse, tidak ada baris logic di dalamnya yang
+disentuh. `crossDashWrap`/`crossBriefWrap`/`crossInsightWrap`/
+`personalOverviewWrap`/`crossWidgetsWrap`/`lifePriorityWrap`/
+`lifeOSWrap`/`eieWrap` TETAP di Dashboard Hub (keputusan produk sesi
+ini — lintas-domain, bukan diabaikan). `propertyManagementWrap`/
+`rentalManagementWrap`/`assetPortfolioWrap`/`assetMaintenanceWrap`/
+`recommendationPanelWrap`/`actionQueueWrap` (di luar `SECTION_GROUPS`
+sejak sebelum sesi ini — gap pre-existing, bukan scope sesi ini) TIDAK
+disentuh.
+
+### Hasil verifikasi (TANPA `tests/` — lihat catatan gap di atas)
+
+```
+node --check modules/dashboard-hub/dashboard-hub.js   # OK
+node --check modules/shared/modules-render.js         # OK
+node scripts/build.js kw133-insight-ai-reorganisasi-vehicle-finance-ke-tab-fitur
+# ✅ Build selesai & lolos cek sintaks bundle (node --check), ?v=556
+# index.html & app_production.html identik (0 diff)
+# 0 ID HTML duplikat, div balance 1768/1768 seimbang
+```
+
+**PENTING:** sesi berikutnya (atau user sendiri) WAJIB menjalankan
+`npm test` penuh dgn folder `tests/` yang lengkap sebelum rilis
+dianggap final — sesi ini tidak bisa memverifikasi regression test
+sama sekali krn ZIP yang diterima tidak menyertakan `tests/`.
+
+## Sesi 134 (2026-07-22) — Gap fix: live-wiring `renderDashboard()` dobel-render 18 presenter Finance/Vehicle pasca-Sesi 133
+
+**Konteks:** Audit terpisah (bukan lanjutan alur kerja sesi biasa) menemukan
+Sesi 133 hanya menghapus 18 pemanggilan `render()` (Finance ×10, Vehicle
+×8) dari `DashboardHub.render()` (`dashboard-hub.js`) lalu menambahkannya
+ke `renderKeuangan()`/`renderCnTab()` — TAPI tidak menghapus 18 baris yang
+SAMA dari blok "DASHBOARD HUB — LIVE WIRING" di dalam `renderDashboard()`
+(`modules/shared/modules-render.js`). Blok live-wiring itu awalnya dibuat
+supaya card Dashboard Hub tetap ter-update kalau user menyimpan data dari
+halaman lain, tapi sejak Sesi 133 card Finance/Vehicle sudah tidak lagi
+tinggal di Dashboard Hub — jadi 18 baris itu jadi murni duplikasi kerja:
+`renderDashboard()` dipanggil dari puluhan titik `save()` di seluruh app
+(bukan cuma pas buka tab Keuangan/Kendaraan), jadi tiap kali user simpan
+data apa pun di halaman mana pun, `FinanceIntelligence`/`VehicleIntelligence`
+dkk dihitung ulang DUA KALI (sekali di sini, sekali lagi nanti oleh
+`renderKeuangan()`/`renderCnTab()` yang dipanggil dari titik `save()` yang
+sama). Tidak merusak tampilan (elemen tetap ketemu lewat `getElementById`
+krn container-nya cuma pindah lokasi, bukan dihapus), tapi bertentangan
+dengan tujuan efisiensi reorganisasi Sesi 133 & klaim "DIPINDAH" (harusnya
+dihapus dari lokasi lama, bukan diduplikasi).
+
+### Diubah
+
+- **`modules/shared/modules-render.js`** — 18 baris pemanggilan `render()`
+  (`FinanceDashboard`, `FinancialForecastPresenter`,
+  `BudgetRecommendationPresenter`, `CashFlowProjectionPresenter`,
+  `FinancialGoalPresenter`, `InvestmentPlannerPresenter`,
+  `DebtOptimizerPresenter`, `RetirementPlannerPresenter`,
+  `FinancialHealthScorePresenter`, `FinancialRiskDashboardPresenter`,
+  `VehicleDashboard`, `VehicleInsightPresenter`, `VehicleDailyBrief`,
+  `VehicleAlertPanel`, `VehicleInsightFeed`, `VehicleAnalyticsPresenter`,
+  `VehicleDecisionPresenter`, `VehicleAutomationPresenter`) DIHAPUS dari
+  blok live-wiring `renderDashboard()`. `PropertyManagementPresenter`/
+  `RentalManagementPresenter`/`AssetPortfolioPresenter`/
+  `AssetMaintenancePresenter`/`CrossDashboardCard`/dst (card yang MASIH
+  tinggal di Dashboard Hub) TIDAK disentuh — tetap live-wiring seperti
+  semula. Komentar blok (`~25 presenter`) diperbarui jadi `~18 presenter`
+  + catatan gap fix ditambahkan di titik penghapusan.
+- **7 file `modules/vehicle/vehicle-*.js`** (`vehicle-alert-panel.js`,
+  `vehicle-analytics-presenter.js`, `vehicle-automation-presenter.js`,
+  `vehicle-daily-brief.js`, `vehicle-decision-presenter.js`,
+  `vehicle-insight-feed.js`, `vehicle-insight-presenter.js`) +
+  `vehicle-dashboard.js` — komentar header "Dipanggil dari
+  DashboardHub.render() & live-wiring renderDashboard()" (SUDAH BASI sejak
+  Sesi 133, tidak sempat diperbarui sesi itu) diperbarui jadi "Dipanggil
+  dari renderCnTab()" + catatan live-wiring dihapus.
+- **9 file `modules/finance/*-presenter.js`** (`budget-recommendation-`,
+  `debt-optimizer-`, `finance-dashboard.js`, `financial-forecast-`,
+  `financial-goal-`, `financial-health-score-`, `financial-risk-dashboard-`,
+  `investment-planner-`, `retirement-planner-presenter.js`) — komentar
+  header senada, diperbarui jadi "Dipanggil dari renderKeuangan()".
+
+### Tidak diubah
+
+Logic/rumus di dalam presenter itu sendiri — 0 baris disentuh, murni
+menghapus pemanggilan duplikat + memperbarui komentar. Container HTML,
+`SECTION_GROUPS`, dan struktur tab dari Sesi 133 tidak disentuh (sudah
+benar, terverifikasi saat audit).
+
+### Hasil verifikasi
+
+```
+node --check modules/shared/modules-render.js   # OK
+node --check modules/vehicle/vehicle-*.js (8 file)   # OK semua
+node --check modules/finance/*-presenter.js (9 file) # OK semua
+node scripts/build.js kw134-gap-fix-live-wiring-dobel-finance-vehicle
+# ✅ Build selesai & lolos cek sintaks bundle (node --check), ?v=557
+# index.html & app_production.html identik (0 diff)
+# grep app-bundle-a/b.min.js: FinanceDashboard.render()/VehicleDashboard.render()
+#   dst masing-masing HANYA 1 titik panggil (sebelumnya 2) — duplikasi hilang
+```
+
+**PENTING (masih berlaku dari Sesi 133):** folder `tests/` TETAP tidak ada
+di ZIP yang diterima sesi ini — regression `node --test` TIDAK BISA
+dijalankan. Verifikasi murni manual (syntax check + grep + build).
+**User WAJIB menjalankan `npm test` penuh sebelum menganggap gap fix ini
+final**, terutama utk memastikan card Finance/Vehicle di tab Keuangan/
+Kendaraan tetap live-update dgn benar tanpa live-wiring `renderDashboard()`.
+
+## Sesi 135 (2026-07-22) — Perf fix: `renderDashboard()` sinkron tanpa syarat di `showMain()` bikin PIN-unlock lambat
+
+**Konteks:** User melaporkan "setelah input PIN, masuk ke dashboard utama
+lama". Audit menemukan `showMain()` (dipanggil begitu PIN benar, lihat
+`modules/shared/keamanan-pin.js`) memanggil `renderDashboard()` SINKRON
+tanpa syarat — padahal landing page default app ini BUKAN Beranda
+(`page-dashboard`), tapi Dashboard Hub (`page-dashboard-hub`, lihat
+komentar di `modules/finance/tangga-keuangan.js` & `docs/PROJECT_STATE.md`).
+Beberapa baris di bawahnya, `refreshCurrentPage()` merender halaman yang
+BENERAN aktif — kalau itu Dashboard Hub, artinya `DashboardHub.render()`
+(sendiri berat: bangun ulang seluruh grid fitur + 15+ presenter) baru
+mulai dieksekusi SETELAH `renderDashboard()` selesai menghitung & menggambar
+seluruh konten Beranda (Advisor/LifeBalance/AIWidget/FinCoach/
+AIRecommendCard/AIDailyBriefingCard + loop `DASH_RENDER_ORDER` 17 kartu)
+ke halaman yang TIDAK kelihatan sama sekali (ketutup Dashboard Hub). Pada
+skenario paling umum (buka app dari kondisi tertutup/PWA baru dibuka, PIN
+muncul di landing page default), ini kerja dua kali lipat berturutan
+SEBELUM konten yang benar-benar dilihat user sempat tergambar — kandidat
+kuat penyebab jeda "lama" pasca-PIN yang dilaporkan.
+
+### Diubah
+
+- **`modules/shared/features-helpers-global-security.js`** (`showMain()`)
+  — pemanggilan `renderDashboard()` sekarang dicek dulu: kalau Beranda
+  BUKAN halaman aktif saat unlock (`!document.querySelector('.page.active
+  #page-dashboard')` — kasus paling umum), `renderDashboard()` disusulkan
+  lewat `runDeferredOrNow()` yang sama dgn 6 pemanggilan non-inti
+  (checkBackup/checkBills/dst) yang sudah dijadwalkan di sini sejak
+  sebelumnya — TIDAK memblokir `refreshCurrentPage()` yang merender
+  halaman yang benar-benar dilihat user. Kalau Beranda MEMANG halaman
+  aktif (PIN cuma overlay, bukan reload — kalau user mengunci app saat
+  lagi di Beranda, `.page.active` tetap keingat), `renderDashboard()` di
+  sini DILEWATI (bukan dihapus) — dibiarkan `refreshCurrentPage()` di
+  bawah yang merender via `renderPageContent('dashboard')` seperti biasa,
+  sekaligus membereskan gap duplikat lama (renderDashboard() sebelumnya
+  terpanggil 2× berturutan kalau kebetulan Beranda yang aktif — gap ini
+  sudah ada dari sebelum sesi ini, ikut dibereskan sekalian karena
+  triggernya sama persis).
+
+### Tidak diubah
+
+`renderDashboard()` itu sendiri — 0 baris logic/rumus di dalamnya
+disentuh. `refreshCurrentPage()`, `DashboardHub.render()`, urutan render
+`DASH_RENDER_ORDER`, dan semua presenter — 0 perubahan. Murni KAPAN/
+berapa kali `renderDashboard()` dipanggil dari `showMain()`.
+
+### Hasil verifikasi
+
+```
+node --check modules/shared/features-helpers-global-security.js   # OK
+node scripts/build.js kw135-perf-fix-renderdashboard-sinkron-saat-pin-unlock
+# ✅ Build selesai & lolos cek sintaks bundle (node --check), ?v=558
+# index.html & app_production.html identik (0 diff)
+```
+
+**PENTING (masih berlaku dari Sesi 133/134):** folder `tests/` TETAP tidak
+ada di ZIP — regression `node --test` TIDAK BISA dijalankan, verifikasi
+murni manual. **User WAJIB menjalankan `npm test` + tes manual buka app
+dari kondisi tertutup (cold start) DAN dari kondisi terkunci saat di
+Beranda**, supaya kedua skenario (`_berandaAktifSaatUnlock` true/false)
+sama-sama tervalidasi sebelum dianggap final. Kalau setelah ini jeda
+pasca-PIN masih terasa lama, kemungkinan besar bottleneck-nya ada di
+`DashboardHub.render()` sendiri (grid fitur + 15+ presenter, semua
+sinkron) — kandidat optimasi lanjutan yang belum disentuh sesi ini.
+
+## Sesi 136 (2026-07-22) — Gap fix: kartu "Tangga Ternak Uang" macet lebih lama di "Menghitung..." (regresi dari Sesi 135)
+
+**Konteks:** User melaporkan kartu "Tangga Keuangan" masih "cuma
+menghitung" pasca perbaikan Sesi 135. Audit menemukan Sesi 135 (perf fix
+PIN-unlock) tanpa sengaja memperlambat kartu ini: `#tanggaKeuanganCard`
+secara FISIK ada di dalam `#page-dashboard-hub`, tapi satu-satunya titik
+yang merender isinya adalah live-wiring di dalam `renderDashboard()`
+(`modules/shared/modules-render.js`) — bukan dipanggil langsung dari
+`DashboardHub.render()` (`dashboard-hub.js`) seperti SEMUA kartu lain yang
+juga tinggal di Dashboard Hub (Hero/Summary/Analytics/Property/Rental/
+Asset/dst — semua itu double-wired: sekali langsung di `DashboardHub.render()`,
+sekali lagi di live-wiring `renderDashboard()` utk live-update lintas
+halaman). Ini gap peninggalan Sesi 121 (S121 cuma menambahkan ke live-
+wiring, lupa menambahkan panggilan langsung yang jadi pola standar semua
+kartu Dashboard Hub lainnya) — sebelum Sesi 135 "cukup cepat ketutupan"
+karena `renderDashboard()` selalu sinkron, jadi live-wiring-nya cuma
+telat 1 frame. Sesi 135 membuat `renderDashboard()` DITUNDA lewat
+`runDeferredOrNow()` saat Dashboard Hub yang aktif (kasus paling umum) —
+kartu ini jadi kena tunda DUA KALI berturutan (nunggu `renderDashboard()`
+dulu, baru nunggu live-wiring di dalamnya), jadi jeda "Menghitung..."-nya
+makin terasa/lama.
+
+### Diubah
+
+- **`modules/dashboard-hub/dashboard-hub.js`** (`DashboardHub.render()`) —
+  ditambahkan `if (typeof TanggaKeuangan !== 'undefined')
+  TanggaKeuangan.render();` LANGSUNG di dalam fungsi ini (pola sama persis
+  Hero/Summary/Analytics/Property/dst di atasnya), sehingga kartu ini
+  selalu ikut ter-render di frame yang SAMA dengan kartu Dashboard Hub
+  lain begitu halaman ini ditampilkan — tidak lagi bergantung pada timing
+  `renderDashboard()`. Panggilan `TanggaKeuangan.render()` di live-wiring
+  `renderDashboard()` (`modules/shared/modules-render.js`, ditambahkan S121)
+  TIDAK dihapus — tetap dipertahankan utk skenario user tetap di Dashboard
+  Hub lalu simpan data dari halaman lain (live-update), pola sama dgn
+  DecisionCenterHome/UnifiedDashboardHome dkk.
+
+### Tidak diubah
+
+`TanggaKeuangan.compute()`/`render()` itu sendiri — 0 baris logic/rumus
+disentuh. Sesi 135 (kondisi `_berandaAktifSaatUnlock`) tidak di-revert —
+tetap berlaku utk mempercepat first-paint Dashboard Hub, cuma sekarang
+kartu Tangga Keuangan tidak lagi ikut kena delay tambahan dari situ.
+
+### Hasil verifikasi
+
+```
+node --check modules/dashboard-hub/dashboard-hub.js   # OK
+node scripts/build.js kw136-gap-fix-tangga-keuangan-menghitung-macet
+# ✅ Build selesai & lolos cek sintaks bundle (node --check), ?v=559
+# index.html & app_production.html identik (0 diff)
+# grep app-bundle-a.min.js: TanggaKeuangan.render() sekarang 2 titik
+#   panggil (langsung di DashboardHub.render() + live-wiring), sesuai pola
+#   standar kartu Dashboard Hub lain
+```
+
+**PENTING (masih berlaku dari sesi-sesi sebelumnya):** folder `tests/`
+TETAP tidak ada di ZIP — regression `node --test` TIDAK BISA dijalankan.
+**User WAJIB coba manual: buka app dari kondisi tertutup (cold start),
+masuk PIN, dan cek kartu "Tangga Ternak Uang" langsung terisi (BUKAN lagi
+"Menghitung...") begitu Dashboard Hub tampil** — ini skenario yang paling
+kena dampak gap ini.

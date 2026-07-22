@@ -79,8 +79,8 @@
 <link rel="preconnect" href="https://accounts.google.com" crossorigin>
 <link rel="dns-prefetch" href="https://accounts.google.com">
 <title>Keluarga W</title>
-<link rel="stylesheet" href="styles.css?v=552">
-<link rel="stylesheet" href="modern-ui-layer.css?v=552">
+<link rel="stylesheet" href="styles.css?v=564">
+<link rel="stylesheet" href="modern-ui-layer.css?v=564">
 <script>
 /* Debug console (Eruda) — aktifkan sekali lewat ?debug=1 di URL, nempel via localStorage.
    Matikan lagi lewat ?debug=0. Tidak aktif buat user biasa. */
@@ -133,8 +133,8 @@ b.appendChild(closeBtn);
 }catch(_e){ console.error('Gagal tampilkan banner error modul:',_e); }
 };
 </script>
-<script src="app-bundle-a.min.js?v=552" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
-<script src="modules/shared/smoke-test.js?v=552" defer></script>
+<script src="app-bundle-a.min.js?v=564" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
+<script src="modules/shared/smoke-test.js?v=564" defer></script>
 <link rel="manifest" id="pwaManifestLink" href="manifest.json">
 </head>
 <body data-theme="fresh">
@@ -198,132 +198,6 @@ b.appendChild(closeBtn);
 
 <div id="mainApp" class="u-dnone">
 
-<!-- DASHBOARD -->
-<div class="page" id="page-dashboard">
-  <div class="page-settings-btn">
-    <div class="page-title">🏠 Beranda</div>
-    <button class="qs-btn" data-action="openQS" data-args='["qsDashboard"]' aria-label="Buka menu cepat"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Aksi Cepat</button>
-  </div>
-  <div class="btn-row3 u-mt2">
-    <button class="btn btn-income" data-action="openTxModal" data-args='["income"]' aria-label="Edit/Buka">+ Masuk</button>
-    <button class="btn btn-expense" data-action="openTxModal" data-args='["expense"]' aria-label="Edit/Buka">- Keluar</button>
-    <button class="btn btn-transfer" data-action="openTransferModal" aria-label="Edit/Buka">⇄ Transfer</button>
-  </div>
-  <div id="backupBanner" class="backup-banner hidden">
-    <span style="font-size:20px">⚠️</span>
-    <div class="u-flex1"><div class="u-fs12 u-fw700 u-cacc4">Belum backup!</div><div class="u-fs12t2">Terakhir: <span id="lastBackupDate">-</span></div></div>
-    <button class="btn btn-sm u-cacc4 u-fs12" style="background:var(--accent4-soft);border:1px solid var(--accent4)" data-action="runFullBackup">Backup</button>
-  </div>
-  <div id="billBanner" class="bill-banner hidden">
-    <span style="font-size:20px">🔔</span>
-    <div class="u-flex1"><div class="u-fs12 u-fw700 u-cacc2" id="billBannerTitle">Tagihan jatuh tempo</div><div id="billBannerSub" class="u-fs12t2">-</div></div>
-    <button class="btn btn-sm u-cacc2 u-fs12" style="background:var(--accent2-soft);border:1px solid var(--accent2)" data-onclick="showPage('settings')">Lihat</button>
-  </div>
-  <div class="card u-mb12 u-dnone u-pointer" id="dashBillCard" data-action="showPage" data-args='["keuangan", "$nav:1"]'>
-    <div class="card-title">🔔 Tagihan & Cicilan <span class="u-flexc8"><span id="dashBillOverdueBadge" class="acc-chip u-dnone u-cacc2" style="border-color:var(--accent2)">Terlambat</span><span class="card-collapse-toggle" id="dashBillCard-chev" data-action="toggleCardCollapse" data-args='["dashBillCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
-    <div class="card-collapse-body" id="dashBillCard-cbody">
-    <div class="grid3 u-mb10">
-      <div class="stat-box"><div class="stat-label">Bulan Ini</div><div class="stat-val red" id="dashBillMonthTotal">Rp 0</div></div>
-      <div class="stat-box"><div class="stat-label">Akan Jatuh Tempo</div><div class="stat-val orange" id="dashBillUpcomingCount">0</div></div>
-      <div class="stat-box"><div class="stat-label">Sisa Cicilan</div><div class="stat-val purple" id="dashBillOutstanding">Rp 0</div></div>
-    </div>
-    <div id="dashBillMiniList"></div>
-    </div>
-  </div>
-  <div class="card u-mb12 u-dnone" id="dashServisReminderCard"></div>
-  <div class="card u-mb12 u-dnone" id="dashSewaKiosReminderCard"></div>
-  <div class="card u-mb12 u-dnone" id="dashBackupReminderCard"></div>
-  <div class="card u-mb12 u-dnone" id="dashDanaDaruratCard"></div>
-  <div class="card u-mb12 u-dnone" id="cashflowForecastCard"></div>
-  <div class="card u-mb12 u-dnone" id="timelineWCard"></div>
-  <!-- Redesign: kelompokkan 3 kartu ringkasan sekunder (Anggaran/Dana Pendidikan/Zakat) jadi
-       satu section yg bisa dilipat SEKALIGUS — pola stg-group yg sudah dipakai & teruji di
-       halaman Pengaturan (lihat stgGroup1/2/3), reuse toggleStgGroup() yg sudah ada, tanpa
-       fungsi/CSS baru. Default TERTUTUP (bukan "open") supaya Beranda tidak terasa panjang saat
-       pertama dibuka — kartu ini murni informasi rutin (bukan alert), beda dgn Tagihan/Saldo/
-       Transaksi Terakhir yg SENGAJA dibiarkan di luar grup & selalu terlihat. Collapse per-kartu
-       di dalamnya (card-collapse-toggle) tetap utuh, tidak diubah — jadi 2 lapis collapse
-       (grup, lalu per-kartu) sama seperti pola accordion-di-dalam-accordion yg lazim. -->
-  <div class="stg-group" id="dashSecondaryGroup">
-    <div class="stg-group-head" data-action="toggleStgGroup" data-args='["dashSecondaryGroup"]' role="button" tabindex="0" aria-expanded="false" aria-controls="dashSecondaryGroup-body">
-      <div class="stg-group-head-left"><div class="stg-group-icon">📊</div><div><div class="stg-group-title">Anggaran & Target</div><div class="stg-group-sub">Anggaran, Dana Pendidikan, Zakat</div></div></div>
-      <div class="stg-group-chevron">▼</div>
-    </div>
-    <div class="stg-group-body" id="dashSecondaryGroup-body"><div class="stg-group-body-inner">
-  <div class="card u-mb12 u-dnone u-pointer" id="dashBudgetMiniCard" data-onclick="showPage('keuangan',document.querySelectorAll('.nav-item')[1]);setKeuanganTab('budget',document.querySelectorAll('#page-keuangan .cn-tab')[2])">
-    <div class="card-title">📊 Anggaran Bulan Ini <span class="card-collapse-toggle" id="dashBudgetMiniCard-chev" data-action="toggleCardCollapse" data-args='["dashBudgetMiniCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
-    <div class="card-collapse-body" id="dashBudgetMiniCard-cbody">
-    <div class="u-flex u-jcb u-aic u-mb6">
-      <span class="u-fs12t2"><span id="dashBudgetUsed">Rp 0</span> / <span id="dashBudgetLimit">Rp 0</span></span>
-      <span class="stat-val u-fs14" id="dashBudgetPct">0%</span>
-    </div>
-    <div class="budget-bar-track" style="height:8px"><div class="budget-bar-fill" id="dashBudgetBar" style="width:0%"></div></div>
-    </div>
-  </div>
-  <div class="card u-mb12 u-dnone u-pointer" id="dashEduFundMiniCard" data-action="showPage" data-args='["settings", "$nav:6"]'>
-    <div class="card-title">🎓 Dana Pendidikan <span class="card-collapse-toggle" id="dashEduFundMiniCard-chev" data-action="toggleCardCollapse" data-args='["dashEduFundMiniCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
-    <div class="card-collapse-body" id="dashEduFundMiniCard-cbody">
-    <div class="u-flex u-jcb u-aic u-mb6">
-      <span class="u-fs12t2"><span id="dashEduFundTerkumpul">Rp 0</span> / <span id="dashEduFundTarget">Rp 0</span></span>
-      <span class="stat-val u-fs14" id="dashEduFundPct">0%</span>
-    </div>
-    <div class="budget-bar-track" style="height:8px"><div class="budget-bar-fill" id="dashEduFundBar" style="width:0%"></div></div>
-    <div class="u-fs11 u-t2 u-mt8" id="dashEduFundSub"></div>
-    </div>
-  </div>
-  <div class="card u-mb12 u-dnone u-pointer" id="dashZakatMiniCard" data-action="showPage" data-args='["pajak", "$nav:5"]'>
-    <div class="card-title">🕌 Zakat Penghasilan Bulan Ini <span class="card-collapse-toggle" id="dashZakatMiniCard-chev" data-action="toggleCardCollapse" data-args='["dashZakatMiniCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
-    <div class="card-collapse-body" id="dashZakatMiniCard-cbody">
-    <div class="u-flex u-jcb u-aic">
-      <span id="dashZakatStatus" class="u-fs12t2">Menghitung...</span>
-      <span class="stat-val orange u-fs16" id="dashZakatJumlah">Rp 0</span>
-    </div>
-    </div>
-  </div>
-    </div></div>
-  </div>
-  <div class="grid2">
-    <div class="stat-box clickable" data-action="showFilteredTx" data-args='["dashboard", "income", "\ud83d\udc9a Pemasukan Bulan Ini"]'><div class="stat-label">💚 Pemasukan</div><div class="stat-val green" id="dIncome">Rp 0</div></div>
-    <div class="stat-box clickable" data-action="showFilteredTx" data-args='["dashboard", "expense", "\ud83d\udd34 Pengeluaran Bulan Ini"]'><div class="stat-label">🔴 Pengeluaran</div><div class="stat-val red" id="dExpense">Rp 0</div></div>
-    <div class="stat-box clickable" data-action="showFilteredTx" data-args='["dashboard", "all", "\ud83d\udcb0 Saldo Bersih Bulan Ini"]'><div class="stat-label">💰 Saldo Bersih</div><div class="stat-val purple" id="dBalance">Rp 0</div></div>
-    <div class="stat-box clickable" data-action="goToList" data-args='["shopList", "shop", 2, "riwayat"]'><div class="stat-label">🪨 Untung Shop</div><div class="stat-val orange" id="dShop">Rp 0</div></div>
-  </div>
-  <div class="card u-mb12 u-pointer" id="dashLaporanMiniCard" data-onclick="showPage('keuangan',document.querySelectorAll('.nav-item')[1]);setKeuanganTab('laporan',document.querySelectorAll('#page-keuangan .cn-tab')[5])">
-    <div class="card-title">📊 Ringkasan Laporan Bulan Ini <span class="u-flexc8"><span class="u-fw400 u-fs12 u-cacc" style="text-transform:none;letter-spacing:0">Lihat Detail →</span><span class="card-collapse-toggle" id="dashLaporanMiniCard-chev" data-action="toggleCardCollapse" data-args='["dashLaporanMiniCard","$event"]' aria-label="Buka/tutup bagian">▾</span></span></div>
-    <div class="card-collapse-body" id="dashLaporanMiniCard-cbody">
-    <div class="u-fs12 u-t2 u-mb10" id="dashLapTrend"></div>
-    <div id="dashLapKatMini"></div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title">🏦 Saldo Akun <span class="u-fw400 u-fs12 u-cacc u-pointer" style="text-transform:none;letter-spacing:0" data-action="showPage" data-args='["settings", "$nav:6"]'>Kelola →</span></div>
-    <div id="dashAccList"></div>
-    <div class="u-flex u-jcb u-aic u-mt10 divider-top">
-      <span class="u-fs12t2">Total Saldo (akun aktif)</span>
-      <span class="stat-val u-fs16" id="dashAccTotal">Rp 0</span>
-    </div>
-  </div>
-  <div class="card"><div class="card-title">📋 Transaksi Terakhir</div><div id="recentTx"><div class="empty"><div class="empty-icon">💸</div><div class="empty-text">Belum ada transaksi</div><div class="u-mt10 u-flex u-gap8 u-jcc"><button class="btn btn-income btn-sm" data-action="openTxModal" data-args='["income"]'>+ Catat Pemasukan</button><button class="btn btn-expense btn-sm" data-action="openTxModal" data-args='["expense"]'>- Catat Pengeluaran</button></div></div></div></div>
-  <div class="card u-dnone" id="siapPulangCard"></div>
-  <div class="ldr-card" id="ldrCard" style="padding:14px 16px">
-    <div class="u-flex u-aic u-jcb u-mb2">
-      <div class="ldr-label u-mb0">✈️ Pulang ke Pekalongan</div>
-      <div class="u-flex u-gap4" style="align-items:baseline"><span class="ldr-days" id="ldrNum" style="font-size:24px">?</span><span class="ldr-unit u-fs12" id="ldrUnit">hari</span></div>
-    </div>
-    <div class="ldr-sub u-mb8" id="ldrSub">Atur tanggal pulang berikutnya</div>
-    <div class="ldr-bar"><div class="ldr-fill" id="ldrFill" style="width:0%"></div></div>
-    <div class="ldr-meta"><span id="ldrCycle">Siklus 10 hari kerja</span><span id="ldrDate"></span></div>
-    <details class="u-mt10">
-      <summary class="u-fs12 u-cacc u-pointer" style="list-style:none">⚙️ Atur & bagikan jadwal</summary>
-      <div class="fg" style="margin-top:var(--sp-6);margin-bottom:0">
-        <label class="fl">Tanggal Pulang Berikutnya</label>
-        <input type="date" class="fi" id="nextPulang" onchange="saveLDR()" style="font-size:var(--fs-body)">
-      </div>
-      <button class="wa-btn u-w100 u-jcc" style="margin-top:var(--sp-4)" data-action="shareLDRWA">💬 Kirim Jadwal Pulang ke WA</button>
-    </details>
-  </div>
-</div>
-
 <!-- KEUANGAN -->
 <div class="page" id="page-keuangan">
   <div class="cn-tabs">
@@ -356,6 +230,7 @@ b.appendChild(closeBtn);
     <button class="kel-subtab" data-action="setKelolaTab" data-args='["transaksi", "$el"]'>💸 Transaksi</button>
     <button class="kel-subtab" data-action="setKelolaTab" data-args='["pengaturan", "$el"]'>🏷️ Kelola Data</button>
   </div>
+  <div class="page-breadcrumb">💰 Kelola › <span class="pb-current" id="kelolaBreadcrumbSub">Ringkasan</span></div>
   <!-- 2026-07-17 (bagian ke-3): split tab 💰 Kelola (page-keuangan) jadi 3
        sub-tab — pola SAMA PERSIS dgn split Laporan (setLaporanTab) & Aset
        (setAsetTab), murni reorganisasi DOM lewat setKelolaTab()
@@ -401,7 +276,7 @@ b.appendChild(closeBtn);
       <div class="card-title u-mb8">📊 Kekayaan Bersih <span class="card-collapse-toggle" id="pzKekayaanCard-chev" data-action="toggleCardCollapse" data-args='["pzKekayaanCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
       <div class="card-collapse-body" id="pzKekayaanCard-cbody">
       <div class="grid3">
-        <div class="stat-box clickable" data-action="showPage" data-args='["dashboard", "$nav:0"]'><div class="stat-label">Saldo Akun</div><div class="stat-val green u-fs13" id="kbSaldoAkun">Rp 0</div></div>
+        <div class="stat-box clickable" data-action="showPage" data-args='["dashboard-hub", "$nav:0"]'><div class="stat-label">Saldo Akun</div><div class="stat-val green u-fs13" id="kbSaldoAkun">Rp 0</div></div>
         <div class="stat-box clickable" data-action="goToList" data-args='["assetList", "aset"]'><div class="stat-label">Total Aset</div><div class="stat-val u-fs13" id="kbTotalAset">Rp 0</div></div>
         <div class="stat-box"><div class="stat-label">Utang</div><div class="stat-val red u-fs13" id="kbUtang">Rp 0</div></div>
       </div>
@@ -715,7 +590,194 @@ b.appendChild(closeBtn);
 
   <!-- LAPORAN -->
   <div id="keuanganTab-laporan" class="u-dnone">
-  <!-- Sprint 2 Tahap 4: FAB Laporan, menyamakan standar UI dgn Finance 2.0
+  <!-- DIPINDAH ke sini (Sesi 133, permintaan eksplisit user "pindahkan
+       insight AI ke tab masing-masing fitur") dari sub-tab "insight"
+       Dashboard Hub. TIDAK ADA perubahan logic/rumus/presenter — murni
+       lokasi container HTML dipindah, diisi render() yang sama persis
+       (sekarang dipanggil dari renderKeuangan(), modules/shared/
+       modules-render.js, bukan lagi dari DashboardHub.render()). -->
+  <!-- FINANCE DASHBOARD & AI HOOK FOUNDATION (Sesi 75, Batch 6). Section di
+       dalam Dashboard Hub, sama seperti #eieWrap di atas — diisi oleh
+       FinanceDashboard.render() (dipanggil dari DashboardHub.render() di
+       dashboard-hub.js), 100% reuse FinanceIntelligence.summary() (Sesi 74).
+       UI hanya presenter, tidak ada rumus baru di sini. -->
+  <div class="dashhub-wrap card u-mb12" id="findashWrap">
+    <div class="dashhub-cat-head">
+      <div class="dashhub-cat-icon">💹</div>
+      <div>
+        <div class="dashhub-cat-label">Finance Dashboard</div>
+        <div class="dashhub-cat-desc">Kekayaan bersih, arus kas, anggaran & skor kesehatan finansial — dari data yang sudah ada</div>
+      </div>
+    </div>
+    <div class="findash-grid" id="findashGrid"></div>
+  </div>
+  <!-- FINANCIAL FORECAST FOUNDATION (Sesi 91, Batch 10). Section di dalam
+       Dashboard Hub, sama seperti #findashWrap di atas — diisi oleh
+       FinancialForecastPresenter.render() (dipanggil dari
+       DashboardHub.render() di dashboard-hub.js), 100% reuse
+       FinancialForecastAPI.summary() (sesi ini, sendiri 100% reuse
+       FinanceDashboard.getAIHook()/FinanceIntelligence, Sesi 74/75). UI
+       hanya presenter, tidak ada rumus baru di sini. CSS TIDAK baru —
+       reuse penuh class findash-grid/findash-card (grid generik). -->
+  <div class="dashhub-wrap card u-mb12" id="forecastWrap">
+    <div class="dashhub-cat-head">
+      <div class="dashhub-cat-icon">🔮</div>
+      <div>
+        <div class="dashhub-cat-label">Financial Forecast</div>
+        <div class="dashhub-cat-desc">Perkiraan pemasukan, pengeluaran &amp; proyeksi saldo 30 hari — dari data yang sudah ada</div>
+      </div>
+    </div>
+    <div class="findash-grid" id="forecastGrid"></div>
+  </div>
+  <!-- BUDGET RECOMMENDATION FOUNDATION (Sesi 92, Batch 10). Section di
+       dalam Dashboard Hub, sama seperti #forecastWrap di atas — diisi oleh
+       BudgetRecommendationPresenter.render() (dipanggil dari
+       DashboardHub.render() di dashboard-hub.js), 100% reuse
+       BudgetRecommendationAPI.summary() (sesi ini, sendiri 100% reuse
+       FinanceIntelligence.budgetSummary(), Sesi 74). UI hanya presenter,
+       tidak ada rumus baru di sini. CSS TIDAK baru — reuse penuh class
+       findash-grid/findash-card (grid generik). -->
+  <div class="dashhub-wrap card u-mb12" id="budgetRecoWrap">
+    <div class="dashhub-cat-head">
+      <div class="dashhub-cat-icon">💡</div>
+      <div>
+        <div class="dashhub-cat-label">Budget Recommendation</div>
+        <div class="dashhub-cat-desc">Analisis pemakaian &amp; saran anggaran per kategori — dari data yang sudah ada</div>
+      </div>
+    </div>
+    <div class="findash-grid" id="budgetRecoGrid"></div>
+  </div>
+  <!-- CASH FLOW PROJECTION FOUNDATION (Sesi 93, Batch 10). Section di
+       dalam Dashboard Hub, sama seperti #budgetRecoWrap di atas — diisi
+       oleh CashFlowProjectionPresenter.render() (dipanggil dari
+       DashboardHub.render() di dashboard-hub.js), 100% reuse
+       CashFlowProjectionAPI.summary() (sesi ini, sendiri 100% reuse
+       FinancialForecastAPI.summary(), Sesi 91). UI hanya presenter, tidak
+       ada rumus baru di sini. CSS TIDAK baru — reuse penuh class
+       findash-grid/findash-card (grid generik). -->
+  <div class="dashhub-wrap card u-mb12" id="cashflowProjWrap">
+    <div class="dashhub-cat-head">
+      <div class="dashhub-cat-icon">🏦</div>
+      <div>
+        <div class="dashhub-cat-label">Cash Flow Projection</div>
+        <div class="dashhub-cat-desc">Proyeksi pemasukan, pengeluaran &amp; saldo kas — dari data yang sudah ada</div>
+      </div>
+    </div>
+    <div class="findash-grid" id="cashflowProjGrid"></div>
+  </div>
+  <!-- FINANCIAL GOAL PLANNER FOUNDATION (Sesi 94, Batch 10). Section di
+       dalam Dashboard Hub, sama seperti #cashflowProjWrap di atas — diisi
+       oleh FinancialGoalPresenter.render() (dipanggil dari
+       DashboardHub.render() di dashboard-hub.js), 100% reuse
+       FinancialGoalAPI.summary() (sesi ini, sendiri 100% reuse
+       goalAdapterList/CashFlowProjectionAPI.summary(), Sesi 93). UI hanya
+       presenter, tidak ada rumus baru di sini. CSS TIDAK baru — reuse
+       penuh class findash-grid/findash-card (grid generik). -->
+  <div class="dashhub-wrap card u-mb12" id="financialGoalWrap">
+    <div class="dashhub-cat-head">
+      <div class="dashhub-cat-icon">🎯</div>
+      <div>
+        <div class="dashhub-cat-label">Financial Goal Planner</div>
+        <div class="dashhub-cat-desc">Progres, proyeksi &amp; rekomendasi target keuangan — dari data yang sudah ada</div>
+      </div>
+    </div>
+    <div class="findash-grid" id="financialGoalGrid"></div>
+  </div>
+  <!-- INVESTMENT PLANNER FOUNDATION (Sesi 95, Batch 10). Section di
+       dalam Dashboard Hub, sama seperti #financialGoalWrap di atas —
+       diisi oleh InvestmentPlannerPresenter.render() (dipanggil dari
+       DashboardHub.render() di dashboard-hub.js), 100% reuse
+       InvestmentPlannerAPI.summary() (sesi ini, sendiri 100% reuse
+       Investment/modules/asset/investasi.js +
+       FinancialGoalAPI._surplus(), Sesi 94). UI hanya presenter, tidak
+       ada rumus baru di sini. CSS TIDAK baru — reuse penuh class
+       findash-grid/findash-card (grid generik). -->
+  <div class="dashhub-wrap card u-mb12" id="investPlannerWrap">
+    <div class="dashhub-cat-head">
+      <div class="dashhub-cat-icon">📈</div>
+      <div>
+        <div class="dashhub-cat-label">Investment Planner</div>
+        <div class="dashhub-cat-desc">Ringkasan portofolio, alokasi aset &amp; rekomendasi investasi — dari data yang sudah ada</div>
+      </div>
+    </div>
+    <div class="findash-grid" id="investPlannerGrid"></div>
+  </div>
+  <!-- DEBT OPTIMIZER FOUNDATION (Sesi 96, Batch 10). Section di dalam
+       Dashboard Hub, sama seperti #investPlannerWrap di atas — diisi
+       oleh DebtOptimizerPresenter.render() (dipanggil dari
+       DashboardHub.render() di dashboard-hub.js), 100% reuse
+       DebtOptimizerAPI.summary() (sesi ini, sendiri 100% reuse
+       Debt/DebtStrategy, modules/finance/piutang-utang.js, Sesi 16). UI
+       hanya presenter, tidak ada rumus baru di sini. CSS TIDAK baru —
+       reuse penuh class findash-grid/findash-card (grid generik). -->
+  <div class="dashhub-wrap card u-mb12" id="debtOptimizerWrap">
+    <div class="dashhub-cat-head">
+      <div class="dashhub-cat-icon">📕</div>
+      <div>
+        <div class="dashhub-cat-label">Debt Optimizer</div>
+        <div class="dashhub-cat-desc">Ringkasan utang, DSR &amp; rekomendasi pelunasan — dari data yang sudah ada</div>
+      </div>
+    </div>
+    <div class="findash-grid" id="debtOptimizerGrid"></div>
+  </div>
+  <!-- RETIREMENT PLANNER FOUNDATION (Sesi 97, Batch 10). Section di
+       dalam Dashboard Hub, sama seperti #debtOptimizerWrap di atas —
+       diisi oleh RetirementPlannerPresenter.render() (dipanggil dari
+       DashboardHub.render() di dashboard-hub.js), 100% reuse
+       RetirementPlannerAPI.summary() (sesi ini, sendiri 100% reuse
+       Pensiun, modules/shared/modules-calc.js). UI hanya presenter,
+       tidak ada rumus baru di sini. CSS TIDAK baru — reuse penuh class
+       findash-grid/findash-card (grid generik). -->
+  <div class="dashhub-wrap card u-mb12" id="retirementPlannerWrap">
+    <div class="dashhub-cat-head">
+      <div class="dashhub-cat-icon">🏖️</div>
+      <div>
+        <div class="dashhub-cat-label">Retirement Planner</div>
+        <div class="dashhub-cat-desc">Proyeksi, gap &amp; rekomendasi kontribusi dana pensiun — dari data yang sudah ada</div>
+      </div>
+    </div>
+    <div class="findash-grid" id="retirementPlannerGrid"></div>
+  </div>
+  <!-- FINANCIAL HEALTH SCORE FOUNDATION (Sesi 98, Batch 10). Section di
+       dalam Dashboard Hub, sama seperti #retirementPlannerWrap di atas —
+       diisi oleh FinancialHealthScorePresenter.render() (dipanggil dari
+       DashboardHub.render() di dashboard-hub.js), 100% reuse
+       FinancialHealthScoreAPI.summary() (sesi ini, sendiri 100% reuse
+       FinanceIntelligence.healthScore(), modules/finance/
+       finance-intelligence.js, Sesi 74). UI hanya presenter, tidak ada
+       rumus baru di sini. CSS TIDAK baru — reuse penuh class
+       findash-grid/findash-card (grid generik). -->
+  <div class="dashhub-wrap card u-mb12" id="financialHealthScoreWrap">
+    <div class="dashhub-cat-head">
+      <div class="dashhub-cat-icon">❤️</div>
+      <div>
+        <div class="dashhub-cat-label">Financial Health Score</div>
+        <div class="dashhub-cat-desc">Skor kesehatan finansial, rincian komponen &amp; rekomendasi — dari data yang sudah ada</div>
+      </div>
+    </div>
+    <div class="findash-grid" id="financialHealthScoreGrid"></div>
+  </div>
+  <!-- FINANCIAL RISK DASHBOARD (Sesi 99, Batch 10). Section di dalam
+       Dashboard Hub, sama seperti #financialHealthScoreWrap di atas —
+       diisi oleh FinancialRiskDashboardPresenter.render() (dipanggil dari
+       DashboardHub.render() di dashboard-hub.js), 100% reuse
+       FinancialRiskDashboardAPI.summary() (sesi ini, sendiri 100% reuse
+       DebtOptimizerAPI.debtRecommendation()/FinancialHealthScoreAPI.
+       financialHealthRecommendation()/FinanceIntelligence.insights()/
+       TanggaKeuangan.compute()). UI hanya presenter, tidak ada rumus
+       baru di sini. CSS TIDAK baru — reuse penuh class
+       findash-grid/findash-card (grid generik). -->
+  <div class="dashhub-wrap card u-mb12" id="financialRiskDashboardWrap">
+    <div class="dashhub-cat-head">
+      <div class="dashhub-cat-icon">🛡️</div>
+      <div>
+        <div class="dashhub-cat-label">Financial Risk Dashboard</div>
+        <div class="dashhub-cat-desc">Tingkat risiko, faktor risiko utama &amp; sebarannya — dari data yang sudah ada</div>
+      </div>
+    </div>
+    <div class="findash-grid" id="financialRiskDashboardGrid"></div>
+  </div>
+ menyamakan standar UI dgn Finance 2.0
        (Tahap 1), Shop FAB (Tahap 2) & Car Notes FAB (Tahap 3). Reuse PENUH
        komponen CSS `.keu-fab*` yang sudah ada di styles.css (tidak ada
        class CSS baru). Aksi FAB reuse exportLaporanPDF()/exportCSV() yang
@@ -774,6 +836,7 @@ b.appendChild(closeBtn);
     <button class="lap-subtab" data-action="setLaporanTab" data-args='["aruskas", "$el"]'>📅 Arus Kas &amp; Kategori</button>
     <button class="lap-subtab" data-action="setLaporanTab" data-args='["transaksi", "$el"]'>📋 Transaksi &amp; Export</button>
   </div>
+  <div class="page-breadcrumb">📊 Laporan › <span class="pb-current" id="laporanBreadcrumbSub">Ringkasan</span></div>
   <!-- 2026-07-17: Split tab 📊 Laporan (dalam page-keuangan) jadi 3 sub-tab —
        pola SAMA PERSIS dgn split page-aset (setAsetTab/asetTab-*), murni
        reorganisasi DOM lewat setLaporanTab() (tx-list-cashflow.js), TIDAK
@@ -1171,6 +1234,126 @@ b.appendChild(closeBtn);
       <div class="card-title">💡 Insight Mobil</div>
       <div id="mobilInsightBody"></div>
     </div>
+  <!-- Vehicle Dashboard/Insight/Brief/Alert/Insight Feed/Analytics/
+       Decision/Automation (Sesi 77-83, Batch 7) — DIPINDAH ke sini
+       (Sesi 133, permintaan eksplisit user "pindahkan insight AI ke
+       tab masing-masing fitur") dari sub-tab "insight" Dashboard Hub.
+       TIDAK ADA perubahan logic/rumus/presenter — murni lokasi
+       container HTML dipindah, diisi render() yang sama persis
+       (sekarang dipanggil dari renderCnTab(), modules/shared/
+       modules-render.js, bukan lagi dari DashboardHub.render()). -->
+  <!-- VEHICLE DASHBOARD FOUNDATION (Sesi 77, Batch 7). Section di dalam
+       Dashboard Hub, sama seperti #findashWrap di atas — diisi oleh
+       VehicleDashboard.render() (dipanggil dari DashboardHub.render() di
+       dashboard-hub.js), 100% reuse VehicleIntelligence.summary() (Sesi 76).
+       UI hanya presenter, tidak ada rumus baru di sini. CSS TIDAK baru —
+       reuse penuh class findash-grid/findash-card (grid generik). -->
+  <div class="dashhub-wrap card u-mb12" id="vehdashWrap">
+    <div class="dashhub-cat-head">
+      <div class="dashhub-cat-icon">🚗</div>
+      <div>
+        <div class="dashhub-cat-label">Vehicle Dashboard</div>
+        <div class="dashhub-cat-desc">Total kendaraan, servis lewat jatuh tempo & skor kesehatan armada — dari data yang sudah ada</div>
+      </div>
+    </div>
+    <div class="findash-grid" id="vehdashGrid"></div>
+  </div>
+  <!-- VEHICLE AI HOOK FOUNDATION (Sesi 79, Batch 7). Section di dalam
+       Dashboard Hub, sama seperti #vehdashWrap di atas — diisi oleh
+       VehicleInsightPresenter.render() (dipanggil dari DashboardHub.render()
+       di dashboard-hub.js), 100% reuse VehicleAIHook.fleetSummary() (Sesi
+       79, gabungan VehicleIntelligence.summary() Sesi 76 + VehicleReminder.
+       summary() Sesi 78). UI hanya presenter, tidak ada rumus baru di sini.
+       CSS TIDAK baru — reuse penuh class findash-grid/findash-card (grid
+       generik). -->
+  <div class="dashhub-wrap card u-mb12" id="vehinsightWrap">
+    <div class="dashhub-cat-head">
+      <div class="dashhub-cat-icon">🔔</div>
+      <div>
+        <div class="dashhub-cat-label">Vehicle Insight</div>
+        <div class="dashhub-cat-desc">Reminder servis, pajak & BBM kendaraan — dari data yang sudah ada</div>
+      </div>
+    </div>
+    <div class="findash-grid" id="vehinsightGrid"></div>
+  </div>
+  <!-- VEHICLE AI DASHBOARD INTEGRATION (Sesi 80, Batch 7). 3 section di
+       dalam Dashboard Hub, sama seperti #vehinsightWrap di atas — diisi
+       oleh VehicleDailyBrief.render()/VehicleAlertPanel.render()/
+       VehicleInsightFeed.render() (dipanggil dari DashboardHub.render() di
+       dashboard-hub.js), 100% reuse VehicleAIHook.fleetSummary() (Sesi
+       79). UI hanya presenter, tidak ada rumus baru di sini. Ketiganya
+       SILENT (body dikosongkan) kalau tidak ada apa pun buat ditampilkan
+       (pola sama AIDailyBriefingCard/AIStatusCard di ai-chat.js) — beda
+       dari #vehdashWrap/#vehinsightWrap yang selalu tampilkan angka
+       ringkasan. -->
+  <div class="dashhub-wrap card u-mb12" id="vehBriefWrap">
+    <div id="vehBriefBody"></div>
+  </div>
+  <div class="dashhub-wrap card u-mb12" id="vehAlertWrap">
+    <div id="vehAlertBody"></div>
+  </div>
+  <div class="dashhub-wrap card u-mb12" id="vehInsightFeedWrap">
+    <div class="dashhub-cat-head">
+      <div class="dashhub-cat-icon">📰</div>
+      <div>
+        <div class="dashhub-cat-label">Vehicle Insight Feed</div>
+        <div class="dashhub-cat-desc">Insight & reminder segera jatuh tempo kendaraan — dari data yang sudah ada</div>
+      </div>
+    </div>
+    <div id="vehInsightFeedBody"></div>
+  </div>
+  <!-- VEHICLE ANALYTICS FOUNDATION (Sesi 81, Batch 7). Section di dalam
+       Dashboard Hub, sama seperti #vehinsightWrap di atas — diisi oleh
+       VehicleAnalyticsPresenter.render() (dipanggil dari DashboardHub.
+       render() di dashboard-hub.js), 100% reuse VehicleCostSummary.
+       summary() (Sesi 81, sendiri 100% reuse VehicleTrendAPI) +
+       VehicleIntelligence.fleetSummary() (Sesi 76). UI hanya presenter,
+       tidak ada rumus baru di sini. CSS TIDAK baru — reuse penuh class
+       findash-grid/findash-card (grid generik). -->
+  <div class="dashhub-wrap card u-mb12" id="vehAnalyticsWrap">
+    <div class="dashhub-cat-head">
+      <div class="dashhub-cat-icon">📊</div>
+      <div>
+        <div class="dashhub-cat-label">Vehicle Analytics</div>
+        <div class="dashhub-cat-desc">Tren biaya BBM &amp; servis bulanan kendaraan — dari data yang sudah ada</div>
+      </div>
+    </div>
+    <div class="findash-grid" id="vehanalyticsGrid"></div>
+  </div>
+  <!-- VEHICLE DECISION ENGINE FOUNDATION (Sesi 82, Batch 7). Section di
+       dalam Dashboard Hub, diisi oleh VehicleDecisionPresenter.render()
+       (dipanggil dari DashboardHub.render() di dashboard-hub.js), 100%
+       reuse VehicleRecommendationEngine.recommendations() +
+       VehiclePriorityScoring.rank() + VehicleActionRecommendation.
+       withAction() (sesi ini, sendiri 100% reuse VehicleDecisionAPI ->
+       VehicleAIHook). UI hanya presenter, tidak ada rumus baru di sini.
+       Pola SILENT sama persis #vehAlertWrap/#vehInsightFeedWrap — body
+       dikosongkan kalau tidak ada recommendation apa pun. CSS TIDAK
+       baru. -->
+  <div class="dashhub-wrap card u-mb12" id="vehDecisionWrap">
+    <div id="vehDecisionBody"></div>
+  </div>
+  <!-- VEHICLE AUTOMATION FOUNDATION (Sesi 83, Batch 7). Section di dalam
+       Dashboard Hub, sama seperti #vehAnalyticsWrap di atas — diisi oleh
+       VehicleAutomationPresenter.render() (dipanggil dari DashboardHub.
+       render() di dashboard-hub.js), 100% reuse VehicleReminderScheduler.
+       summary() + VehicleMaintenanceAutomation.plan() +
+       VehicleTaxDocumentAutomation.plan() (sesi ini, sendiri 100% reuse
+       VehicleAutomationAPI -> VehicleRecommendationEngine/
+       VehiclePriorityScoring/VehicleActionRecommendation, pipeline
+       Decision Engine Sesi 82). UI hanya presenter, tidak ada rumus baru
+       di sini. CSS TIDAK baru — reuse penuh class findash-grid/
+       findash-card (grid generik). -->
+  <div class="dashhub-wrap card u-mb12" id="vehAutomationWrap">
+    <div class="dashhub-cat-head">
+      <div class="dashhub-cat-icon">🤖</div>
+      <div>
+        <div class="dashhub-cat-label">Vehicle Automation</div>
+        <div class="dashhub-cat-desc">Jadwal servis &amp; pajak/dokumen otomatis — dari rekomendasi yang sudah ada</div>
+      </div>
+    </div>
+    <div class="findash-grid" id="vehAutomationGrid"></div>
+  </div>
 
   <div class="vehicle-select" id="vehicleSelect"></div>
   <div class="card u-mb10 u-flex u-aic u-jcb" style="padding:12px 14px">
@@ -1373,6 +1556,7 @@ b.appendChild(closeBtn);
       <button class="pjk-subtab active" data-action="setPjkTab" data-args='["pph21", "$el"]'>🧾 PPh 21</button>
       <button class="pjk-subtab" data-action="setPjkTab" data-args='["pbb", "$el"]'>🏛️ PBB &amp; UMKM</button>
     </div>
+    <div class="page-breadcrumb">🧾 Pajak › <span class="pb-current" id="pjkBreadcrumbSub">PPh 21</span></div>
     <!-- 2026-07-17 (bagian ke-4): split tab 🧾 Pajak (PPh 21) (page-pajak) jadi 2
          sub-tab (PPh 21 / PBB & UMKM) — pola SAMA PERSIS dgn split Laporan/
          Kelola (Keuangan) & Aset di atas, murni reorganisasi DOM lewat
@@ -2286,45 +2470,6 @@ b.appendChild(closeBtn);
   </div>
 </div>
 
-<!-- QUICK SETTINGS: DASHBOARD -->
-<div class="qs-modal-overlay" id="qsDashboard" role="dialog" aria-modal="true" aria-labelledby="qsDashboard-title">
-  <div class="qs-modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="qsDashboard-title"><span>⚙️ Aksi Cepat</span><button class="modal-close" data-action="closeQS" data-args='["qsDashboard"]' aria-label="Tutup">✕</button></div>
-    <div class="qs-section">
-      <div class="qs-section-title">💰 Transaksi</div>
-      <div class="qs-grid2">
-        <div class="qs-action" data-onclick="closeQS('qsDashboard');openTxModal('income')"><div class="qs-action-icon">💚</div><div class="qs-action-label">+ Pemasukan</div></div>
-        <div class="qs-action" data-onclick="closeQS('qsDashboard');openTxModal('expense')"><div class="qs-action-icon">🔴</div><div class="qs-action-label">- Pengeluaran</div></div>
-        <div class="qs-action" data-onclick="closeQS('qsDashboard');openTransferModal()"><div class="qs-action-icon">⇄</div><div class="qs-action-label">Transfer</div></div>
-        <div class="qs-action" data-onclick="closeQS('qsDashboard');openOrderModal()"><div class="qs-action-icon">🪨</div><div class="qs-action-label">Jual Shop</div></div>
-      </div>
-    </div>
-    <div class="qs-section">
-      <div class="qs-section-title">🧘 Frugal Living</div>
-      <div class="qs-grid2">
-        <div class="qs-action" data-onclick="closeQS('qsDashboard');WorthIt.open()"><div class="qs-action-icon">🧮</div><div class="qs-action-label">Cek Worth It?</div></div>
-      </div>
-    </div>
-    <div class="qs-section">
-      <div class="qs-section-title">⚙️ Pengaturan</div>
-      <div class="qs-grid2">
-        <div class="qs-action" data-onclick="closeQS('qsDashboard');openBillModal()"><div class="qs-action-icon">🔔</div><div class="qs-action-label">+ Tagihan</div></div>
-        <div class="qs-action" data-onclick="closeQS('qsDashboard');openTargetModal()"><div class="qs-action-icon">🎯</div><div class="qs-action-label">+ Target</div></div>
-        <div class="qs-action" data-onclick="closeQS('qsDashboard');openAccModal()"><div class="qs-action-icon">🏦</div><div class="qs-action-label">+ Akun</div></div>
-        <div class="qs-action" data-onclick="closeQS('qsDashboard');openBackupModal()"><div class="qs-action-icon">💾</div><div class="qs-action-label">Backup</div></div>
-      </div>
-    </div>
-    <div class="qs-section">
-      <div class="qs-section-title">🧮 Alat Bantu</div>
-      <div class="qs-grid2">
-        <div class="qs-action" data-onclick="closeQS('qsDashboard');openGajiCalc()"><div class="qs-action-icon">🧮</div><div class="qs-action-label">Kalkulator Gaji</div></div>
-        <div class="qs-action" data-onclick="closeQS('qsDashboard');openAbsensiModal()"><div class="qs-action-icon">📅</div><div class="qs-action-label">Absensi Harian</div></div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- DASHBOARD HUB (blueprint-dashboard-hub.md §5. Sejak Tahap 4 halaman ini
      jadi landing page default (satu-satunya class="page active" saat startup)
      & tombol Beranda di bottom-nav menunjuk ke sini. Entry lama di Pengaturan
@@ -2444,6 +2589,13 @@ b.appendChild(closeBtn);
   <div class="dashhub-search-wrap">
     <input type="text" class="fi" id="dashHubSearchInput" placeholder="🔍 Cari fitur/menu... (mis. sewa kios, kasir, backup)" oninput="DashboardHubSearch.render(this.value)" aria-label="Cari fitur">
     <div class="dashhub-search-results u-dnone" id="dashHubSearchResults"></div>
+    <!-- Discoverability fix (audit navigasi: fitur tanpa nav-item/Quick
+         Action sendiri cuma ketemu lewat search kalau user kebetulan tahu
+         nama fiturnya). Chip ini MURNI jalan pintas ke section "Semua
+         Fitur" yang SUDAH ADA (#dashHubMainGridCard) via
+         DashboardHub.openAllFeatures() — tidak ada grid/registry baru,
+         tidak mengubah default tab/collapse permanen. -->
+    <button type="button" class="dashhub-explore-link" data-action="DashboardHub.openAllFeatures" aria-label="Jelajahi semua fitur">🗂️ Jelajahi Semua Fitur</button>
   </div>
   <!-- FAVORIT (Tahap 3, ADR-001). Diisi oleh DashboardHubFavoritView.render()
        (dipanggil dari DashboardHub.render() di dashboard-hub.js). Sengaja
@@ -2576,187 +2728,7 @@ b.appendChild(closeBtn);
     <div id="eieStatusCard" style="padding:8px 2px;font-size:12.5px;opacity:.6;">Memuat kondisi ekonomi…</div>
     <div id="eieInsightFeed"></div>
   </div>
-  <!-- FINANCE DASHBOARD & AI HOOK FOUNDATION (Sesi 75, Batch 6). Section di
-       dalam Dashboard Hub, sama seperti #eieWrap di atas — diisi oleh
-       FinanceDashboard.render() (dipanggil dari DashboardHub.render() di
-       dashboard-hub.js), 100% reuse FinanceIntelligence.summary() (Sesi 74).
-       UI hanya presenter, tidak ada rumus baru di sini. -->
-  <div class="dashhub-wrap card u-mb12" id="findashWrap">
-    <div class="dashhub-cat-head">
-      <div class="dashhub-cat-icon">💹</div>
-      <div>
-        <div class="dashhub-cat-label">Finance Dashboard</div>
-        <div class="dashhub-cat-desc">Kekayaan bersih, arus kas, anggaran & skor kesehatan finansial — dari data yang sudah ada</div>
-      </div>
-    </div>
-    <div class="findash-grid" id="findashGrid"></div>
-  </div>
-  <!-- FINANCIAL FORECAST FOUNDATION (Sesi 91, Batch 10). Section di dalam
-       Dashboard Hub, sama seperti #findashWrap di atas — diisi oleh
-       FinancialForecastPresenter.render() (dipanggil dari
-       DashboardHub.render() di dashboard-hub.js), 100% reuse
-       FinancialForecastAPI.summary() (sesi ini, sendiri 100% reuse
-       FinanceDashboard.getAIHook()/FinanceIntelligence, Sesi 74/75). UI
-       hanya presenter, tidak ada rumus baru di sini. CSS TIDAK baru —
-       reuse penuh class findash-grid/findash-card (grid generik). -->
-  <div class="dashhub-wrap card u-mb12" id="forecastWrap">
-    <div class="dashhub-cat-head">
-      <div class="dashhub-cat-icon">🔮</div>
-      <div>
-        <div class="dashhub-cat-label">Financial Forecast</div>
-        <div class="dashhub-cat-desc">Perkiraan pemasukan, pengeluaran &amp; proyeksi saldo 30 hari — dari data yang sudah ada</div>
-      </div>
-    </div>
-    <div class="findash-grid" id="forecastGrid"></div>
-  </div>
-  <!-- BUDGET RECOMMENDATION FOUNDATION (Sesi 92, Batch 10). Section di
-       dalam Dashboard Hub, sama seperti #forecastWrap di atas — diisi oleh
-       BudgetRecommendationPresenter.render() (dipanggil dari
-       DashboardHub.render() di dashboard-hub.js), 100% reuse
-       BudgetRecommendationAPI.summary() (sesi ini, sendiri 100% reuse
-       FinanceIntelligence.budgetSummary(), Sesi 74). UI hanya presenter,
-       tidak ada rumus baru di sini. CSS TIDAK baru — reuse penuh class
-       findash-grid/findash-card (grid generik). -->
-  <div class="dashhub-wrap card u-mb12" id="budgetRecoWrap">
-    <div class="dashhub-cat-head">
-      <div class="dashhub-cat-icon">💡</div>
-      <div>
-        <div class="dashhub-cat-label">Budget Recommendation</div>
-        <div class="dashhub-cat-desc">Analisis pemakaian &amp; saran anggaran per kategori — dari data yang sudah ada</div>
-      </div>
-    </div>
-    <div class="findash-grid" id="budgetRecoGrid"></div>
-  </div>
-  <!-- CASH FLOW PROJECTION FOUNDATION (Sesi 93, Batch 10). Section di
-       dalam Dashboard Hub, sama seperti #budgetRecoWrap di atas — diisi
-       oleh CashFlowProjectionPresenter.render() (dipanggil dari
-       DashboardHub.render() di dashboard-hub.js), 100% reuse
-       CashFlowProjectionAPI.summary() (sesi ini, sendiri 100% reuse
-       FinancialForecastAPI.summary(), Sesi 91). UI hanya presenter, tidak
-       ada rumus baru di sini. CSS TIDAK baru — reuse penuh class
-       findash-grid/findash-card (grid generik). -->
-  <div class="dashhub-wrap card u-mb12" id="cashflowProjWrap">
-    <div class="dashhub-cat-head">
-      <div class="dashhub-cat-icon">🏦</div>
-      <div>
-        <div class="dashhub-cat-label">Cash Flow Projection</div>
-        <div class="dashhub-cat-desc">Proyeksi pemasukan, pengeluaran &amp; saldo kas — dari data yang sudah ada</div>
-      </div>
-    </div>
-    <div class="findash-grid" id="cashflowProjGrid"></div>
-  </div>
-  <!-- FINANCIAL GOAL PLANNER FOUNDATION (Sesi 94, Batch 10). Section di
-       dalam Dashboard Hub, sama seperti #cashflowProjWrap di atas — diisi
-       oleh FinancialGoalPresenter.render() (dipanggil dari
-       DashboardHub.render() di dashboard-hub.js), 100% reuse
-       FinancialGoalAPI.summary() (sesi ini, sendiri 100% reuse
-       goalAdapterList/CashFlowProjectionAPI.summary(), Sesi 93). UI hanya
-       presenter, tidak ada rumus baru di sini. CSS TIDAK baru — reuse
-       penuh class findash-grid/findash-card (grid generik). -->
-  <div class="dashhub-wrap card u-mb12" id="financialGoalWrap">
-    <div class="dashhub-cat-head">
-      <div class="dashhub-cat-icon">🎯</div>
-      <div>
-        <div class="dashhub-cat-label">Financial Goal Planner</div>
-        <div class="dashhub-cat-desc">Progres, proyeksi &amp; rekomendasi target keuangan — dari data yang sudah ada</div>
-      </div>
-    </div>
-    <div class="findash-grid" id="financialGoalGrid"></div>
-  </div>
-  <!-- INVESTMENT PLANNER FOUNDATION (Sesi 95, Batch 10). Section di
-       dalam Dashboard Hub, sama seperti #financialGoalWrap di atas —
-       diisi oleh InvestmentPlannerPresenter.render() (dipanggil dari
-       DashboardHub.render() di dashboard-hub.js), 100% reuse
-       InvestmentPlannerAPI.summary() (sesi ini, sendiri 100% reuse
-       Investment/modules/asset/investasi.js +
-       FinancialGoalAPI._surplus(), Sesi 94). UI hanya presenter, tidak
-       ada rumus baru di sini. CSS TIDAK baru — reuse penuh class
-       findash-grid/findash-card (grid generik). -->
-  <div class="dashhub-wrap card u-mb12" id="investPlannerWrap">
-    <div class="dashhub-cat-head">
-      <div class="dashhub-cat-icon">📈</div>
-      <div>
-        <div class="dashhub-cat-label">Investment Planner</div>
-        <div class="dashhub-cat-desc">Ringkasan portofolio, alokasi aset &amp; rekomendasi investasi — dari data yang sudah ada</div>
-      </div>
-    </div>
-    <div class="findash-grid" id="investPlannerGrid"></div>
-  </div>
-  <!-- DEBT OPTIMIZER FOUNDATION (Sesi 96, Batch 10). Section di dalam
-       Dashboard Hub, sama seperti #investPlannerWrap di atas — diisi
-       oleh DebtOptimizerPresenter.render() (dipanggil dari
-       DashboardHub.render() di dashboard-hub.js), 100% reuse
-       DebtOptimizerAPI.summary() (sesi ini, sendiri 100% reuse
-       Debt/DebtStrategy, modules/finance/piutang-utang.js, Sesi 16). UI
-       hanya presenter, tidak ada rumus baru di sini. CSS TIDAK baru —
-       reuse penuh class findash-grid/findash-card (grid generik). -->
-  <div class="dashhub-wrap card u-mb12" id="debtOptimizerWrap">
-    <div class="dashhub-cat-head">
-      <div class="dashhub-cat-icon">📕</div>
-      <div>
-        <div class="dashhub-cat-label">Debt Optimizer</div>
-        <div class="dashhub-cat-desc">Ringkasan utang, DSR &amp; rekomendasi pelunasan — dari data yang sudah ada</div>
-      </div>
-    </div>
-    <div class="findash-grid" id="debtOptimizerGrid"></div>
-  </div>
-  <!-- RETIREMENT PLANNER FOUNDATION (Sesi 97, Batch 10). Section di
-       dalam Dashboard Hub, sama seperti #debtOptimizerWrap di atas —
-       diisi oleh RetirementPlannerPresenter.render() (dipanggil dari
-       DashboardHub.render() di dashboard-hub.js), 100% reuse
-       RetirementPlannerAPI.summary() (sesi ini, sendiri 100% reuse
-       Pensiun, modules/shared/modules-calc.js). UI hanya presenter,
-       tidak ada rumus baru di sini. CSS TIDAK baru — reuse penuh class
-       findash-grid/findash-card (grid generik). -->
-  <div class="dashhub-wrap card u-mb12" id="retirementPlannerWrap">
-    <div class="dashhub-cat-head">
-      <div class="dashhub-cat-icon">🏖️</div>
-      <div>
-        <div class="dashhub-cat-label">Retirement Planner</div>
-        <div class="dashhub-cat-desc">Proyeksi, gap &amp; rekomendasi kontribusi dana pensiun — dari data yang sudah ada</div>
-      </div>
-    </div>
-    <div class="findash-grid" id="retirementPlannerGrid"></div>
-  </div>
-  <!-- FINANCIAL HEALTH SCORE FOUNDATION (Sesi 98, Batch 10). Section di
-       dalam Dashboard Hub, sama seperti #retirementPlannerWrap di atas —
-       diisi oleh FinancialHealthScorePresenter.render() (dipanggil dari
-       DashboardHub.render() di dashboard-hub.js), 100% reuse
-       FinancialHealthScoreAPI.summary() (sesi ini, sendiri 100% reuse
-       FinanceIntelligence.healthScore(), modules/finance/
-       finance-intelligence.js, Sesi 74). UI hanya presenter, tidak ada
-       rumus baru di sini. CSS TIDAK baru — reuse penuh class
-       findash-grid/findash-card (grid generik). -->
-  <div class="dashhub-wrap card u-mb12" id="financialHealthScoreWrap">
-    <div class="dashhub-cat-head">
-      <div class="dashhub-cat-icon">❤️</div>
-      <div>
-        <div class="dashhub-cat-label">Financial Health Score</div>
-        <div class="dashhub-cat-desc">Skor kesehatan finansial, rincian komponen &amp; rekomendasi — dari data yang sudah ada</div>
-      </div>
-    </div>
-    <div class="findash-grid" id="financialHealthScoreGrid"></div>
-  </div>
-  <!-- FINANCIAL RISK DASHBOARD (Sesi 99, Batch 10). Section di dalam
-       Dashboard Hub, sama seperti #financialHealthScoreWrap di atas —
-       diisi oleh FinancialRiskDashboardPresenter.render() (dipanggil dari
-       DashboardHub.render() di dashboard-hub.js), 100% reuse
-       FinancialRiskDashboardAPI.summary() (sesi ini, sendiri 100% reuse
-       DebtOptimizerAPI.debtRecommendation()/FinancialHealthScoreAPI.
-       financialHealthRecommendation()/FinanceIntelligence.insights()/
-       TanggaKeuangan.compute()). UI hanya presenter, tidak ada rumus
-       baru di sini. CSS TIDAK baru — reuse penuh class
-       findash-grid/findash-card (grid generik). -->
-  <div class="dashhub-wrap card u-mb12" id="financialRiskDashboardWrap">
-    <div class="dashhub-cat-head">
-      <div class="dashhub-cat-icon">🛡️</div>
-      <div>
-        <div class="dashhub-cat-label">Financial Risk Dashboard</div>
-        <div class="dashhub-cat-desc">Tingkat risiko, faktor risiko utama &amp; sebarannya — dari data yang sudah ada</div>
-      </div>
-    </div>
-    <div class="findash-grid" id="financialRiskDashboardGrid"></div>
-  </div>
+  <!-- Finance Dashboard/Forecast/Budget Reco/Cashflow Proj/Financial Goal/Invest Planner/Debt Optimizer/Retirement Planner/Financial Health Score/Financial Risk Dashboard (Sesi 75/91-99, Batch 6/10) — DIPINDAH (Sesi 133) ke #page-keuangan > #keuanganTab-laporan (lihat sana). Container ini SENGAJA dikosongkan, bukan dihapus totalnya, supaya histori git/diff jelas menandai lokasi lama. -->
   <!-- PROPERTY MANAGEMENT FOUNDATION (S102, Batch 10 — presenter+UI
        ditambahkan Sesi 132 setelah audit menemukan API-nya belum pernah
        dipanggil). Section di dalam Dashboard Hub, sama seperti
@@ -2834,118 +2806,7 @@ b.appendChild(closeBtn);
     </div>
     <div class="findash-grid" id="assetMaintenanceGrid"></div>
   </div>
-  <!-- VEHICLE DASHBOARD FOUNDATION (Sesi 77, Batch 7). Section di dalam
-       Dashboard Hub, sama seperti #findashWrap di atas — diisi oleh
-       VehicleDashboard.render() (dipanggil dari DashboardHub.render() di
-       dashboard-hub.js), 100% reuse VehicleIntelligence.summary() (Sesi 76).
-       UI hanya presenter, tidak ada rumus baru di sini. CSS TIDAK baru —
-       reuse penuh class findash-grid/findash-card (grid generik). -->
-  <div class="dashhub-wrap card u-mb12" id="vehdashWrap">
-    <div class="dashhub-cat-head">
-      <div class="dashhub-cat-icon">🚗</div>
-      <div>
-        <div class="dashhub-cat-label">Vehicle Dashboard</div>
-        <div class="dashhub-cat-desc">Total kendaraan, servis lewat jatuh tempo & skor kesehatan armada — dari data yang sudah ada</div>
-      </div>
-    </div>
-    <div class="findash-grid" id="vehdashGrid"></div>
-  </div>
-  <!-- VEHICLE AI HOOK FOUNDATION (Sesi 79, Batch 7). Section di dalam
-       Dashboard Hub, sama seperti #vehdashWrap di atas — diisi oleh
-       VehicleInsightPresenter.render() (dipanggil dari DashboardHub.render()
-       di dashboard-hub.js), 100% reuse VehicleAIHook.fleetSummary() (Sesi
-       79, gabungan VehicleIntelligence.summary() Sesi 76 + VehicleReminder.
-       summary() Sesi 78). UI hanya presenter, tidak ada rumus baru di sini.
-       CSS TIDAK baru — reuse penuh class findash-grid/findash-card (grid
-       generik). -->
-  <div class="dashhub-wrap card u-mb12" id="vehinsightWrap">
-    <div class="dashhub-cat-head">
-      <div class="dashhub-cat-icon">🔔</div>
-      <div>
-        <div class="dashhub-cat-label">Vehicle Insight</div>
-        <div class="dashhub-cat-desc">Reminder servis, pajak & BBM kendaraan — dari data yang sudah ada</div>
-      </div>
-    </div>
-    <div class="findash-grid" id="vehinsightGrid"></div>
-  </div>
-  <!-- VEHICLE AI DASHBOARD INTEGRATION (Sesi 80, Batch 7). 3 section di
-       dalam Dashboard Hub, sama seperti #vehinsightWrap di atas — diisi
-       oleh VehicleDailyBrief.render()/VehicleAlertPanel.render()/
-       VehicleInsightFeed.render() (dipanggil dari DashboardHub.render() di
-       dashboard-hub.js), 100% reuse VehicleAIHook.fleetSummary() (Sesi
-       79). UI hanya presenter, tidak ada rumus baru di sini. Ketiganya
-       SILENT (body dikosongkan) kalau tidak ada apa pun buat ditampilkan
-       (pola sama AIDailyBriefingCard/AIStatusCard di ai-chat.js) — beda
-       dari #vehdashWrap/#vehinsightWrap yang selalu tampilkan angka
-       ringkasan. -->
-  <div class="dashhub-wrap card u-mb12" id="vehBriefWrap">
-    <div id="vehBriefBody"></div>
-  </div>
-  <div class="dashhub-wrap card u-mb12" id="vehAlertWrap">
-    <div id="vehAlertBody"></div>
-  </div>
-  <div class="dashhub-wrap card u-mb12" id="vehInsightFeedWrap">
-    <div class="dashhub-cat-head">
-      <div class="dashhub-cat-icon">📰</div>
-      <div>
-        <div class="dashhub-cat-label">Vehicle Insight Feed</div>
-        <div class="dashhub-cat-desc">Insight & reminder segera jatuh tempo kendaraan — dari data yang sudah ada</div>
-      </div>
-    </div>
-    <div id="vehInsightFeedBody"></div>
-  </div>
-  <!-- VEHICLE ANALYTICS FOUNDATION (Sesi 81, Batch 7). Section di dalam
-       Dashboard Hub, sama seperti #vehinsightWrap di atas — diisi oleh
-       VehicleAnalyticsPresenter.render() (dipanggil dari DashboardHub.
-       render() di dashboard-hub.js), 100% reuse VehicleCostSummary.
-       summary() (Sesi 81, sendiri 100% reuse VehicleTrendAPI) +
-       VehicleIntelligence.fleetSummary() (Sesi 76). UI hanya presenter,
-       tidak ada rumus baru di sini. CSS TIDAK baru — reuse penuh class
-       findash-grid/findash-card (grid generik). -->
-  <div class="dashhub-wrap card u-mb12" id="vehAnalyticsWrap">
-    <div class="dashhub-cat-head">
-      <div class="dashhub-cat-icon">📊</div>
-      <div>
-        <div class="dashhub-cat-label">Vehicle Analytics</div>
-        <div class="dashhub-cat-desc">Tren biaya BBM &amp; servis bulanan kendaraan — dari data yang sudah ada</div>
-      </div>
-    </div>
-    <div class="findash-grid" id="vehanalyticsGrid"></div>
-  </div>
-  <!-- VEHICLE DECISION ENGINE FOUNDATION (Sesi 82, Batch 7). Section di
-       dalam Dashboard Hub, diisi oleh VehicleDecisionPresenter.render()
-       (dipanggil dari DashboardHub.render() di dashboard-hub.js), 100%
-       reuse VehicleRecommendationEngine.recommendations() +
-       VehiclePriorityScoring.rank() + VehicleActionRecommendation.
-       withAction() (sesi ini, sendiri 100% reuse VehicleDecisionAPI ->
-       VehicleAIHook). UI hanya presenter, tidak ada rumus baru di sini.
-       Pola SILENT sama persis #vehAlertWrap/#vehInsightFeedWrap — body
-       dikosongkan kalau tidak ada recommendation apa pun. CSS TIDAK
-       baru. -->
-  <div class="dashhub-wrap card u-mb12" id="vehDecisionWrap">
-    <div id="vehDecisionBody"></div>
-  </div>
-  <!-- VEHICLE AUTOMATION FOUNDATION (Sesi 83, Batch 7). Section di dalam
-       Dashboard Hub, sama seperti #vehAnalyticsWrap di atas — diisi oleh
-       VehicleAutomationPresenter.render() (dipanggil dari DashboardHub.
-       render() di dashboard-hub.js), 100% reuse VehicleReminderScheduler.
-       summary() + VehicleMaintenanceAutomation.plan() +
-       VehicleTaxDocumentAutomation.plan() (sesi ini, sendiri 100% reuse
-       VehicleAutomationAPI -> VehicleRecommendationEngine/
-       VehiclePriorityScoring/VehicleActionRecommendation, pipeline
-       Decision Engine Sesi 82). UI hanya presenter, tidak ada rumus baru
-       di sini. CSS TIDAK baru — reuse penuh class findash-grid/
-       findash-card (grid generik). -->
-  <div class="dashhub-wrap card u-mb12" id="vehAutomationWrap">
-    <div class="dashhub-cat-head">
-      <div class="dashhub-cat-icon">🤖</div>
-      <div>
-        <div class="dashhub-cat-label">Vehicle Automation</div>
-        <div class="dashhub-cat-desc">Jadwal servis &amp; pajak/dokumen otomatis — dari rekomendasi yang sudah ada</div>
-      </div>
-    </div>
-    <div class="findash-grid" id="vehAutomationGrid"></div>
-  </div>
+  <!-- Vehicle Dashboard/Insight/Brief/Alert/Insight Feed/Analytics/Decision/Automation (Sesi 77-83, Batch 7) — DIPINDAH (Sesi 133) ke #page-carnotes (lihat sana). Container ini SENGAJA dikosongkan, bukan dihapus totalnya, supaya histori git/diff jelas menandai lokasi lama. -->
   <!-- FINANCE & VEHICLE CROSS INTEGRATION FOUNDATION (Sesi 87, Batch 8).
        2 section di dalam Dashboard Hub, sama seperti #vehAutomationWrap di
        atas — diisi oleh CrossDashboardCard.render()/CrossInsightPresenter.
@@ -3451,7 +3312,7 @@ b.appendChild(closeBtn);
 <script>document.write(MODAL_HTML[71]);</script><!-- modal:billMultiScanModal (Scan Rincian Tagihan Multi Item) -->
 <script>document.write(MODAL_HTML[72]);</script><!-- modal:universalOcrModal (Scan Universal Bank/E-Wallet/Bibit/Jago) -->
 
-<script src="app-bundle-b.min.js?v=552" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
-<script src="modules/finance/tangga-keuangan.js?v=552"></script>
+<script src="app-bundle-b.min.js?v=564" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
+<script src="modules/finance/tangga-keuangan.js?v=564"></script>
 </body>
 </html>

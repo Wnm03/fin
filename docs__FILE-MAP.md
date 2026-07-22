@@ -11,8 +11,8 @@
 > file tapi lupa `node build.js`), jalankan ulang generatornya, JANGAN diedit
 > tangan — editan manual bakal ketimpa lagi di build berikutnya.
 
-Terakhir digenerate: 2026-07-21T14:34:51.526Z
-Total file source: 215 · Total identifier global: 1379
+Terakhir digenerate: 2026-07-22T04:44:57.128Z
+Total file source: 215 · Total identifier global: 1384
 
 ## 1. Urutan load & ringkasan tiap file
 
@@ -21,12 +21,12 @@ bundler menggabungkan semua file jadi `app-bundle-a.min.js`/`app-bundle-b.min.js
 
 | # | File | Baris | Ringkasan |
 |---|------|------:|-----------|
-| 1 | `modules/shared/modules-render.js` | 1541 | Fungsi render (85 fungsi) dipisah dari app_production.html untuk pemerataan ukuran file. Dipindah ke modules/shared/modules-render.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & … |
+| 1 | `modules/shared/modules-render.js` | 1567 | Fungsi render (85 fungsi) dipisah dari app_production.html untuk pemerataan ukuran file. Dipindah ke modules/shared/modules-render.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & … |
 | 2 | `modules/shared/modals.js` | 8 | Modal HTML dipisah dari app_production.html untuk pemerataan ukuran file. Dipindah ke modules/shared/modals.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK … |
 | 3 | `modules/shared/modules-calc.js` | 882 | _(tidak ada komentar header)_ |
 | 4 | `modules/shop/cobek-etalase.js` | 516 | Domain Shop bagian Etalase: katalog produk (tambah/edit/hapus, Dipindah ke modules/shop/cobek-etalase.js (Sesi 10 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
 | 5 | `modules/shop/cobek-pricing.js` | 723 | Domain Shop bagian rekomendasi harga & ongkir: PriceReko (kalkulator Dipindah ke modules/shop/cobek-pricing.js (Sesi 10 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, … |
-| 6 | `modules/shop/cobek-order.js` | 646 | Domain Shop bagian order & pelanggan: Produsen (supplier), SiapPulang Dipindah ke modules/shop/cobek-order.js (Sesi 10 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, … |
+| 6 | `modules/shop/cobek-order.js` | 698 | Domain Shop bagian order & pelanggan: Produsen (supplier), SiapPulang Dipindah ke modules/shop/cobek-order.js (Sesi 10 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, … |
 | 7 | `modules/shop/cobek-tx-cart.js` | 373 | Domain Shop bagian integrasi form Transaksi: cart Stok Masuk & Penjualan Dipindah ke modules/shop/cobek-tx-cart.js (Sesi 10 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK … |
 | 8 | `modules/shop/cobek-io.js` | 476 | Domain Shop bagian impor/ekspor: ImportKatalog (impor massal produk+harga Dipindah ke modules/shop/cobek-io.js (Sesi 10 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, … |
 | 9 | `modules/business/kasir.js` | 332 | Modul "🧠 Kasir AI" (v127, kw81-kasir-ai-pos): Dipindah ke modules/business/kasir.js (Sesi 15 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder). Tab … |
@@ -55,7 +55,7 @@ bundler menggabungkan semua file jadi `app-bundle-a.min.js`/`app-bundle-b.min.js
 | 32 | `modules/finance/worthit.js` | 469 | Domain Worth It? & Prioritas Belanja: cek kondisi keuangan sebelum belanja + daftar prioritas barang yang mau dibeli Dipindah ke modules/finance/worthit.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & … |
 | 33 | `modules/shared/ripple-position.js` | 64 | ROADMAP-v1.1.md item #8 (KNOWN-ISSUES.md §5.2): ripple berbasis koordinat sentuh/klik ASLI, bukan selalu pulsa dari tengah elemen. Murni aditif: CSS ripple Tahap 7 (styles.css, radial-gradient via ::after) sebelumnya … |
 | 34 | `modules/shared/data-default.js` | 37 | Domain Data Default: kategori shop bawaan (DEFAULT_COBEK_KATEGORI), Dipindah ke modules/shared/data-default.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK … |
-| 35 | `modules/shared/features-helpers-global-security.js` | 501 | Helper global (migrasi data, state D, save/load, event dispatcher) Dipindah ke modules/shared/features-helpers-global-security.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama … |
+| 35 | `modules/shared/features-helpers-global-security.js` | 524 | Helper global (migrasi data, state D, save/load, event dispatcher) Dipindah ke modules/shared/features-helpers-global-security.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama … |
 | 36 | `diagnostik-versi.js` | 77 | Domain Diagnostik & Sinkronisasi Versi: snapshot HTML utk self-test (getHtmlSnapshotForSelfTest), cek status sinkron versi produksi vs master (computeProductionSyncStatus), cek status sinkron versi antar file modul … |
 | 37 | `modules/shared/format-tema.js` | 35 | Domain Format Angka & Tema: format rupiah singkat (fmt, mis. "Rp 1.5 jt"), Dipindah ke modules/shared/format-tema.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK … |
 | 38 | `modules/shared/error-handler.js` | 39 | Domain Error Handler Global: tangkap error tak tertangani (uncaught error & Dipindah ke modules/shared/error-handler.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file … |
@@ -78,7 +78,7 @@ bundler menggabungkan semua file jadi `app-bundle-a.min.js`/`app-bundle-b.min.js
 | 55 | `modules/finance/tx-transfer.js` | 34 | logika modal "⇄ Transfer Antar Akun" (transferModal). Dipindah ke modules/finance/tx-transfer.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi … |
 | 56 | `modules/finance/tx-cobek.js` | 30 | domain "Stok/Penjualan Shop (Shop)" pada form Transaksi. Dipindah ke modules/finance/tx-cobek.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi … |
 | 57 | `modules/finance/tx-target.js` | 69 | domain "Target Tabungan" (modal tambah target, deteksi Dana Dipindah ke modules/finance/tx-target.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi … |
-| 58 | `modules/finance/tx-list-cashflow.js` | 402 | domain "List Transaksi (kartu tx, hapus tx), filter Dipindah ke modules/finance/tx-list-cashflow.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi … |
+| 58 | `modules/finance/tx-list-cashflow.js` | 408 | domain "List Transaksi (kartu tx, hapus tx), filter Dipindah ke modules/finance/tx-list-cashflow.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi … |
 | 59 | `modules/finance/transaksi.js` | 757 | Form Tambah/Edit Transaksi Keuangan: autocomplete kategori/produk, Dipindah ke modules/finance/transaksi.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
 | 60 | `modules/shared/profil-pengaturan.js` | 97 | Profil pengguna di Pengaturan: auto-save profil, status Dipindah ke modules/shared/profil-pengaturan.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
 | 61 | `modules/finance/kategori.js` | 170 | Modal Kategori & Subkategori (tambah/edit/hapus, filter tampilan) Dipindah ke modules/finance/kategori.js (Sesi 16 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
@@ -104,8 +104,8 @@ bundler menggabungkan semua file jadi `app-bundle-a.min.js`/`app-bundle-b.min.js
 | 81 | `sheets-schema.js` | 224 | Skema kolom Google Sheets per modul (SHEETS_SCHEMAS/SHEETS_MODULES) & helper konversi item<->baris (sheetsHeaderFor/sheetsItemToCells/sheetsCellsToItem dst), dipakai oleh sheets-sync.js. Dipisah dari … |
 | 82 | `sheets-sync.js` | 239 | Integrasi Google Sheets: koneksi OAuth, sinkronisasi push/pull data D.* ke/dari Google Spreadsheet. Dipisah dari features-sheets-pwa-selftest.js (Sesi 2 restrukturisasi folder, blok 1/5 — lihat … |
 | 83 | `pwa-setup.js` | 49 | Setup PWA: registrasi manifest (via Blob kalau tidak di-hosting https) & service worker (sw.js, fallback inline Blob). Dipisah dari features-sheets-pwa-selftest.js (Sesi 2 restrukturisasi folder, blok 2/5 — lihat … |
-| 84 | `self-test.js` | 2031 | Runtime & daftar test case self-test/smoke-test aplikasi (Diagnostik): getSelfTestCases() (daftar besar test case), helper _selfTestAssert/findMissingAriaLabels, badge status, tes navigasi halaman … |
-| 85 | `pajak-aset-ui-wrappers.js` | 157 | Wrapper UI tipis: parser angka (parsePzNum/parseDecStr/ normalizeOcrNumber), ganti tab pajak/zakat (setPajakTab/setPjkTab/savePajakSettings), dan delegasi tipis ke modul … |
+| 84 | `self-test.js` | 2030 | Runtime & daftar test case self-test/smoke-test aplikasi (Diagnostik): getSelfTestCases() (daftar besar test case), helper _selfTestAssert/findMissingAriaLabels, badge status, tes navigasi halaman … |
+| 85 | `pajak-aset-ui-wrappers.js` | 160 | Wrapper UI tipis: parser angka (parsePzNum/parseDecStr/ normalizeOcrNumber), ganti tab pajak/zakat (setPajakTab/setPjkTab/savePajakSettings), dan delegasi tipis ke modul … |
 | 86 | `modules/finance/finance-intelligence.js` | 194 | Finance Intelligence Foundation (Sesi 74, Batch 6). Target sesi: Cash Flow Summary, Budget Summary, Income vs Expense, Financial Health Score, Insight dasar — lihat docs/BATCH_PLAN.md § Batch 6. PRINSIP (RULE #1 sesi … |
 | 87 | `modules/finance/finance-dashboard.js` | 140 | modules/finance/finance-dashboard.js — Finance Dashboard & AI Hook Foundation (Sesi 75, Batch 6). Lihat docs/BATCH_PLAN.md § Batch 6. PRINSIP (RULE #1 sesi ini): UI HANYA presenter. 100% REUSE … |
 | 88 | `modules/finance/financial-forecast-api.js` | 114 | modules/finance/financial-forecast-api.js — Financial Forecast API (Sesi 91, Batch 10). Target sesi: Financial Forecast Foundation — lihat docs/BATCH_PLAN.md § Batch 10. PRINSIP (RULE #1 sesi ini): 100% REUSE … |
@@ -127,29 +127,29 @@ bundler menggabungkan semua file jadi `app-bundle-a.min.js`/`app-bundle-b.min.js
 | 104 | `modules/finance/financial-risk-dashboard-api.js` | 162 | modules/finance/financial-risk-dashboard-api.js — Financial Risk Dashboard API (Sesi 99, Batch 10). Target sesi: Financial Risk Dashboard — Risk Factors, Risk Level, Presenter. PRINSIP (RULE #1 sesi ini): 100% REUSE … |
 | 105 | `modules/finance/financial-risk-dashboard-presenter.js` | 123 | modules/finance/financial-risk-dashboard-presenter.js — Financial Risk Dashboard Presenter (Sesi 99, Batch 10). Target sesi: Financial Risk Dashboard — lihat catatan lengkap di modules/finance/ … |
 | 106 | `modules/vehicle/vehicle-intelligence.js` | 174 | Vehicle Intelligence Foundation (Sesi 76, Batch 7). Target sesi: lapisan agregasi domain VEHICLE — vehicle overview, health score per kendaraan, ringkasan armada (fleet), insight dasar — lihat docs/BATCH_PLAN.md § Batch … |
-| 107 | `modules/vehicle/vehicle-dashboard.js` | 109 | modules/vehicle/vehicle-dashboard.js — Vehicle Dashboard Foundation (Sesi 77, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): UI HANYA presenter. 100% REUSE VehicleIntelligence.summary() … |
+| 107 | `modules/vehicle/vehicle-dashboard.js` | 110 | modules/vehicle/vehicle-dashboard.js — Vehicle Dashboard Foundation (Sesi 77, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): UI HANYA presenter. 100% REUSE VehicleIntelligence.summary() … |
 | 108 | `modules/vehicle/vehicle-reminder.js` | 208 | Vehicle Reminder Foundation (Sesi 78, Batch 7). Target sesi: lapisan reminder domain VEHICLE — Service Reminder, Tax Reminder, Fuel Reminder, + Reminder Summary API. Lihat docs/BATCH_PLAN.md § Batch 7. Pola SAMA PERSIS … |
 | 109 | `modules/vehicle/vehicle-notif-bridge.js` | 70 | Vehicle Notification Bridge (Sesi 84, Batch 7). Target sesi: **Vehicle Dashboard Final Integration** — menutup gap terakhir yang tercatat di docs/BATCH_PLAN.md Sesi 83 ("wiring … |
 | 110 | `modules/vehicle/vehicle-ai-hook.js` | 76 | modules/vehicle/vehicle-ai-hook.js — Vehicle AI Hook Foundation (Sesi 79, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): 100% REUSE, TIDAK ada rumus baru, TIDAK duplikasi logic, TIDAK mengubah … |
-| 111 | `modules/vehicle/vehicle-insight-presenter.js` | 95 | modules/vehicle/vehicle-insight-presenter.js — Vehicle Insight Presenter (Sesi 79, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): UI HANYA presenter. 100% REUSE VehicleAIHook.fleetSummary() … |
-| 112 | `modules/vehicle/vehicle-daily-brief.js` | 48 | modules/vehicle/vehicle-daily-brief.js — Vehicle Daily Brief (Sesi 80, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): UI HANYA presenter. 100% REUSE VehicleAIHook.fleetSummary() … |
-| 113 | `modules/vehicle/vehicle-alert-panel.js` | 49 | modules/vehicle/vehicle-alert-panel.js — Vehicle Alert Panel (Sesi 80, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): UI HANYA presenter. 100% REUSE VehicleAIHook.fleetSummary() … |
-| 114 | `modules/vehicle/vehicle-insight-feed.js` | 66 | modules/vehicle/vehicle-insight-feed.js — Vehicle Insight Feed (Sesi 80, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): UI HANYA presenter. 100% REUSE VehicleAIHook.fleetSummary() … |
+| 111 | `modules/vehicle/vehicle-insight-presenter.js` | 97 | modules/vehicle/vehicle-insight-presenter.js — Vehicle Insight Presenter (Sesi 79, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): UI HANYA presenter. 100% REUSE VehicleAIHook.fleetSummary() … |
+| 112 | `modules/vehicle/vehicle-daily-brief.js` | 50 | modules/vehicle/vehicle-daily-brief.js — Vehicle Daily Brief (Sesi 80, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): UI HANYA presenter. 100% REUSE VehicleAIHook.fleetSummary() … |
+| 113 | `modules/vehicle/vehicle-alert-panel.js` | 51 | modules/vehicle/vehicle-alert-panel.js — Vehicle Alert Panel (Sesi 80, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): UI HANYA presenter. 100% REUSE VehicleAIHook.fleetSummary() … |
+| 114 | `modules/vehicle/vehicle-insight-feed.js` | 68 | modules/vehicle/vehicle-insight-feed.js — Vehicle Insight Feed (Sesi 80, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): UI HANYA presenter. 100% REUSE VehicleAIHook.fleetSummary() … |
 | 115 | `modules/vehicle/vehicle-trend-api.js` | 105 | Vehicle Trend API Foundation (Sesi 81, Batch 7). Target sesi: Vehicle Analytics Foundation — Vehicle Trend API, Vehicle Cost Summary, Fuel Trend Summary, Service Trend Summary, Vehicle Analytics Presenter. Lihat … |
 | 116 | `modules/vehicle/vehicle-cost-summary.js` | 58 | Vehicle Cost Summary (Sesi 81, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): 100% REUSE VehicleTrendAPI.monthlyCostTrend() (modules/vehicle/vehicle-trend-api.js, sesi ini) — TIDAK menghitung … |
 | 117 | `modules/vehicle/vehicle-fuel-trend.js` | 50 | Fuel Trend Summary (Sesi 81, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): 100% REUSE VehicleTrendAPI.monthlyCostTrend() (type:'fuel', modules/vehicle/vehicle-trend-api.js, sesi ini) utk … |
 | 118 | `modules/vehicle/vehicle-service-trend.js` | 43 | Service Trend Summary (Sesi 81, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): 100% REUSE VehicleTrendAPI.monthlyCostTrend() (type:'service', modules/vehicle/vehicle-trend-api.js, sesi ini) … |
-| 119 | `modules/vehicle/vehicle-analytics-presenter.js` | 125 | modules/vehicle/vehicle-analytics-presenter.js — Vehicle Analytics Presenter (Sesi 81, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): UI HANYA presenter. 100% REUSE … |
+| 119 | `modules/vehicle/vehicle-analytics-presenter.js` | 127 | modules/vehicle/vehicle-analytics-presenter.js — Vehicle Analytics Presenter (Sesi 81, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): UI HANYA presenter. 100% REUSE … |
 | 120 | `modules/vehicle/vehicle-decision-api.js` | 45 | modules/vehicle/vehicle-decision-api.js — Vehicle Decision API (Sesi 82, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): 100% REUSE VehicleAIHook.fleetSummary()/ .vehicleInsight(vehicleId) … |
 | 121 | `modules/vehicle/vehicle-recommendation-engine.js` | 92 | modules/vehicle/vehicle-recommendation-engine.js — Vehicle Recommendation Engine (Sesi 82, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): 100% REUSE VehicleDecisionAPI.context() … |
 | 122 | `modules/vehicle/vehicle-priority-scoring.js` | 58 | modules/vehicle/vehicle-priority-scoring.js — Vehicle Priority Scoring (Sesi 82, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): 100% REUSE field `severity` yang SUDAH ADA di tiap … |
 | 123 | `modules/vehicle/vehicle-action-recommendation.js` | 65 | modules/vehicle/vehicle-action-recommendation.js — Vehicle Action Recommendation (Sesi 82, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): 100% REUSE field `type`/`severity` yang SUDAH ADA di … |
-| 124 | `modules/vehicle/vehicle-decision-presenter.js` | 76 | modules/vehicle/vehicle-decision-presenter.js — Vehicle Decision Presenter (Sesi 82, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): UI HANYA presenter. 100% REUSE … |
+| 124 | `modules/vehicle/vehicle-decision-presenter.js` | 78 | modules/vehicle/vehicle-decision-presenter.js — Vehicle Decision Presenter (Sesi 82, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): UI HANYA presenter. 100% REUSE … |
 | 125 | `modules/vehicle/vehicle-automation-api.js` | 51 | modules/vehicle/vehicle-automation-api.js — Vehicle Automation API (Sesi 83, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): 100% REUSE VehicleRecommendationEngine. recommendations() + … |
 | 126 | `modules/vehicle/vehicle-reminder-scheduler.js` | 70 | modules/vehicle/vehicle-reminder-scheduler.js — Smart Reminder Scheduler (Sesi 83, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): 100% REUSE VehicleAutomationAPI.context() … |
 | 127 | `modules/vehicle/vehicle-maintenance-automation.js` | 36 | modules/vehicle/vehicle-maintenance-automation.js — Maintenance Automation (Sesi 83, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): 100% REUSE VehicleReminderScheduler. schedule() … |
 | 128 | `modules/vehicle/vehicle-tax-document-automation.js` | 36 | modules/vehicle/vehicle-tax-document-automation.js — Tax & Document Automation (Sesi 83, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): 100% REUSE VehicleReminderScheduler. schedule() … |
-| 129 | `modules/vehicle/vehicle-automation-presenter.js` | 92 | modules/vehicle/vehicle-automation-presenter.js — Automation Presenter (Sesi 83, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): UI HANYA presenter. 100% REUSE … |
+| 129 | `modules/vehicle/vehicle-automation-presenter.js` | 94 | modules/vehicle/vehicle-automation-presenter.js — Automation Presenter (Sesi 83, Batch 7). Lihat docs/BATCH_PLAN.md § Batch 7. PRINSIP (RULE #1 sesi ini): UI HANYA presenter. 100% REUSE … |
 | 130 | `modules/cross/finance-vehicle-cross-summary.js` | 45 | modules/cross/finance-vehicle-cross-summary.js — Finance & Vehicle Cross Summary API (Sesi 87, Batch 8). Target sesi: Finance & Vehicle Cross Integration Foundation — lihat docs/BATCH_PLAN.md § Batch 8. PRINSIP (RULE #1 … |
 | 131 | `modules/cross/cross-ai-hook.js` | 37 | modules/cross/cross-ai-hook.js — Finance & Vehicle Unified AI Hook (Sesi 87, Batch 8). Lihat docs/BATCH_PLAN.md § Batch 8. PRINSIP (RULE #1 sesi ini): 100% REUSE CrossSummaryAPI.summary() … |
 | 132 | `modules/cross/cross-dashboard-card.js` | 106 | modules/cross/cross-dashboard-card.js — Finance & Vehicle Unified Dashboard Card (Sesi 87, Batch 8). Lihat docs/BATCH_PLAN.md § Batch 8. PRINSIP (RULE #1 sesi ini): UI HANYA presenter. 100% REUSE CrossAIHook.getAIHook() … |
@@ -169,8 +169,8 @@ bundler menggabungkan semua file jadi `app-bundle-a.min.js`/`app-bundle-b.min.js
 | 146 | `modules/cross/decision-center-home.js` | 28 | modules/cross/decision-center-home.js — Decision Center Home (Sesi 90, Batch 8). Target sesi: Personal Decision Center Foundation — Dashboard Integration. PRINSIP (RULE #1 sesi ini): UI HANYA presenter, TIDAK ada … |
 | 147 | `app-bootstrap.js` | 15 | Titik bootstrap utama app: expose modul-modul ke window (Object.assign) lalu panggil init(). Dipisah dari features-sheets-pwa-selftest.js (Sesi 3 restrukturisasi folder, blok 5 — lihat … |
 | 148 | `modules/shared/feature-icons.js` | 105 | Migrasi Icon Emoji -> SVG (KNOWN-ISSUES.md §4.1 / ROADMAP-v1.1.md #3) Dipindah ke modules/shared/feature-icons.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK … |
-| 149 | `modules/dashboard-hub/dashboard-hub-registry.js` | 265 | FEATURE_REGISTRY: sumber data tunggal taksonomi Dipindah ke modules/dashboard-hub/dashboard-hub-registry.js (Sesi 11 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
-| 150 | `modules/dashboard-hub/dashboard-hub.js` | 754 | Dashboard Feature Hub (blueprint-dashboard-hub.md §5) Dipindah ke modules/dashboard-hub/dashboard-hub.js (Sesi 11 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
+| 149 | `modules/dashboard-hub/dashboard-hub-registry.js` | 264 | FEATURE_REGISTRY: sumber data tunggal taksonomi Dipindah ke modules/dashboard-hub/dashboard-hub-registry.js (Sesi 11 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
+| 150 | `modules/dashboard-hub/dashboard-hub.js` | 735 | Dashboard Feature Hub (blueprint-dashboard-hub.md §5) Dipindah ke modules/dashboard-hub/dashboard-hub.js (Sesi 11 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
 | 151 | `modules/dashboard-hub/dashboard-hub-search.js` | 129 | Feature Search: cari FITUR/MENU (bukan data Dipindah ke modules/dashboard-hub/dashboard-hub-search.js (Sesi 11 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
 | 152 | `modules/dashboard-hub/dashboard-hub-favorit.js` | 40 | Favorit (Tahap 3, Langkah 6): storage + service Dipindah ke modules/dashboard-hub/dashboard-hub-favorit.js (Sesi 11 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
 | 153 | `modules/dashboard-hub/dashboard-hub-favorit-view.js` | 114 | Favorit (Tahap 3, Langkah 7-8): render + Dipindah ke modules/dashboard-hub/dashboard-hub-favorit-view.js (Sesi 11 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma … |
@@ -282,6 +282,7 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `_dashHubHeroMonthTx` | `modules/dashboard-hub/dashboard-hub.js` |
 | `_dashHubIsFav` | `modules/dashboard-hub/dashboard-hub.js` |
 | `_dashHubMonthTxShared` | `modules/dashboard-hub/dashboard-hub.js` |
+| `_dashHubResolveGoToSection` | `modules/dashboard-hub/dashboard-hub.js` |
 | `_dashHubSummaryMonthTx` | `modules/dashboard-hub/dashboard-hub.js` |
 | `_deliveryAIRulesRegistered` | `modules/shop/cobek-pricing.js` |
 | `_deliveryLowStockCheck` | `modules/shop/cobek-pricing.js` |
@@ -619,6 +620,7 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `DashboardHubSearch` | `modules/dashboard-hub/dashboard-hub-search.js` |
 | `DashboardHubSummary` | `modules/dashboard-hub/dashboard-hub.js` |
 | `DashboardSettings` | `modules/dashboard-hub/dashboard-hub-settings.js` |
+| `DASHHUB_GOTO_SECTION_MAP` | `modules/dashboard-hub/dashboard-hub.js` |
 | `dashHubNavigateToFeature` | `modules/dashboard-hub/dashboard-hub.js` |
 | `dashHubSearchFeatures` | `modules/dashboard-hub/dashboard-hub-search.js` |
 | `dashServisVehFilter` | `modules/vehicle/sparepart-servis.js` |
@@ -907,6 +909,7 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `Kasir` | `modules/business/kasir.js` |
 | `Kekayaan` | `modules/shared/modules-calc.js` |
 | `KELOLA_SUBTAB_IDX` | `modules/dashboard-hub/dashboard-hub.js` |
+| `KELOLA_SUBTAB_LABEL` | `modules/finance/tx-list-cashflow.js` |
 | `KELOLA_SUBTAB_ORDER` | `modules/finance/tx-list-cashflow.js` |
 | `KEU_TAB_IDX` | `modules/dashboard-hub/dashboard-hub.js` |
 | `KEU_TAB_ORDER` | `modules/finance/tx-list-cashflow.js` |
@@ -921,6 +924,7 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `knowledgeServiceUpdateTags` | `lifeos/services/knowledge-service.js` |
 | `Laporan` | `modules/shop/cobek-order.js` |
 | `LAPORAN_SUBTAB_IDX` | `modules/dashboard-hub/dashboard-hub.js` |
+| `LAPORAN_SUBTAB_LABEL` | `modules/finance/tx-list-cashflow.js` |
 | `LAPORAN_SUBTAB_ORDER` | `modules/finance/tx-list-cashflow.js` |
 | `LaporanAset` | `modules/asset/aset.js` |
 | `lapTxPage` | `modules/finance/filter-laporan.js` |
@@ -1120,6 +1124,7 @@ bisa dipanggil sebagai "global" dari file manapun lewat bundel gabungan.
 | `Piutang` | `modules/finance/piutang-utang.js` |
 | `PiutangUtangInsight` | `modules/ai/feature-insights.js` |
 | `PJK_SUBTAB_IDX` | `modules/dashboard-hub/dashboard-hub.js` |
+| `PJK_SUBTAB_LABEL` | `pajak-aset-ui-wrappers.js` |
 | `PJK_SUBTAB_ORDER` | `pajak-aset-ui-wrappers.js` |
 | `populateAccFilters` | `modules/finance/akun.js` |
 | `populateBillFilterOptions` | `modules/finance/tagihan-kalender.js` |

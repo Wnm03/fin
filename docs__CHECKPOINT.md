@@ -5,7 +5,149 @@ JANGAN audit/implement/test/build ulang bagian yang sudah **Completed**.
 
 ## Current Session
 
-Sesi 121 (2026-07-21) — Bugfix: Kartu "Tangga Ternak Uang" macet di
+Sesi 139 (2026-07-22) — Bugfix navigasi "Semua Fitur" Dashboard Hub.
+SELESAI PENUH. **Dilaporkan user** (screenshot preview HTML): klik kartu
+apa pun di grid "🗂️ Semua Fitur" yang goTo-nya adalah Penasihat AI/
+Rekomendasi AI/Ringkasan Harian AI/Skor Hidup Seimbang/Refleksi & Self-
+Care/Kebebasan Finansial (FI)/Life OS selalu terlihat "mengarah ke Tangga
+Ternak Uang". **Root cause**: `target.goTo` ketujuh kartu itu hidup di
+dalam container yang ada di `SECTION_GROUPS` sub-tab LAIN
+(`#dashboardHubPinnedWrap` → sub-tab "📌 Widget"; `#lifeOSWrap` → sub-tab
+"🌦️ Insight") — bukan di sub-tab "🗂️ Fitur" tempat kartunya sendiri.
+`dashHubNavigateToFeature()` tidak pernah memanggil
+`DashboardHub.setSectionTab()` dulu sebelum `scrollIntoView()`, jadi
+kalau user sedang di sub-tab lain, elemen tujuan tetap `u-dnone` →
+`scrollIntoView()` no-op tanpa error; yang kelihatan cuma efek
+sampingan `showPage()` reset scroll ke 0, mendarat di kartu Tangga
+Ternak Uang yang SENGAJA selalu tampil di atas seluruh sub-tab. **Fix**:
+`DASHHUB_GOTO_SECTION_MAP` baru (100% reverse-map dari `SECTION_GROUPS`
+yang sudah ada) + `_dashHubResolveGoToSection()` (jalan naik lewat
+`parentElement`) di `modules/dashboard-hub/dashboard-hub.js` —
+`dashHubNavigateToFeature()` sekarang switch ke sub-tab yang benar dulu
+sebelum scroll, hanya utk `target.page==='dashboard-hub'`. 10 test baru
+(`tests/dashboard-hub-goto-subtab.test.js`), regression 62/62 pass (52
+lama + 10 baru). Build `kw139-fix-dashboard-hub-goto-subtab` (`?v=564`),
+kedua bundle lolos `node --check`, `index.html`==`app_production.html`.
+**Catatan skop test**: sama seperti Sesi 138, ZIP kerja ini hanya
+membawa test yang tersedia di `tests/` (sekarang 5 file, 62 test),
+BUKAN full suite ribuan test yang disebut riwayat sesi-sesi lampau di
+file ini.
+
+## Current Step
+
+Sesi 139 selesai penuh — ZIP rilis dibuat & diverifikasi (`unzip -t`),
+ringkasan & link ditampilkan ke user. STOP (menunggu target lanjutan).
+
+## Files Changed (Sesi 139)
+
+- `modules/dashboard-hub/dashboard-hub.js` — `DASHHUB_GOTO_SECTION_MAP` +
+  `_dashHubResolveGoToSection()` baru; `dashHubNavigateToFeature()` +1
+  blok (switch sub-tab sebelum scroll ke `target.goTo`).
+- `app-bundle-b.min.js`, `app-bundle-a.min.js` — dibuat ulang otomatis
+  oleh `scripts/build.js` dari source yang sudah dipatch.
+- `tests/dashboard-hub-goto-subtab.test.js` — file test BARU, 10 test.
+- `index.html`, `app_production.html`, `sw.js`, `docs/FILE-MAP.md` — hasil
+  build (`?v=564`), disinkronkan otomatis.
+- `CHANGELOG.md`, `FILES-CHANGED.md` — entry Sesi 139.
+- `docs/CHECKPOINT.md` (file ini) — sinkronisasi dokumentasi.
+- **TIDAK diubah:** `SECTION_GROUPS`/`applySectionTab()`,
+  `dashboard-hub-registry.js` (`FEATURE_REGISTRY`), `showPage()`, markup
+  `index.html`/`app_production.html` (0 perubahan manual, cuma `?v=`
+  otomatis), seluruh 52 test lama.
+
+## Test
+
+`node --test tests/*.test.js` -> **62/62 pass, 0 fail** (naik dari 52,
+10 test baru murni aditif).
+
+## Build
+
+`node scripts/build.js kw139-fix-dashboard-hub-goto-subtab` -> sukses,
+`?v=564`. Bundle TANPA minifikasi (esbuild tidak tersedia di sandbox,
+fallback otomatis).
+
+## ZIP
+
+`kw_release_sesi139_fix-dashboard-hub-goto-subtab_v564.zip` — dibuat &
+diverifikasi `unzip -t` ("No errors detected in compressed data").
+
+---
+
+Sebelumnya Sesi 138 (2026-07-22) — Cleanup fisik `#page-dashboard` lama (dead code
+pasca-migrasi Dashboard Hub) + 2 pintu nyasar + null-guard `backupBanner`.
+SELESAI PENUH. **Temuan awal sesi**: dari 17 card di `DASH_RENDER_ORDER`,
+cuma 13 yang benar-benar mati (`bill`/`servisReminder`/`sewaKiosReminder`/
+`backupReminder`/`danaDarurat`/`cashflowForecast`/`timeline`/`budgetMini`/
+`eduFund`/`zakatMini`/`laporanMini`/`siapPulang`/`ldr`) — 4 sisanya
+(`fi`/`pensiun`/`absensi`/`refleksi`) TETAP HIDUP karena elemennya sudah
+pindah ke `#page-dashboard-hub` sejak migrasi Tahap 3a, hanya render-nya
+masih dikontrol fungsi yang sama. **Fix**: `DASH_CARD_DEFS`/
+`DASH_RENDER_ORDER` (`modules/shared/modules-render.js`) dipangkas ke 4
+entry hidup saja; guard `if(getElementById('page-dashboard'))` di
+`setAllDashCardPrefs`/`toggleDashCardPref` diarahkan ke
+`page-dashboard-hub`; `renderDashboard()` dibersihkan dari baris yang
+nulis ke elemen dashboard lama (`dIncome`/`dExpense`/`dBalance`/`dShop`/
+`recentTx`/`dashAccList`) — `dashCtx` TETAP dipertahankan (masih dipakai
+`FinCoach`). 4 titik `getElementById('backupBanner')`/`'lastBackupDate'`
+tanpa null-check di `modules/shared/backup-restore.js` diperbaiki pakai
+optional chaining/null-check (pola sama yang sudah dipakai luas di file
+itu) — SEBELUM HTML dihapus, supaya `checkBackup()`/`runFullBackup()`
+tidak crash begitu elemennya hilang. Entry mati `dash-laporan-mini`
+(target `page:'dashboard'`) dihapus dari `FEATURE_REGISTRY`
+(`modules/dashboard-hub/dashboard-hub-registry.js`) — padanan live-nya
+sudah ada (`keu-saldo-akun`/`keu-grafik` di bawah section `keuangan`).
+Tombol "Saldo Akun" di kartu Kekayaan Bersih (`app_production.html`)
+diperbaiki dari `showPage('dashboard', ...)` ke
+`showPage('dashboard-hub', ...)` (nav index 0 sama persis). Baru setelah
+semua pintu nyasar & null-guard beres, blok HTML `#page-dashboard`
+(baris 202–325) dihapus fisik, `index.html` disinkronkan (sekarang
+identik `app_production.html`, terverifikasi `diff`). Build
+`kw138-batch-breadcrumb-navigasi-page-dashboard-cleanup` (`?v=562`),
+kedua bundle lolos `node --check`. **Catatan skop test**: ZIP kerja sesi
+ini hanya membawa 4 file test (`tests/tagihan-kalender.test.js`,
+`tests/data-archive.test.js`, `tests/eie-registry.test.js`,
+`tests/lifeos-link-registry.test.js` — 52/52 pass, 2x sebelum & sesudah
+build), BUKAN full suite ribuan test yang disebut riwayat sesi
+sebelumnya di file ini — cakupan regresi otomatis sesi ini terbatas ke
+4 file itu saja; verifikasi tambahan dilakukan manual (grep menyeluruh
+memastikan 0 sisa referensi ke `id="page-dashboard"`/`dashBillCard`/
+`dIncome`/`dExpense`/`dBalance`/`dShop`/`recentTx`/`dashAccList`/dst di
+HTML setelah blok dihapus).
+
+**Belum/di luar scope sesi ini**: modal `qsDashboard` ("⚙️ Aksi Cepat")
+sekarang ORPHAN — satu-satunya tombol pemicunya ada di dalam blok
+`#page-dashboard` yang baru dihapus, jadi tidak ada lagi cara membuka
+modal ini dari UI manapun. Modal TIDAK makan biaya render selama tidak
+dibuka (bukan bug aktif), tapi worth dibersihkan (hapus HTML modal +
+referensi terkait) di sesi lanjutan kalau mau benar-benar tuntas.
+
+Sesi 138 lanjutan (2026-07-22) — **Cleanup modal orphan `qsDashboard`.**
+Konfirmasi user ("Lanjutkan"): tuntaskan catatan "belum selesai" dari
+bagian pertama sesi ini. Diverifikasi dulu (bukan diasumsikan) bahwa
+`qsDashboard` benar-benar 100% orphan — grep menyeluruh ke seluruh
+`app_production.html` (HTML) & semua file `*.js` (JS) memastikan tidak
+ada `data-action="openQS" data-args='["qsDashboard"]'` maupun
+`openQS('qsDashboard')` terprogram tersisa di mana pun (beda dari
+`qsBillActions` yang polanya mirip tapi TERNYATA masih dipanggil
+programatik dari `tagihan-kalender.js` — jadi TIDAK ikut dihapus).
+Ditemukan 1 titik tambahan yang akan crash kalau modalnya dihapus tanpa
+diperbaiki dulu: `self-test.js` `EXTRA_MODAL_SWEEP_SPECS` masih punya
+entry smoke-test `{fn:'openQS',args:['qsDashboard'],...}` — dihapus
+duluan SEBELUM HTML-nya, pola yang sama dengan urutan null-guard
+`backupBanner` sebelum HTML dihapus di bagian pertama sesi ini. Setelah
+itu blok HTML `qs-modal-overlay#qsDashboard` (komentar "QUICK SETTINGS:
+DASHBOARD" + isi modal, ~39 baris) dihapus fisik dari
+`app_production.html`, `index.html` disinkronkan ulang. Build
+`kw138-batch2-qsdashboard-orphan-modal-cleanup` (`?v=563`), regression
+52/52 pass (2x, sebelum & sesudah build), kedua bundle lolos
+`node --check`, `index.html`==`app_production.html` terverifikasi.
+**Catatan**: aksi-aksi di dalam modal ini (+Pemasukan/+Pengeluaran/
+Transfer/Jual Shop/Worth It/+Tagihan/+Target/+Akun/Backup/Kalkulator
+Gaji/Absensi Harian) semuanya TETAP bisa diakses lewat entry point lain
+yang sudah ada di app (tombol nav bawah, tab masing-masing fitur,
+Pengaturan) — yang hilang murni satu shortcut menu, bukan fungsinya.
+
+Sebelumnya Sesi 121 (2026-07-21) — Bugfix: Kartu "Tangga Ternak Uang" macet di
 "Menghitung..." (dilaporkan user, screenshot). SELESAI PENUH.
 **Root cause**: `page-dashboard-hub` adalah landing page DEFAULT (statis
 `class="page active"` di HTML), jadi boot lewat
@@ -54,6 +196,60 @@ Sebelumnya Sesi 84 (2026-07-20) — Vehicle Dashboard Final Integration (Batch 7
 SELESAI PENUH (implementasi/test/regression/build/ZIP di pesan
 pertama, dokumentasi lengkap di kelanjutan sesi ini — sama sesi
 logis, 2 pesan, pola sama Sesi 78).
+
+## Current Step
+
+Sesi 138 selesai penuh — ZIP rilis sudah dibuat & diverifikasi
+(`unzip -t`), ringkasan & link ditampilkan ke user. STOP (menunggu user
+pilih: lanjut bersihkan modal `qsDashboard` orphan, atau target lain).
+
+## Files Changed (Sesi 138, lanjutan — qsDashboard cleanup)
+
+- `self-test.js` — entry `qsDashboard` dihapus dari
+  `EXTRA_MODAL_SWEEP_SPECS`.
+- `app_production.html` — blok modal `qs-modal-overlay#qsDashboard`
+  (~39 baris) dihapus.
+- `index.html` — disinkronkan (identik `app_production.html`).
+- Hasil build (`?v=563`): `app-bundle-a.min.js`, `app-bundle-b.min.js`,
+  `sw.js`, `docs/FILE-MAP.md`, konstanta versi di 6 file source.
+- **TIDAK diubah:** `openQS`/`closeQS` (generic, masih dipakai 6 modal
+  QS lain), `qsBillActions` (dikonfirmasi masih dipanggil programatik
+  dari `tagihan-kalender.js`, BUKAN orphan).
+
+## Files Changed (Sesi 138)
+
+- `modules/shared/modules-render.js` — `DASH_CARD_DEFS`/`DASH_RENDER_ORDER`
+  dipangkas 17→4, guard `page-dashboard`→`page-dashboard-hub` (2 titik),
+  `renderDashboard()` dibersihkan dari tulis-ke-elemen-mati (6 baris).
+- `modules/shared/backup-restore.js` — 4 titik `backupBanner`/
+  `lastBackupDate` di-null-guard.
+- `modules/dashboard-hub/dashboard-hub-registry.js` — entry
+  `dash-laporan-mini` dihapus.
+- `app_production.html` — tombol Saldo Akun retarget `dashboard-hub`,
+  blok `#page-dashboard` (202 baris) dihapus.
+- `index.html` — disinkronkan (identik `app_production.html`).
+- Hasil build (`?v=562`): `app-bundle-a.min.js`, `app-bundle-b.min.js`,
+  `sw.js`, `docs/FILE-MAP.md`, konstanta versi di 6 file source.
+- `docs/CHECKPOINT.md` (file ini) — sinkronisasi dokumentasi.
+- **TIDAK diubah:** modal `qsDashboard` (HTML-nya, di luar scope —
+  lihat catatan orphan di atas), `styles.css`, seluruh isi
+  `#page-dashboard-hub` selain 1 tombol Saldo Akun.
+
+## Test
+
+`node --test tests/*.test.js` (4 file test yang tersedia di ZIP kerja
+ini) -> **52/52 pass, 0 fail** (2x — sebelum & sesudah build).
+
+## Build
+
+`node scripts/build.js kw138-batch-breadcrumb-navigasi-page-dashboard-cleanup`
+-> sukses, `?v=562`. Bundle TANPA minifikasi (esbuild tidak tersedia di
+sandbox, fallback otomatis).
+
+## ZIP
+
+`kw_release_sesi138_breadcrumb-navigasi-3lapis_v562.zip` — dibuat &
+diverifikasi `unzip -t` ("No errors detected in compressed data").
 
 ## Completed
 
