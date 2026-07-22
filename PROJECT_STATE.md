@@ -62,10 +62,98 @@ JUGA SUDAH LENGKAP (Sesi 50) — sebelumnya 3 dari 6 sourceKind
 
 ## Overall Progress
 
-- **Current Build:** `?v=499` (`kw75-batch6-finance-dashboard-ai-hook-1`)
-- **Current Test:** 2597/2597 pass (`node --test tests/*.test.js`)
-- **Last ZIP:** ZIP Sesi 75 (Batch 6, Finance Dashboard & AI Hook Foundation)
-- **Last session (kedua track digabung urutan waktu):** Sesi 75 —
+- **Current Build:** `?v=508` (`kw84-batch7-vehicle-dashboard-final-integration`)
+- **Current Test:** 2826/2826 pass (`node --test tests/*.test.js`)
+- **Last ZIP:** ZIP Sesi 84 (Batch 7, Vehicle Dashboard Final Integration)
+- **Last session (kedua track digabung urutan waktu):** Sesi 84 —
+  **Vehicle Dashboard Final Integration**, Batch 7, keputusan produk
+  FINAL eksplisit user (lanjutan setelah Vehicle Automation Foundation,
+  Sesi 83): menutup gap terakhir yang tercatat Sesi 83 — file baru
+  `modules/vehicle/vehicle-notif-bridge.js` (`VehicleNotifBridge.items
+  (vehicleId?, firedIds?)`), lapisan penerjemah PURE, 100% reuse
+  `VehicleReminder.serviceReminders()`/`.fuelReminders()` (Sesi 78),
+  severity `'overdue'` saja, hasil `{fireKey,title,body}` siap tembak.
+  `reminder-notif.js` `checkAndFireReminders()` — 1 blok baru (guard
+  `typeof VehicleNotifBridge`) menembak `fireNotif()` utk tiap item &
+  push `fireKey` ke `fired.ids`, pola sama persis blok tagihan/pajak yang
+  sudah ada di file yang sama. `taxReminders()` SENGAJA TIDAK
+  disertakan (jalur ad-hoc lama sudah menembak notif pajak, di luar
+  scope, TIDAK diubah). TIDAK ada UI/panel/dashboard card baru, TIDAK
+  ada perubahan HTML. +10 test baru `tests/vehicle-notif-bridge.test.js`
+  (pola sama `tests/vehicle-ai-hook.test.js`). 2826/2826 test pass (naik
+  dari 2816, 2x — sebelum & sesudah build), build
+  `kw84-batch7-vehicle-dashboard-final-integration` (`?v=508`).
+  Sebelumnya Sesi 83 —
+  **Vehicle Reminder Foundation**, Batch 7, keputusan produk FINAL
+  eksplisit user (lanjutan setelah Vehicle Dashboard Foundation, Sesi
+  77): file baru `modules/vehicle/vehicle-reminder.js` —
+  `VehicleReminder`, lapisan agregasi PURE (read-only), pola sama
+  persis `VehicleIntelligence` (Sesi 76). `serviceReminders(vehicleId?)`/
+  `taxReminders(vehicleId?)` 100% reuse `predictService()`/
+  `VEHTAX_ITEMS`+`dateStatusBadge()` apa adanya (0 ambang baru).
+  `fuelReminders(vehicleId?)` satu-satunya logic genuinely baru sesi
+  ini — estimasi jangkauan BBM dari rata-rata liter Full Tank historis
+  × `kmPerLiter` (reuse `fuelEfficiency()`), ambang due-soon 15% sama
+  persis `predictService()`, TIDAK ada field "kapasitas tangki" baru
+  di `D`. `summary(vehicleId?)` — Reminder Summary API, gabungan
+  ketiganya + hitungan overdue/due-soon/info. Didaftarkan ke
+  `scripts/build.js` GROUP_B setelah `vehicle-dashboard.js`, sebelum
+  `app-bootstrap.js`. TIDAK ada wiring ke `reminder-notif.js`/
+  notifikasi browser/UI/dashboard card/AI Hook — eksplisit di luar
+  scope sesi ini (murni fondasi data/service). +22 test baru
+  `tests/vehicle-reminder.test.js` (pola sama `tests/
+  vehicle-intelligence.test.js` — dependency di-mock lewat `loadSource`
+  extraGlobals). 2648/2648 test pass (naik dari 2626, 2x — sebelum &
+  sesudah build), build `kw78-batch7-vehicle-reminder-foundation`
+  (`?v=502`). Sebelumnya Sesi 77 —
+  **Vehicle Dashboard Foundation**, Batch 7, keputusan produk FINAL
+  eksplisit user (lanjutan setelah Vehicle Intelligence Foundation,
+  Sesi 76): file baru `modules/vehicle/vehicle-dashboard.js` —
+  `VehicleDashboard`, UI HANYA presenter, **100% reuse**
+  `VehicleIntelligence.summary()` fleet-level (0 rumus baru, 0
+  recompute KM/servis/BBM/health score/fleet summary). 3 kartu: Total
+  Kendaraan, Servis Lewat Jatuh Tempo, Skor Kesehatan Armada — semua
+  nilai dari `summary().fleet` apa adanya (beda dari `FinanceDashboard`
+  yang masih baca `totalSaldoAkun()`/`totalDebtValue()` langsung utk
+  Net Worth Card — di sini TIDAK ada pembacaan `D` tambahan sama sekali
+  krn semua angka sudah tersedia lewat `fleet`). `getAIHook()` —
+  wrapper tipis read-only ke `summary()` (fleet-level, tanpa
+  `vehicleId`), pola sama persis `FinanceDashboard.getAIHook()`.
+  Container `#vehdashWrap`/`#vehdashGrid` ditambahkan
+  `index.html`/`app_production.html` setelah `#findashWrap`, masuk
+  grup sub-tab **insight** (`SECTION_GROUPS`, bareng
+  `lifeOSWrap`/`eieWrap`/`findashWrap`). Wired ke `DashboardHub.render()`
+  & live-wiring `renderDashboard()` (`modules-render.js`), pola sama
+  persis `FinanceDashboard.render()`. CSS **0 class baru** — reuse
+  penuh `.findash-grid`/`.findash-card*` (Sesi 75) apa adanya krn
+  strukturnya generik. Didaftarkan ke `scripts/build.js` GROUP_B
+  setelah `vehicle-intelligence.js` (dependency), sebelum
+  `app-bootstrap.js` (konsumen). +12 test baru
+  `tests/vehicle-dashboard.test.js` (pola sama
+  `tests/finance-dashboard.test.js` — dependency di-mock lewat
+  `loadSource` extraGlobals, DOM lewat `fakeDom`). 2626/2626 test pass
+  (naik dari 2614, 2x — sebelum & sesudah build), build
+  `kw77-batch7-vehicle-dashboard-foundation` (`?v=501`). Sebelumnya
+  Sesi 76 —
+  **Vehicle Intelligence Foundation**, Batch 7, keputusan produk FINAL
+  eksplisit user (target baru): file baru `modules/vehicle/vehicle-
+  intelligence.js` — `VehicleIntelligence`, lapisan agregasi PURE
+  (read-only) di atas service yang SUDAH ADA (`getVehicleKm()`/
+  `fuelEfficiency()` dari `vehicle-core.js`, `predictService()`/
+  `maintenanceForecast()` dari `sparepart-servis.js`) — pola SAMA PERSIS
+  `FinanceIntelligence` (Sesi 74), dipindah ke domain vehicle. 5 fungsi:
+  `vehicleOverview(vehicleId)`, `healthScore(vehicleId)` (skor 0-100
+  komposit service adherence + ketersediaan data BBM, skor diskalakan
+  dari bobot yang tersedia), `fleetSummary()` (agregasi lintas SEMUA
+  `D.vehicles` — satu-satunya logic genuinely baru selain skoring
+  komposit), `insights(vehicleId?)` (fleet-level/per-kendaraan, BUKAN
+  duplikasi rule `AIDecision`), `summary(vehicleId?)`. TIDAK ada
+  Dashboard/HTML/CSS/AI Hook/Reminder (eksplisit di luar scope). +17
+  test baru `tests/vehicle-intelligence.test.js` (pola sama `tests/
+  finance-intelligence.test.js`, dependency di-mock lewat `loadSource`
+  extraGlobals). 2614/2614 test pass (naik dari 2597, 2x — sebelum &
+  sesudah build), build `kw76-batch7-vehicle-intelligence-foundation`
+  (`?v=500`). Sebelumnya Sesi 75 —
   **Finance Dashboard & AI Hook Foundation**, Batch 6, keputusan produk
   FINAL eksplisit user (lanjutan setelah Finance Intelligence
   Foundation, Sesi 74): file baru `modules/finance/finance-dashboard.js`

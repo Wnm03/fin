@@ -97,7 +97,6 @@ const FEATURE_REGISTRY = [
       { key: 'dash-ai-ringkasan-harian', label: 'Ringkasan Harian AI', icon: '📋', desc: 'Jumlah keputusan AI terbaru & ringkasan pengiriman pending', target: { page: 'dashboard-hub', goTo: 'aiBriefingBody' } },
       { key: 'dash-hidup-seimbang', label: 'Skor Hidup Seimbang', icon: '⚖️', desc: 'Dana Darurat, DSR, No-Spend, kerja-istirahat', target: { page: 'dashboard-hub', goTo: 'lifeBalanceCard' } },
       { key: 'dash-refleksi', label: 'Refleksi & Self-Care', icon: '📝', desc: 'Jurnal syukur & checklist harian', target: { page: 'dashboard-hub', dashKey: 'refleksi', goTo: 'refleksiCard' } },
-      { key: 'dash-laporan-mini', label: 'Ringkasan Laporan Bulan Ini', icon: '📊', desc: 'Pemasukan/pengeluaran bulan berjalan', target: { page: 'dashboard', dashKey: 'laporanMini', goTo: 'dashLaporanMiniCard' } },
       { key: 'dash-fi', label: 'Kebebasan Finansial (FI)', icon: '🎯', desc: 'Progres menuju financial independence', target: { page: 'dashboard-hub', dashKey: 'fi', goTo: 'dashFiCard' } },
       // Sesi 27 (TODO.md #6b, Tahap 2 Navigation wiring — lihat
       // docs/PRODUCT_DECISIONS.md) — Life OS (lifeos/ui/lifeos-home.js)

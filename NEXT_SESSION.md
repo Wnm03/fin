@@ -1,5 +1,29 @@
 # NEXT_SESSION.md — Target sesi berikutnya (update setiap sesi)
 
+> **Catatan Sync (S140, di luar batch tracking — bugfix ditemukan lewat
+> audit kecil, build `kw140-fix-dashcard-toggle-inline-style`, `?v=565`):**
+> Kartu Beranda opsional (Kebebasan Finansial/Dana Pensiun/Absensi
+> Harian/Refleksi & Self-Care) tidak muncul lagi setelah dimatikan lalu
+> dinyalakan ulang lewat Pengaturan → Tampilan → Kartu di Beranda — root
+> cause & fix lengkap ada di `docs/CHECKPOINT.md` § Sesi 140. Baseline
+> regression **69/69 PASS** (skop test yang tersedia di ZIP kerja ini).
+> Target lanjutan Batch 14 masih belum dipilih — sesi berikutnya tetap
+> WAJIB tanya user target eksplisit sebelum coding fitur baru (lihat §
+> "Target berikutnya" di bawah, semua kandidat masih butuh keputusan
+> produk).
+
+> **Catatan Sync (S121, Batch 13 sudah DITUTUP di S120 — sesi ini
+> bugfix pasca-rilis, di luar batch tracking, build
+> `kw121-batch14-tangga-keuangan-boot-render-fix`, `?v=538`):** Kartu
+> "Tangga Ternak Uang" macet permanen di "Menghitung..." (dilaporkan
+> user lewat screenshot) — root cause & fix lengkap ada di
+> `docs/CHECKPOINT.md` § Sesi 121. Target lanjutan Batch 14 belum
+> dipilih.
+
+> **Catatan Sync (S110, Batch 12 COMPLETE, build
+> `kw110-batch12-final-integration-release`, `?v=533`):** Backfill
+> S85–S110 direkonstruksi dari source code v533.
+
 ## Batch Tracking
 
 Project ini pakai sistem **Batch** — lapisan pengelompokan sesi di ATAS
@@ -22,7 +46,8 @@ dibaca kalau butuh konteks lebih dari ringkasan di bawah).
   lifecycle + capability validation + error isolation) SELESAI &
   tertes. Kandidat lanjutan (Plugin Marketplace, kind Life Object baru)
   tetap terarsip, belum dikerjakan.
-- **Batch 6 (Sesi 71–?): 🟡 SEDANG BERJALAN.** Finance Domain
+- **Batch 6 (Sesi 71–75): ✅ SELESAI SEMENTARA (tanpa Batch Review
+  formal — lihat `docs/BATCH_PLAN.md` § Batch 7).** Finance Domain
   Foundation (71, domain `finance` di `LIFEOS_OBJECT_REF_SOURCES`) +
   test coverage tambahan (71 lanjutan) + Builder Filter Transaksi (72,
   filter tipe income/expense di picker `promptCreateRef()`) + Finance
@@ -32,11 +57,287 @@ dibaca kalau butuh konteks lebih dari ringkasan di bawah).
   health score/insights, PURE read-only) + Finance Dashboard & AI Hook
   Foundation (75, `FinanceDashboard` — 4 kartu presenter di Dashboard
   Hub + `getAIHook()`, 100% reuse `FinanceIntelligence.summary()`)
-  SELESAI & tertes. Target lanjutan belum dipilih.
+  SELESAI & tertes.
+- **Batch 7 (Sesi 76–?): 🟡 SEDANG BERJALAN.** Vehicle Intelligence
+  Foundation (76, `VehicleIntelligence.summary()` — vehicle overview/
+  health score per kendaraan/fleet summary/insights, PURE read-only,
+  pola sama persis `FinanceIntelligence`) SELESAI & tertes. Vehicle
+  Dashboard Foundation (77, `VehicleDashboard` — 3 kartu presenter di
+  Dashboard Hub + `getAIHook()`, 100% reuse
+  `VehicleIntelligence.summary()`) SELESAI & tertes. Vehicle Reminder
+  Foundation (78, `VehicleReminder` — Service/Tax/Fuel Reminder +
+  Reminder Summary API, PURE read-only, 100% reuse `predictService()`/
+  `VEHTAX_ITEMS`/`dateStatusBadge()`/`fuelEfficiency()`) SELESAI &
+  tertes. Vehicle AI Hook Foundation (79), Vehicle AI Dashboard
+  Integration (80), Vehicle Analytics Foundation (81), Vehicle Decision
+  Engine Foundation (82), Vehicle Automation Foundation (83), dan
+  Vehicle Dashboard Final Integration (84 — wiring `VehicleReminder`
+  Service/Fuel Reminder severity `'overdue'` ke notifikasi browser NYATA
+  via `modules/vehicle/vehicle-notif-bridge.js` (`VehicleNotifBridge`),
+  100% reuse, TIDAK ada UI baru) SELESAI & tertes. Target lanjutan belum
+  dipilih.
+- **Batch 8–9 (Sesi ±85–91): ✅ SELESAI (via Backfill S85–S110).**
+  Kronologi per-sesi TIDAK tersedia (gap dokumentasi — lihat catatan
+  Backfill di bawah). Detail retroaktif penuh, kalau dibutuhkan, perlu
+  sesi sinkronisasi dokumentasi terpisah.
+- **Batch 10 (Sesi 92–?): ✅ SELESAI.** Kronologi Sesi 92–94 (Budget
+  Recommendation Foundation, Cash Flow Projection Foundation, Financial
+  Goal Planner Foundation) tercatat lengkap di bawah. Sisa Batch 10
+  (Finance Deepening lanjutan) ter-cover via Backfill S85–S110.
+- **Batch 11 (Sesi ±95–10x): ✅ SELESAI (via Backfill S85–S110).**
+  Kronologi per-sesi TIDAK tersedia. Domain `modules/home/*` &
+  `modules/cross/*` (agregasi lintas-domain) teridentifikasi di state
+  akhir v533 — lihat `docs/BATCH_PLAN.md` § Batch 11/12 utk daftar file.
+- **Batch 12 (Sesi ~10x–110): ✅ SELESAI — Final Integration Release.**
+  Ditutup Sesi 110, build `kw110-batch12-final-integration-release`
+  (`?v=533`), regression 3356/3356 PASS. Batch aktif saat ini (menunggu
+  keputusan produk/roadmap sesi berikutnya).
+
+**Catatan Backfill S85–S110 (2026-07-20):** Dokumentasi sesi-per-sesi
+berhenti konsisten di Sesi 84 (`?v=508`, Batch 7), sementara source code
+sudah berjalan sampai Sesi 110 (`?v=533`, Batch 12). Gap Sesi 85–110
+(±26 sesi) direkonstruksi dari source code v533 sebagai backfill
+non-kronologis — detail per-sesi Batch 8/9/11 tidak tersedia, kronologi
+Batch 10 (Sesi 92–94) sudah tercatat lengkap sebelumnya. Lihat
+`docs/PROJECT_STATE.md` § "Backfill S85–S110" untuk detail domain baru
+yang teridentifikasi (`modules/finance/*` deepening, `modules/home/*`,
+`modules/cross/*`).
 
 ## Session terakhir
 
-Sesi 75 (2026-07-20) — **Finance Dashboard & AI Hook Foundation
+Sesi 110 (2026-07-20) — **Final Integration Release (Batch 12).**
+Session terakhir sebelumnya tercatat adalah Sesi 94 (di bawah) sampai
+gap dokumentasi Sesi 85–110 di-backfill (lihat catatan Backfill S85–S110
+di atas). Build `kw110-batch12-final-integration-release` (`?v=533`),
+regression **3356/3356 PASS**. Batch 12 (final integration release)
+SELESAI. Target sesi berikutnya: **TBD — menunggu keputusan
+produk/roadmap berikutnya** (JANGAN ditebak; sesi berikutnya WAJIB
+tanya user target eksplisit sebelum coding apa pun).
+
+Sebelumnya Sesi 94 (2026-07-20) — **Financial Goal Planner Foundation (Batch 10).**
+Target eksplisit user: Financial Goal API, Goal Progress, Target
+Projection, Goal Recommendation, Goal Presenter. File baru
+`modules/finance/financial-goal-api.js` (`FinancialGoalAPI`) — 100% reuse
+`goalAdapterList(D)` (lifeos/adapters/goal-adapter.js, SATU-SATUNYA titik
+akses goal — TIDAK membaca D.targets/D.eduFunds/dst langsung, pola cross-
+reference LifeOS<-Finance sama persis `_aiReminderAndTargetSummary()` di
+modules/ai/ai-service.js) + `CashFlowProjectionAPI.summary()` (Sesi 93).
+`financialGoals()`/`goalProgress()` murni membaca ulang & mengelompokkan
+field final dari `goalAdapterList()` (0 recompute). `targetProjection()`
+satu-satunya logic baru sesi ini — `remaining=targetAmount-currentAmount`
+& `monthsNeeded=surplus>0?Math.ceil(remaining/surplus):null`, KEDUA bentuk
+rumus SAMA PERSIS `TimelineW.waterfall()` (modules/asset/aset.js) yang
+sudah ada, `surplus` diambil dari `CashFlowProjectionAPI.summary()`
+(income.avgMonthly-expense.avgMonthly) sesuai mandat reuse Cash Flow
+Projection. `goalRecommendation()` 4 rule turunan (no-surplus/near-
+complete/not-started/all-achieved), pola sama `budgetInsight()`.
+`summary()` satu pintu masuk gabungan. File baru
+`modules/finance/financial-goal-presenter.js` (`FinancialGoalPresenter`)
+— 3 kartu (Progres Target Keuangan/Proyeksi Target Terdekat/Rekomendasi
+Goal), pola sama persis `CashFlowProjectionPresenter`, reuse penuh CSS
+`findash-grid`/`findash-card`. Container `#financialGoalWrap`/
+`#financialGoalGrid` masuk grup sub-tab **insight** (`SECTION_GROUPS`,
+bareng `cashflowProjWrap`). Wired ke `DashboardHub.render()` &
+live-wiring `renderDashboard()`, pola sama
+`CashFlowProjectionPresenter.render()`. Didaftarkan ke `scripts/build.js`
+GROUP_B setelah `cashflow-projection-presenter.js`, sebelum
+`vehicle-intelligence.js`. TIDAK ada perubahan struktur data D, TIDAK ada
+framework baru, TIDAK ada duplikasi logic. +37 test baru (21
+`tests/financial-goal-api.test.js`, 16
+`tests/financial-goal-presenter.test.js`, pola sama
+`tests/cashflow-projection-api.test.js`/
+`tests/cashflow-projection-presenter.test.js` — 2 assersi array kosong
+pakai `.length===0` bukan `deepEqual([],[])`, catatan teknis sama persis
+Sesi 78/84 soal beda realm sandbox vm). 3065/3065 test pass (naik dari
+3028, 2x — sebelum & sesudah build), build
+`kw94-batch10-financial-goal-planner-foundation` (`?v=518`).
+
+Sebelumnya Sesi 93 (2026-07-20) — **Cash Flow Projection Foundation (Batch 10).**
+Target eksplisit user: Cash Flow Projection API, Income Projection,
+Expense Projection, Cash Balance Forecast, Cash Flow Presenter. File baru
+`modules/finance/cashflow-projection-api.js` (`CashFlowProjectionAPI`) —
+100% reuse `FinancialForecastAPI.summary()` (Sesi 91, SATU-SATUNYA titik
+akses — TIDAK membaca FinanceDashboard/FinanceIntelligence/D langsung).
+`incomeProjection()`/`expenseProjection()`/`cashBalanceForecast()` murni
+membaca ulang field `income`/`expense`/`cashflowProjection` dari
+`FinancialForecastAPI.summary()` apa adanya (0 rumus baru — lapisan
+wrapper di atas wrapper, pola sama `DecisionCenterAPI` menumpuk summary
+tanpa recompute). `summary()` satu pintu masuk gabungan. File baru
+`modules/finance/cashflow-projection-presenter.js`
+(`CashFlowProjectionPresenter`) — 3 kartu (Proyeksi Pemasukan/Pengeluaran/
+Saldo Kas), pola sama persis `FinancialForecastPresenter`, reuse penuh CSS
+`findash-grid`/`findash-card`. Container `#cashflowProjWrap`/
+`#cashflowProjGrid` masuk grup sub-tab **insight** (`SECTION_GROUPS`,
+bareng `forecastWrap`/`budgetRecoWrap`). Wired ke `DashboardHub.render()`
+& live-wiring `renderDashboard()`, pola sama
+`BudgetRecommendationPresenter.render()`. Didaftarkan ke
+`scripts/build.js` GROUP_B setelah `budget-recommendation-presenter.js`,
+sebelum `vehicle-intelligence.js`. TIDAK ada perubahan struktur data D,
+TIDAK ada framework baru. +23 test baru (16
+`tests/cashflow-projection-api.test.js`, 7
+`tests/cashflow-projection-presenter.test.js`, pola sama
+`tests/financial-forecast-api.test.js`/
+`tests/financial-forecast-presenter.test.js`). 3028/3028 test pass (naik
+dari 3005, 2x — sebelum & sesudah build), build
+`kw93-batch10-cashflow-projection-foundation` (`?v=517`).
+
+Catatan dokumentasi: gap Sesi 85-91 di "Session terakhir" masih belum
+di-backfill retroaktif (lihat catatan Sesi 92 di atas) — tetap di luar
+scope sesi ini.
+
+Sebelumnya Sesi 92 (2026-07-20) — **Budget Recommendation Foundation (Batch 10).**
+Target eksplisit user: Budget Recommendation API, Spending Analysis,
+Budget Suggestion, Budget Insight, Budget Recommendation Presenter. File
+baru `modules/finance/budget-recommendation-api.js`
+(`BudgetRecommendationAPI`) — 100% reuse
+`FinanceIntelligence.budgetSummary()` (Sesi 74), TIDAK ada rumus keuangan
+baru. `spendingAnalysis(month?,year?)` menambahkan field `category` per
+item (over/near/underused/ok, klasifikasi murni pakai ambang gaya
+`healthScore()` 0.8/0.4 — bukan rumus baru) + count per kategori.
+`budgetSuggestion(month?,year?)` menyaring item kategori != 'ok' jadi
+saran seragam (`suggestedLimit` utk kategori over = `used` apa adanya, 0
+recompute). `budgetInsight()` 4 rule turunan (over/near/underused count +
+healthy fallback), BUKAN duplikasi `FinanceIntelligence.insights()` (yang
+cakupannya beda: deficit/savings/cashflow/health_score). `summary()` satu
+pintu masuk gabungan. File baru
+`modules/finance/budget-recommendation-presenter.js`
+(`BudgetRecommendationPresenter`) — 3 kartu (Anggaran Over Limit, Anggaran
+Kurang Terpakai, Rekomendasi Utama), pola sama persis
+`FinancialForecastPresenter` (Sesi 91), reuse penuh CSS
+`findash-grid`/`findash-card`. Container `#budgetRecoWrap`/`#budgetRecoGrid`
+masuk grup sub-tab **insight** (`SECTION_GROUPS`, bareng
+`findashWrap`/`forecastWrap`). Wired ke `DashboardHub.render()` &
+live-wiring `renderDashboard()` (`modules/shared/modules-render.js`), pola
+sama `FinancialForecastPresenter.render()`. Didaftarkan ke
+`scripts/build.js` GROUP_B setelah `financial-forecast-presenter.js`,
+sebelum `vehicle-intelligence.js`. TIDAK ada perubahan struktur data D,
+TIDAK ada framework baru. +39 test baru (25
+`tests/budget-recommendation-api.test.js`, 14
+`tests/budget-recommendation-presenter.test.js`, pola sama
+`tests/financial-forecast-api.test.js`/`tests/financial-forecast-presenter.test.js`
+— dependency di-mock lewat `loadSource` extraGlobals/fakeDom). 3005/3005
+test pass (naik dari 2966, 2x — sebelum & sesudah build), build
+`kw92-batch10-budget-recommendation-foundation` (`?v=516`).
+
+Catatan dokumentasi: `docs/NEXT_SESSION.md` "Session terakhir" sempat
+macet di entri Sesi 84 (gap Sesi 85-91 belum terisi retroaktif di file
+ini — pola gap dokumentasi yang sama seperti insiden-insiden sebelumnya,
+lihat `CHANGELOG.md`; kode Sesi 85-91, termasuk Financial Forecast
+Foundation Sesi 91, sudah lengkap ada di source, TIDAK hilang). Sesi ini
+TIDAK mengisi retroaktif gap 85-91 (di luar scope — scope sesi ini
+implementasi Sesi 92, bukan audit dokumentasi lintas-sesi); direkomendasikan
+sesi sinkronisasi dokumentasi terpisah kalau backfill penuh dibutuhkan.
+
+Sebelumnya Sesi 84 (2026-07-20) — **Vehicle Dashboard Final Integration (Batch 7).**
+Keputusan produk FINAL eksplisit user (lanjutan Batch 7 setelah Vehicle
+Automation Foundation, Sesi 83) — menutup gap terakhir yang dicatat
+eksplisit Sesi 83: Service Reminder & Fuel Reminder (`VehicleReminder`,
+Sesi 78) belum pernah menembak notifikasi browser NYATA (hanya Tax
+Reminder yang sudah, lewat jalur ad-hoc lama). File baru
+`modules/vehicle/vehicle-notif-bridge.js` (`VehicleNotifBridge`) —
+`items(vehicleId?, firedIds?)`, lapisan penerjemah PURE, 100% reuse
+`VehicleReminder.serviceReminders()`/`.fuelReminders()` apa adanya,
+HANYA severity `'overdue'` diambil (pola sama ambang tagihan/pajak yang
+sudah ada), hasil diterjemahkan jadi `{fireKey,title,body}` generik,
+difilter `firedIds` (dedupe hari sama, disuplai pemanggil dari
+`kw_notif_fired.ids`). `taxReminders()` SENGAJA TIDAK disertakan — jalur
+ad-hoc lama di `reminder-notif.js` (baca `D.vehicles`+`VEHTAX_ITEMS`
+langsung) sudah menembak notif pajak, TIDAK diubah sesi ini (di luar
+scope, resiko regresi tanpa manfaat baru). `reminder-notif.js`
+`checkAndFireReminders()` — 1 blok baru (guard `typeof
+VehicleNotifBridge`) ditambahkan sebelum
+`localStorage.setItem('kw_notif_fired'...)`, menembak `fireNotif()` per
+item & push `fireKey` ke `fired.ids`, pola identik blok
+tagihan/LDR/pajak-kendaraan/SIM/SPT yang sudah ada. Didaftarkan ke
+`scripts/build.js` GROUP_B setelah `vehicle-reminder.js`, sebelum
+`vehicle-ai-hook.js` (posisi `reminder-notif.js` sendiri TIDAK dipindah
+— referensi diresolusi saat fungsi dipanggil, bukan saat file
+di-parse). TIDAK ada UI/panel/dashboard card baru, TIDAK ada perubahan
+`index.html`/`app_production.html` — eksplisit di luar scope sesi ini. +10
+test baru `tests/vehicle-notif-bridge.test.js` (pola sama `tests/
+vehicle-ai-hook.test.js` — dependency di-mock lewat `loadSource`
+extraGlobals; catatan teknis: 2 assersi array-kosong sempat gagal krn
+beda realm sandbox vm, diperbaiki pakai `.length===0`/`Array.from()`
+sebelum `deepEqual`). 2826/2826 test pass (naik dari 2816, 2x — sebelum
+& sesudah build), build `kw84-batch7-vehicle-dashboard-final-integration`
+(`?v=508`).
+
+Sebelumnya Sesi 78 (2026-07-20) — **Vehicle Reminder Foundation (Batch 7).**
+Keputusan produk FINAL eksplisit user (lanjutan Batch 7 setelah Vehicle
+Dashboard Foundation, Sesi 77) — `vehicle-reminder.js`: Service
+Reminder, Tax Reminder, Fuel Reminder, Reminder Summary API. File baru
+`modules/vehicle/vehicle-reminder.js` (`VehicleReminder`) — lapisan
+agregasi PURE, pola sama persis `VehicleIntelligence` (Sesi 76).
+`serviceReminders(vehicleId?)`/`taxReminders(vehicleId?)` 100% reuse
+`predictService()`/`VEHTAX_ITEMS`+`dateStatusBadge()` apa adanya (0
+ambang baru — status/warna badge yang sudah ada dibaca ulang jadi
+bentuk reminder seragam). `fuelReminders(vehicleId?)` SATU-SATUNYA
+logic genuinely baru sesi ini — estimasi jangkauan BBM dari rata-rata
+liter Full Tank historis × `kmPerLiter` (reuse `fuelEfficiency()`),
+ambang due-soon 15% SAMA PERSIS `predictService()`, TIDAK ada field
+"kapasitas tangki" baru di `D`. `summary(vehicleId?)` — Reminder
+Summary API, gabungan ketiganya + hitungan overdue/due-soon/info.
+Didaftarkan ke `scripts/build.js` GROUP_B setelah
+`vehicle-dashboard.js`, sebelum `app-bootstrap.js`. TIDAK ada wiring ke
+`reminder-notif.js`/notifikasi browser/UI/dashboard card/AI Hook —
+eksplisit di luar scope sesi ini (murni fondasi data/service). +22 test
+baru `tests/vehicle-reminder.test.js` (pola sama `tests/
+vehicle-intelligence.test.js` — dependency di-mock lewat `loadSource`
+extraGlobals; catatan teknis baru: array hasil sandbox `vm` beda realm
+dari array host, jadi assersi array kosong pakai `.length===0`, bukan
+`deepEqual([],[])`). 2648/2648 test pass (naik dari 2626, 2x — sebelum
+& sesudah build), build `kw78-batch7-vehicle-reminder-foundation`
+(`?v=502`).
+
+Sebelumnya Sesi 77 (2026-07-20) — **Vehicle Dashboard Foundation (Batch 7).**
+Keputusan produk FINAL eksplisit user (lanjutan Batch 7 setelah Vehicle
+Intelligence Foundation, Sesi 76) — Vehicle Dashboard (Total Kendaraan
+Card, Servis Lewat Jatuh Tempo Card, Skor Kesehatan Armada Card) + AI
+Hook, **100% reuse** `VehicleIntelligence.summary()`, UI hanya presenter.
+File baru `modules/vehicle/vehicle-dashboard.js` (`VehicleDashboard`) —
+`getAIHook()` wrapper tipis ke `summary()` fleet-level (tanpa
+`vehicleId`); 3 kartu murni format field `summary().fleet` apa adanya
+(totalVehicles/totalOverdue/avgHealth) — **0 pembacaan `D` langsung**
+(beda dari `FinanceDashboard._netWorthCard()` yang masih baca
+`totalSaldoAkun()`/`totalDebtValue()` langsung). Container
+`#vehdashWrap`/`#vehdashGrid` masuk grup sub-tab **insight**
+(`SECTION_GROUPS`, bareng `lifeOSWrap`/`eieWrap`/`findashWrap`). Wired
+ke `DashboardHub.render()` & live-wiring `renderDashboard()`, pola sama
+`FinanceDashboard.render()`. CSS **0 perubahan** — reuse penuh
+`.findash-grid`/`.findash-card*` (Sesi 75) apa adanya. +12 test baru
+`tests/vehicle-dashboard.test.js`. 2626/2626 test pass (naik dari 2614,
+2x), build `kw77-batch7-vehicle-dashboard-foundation` (`?v=501`).
+
+Sebelumnya Sesi 76 (2026-07-20) — **Vehicle Intelligence Foundation (Batch 7).**
+Keputusan produk FINAL eksplisit user (target baru Batch 7). File baru
+`modules/vehicle/vehicle-intelligence.js` — objek `VehicleIntelligence`,
+lapisan agregasi PURE (read-only) di atas service yang SUDAH ADA:
+`getVehicleKm()`/`fuelEfficiency()` (`vehicle-core.js`),
+`predictService()`/`maintenanceForecast()` (`sparepart-servis.js`) —
+TIDAK ada rumus KM/hari, konsumsi BBM, atau interval servis dihitung
+ulang. Pola SAMA PERSIS `FinanceIntelligence` (Sesi 74), cuma dipindah
+ke domain vehicle. 5 fungsi: `vehicleOverview(vehicleId)` (KM/servis/
+BBM 1 kendaraan, `{ok:false}` kalau tidak ditemukan), `healthScore
+(vehicleId)` (skor 0-100 komposit 2 komponen — service adherence dari
+status `predictService().items`, ketersediaan data BBM dari
+`fuelEfficiency()` — HANYA komponen tersedia disertakan, skor
+diskalakan dari bobot yang tersedia), `fleetSummary()` (agregasi
+lintas SEMUA `D.vehicles` — total servis lewat jatuh tempo, rata-rata
+healthScore armada, satu-satunya logic genuinely baru selain skoring
+komposit), `insights(vehicleId?)` (fleet-level tanpa parameter atau
+per-kendaraan, BUKAN duplikasi rule `AIDecision` yang proaktif dgn
+cooldown), `summary(vehicleId?)` (satu pintu masuk gabungan). Didaftar-
+kan ke `scripts/build.js` GROUP_B setelah `finance-dashboard.js`,
+sebelum `app-bootstrap.js`. TIDAK ada Dashboard, TIDAK ada HTML/CSS,
+TIDAK ada AI Hook, TIDAK ada Reminder (eksplisit di luar scope sesi
+ini) — murni fondasi data/service, TIDAK mengubah struktur `D`. +17
+test baru `tests/vehicle-intelligence.test.js` (pola sama `tests/
+finance-intelligence.test.js` — dependency di-mock lewat `loadSource`
+extraGlobals). 2614/2614 test pass (naik dari 2597, 2x — sebelum &
+sesudah build), build `kw76-batch7-vehicle-intelligence-foundation`
+(`?v=500`).
+
+Sebelumnya Sesi 75 (2026-07-20) — **Finance Dashboard & AI Hook Foundation
 (Batch 6).** Keputusan produk FINAL eksplisit user: lanjutan Batch 6
 setelah Finance Intelligence Foundation (74) — Finance Dashboard
 Summary (Net Worth Card, Cash Flow Card, Budget Card, Financial Health
@@ -289,61 +590,57 @@ Validator (MVP). +17 test (`tests/lifeos-object-ref.test.js`), build
 
 ## Checkpoint
 
-Sesi 71 SELESAI: Finance Domain Foundation (`LIFEOS_OBJECT_REF_SOURCES`
-domain ke-5 `finance`, jump-to-source reuse `editTx()`) tuntas & tertes,
-regression 2531/2531 pass (2x), build `?v=494`. Sesi 71 lanjutan
-SELESAI: +2 test `createRef()` domain `finance`, regression 2533/2533
-pass (2x), build `?v=495`. Sesi 72 SELESAI: Builder Filter Transaksi
-(`promptCreateRef()` domain `finance` -> modal filter tipe
-income/expense sebelum modal pilih item, `sourceRef` tetap 1
-transaksi), +6 test, regression 2539/2539 pass (2x), build
-`kw72-batch6-finance-filter-builder` (`?v=496`). Sesi 73 SELESAI:
-Finance Account & Finance Category Foundation (`LIFEOS_OBJECT_REF_SOURCES`
-domain ke-6 `financeAccount` + ke-7 `financeCategory`, jump-to-source
-reuse `openAccModal(idx)`/`openCatModal(idx,type)`), +27 test,
-regression 2566/2566 pass (2x), build
-`kw73-batch6-finance-account-category-1` (`?v=497`). Sesi 74 SELESAI:
-Finance Intelligence Foundation (`modules/finance/finance-intelligence.js`
-— `FinanceIntelligence.summary()`: cashflow/budget/income-vs-expense/
-health score/insights, PURE read-only, 0 rumus baru selain
-`incomeVsExpense()`), +17 test, regression 2583/2583 pass (2x), build
-`kw74-batch6-finance-intelligence-foundation` (`?v=498`). Sesi 75
-SELESAI: Finance Dashboard & AI Hook Foundation
-(`modules/finance/finance-dashboard.js` — `FinanceDashboard`, 4 kartu
-presenter di Dashboard Hub + `getAIHook()`, **100% reuse**
-`FinanceIntelligence.summary()`, 0 rumus baru), +14 test, regression
-2597/2597 pass (2x), build `kw75-batch6-finance-dashboard-ai-hook-1`
-(`?v=499`). **Batch 6 (Sesi 71–75) SEDANG BERJALAN** — target lanjutan
-belum dipilih.
+Sesi 84 SELESAI: Vehicle Dashboard Final Integration
+(`modules/vehicle/vehicle-notif-bridge.js` — `VehicleNotifBridge`),
+regression 2826/2826 pass (2x), build
+`kw84-batch7-vehicle-dashboard-final-integration` (`?v=508`).
+**Batch 7 SELESAI SEMENTARA** tanpa Batch Review formal.
+
+Sesi 85–110 (Batch 8–12): kronologi per-sesi TIDAK tersedia secara
+retroaktif (gap dokumentasi Sesi 85–110, ±26 sesi — lihat catatan
+Backfill S85–S110 di atas & `docs/PROJECT_STATE.md` §
+"Backfill S85–S110"). State akhir terverifikasi via source code v533:
+domain baru `modules/finance/*` (Finance Deepening: Financial Health
+Score, Financial Risk Dashboard, Retirement Planner, Investment
+Planner, Debt Optimizer), `modules/home/*` (Hidup Seimbang, Refleksi &
+Selfcare, Renovasi), dan `modules/cross/*` (17 file agregasi
+lintas-domain finance+vehicle+home+LifeOS).
+
+Sesi 110 SELESAI: **Final Integration Release (Batch 12).** Build
+`kw110-batch12-final-integration-release` (`?v=533`), regression
+**3356/3356 PASS**. **Batch 12 SELESAI.** Target lanjutan belum
+dipilih — TBD, menunggu keputusan produk/roadmap berikutnya.
 
 ## Target berikutnya
 
-**Batch 6 (Sesi 71–?) SEDANG BERJALAN.** Sesi 71 (keputusan produk
-FINAL user): **Finance Domain Foundation** SELESAI — domain `finance`
-terdaftar di `LIFEOS_OBJECT_REF_SOURCES` (baca `D.transactions`
-langsung, tanpa adapter baru), UI `_refSourceItems`/jump-to-source
-(`editTx()`) sudah wired. Sesi 72: **Builder Filter Transaksi** (filter
-tipe income/expense di picker `promptCreateRef()`) SELESAI. Sesi 73:
-**Finance Account & Finance Category Foundation** (domain
-`financeAccount`/`financeCategory`, pola sama `finance`, jump-to-source
-reuse `openAccModal()`/`openCatModal()`) SELESAI. Sesi 74: **Finance
-Intelligence Foundation** (`FinanceIntelligence.summary()` — lapisan
-agregasi PURE di atas service yang sudah ada) SELESAI. Sesi 75:
-**Finance Dashboard & AI Hook Foundation** (`FinanceDashboard` — 4
-kartu presenter + `getAIHook()`, 100% reuse `FinanceIntelligence`)
-SELESAI. Kandidat sisa (BELUM dipilih, BUTUH keputusan produk dulu —
-JANGAN ditebak):
+**TBD — menunggu keputusan produk/roadmap berikutnya.** Batch 12
+(final integration release) sudah SELESAI ditutup Sesi 110 (`?v=533`,
+3356/3356 test pass). Belum ada target baru yang dipilih user untuk
+sesi berikutnya. Kandidat lama yang masih terarsip dari Batch 7 (belum
+ada keputusan produk, JANGAN ditebak):
 
+- **Wiring nyata `VehicleAIHook`/`FinanceDashboard.getAIHook()` ke AI
+  Daily Briefing/`ai-chat.js`** (kandidat lama dari Sesi 75, masih
+  berlaku) — belum ada keputusan produk.
 - **Builder/filter di picker `financeAccount`/`financeCategory`** (pola
   sama Sesi 72 tapi utk domain baru Sesi 73) — belum ada keputusan
   produk.
-- **Wiring nyata `FinanceDashboard.getAIHook()` ke AI Daily
-  Briefing/`ai-chat.js`** (kandidat baru dari Sesi 75) — belum ada
-  keputusan produk.
+- **Chart/grafik visual utk `VehicleTrendAPI.monthlyCostTrend()`**
+  (Sesi 81 baru expose data mentah+angka, BELUM ada visualisasi grafik)
+  — belum ada keputusan produk.
+- **Wiring `VehicleDecisionAPI`/`VehicleRecommendationEngine` ke AI
+  briefing/chat** (Sesi 82 baru expose recommendation+priority+action,
+  BELUM ada wiring ke `ai-chat.js`) — belum ada keputusan produk.
+- **Insight-level Priority Scoring** (`VehiclePriorityScoring` Sesi 82
+  baru skoring severity-only, BELUM menggabungkan faktor lain mis. usia
+  kendaraan/biaya historis) — belum ada keputusan produk.
 - **Plugin Marketplace** (kandidat lama Batch 5) — belum ada
   implementasi/arsitektur apa pun.
 - **Kind Life Object baru selain `generic`/`ref`** (kandidat lama
   Batch 5) — masih butuh keputusan produk dulu.
+- **Kronologi retroaktif penuh per-sesi Batch 8/9/11** (kalau
+  dibutuhkan di masa depan) — sesi sinkronisasi dokumentasi terpisah,
+  bukan implementasi fitur.
 
 Sesi berikutnya WAJIB tanya user target eksplisit sebelum coding apa
 pun.
@@ -356,17 +653,23 @@ Review/Projects/Goal/Life Object semua sudah diaudit+tertes penuh. Nav
 wiring Today (5/5) & Goal (6/6) lengkap. Batch 4 (Life Object
 sourceRef+CRUD+UI Fase 1/2/Update) SELESAI & DITUTUP (Sesi 64). Batch 5
 (Sesi 65-69: Plugin System MVP/Plugin UI/Plugin Runtime MVP) SELESAI
-tanpa Batch Review formal. Batch 6 Sesi 71: Finance Domain Foundation
-SELESAI. Sesi 72: Builder Filter Transaksi SELESAI. Sesi 73: Finance
-Account & Finance Category Foundation SELESAI — `LIFEOS_OBJECT_REF_SOURCES`
-sekarang 7/7 domain (finance/financeAccount/financeCategory/goal/
-knowledge/project/review). Sesi 74: Finance Intelligence Foundation
-SELESAI — `modules/finance/finance-intelligence.js` (`FinanceIntelligence`)
-lapisan agregasi PURE, di luar scope LifeOS (murni `modules/finance/*`).
-Sesi 75: Finance Dashboard & AI Hook Foundation SELESAI —
-`modules/finance/finance-dashboard.js` (`FinanceDashboard`) 100% reuse
-`FinanceIntelligence.summary()`, juga di luar scope LifeOS. Plugin
-Marketplace & kind Life Object baru tetap butuh keputusan produk
+tanpa Batch Review formal. Batch 6 (Sesi 71-75: Finance Domain
+Foundation/Builder Filter/Finance Account & Category/Finance
+Intelligence/Finance Dashboard & AI Hook) SELESAI SEMENTARA tanpa Batch
+Review formal. Batch 7 (Sesi 76-84: Vehicle Intelligence/Dashboard/
+Reminder Foundation, Vehicle AI Hook Foundation, Vehicle AI Dashboard
+Integration, Vehicle Analytics Foundation, Vehicle Decision Engine
+Foundation, Vehicle Automation Foundation, Vehicle Dashboard Final
+Integration) SELESAI SEMENTARA tanpa Batch Review formal. Batch 8–9
+(Sesi ±85–91) & Batch 11 (Sesi ±95–10x) SELESAI via Backfill S85–S110 —
+kronologi per-sesi TIDAK tersedia retroaktif. Batch 10 (Sesi 92–?)
+SELESAI, kronologi Sesi 92-94 tercatat lengkap, sisanya via backfill.
+**Batch 12 (Sesi ~10x–110) SELESAI — Final Integration Release**,
+ditutup Sesi 110, build `kw110-batch12-final-integration-release`
+(`?v=533`), regression 3356/3356 PASS. Wiring AI Hook ke Daily
+Briefing, builder/filter picker finance, chart visual trend, wiring
+Decision Engine ke ai-chat, Plugin Marketplace, kind Life Object baru,
+& kronologi retroaktif penuh Batch 8/9/11 tetap butuh keputusan produk
 terpisah — jangan ditebak.
 
 ## First Action (sesi berikutnya)
@@ -374,18 +677,20 @@ terpisah — jangan ditebak.
 1. Baca `docs/SESSION_RULES.md` + `docs/PRODUCT_DECISIONS.md` +
    `docs/BATCH_PLAN.md`.
 2. Verifikasi ulang (bukan asumsi dari docs) bahwa baseline masih
-   2597/2597 pass, build `?v=499`.
-3. Tanya user target lanjutan Batch 6 (builder/filter
-   `financeAccount`/`financeCategory`, wiring `FinanceDashboard.getAIHook()`
-   ke AI Daily Briefing, Plugin Marketplace, atau kind Life Object
-   baru — semua butuh keputusan produk dulu, jangan ditebak) — atau
-   Batch Review kalau tidak ada target baru.
+   3356/3356 pass, build `?v=533`
+   (`kw110-batch12-final-integration-release`).
+3. Tanya user target sesi berikutnya (lihat daftar kandidat § "Target
+   berikutnya" di atas — semua butuh keputusan produk dulu, jangan
+   ditebak). Batch 12 sudah ditutup; keputusan Batch baru (mis. Batch
+   13) juga menunggu arahan user.
 4. Ikuti SESSION WORKFLOW normal (`docs/SESSION_RULES.md`).
 
 ## Stop Condition
 
-Sesi 75 Definition of Done tercapai: Finance Dashboard & AI Hook
-Foundation selesai & tertes, dokumentasi disinkronkan, regression
-2597/2597 pass (2x), build `?v=499`, ZIP rilis dibuat. **Batch 6 (Sesi
-71–?) SEDANG BERJALAN — target lanjutan perlu konfirmasi user (belum
-ada keputusan produk baru).**
+Sesi 110 Definition of Done tercapai: **Final Integration Release
+(Batch 12)** — regression 3356/3356 pass (2x), build
+`kw110-batch12-final-integration-release` (`?v=533`), ZIP rilis dibuat
+& tervalidasi (`unzip -t`), dokumentasi Sesi 85–110 (Batch 8–12)
+di-backfill sbg ringkasan state akhir (kronologi per-sesi Batch 8/9/11
+tetap gap, dicatat transparan). **Batch 12 SELESAI. Target sesi
+berikutnya: TBD — menunggu keputusan produk/roadmap berikutnya.**

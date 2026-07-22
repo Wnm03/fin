@@ -95,6 +95,52 @@ function _dashHubCallAction(name) {
   else console.warn('DashboardHub: action tidak ditemukan:', name);
 }
 
+// BUGFIX (goTo ke widget di sub-tab Dashboard Hub yang sedang tidak aktif):
+// beberapa target.goTo (mis. advisorCard/lifeBalanceCard/refleksiCard/
+// dashFiCard ada di dalam #dashboardHubPinnedWrap -- tab "Widget"; lifeOSWrap
+// ada di dalam grup "Insight") hidup di DALAM container yang di-toggle
+// u-dnone oleh DashboardHub.applySectionTab() (lihat SECTION_GROUPS di
+// method itu). Kalau user sedang di sub-tab lain (mis. "Fitur") lalu klik
+// kartu yang goTo-nya ada di sub-tab "Widget", scrollIntoView() ke elemen
+// yang leluhurnya u-dnone TIDAK melakukan apa-apa (elemen tidak
+// ter-render/invisible) -- showPage() di atas SUDAH keburu reset scroll ke
+// 0 duluan, jadi user cuma mendarat di paling atas halaman (Hero/Tangga
+// Ternak Uang yang SELALU tampil di atas subtab), terlihat seperti "semua
+// kartu Fitur mengarah ke Tangga Keuangan". Peta di bawah 100% REUSE
+// (bukan duplikasi keputusan baru) daftar SECTION_GROUPS yang sudah ada di
+// DashboardHub.applySectionTab() -- kalau salah satu daftar itu berubah,
+// peta ini WAJIB disamakan lagi.
+const DASHHUB_GOTO_SECTION_MAP = {
+  dashHubSummaryGrid: 'ringkasan',
+  dashHubAnalyticsRow: 'ringkasan',
+  dashHubFavoritSection: 'fitur',
+  dashHubMainGridCard: 'fitur',
+  dashboardHubPinnedWrap: 'widget',
+  lifeOSWrap: 'insight',
+  eieWrap: 'insight',
+  crossDashWrap: 'insight',
+  crossBriefWrap: 'insight',
+  crossInsightWrap: 'insight',
+  personalOverviewWrap: 'insight',
+  crossWidgetsWrap: 'insight',
+  lifePriorityWrap: 'insight',
+};
+
+// Jalan naik dari elemen goTo lewat parentElement sampai ketemu id yang
+// terdaftar di DASHHUB_GOTO_SECTION_MAP (atau habis/null kalau memang
+// goTo-nya bukan bagian dari section manapun -- mis. Hero/Tangga Keuangan
+// yang memang selalu tampil, tidak butuh switch tab apa pun).
+function _dashHubResolveGoToSection(goToId) {
+  let el = document.getElementById(goToId);
+  while (el) {
+    if (Object.prototype.hasOwnProperty.call(DASHHUB_GOTO_SECTION_MAP, el.id)) {
+      return DASHHUB_GOTO_SECTION_MAP[el.id];
+    }
+    el = el.parentElement;
+  }
+  return null;
+}
+
 function dashHubNavigateToFeature(target) {
   if (!target) return;
   if (!target.page) {
@@ -148,6 +194,10 @@ function dashHubNavigateToFeature(target) {
   // filter-laporan.js) supaya DOM halaman tujuan sempat selesai dirender.
   setTimeout(() => {
     if (target.goTo) {
+      if (target.page === 'dashboard-hub' && typeof DashboardHub !== 'undefined' && typeof DashboardHub.setSectionTab === 'function') {
+        const section = _dashHubResolveGoToSection(target.goTo);
+        if (section) DashboardHub.setSectionTab(section);
+      }
       const el = document.getElementById(target.goTo);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -401,13 +451,109 @@ const DashboardHub = {
     // tidak mengubah baris manapun sebelum ini.
     if (typeof DashboardHubAnalytics !== 'undefined') DashboardHubAnalytics.render();
 
-    // Finance Dashboard & AI Hook Foundation (Sesi 75, Batch 6, lihat
-    // modules/finance/finance-dashboard.js & #findashWrap di
+    // Finance Dashboard/Forecast/Budget Reco/Cashflow Proj/Financial
+    // Goal/Invest Planner/Debt Optimizer/Retirement Planner/Health
+    // Score/Risk Dashboard (Sesi 75/91-99, Batch 6/10) — DIPINDAH (Sesi
+    // 133, permintaan eksplisit user "pindahkan insight AI ke tab
+    // masing-masing fitur") ke renderKeuangan() (modules/shared/
+    // modules-render.js), karena seluruhnya domain Keuangan (single-
+    // feature) — bukan lintas-domain. Container HTML (#findashWrap dst)
+    // ikut dipindah ke #page-keuangan (index.html/app_production.html).
+    // TIDAK ada logic/rumus yang diubah, murni pindah LOKASI pemanggilan
+    // render() + LOKASI container HTML. Presenter/API-nya sendiri 0
+    // perubahan.
+
+    // Property Management Foundation (S102, Batch 10 — presenter+UI
+    // ditambahkan Sesi 132, lihat modules/asset/
+    // property-management-presenter.js & #propertyManagementWrap di
+    // index.html/app_production.html — audit menemukan API-nya sudah
+    // ada sejak S102 tapi belum pernah dipanggil dari mana pun).
+    // Tambahan murni, pola sama dgn FinancialRiskDashboardPresenter.
+    // render() di atas — tidak mengubah baris manapun sebelum ini. 100%
+    // reuse PropertyManagementAPI.summary() (S102), UI hanya presenter.
+    if (typeof PropertyManagementPresenter !== 'undefined') PropertyManagementPresenter.render();
+
+    // Rental Management Foundation (S103, Batch 10 — presenter+UI
+    // ditambahkan Sesi 132, lihat modules/asset/
+    // rental-management-presenter.js & #rentalManagementWrap di
     // index.html/app_production.html). Tambahan murni, pola sama dgn
-    // DashboardHubAnalytics.render() di atas — tidak mengubah baris
-    // manapun sebelum ini. 100% reuse FinanceIntelligence.summary()
-    // (Sesi 74), UI hanya presenter.
-    if (typeof FinanceDashboard !== 'undefined') FinanceDashboard.render();
+    // PropertyManagementPresenter.render() di atas — tidak mengubah
+    // baris manapun sebelum ini. 100% reuse RentalManagementAPI.summary()
+    // (S103), UI hanya presenter.
+    if (typeof RentalManagementPresenter !== 'undefined') RentalManagementPresenter.render();
+
+    // Asset Portfolio Foundation (S101, Batch 10 — presenter+UI
+    // ditambahkan Sesi 132, lihat modules/asset/
+    // asset-portfolio-presenter.js & #assetPortfolioWrap di
+    // index.html/app_production.html). Tambahan murni, pola sama dgn
+    // RentalManagementPresenter.render() di atas — tidak mengubah baris
+    // manapun sebelum ini. 100% reuse AssetPortfolioAPI.summary()
+    // (S101), UI hanya presenter.
+    if (typeof AssetPortfolioPresenter !== 'undefined') AssetPortfolioPresenter.render();
+
+    // Asset Maintenance Foundation (S104, Batch 10 — presenter+UI
+    // ditambahkan Sesi 132, lihat modules/asset/
+    // asset-maintenance-presenter.js & #assetMaintenanceWrap di
+    // index.html/app_production.html). Tambahan murni, pola sama dgn
+    // AssetPortfolioPresenter.render() di atas — tidak mengubah baris
+    // manapun sebelum ini. 100% reuse AssetMaintenanceAPI.summary()
+    // (S104), UI hanya presenter.
+    if (typeof AssetMaintenancePresenter !== 'undefined') AssetMaintenancePresenter.render();
+
+    // Vehicle Dashboard/Insight/Brief/Alert/Insight Feed/Analytics/
+    // Decision/Automation (Sesi 77-83, Batch 7) — DIPINDAH (Sesi 133,
+    // permintaan eksplisit user "pindahkan insight AI ke tab masing-
+    // masing fitur") ke renderCnTab() (modules/shared/modules-
+    // render.js), karena seluruhnya domain Kendaraan/Car Notes (single-
+    // feature) — bukan lintas-domain. Container HTML (#vehdashWrap dst)
+    // ikut dipindah ke #page-carnotes (index.html/app_production.html).
+    // TIDAK ada logic/rumus yang diubah, murni pindah LOKASI pemanggilan
+    // render() + LOKASI container HTML. Presenter/API-nya sendiri 0
+    // perubahan.
+
+    // Finance & Vehicle Cross Integration Foundation (Sesi 87, Batch 8,
+    // lihat #crossDashWrap/#crossInsightWrap di index.html/
+    // app_production.html). Tambahan murni, pola sama dgn
+    // VehicleAutomationPresenter.render() di atas — tidak mengubah baris
+    // manapun sebelum ini. 100% reuse CrossAIHook.getAIHook() (gabungan
+    // FinanceDashboard.getAIHook()+VehicleAIHook.fleetSummary()) +
+    // FinanceIntelligence.insights()/VehicleIntelligence.insights(), UI
+    // hanya presenter.
+    if (typeof CrossDashboardCard !== 'undefined') CrossDashboardCard.render();
+    if (typeof CrossInsightPresenter !== 'undefined') CrossInsightPresenter.render();
+
+    // Unified AI Briefing Foundation (Sesi 88, Batch 8, lihat
+    // #crossBriefWrap di index.html/app_production.html). Tambahan murni,
+    // pola sama dgn CrossDashboardCard.render() di atas — tidak mengubah
+    // baris manapun sebelum ini. 100% reuse UnifiedAIBriefing.generate()
+    // (sendiri 100% reuse UnifiedSummaryAPI.summary() -> CrossAIHook.
+    // getAIHook()), UI hanya presenter.
+    if (typeof UnifiedBriefingPresenter !== 'undefined') UnifiedBriefingPresenter.render();
+
+    // Personal Life Dashboard Foundation (Sesi 89, Batch 8, lihat
+    // #personalOverviewWrap/#crossWidgetsWrap/#lifePriorityWrap di
+    // index.html/app_production.html). Tambahan murni, pola sama dgn
+    // UnifiedBriefingPresenter.render() di atas — tidak mengubah baris
+    // manapun sebelum ini. 100% reuse LifeDashboardSummaryAPI.summary()
+    // (sesi ini, sendiri 100% reuse UnifiedSummaryAPI.summary() +
+    // UnifiedAIBriefing.generate(), Sesi 88), UI hanya presenter. Satu
+    // panggilan (UnifiedDashboardHome.render()) yang di dalamnya
+    // memanggil PersonalOverviewPresenter/CrossModuleWidgets/
+    // LifePriorityPanel — lihat unified-dashboard-home.js.
+    if (typeof UnifiedDashboardHome !== 'undefined') UnifiedDashboardHome.render();
+
+    // Personal Decision Center Foundation (Sesi 90, Batch 8, lihat
+    // #recommendationPanelWrap/#actionQueueWrap di index.html/
+    // app_production.html). Tambahan murni, pola sama dgn
+    // UnifiedDashboardHome.render() di atas — tidak mengubah baris
+    // manapun sebelum ini. 100% reuse DecisionCenterAPI.summary() (sesi
+    // ini, sendiri 100% reuse LifeDashboardSummaryAPI.summary() +
+    // PriorityEngine.getItems(), Sesi 90, + FinanceIntelligence.
+    // insights()/VehicleIntelligence.insights() difilter type==='warning'
+    // — field final, bukan rule baru), UI hanya presenter. Satu
+    // panggilan (DecisionCenterHome.render()) yang di dalamnya memanggil
+    // RecommendationPanel/ActionQueue — lihat decision-center-home.js.
+    if (typeof DecisionCenterHome !== 'undefined') DecisionCenterHome.render();
 
     // Economic Intelligence Engine (fase 2, lihat
     // Economic-Intelligence-Engine-Technical-Design.md & #eieWrap di
@@ -416,6 +562,31 @@ const DashboardHub = {
     // manapun sebelum ini. Async & self-guarded (try/catch di dalam
     // EIEDashboard.render()), jadi tidak memblokir render kartu lain.
     if (typeof EIEDashboard !== 'undefined') EIEDashboard.render();
+
+    // GAP FIX (Sesi 136): Tangga Ternak Uang (#tanggaKeuanganCard, lihat
+    // tangga-keuangan.js) SEBELUM sesi ini hanya dirender lewat live-wiring
+    // renderDashboard() (modules/shared/modules-render.js) — TIDAK PERNAH
+    // dipanggil langsung dari sini walau container-nya SECARA FISIK ada di
+    // dalam #page-dashboard-hub (halaman yang fungsi render() ini yang
+    // bertanggung jawab). Sebelum Sesi 135, itu masih "cukup cepat" karena
+    // renderDashboard() sendiri dipanggil sinkron di showMain() lalu live-
+    // wiring-nya nyusul 1 frame kemudian. Sesi 135 (perf fix PIN-unlock)
+    // membuat renderDashboard() DITUNDA lewat runDeferredOrNow() saat
+    // Dashboard Hub yang aktif (kasus paling umum, krn ini landing page
+    // default) — akibatnya kartu ini kena TUNDA DUA KALI (nunggu
+    // renderDashboard() dulu baru nunggu live-wiring di dalamnya), jadi
+    // makin lama macet di "Menghitung...". Fix-nya: render LANGSUNG di sini
+    // (pola sama persis Hero/Summary/Analytics/dst di atas — kartu yang
+    // rumahnya di Dashboard Hub, dirender dari DashboardHub.render(), BUKAN
+    // dari renderDashboard()), jadi selalu ikut ter-render di frame yang
+    // SAMA dengan kartu Dashboard Hub lain begitu halaman ini tampil,
+    // apapun kondisi timing renderDashboard(). Panggilan TanggaKeuangan.
+    // render() di live-wiring renderDashboard() TETAP dibiarkan (BUKAN
+    // dihapus) — itu perlu utk skenario user TETAP di Dashboard Hub lalu
+    // simpan data dari halaman lain (live-update), pola sama persis
+    // DecisionCenterHome/UnifiedDashboardHome di atas. 100% reuse
+    // TanggaKeuangan.render() yang sudah ada, 0 rumus/mekanisme baru.
+    if (typeof TanggaKeuangan !== 'undefined') TanggaKeuangan.render();
 
     // Tab switcher "Semua Fitur"/"Pinned Widgets" (dashHubMainTabsRow) sudah
     // DIHAPUS 2026-07-17 — #dashHubMainGridCard & #dashboardHubPinnedWrap
@@ -426,7 +597,22 @@ const DashboardHub = {
     // Hub" & #dashHubSectionTabBtn-* di index.html/app_production.html).
     // Tambahan murni, dipanggil PALING AKHIR — pola "render semua dulu, baru
     // toggle visibility" yang sama.
-    this.applySectionTab(localStorage.getItem('dashHubSectionTab') || 'ringkasan');
+    // S129 (Dashboard Settings): fallback 'ringkasan' hardcode sebelumnya
+    // sekarang bisa dikonfigurasi user lewat DashboardSettings.getDefaultTab()
+    // (Pengaturan → Tampilan → ⚙️ Pengaturan Dashboard → Tab Default). Tab
+    // TERAKHIR dipakai (dashHubSectionTab) TETAP menang kalau sudah pernah
+    // ada — ini cuma mengganti nilai fallback-nya, BUKAN mekanisme baru.
+    // Guard typeof: DashboardSettings opsional, fallback ke 'ringkasan' persis
+    // seperti sebelumnya kalau modul itu belum dimuat.
+    const dashDefaultTab=(typeof DashboardSettings!=='undefined'&&typeof DashboardSettings.getDefaultTab==='function')?DashboardSettings.getDefaultTab():'ringkasan';
+    this.applySectionTab(localStorage.getItem('dashHubSectionTab') || dashDefaultTab);
+
+    // S129 (Dashboard Settings): terapkan Compact Mode/Card Density ke
+    // #page-dashboard-hub tiap kali Dashboard Hub dirender ulang — tambahan
+    // murni, tidak mengubah baris manapun di atas. Guard typeof sama pola
+    // dgn pemanggilan widget opsional lain di render() ini (mis.
+    // EIEDashboard.render()).
+    if(typeof DashboardSettings!=='undefined')DashboardSettings.applyDashDisplayPrefs();
   },
 
   // Ganti sub-tab aktif & simpan pilihannya (localStorage key:
@@ -446,7 +632,17 @@ const DashboardHub = {
       ringkasan: ['dashHubSummaryGrid', 'dashHubAnalyticsRow'],
       fitur: ['dashHubFavoritSection', 'dashHubMainGridCard'],
       widget: ['dashboardHubPinnedWrap'],
-      insight: ['lifeOSWrap', 'eieWrap', 'findashWrap'],
+      // Sesi 133: findashWrap/forecastWrap/budgetRecoWrap/cashflowProjWrap/
+      // financialGoalWrap/investPlannerWrap/debtOptimizerWrap/
+      // retirementPlannerWrap/financialHealthScoreWrap/
+      // financialRiskDashboardWrap/vehdashWrap/vehinsightWrap/vehBriefWrap/
+      // vehAlertWrap/vehInsightFeedWrap/vehAnalyticsWrap/vehDecisionWrap/
+      // vehAutomationWrap DIKELUARKAN dari grup ini (dipindah ke tab
+      // Keuangan/Car Notes masing-masing, container HTML-nya juga sudah
+      // pindah — lihat catatan render() di atas). Sisa di grup ini murni
+      // konten LINTAS-DOMAIN (Cross/LifeOS/EIE) yang tidak punya "rumah"
+      // 1 fitur tunggal.
+      insight: ['lifeOSWrap', 'eieWrap', 'crossDashWrap', 'crossBriefWrap', 'crossInsightWrap', 'personalOverviewWrap', 'crossWidgetsWrap', 'lifePriorityWrap'],
     };
     Object.keys(SECTION_GROUPS).forEach((t) => {
       SECTION_GROUPS[t].forEach((id) => {
@@ -469,6 +665,28 @@ const DashboardHub = {
       const btn = document.getElementById(`dashHubSectionTabBtn-${t}`);
       if (btn) btn.classList.toggle('active', t === tab);
     });
+  },
+
+  // Discoverability fix (audit navigasi: "Bottom nav cuma 6 slot, sebagian
+  // fitur cuma bisa ditemukan lewat search"). Dipanggil dari chip baru
+  // ".dashhub-explore-link" (di bawah search bar, index.html/
+  // app_production.html). MURNI mengarahkan ke section "Semua Fitur" yang
+  // SUDAH ADA (#dashHubMainGridCard, isi FEATURE_REGISTRY lengkap) — tidak
+  // ada FEATURE_REGISTRY/grid baru. Sengaja TIDAK mengubah default sub-tab
+  // ('ringkasan') atau default collapse ('tertutup') secara permanen —
+  // keduanya keputusan sesi lampau — cuma switch tab (via setSectionTab()
+  // publik, yang memang sudah PERSIST pilihan sama seperti klik tombol
+  // subtab manapun) + reuse toggleCardCollapse kalau memang sedang tertutup.
+  openAllFeatures() {
+    this.setSectionTab('fitur');
+    const body = document.getElementById('dashHubMainGrid-cbody');
+    if (body && body.classList.contains('collapsed')) {
+      toggleCardCollapse('dashHubMainGrid');
+    }
+    const card = document.getElementById('dashHubMainGridCard');
+    if (card && typeof card.scrollIntoView === 'function') {
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   },
 
   // Kontrak resolusi ADR-001 §4 — SATU-SATUNYA entry point publik navigasi.

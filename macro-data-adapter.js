@@ -94,6 +94,22 @@ const MacroDataAdapter = {
   },
 
   /**
+   * Riwayat snapshot 1 indikator (dari `macroHistory`, ditulis tiap
+   * `setManualValue()`/auto-fetch sukses) — dipakai utk sparkline di kartu
+   * watchlist (`eie-watchlist-card.js`). Selalu array (bisa kosong kalau
+   * indikator belum pernah disinkron sama sekali), diurut lama->baru,
+   * dipotong ke `limit` entri TERBARU saja (default 30, cukup utk 1 bulan
+   * kalau sync harian) supaya sparkline tidak perlu render ratusan titik.
+   */
+  getHistory(indicatorId, limit) {
+    if (!EIE_MACRO_INDICATORS.includes(indicatorId)) return [];
+    const store = eieGetStore();
+    const hist = (store.macroHistory && store.macroHistory[indicatorId]) || [];
+    const n = limit || 30;
+    return hist.slice(-n);
+  },
+
+  /**
    * Fase 2: auto-update 2 indikator yang punya sumber otomatis —
    * usdidr (API kurs publik, tanpa API key) & ihsg (lewat AI + web search,
    * pakai API key AI yang SUDAH dikonfigurasi user di Pengaturan → Asisten
