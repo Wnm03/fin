@@ -79,8 +79,8 @@
 <link rel="preconnect" href="https://accounts.google.com" crossorigin>
 <link rel="dns-prefetch" href="https://accounts.google.com">
 <title>Keluarga W</title>
-<link rel="stylesheet" href="styles.css?v=564">
-<link rel="stylesheet" href="modern-ui-layer.css?v=564">
+<link rel="stylesheet" href="styles.css?v=585">
+<link rel="stylesheet" href="modern-ui-layer.css?v=585">
 <script>
 /* Debug console (Eruda) — aktifkan sekali lewat ?debug=1 di URL, nempel via localStorage.
    Matikan lagi lewat ?debug=0. Tidak aktif buat user biasa. */
@@ -133,8 +133,8 @@ b.appendChild(closeBtn);
 }catch(_e){ console.error('Gagal tampilkan banner error modul:',_e); }
 };
 </script>
-<script src="app-bundle-a.min.js?v=564" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
-<script src="modules/shared/smoke-test.js?v=564" defer></script>
+<script src="app-bundle-a.min.js?v=585" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
+<script src="modules/shared/smoke-test.js?v=585" defer></script>
 <link rel="manifest" id="pwaManifestLink" href="manifest.json">
 </head>
 <body data-theme="fresh">
@@ -1319,6 +1319,35 @@ b.appendChild(closeBtn);
       </div>
     </div>
     <div class="findash-grid" id="vehanalyticsGrid"></div>
+  </div>
+  <!-- FUEL INTELLIGENCE CARD (TASK-141). Section di dalam Dashboard Hub,
+       diisi oleh FuelCard.render() (dipanggil dari renderCnTab(), modules-
+       render.js), 100% reuse FuelIntelligenceEngine.vehicleInsight() (yang
+       sendiri 100% reuse VehicleFuelTrendSummary/VehicleReminder). UI hanya
+       presenter, tidak ada rumus baru di sini. Silent (disembunyikan) kalau
+       belum ada kendaraan aktif/data. -->
+  <div class="dashhub-wrap card u-mb12" id="fuelIntelWrap">
+    <div id="fuelIntelBody"></div>
+  </div>
+  <!-- FUEL DASHBOARD (TASK-150). Section di dalam Dashboard Hub, diisi
+       oleh FuelDashboard.render() (dipanggil dari renderCnTab(), modules-
+       render.js, + refresh dari FuelBarCorrection.save()), 100% reuse
+       FuelInsightEngine.getSummary() + FuelModal.open()/
+       FuelBarCorrection.open() yang sudah ada. UI hanya presenter, tidak
+       ada rumus baru di sini. Silent (disembunyikan) kalau belum ada
+       kendaraan sama sekali. -->
+  <div class="dashhub-wrap card u-mb12" id="fuelDashWrap">
+    <div id="fuelDashBody"></div>
+  </div>
+  <!-- MULTI VEHICLE FUEL COMPARISON (TASK-154). Section di dalam Dashboard
+       Hub, diisi oleh FuelCompare.render() (dipanggil dari renderCnTab(),
+       modules-render.js, + refresh otomatis tiap ada transaksi BBM/servis),
+       100% reuse FuelInsightEngine.getSummary() + FuelFleetSelector.
+       selectVehicle() + FuelModal.open() yang sudah ada. UI hanya
+       presenter, tidak ada rumus baru di sini. Silent (disembunyikan)
+       kalau belum ada kendaraan sama sekali. -->
+  <div class="dashhub-wrap card u-mb12" id="fuelCompareWrap">
+    <div id="fuelCompareBody"></div>
   </div>
   <!-- VEHICLE DECISION ENGINE FOUNDATION (Sesi 82, Batch 7). Section di
        dalam Dashboard Hub, diisi oleh VehicleDecisionPresenter.render()
@@ -3312,7 +3341,7 @@ b.appendChild(closeBtn);
 <script>document.write(MODAL_HTML[71]);</script><!-- modal:billMultiScanModal (Scan Rincian Tagihan Multi Item) -->
 <script>document.write(MODAL_HTML[72]);</script><!-- modal:universalOcrModal (Scan Universal Bank/E-Wallet/Bibit/Jago) -->
 
-<script src="app-bundle-b.min.js?v=564" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
-<script src="modules/finance/tangga-keuangan.js?v=564"></script>
+<script src="app-bundle-b.min.js?v=585" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
+<script src="modules/finance/tangga-keuangan.js?v=585"></script>
 </body>
 </html>

@@ -2922,3 +2922,64 @@ node scripts/build.js kw139-fix-dashboard-hub-goto-subtab
 # ✓ index.html & app_production.html sudah identik.
 # Versi baru: ?v=564 / kw-cache-v564
 ```
+
+---
+
+# Files Changed — Sesi 140: Bugfix Kartu Beranda Tidak Muncul Lagi Setelah Dinyalakan Ulang
+
+Baseline: hasil Sesi 139 (`?v=564`), `node --test tests/*.test.js`
+62/62 PASS sebelum sesi ini (skop test yang tersedia di ZIP kerja ini).
+
+Total file kode yang berubah: **1** (`modules/shared/modules-render.js`).
+Total file baru: **1** (`tests/dash-card-show-hide.test.js`). Total file
+dibuat ulang otomatis oleh `scripts/build.js` (bukan diedit manual):
+`app-bundle-a.min.js`, `app-bundle-b.min.js`, `index.html`,
+`app_production.html`, `sw.js`, `docs/FILE-MAP.md`, + 6 file konstanta
+versi source.
+
+| File | Jenis | Ringkasan |
+|---|---|---|
+| `modules/shared/modules-render.js` | Diubah (aditif) | Tambah `showDashCardEl(elId)` — kebalikan simetris persis `hideDashCardEl()` (melepas `classList('u-dnone')` DAN inline `style.display`), ditempatkan langsung setelah definisi `hideDashCardEl()`. Loop `DASH_RENDER_ORDER` di `renderDashboard()`: +1 baris `showDashCardEl(cardDef.elId);` dipanggil SETELAH guard `isDashCardOn()` & SEBELUM `cardDef.render(...)`. 0 baris lama dihapus/diubah selain penambahan ini. |
+| `tests/dash-card-show-hide.test.js` | **Baru** | 7 test: `hideDashCardEl()` (class+inline style ditambahkan), `showDashCardEl()` (keduanya dilepas — kontrak inti bugfix ini, idempotent, aman di elemen tidak ada/tidak pernah disembunyikan), dan 1 test integrasi yang memverifikasi urutan pemanggilan nyata di source (`isDashCardOn` guard → `showDashCardEl` → `cardDef.render`) di dalam loop `renderDashboard()`. |
+| `CHANGELOG.md` | Diubah | Entry Sesi 140 ditambahkan di paling atas (konvensi newest-first file ini, riwayat lama tidak diubah). |
+| `FILES-CHANGED.md` | Diubah | Dokumen ini (aditif, append). |
+| `docs/CHECKPOINT.md` | Diubah | Current Session diperbarui ke Sesi 140. |
+| `docs/NEXT_SESSION.md` | Diubah | Sinkronisasi status Batch 14 & baseline versi terbaru. |
+
+## File yang TIDAK berubah (ditegaskan)
+
+- `hideDashCardEl()` — 0 baris disentuh, `showDashCardEl()` murni fungsi
+  BARU yang simetris, bukan modifikasi fungsi lama.
+- `DASH_CARD_DEFS`/`DASH_RENDER_ORDER`/`DASH_CARD_BY_KEY`,
+  `isDashCardOn()`/`toggleDashCardPref()`/`setAllDashCardPrefs()`,
+  `renderDashCardPrefsUI()` — 0 baris disentuh.
+- `dashboard-hub-registry.js` (`FEATURE_REGISTRY`, termasuk field
+  `dashKey`) — 0 baris disentuh.
+- `dashboard-hub.js` (`dashHubNavigateToFeature`/
+  `DASHHUB_GOTO_SECTION_MAP`, bugfix Sesi 139) — 0 baris disentuh sesi
+  ini, area berbeda (sub-tab Dashboard Hub vs inline style kartu
+  opsional).
+- `index.html`, `app_production.html` — tidak diedit manual (hanya `?v=`
+  disinkronkan otomatis oleh `scripts/build.js`, 0 markup berubah).
+- Seluruh 62 test lama — tidak satu pun diubah, tetap 100% lulus tanpa
+  modifikasi assertion.
+
+## Hasil test
+
+```
+node --test tests/dash-card-show-hide.test.js
+# tests 7 / pass 7 / fail 0
+
+node --test tests/*.test.js
+# tests 69 / pass 69 / fail 0
+```
+
+## Build
+
+```
+node scripts/build.js kw140-fix-dashcard-toggle-inline-style
+# ✓ Linter bawaan "pola bug u-dnone vs style.display" lolos bersih
+# ✓ Sintaks kedua bundle valid (node --check lolos)
+# ✓ index.html & app_production.html sudah identik.
+# Versi baru: ?v=565 / kw-cache-v565
+```

@@ -1,3 +1,1081 @@
+# Changelog — Sesi 154b: Multi Vehicle Fuel Comparison (TASK-154)
+
+## Konteks
+
+Task baru dari user (STATUS=READY): buat comparison view untuk SEMUA
+kendaraan, reuse `FuelInsightEngine`/`FuelFleetSelector`/
+`FuelCostAnalytics`/`FuelPredictionEngine`/`FuelMaintenanceEngine`
+existing, dengan syarat eksplisit: JANGAN ubah engine yang sudah ada,
+JANGAN storage baru, JANGAN duplikasi kalkulasi, presentation only.
+Menyusul langsung setelah TASK-150 (Fuel Dashboard Integration, 1
+kendaraan) selesai di sesi yang sama — TASK-154 memperluas jadi
+tampilan SELURUH armada sekaligus, tetap 100% reuse
+`FuelInsightEngine.getSummary()` per kendaraan (0 rumus baru
+dihitung ulang; `FuelCostAnalytics`/`FuelPredictionEngine`/
+`FuelMaintenanceEngine` sudah 100% dibungkus lewat `getSummary()`,
+tidak dipanggil langsung di modul baru ini).
+
+## Perubahan
+
+**1 file baru** (presenter, pola SAMA PERSIS `modules/vehicle/
+fuel-dashboard.js`):
+
+- `modules/vehicle/fuel-compare.js` (`FuelCompare`) — `render(sortKey?)`
+  mengumpulkan `FuelInsightEngine.getSummary(vehicleId)` utk SETIAP
+  kendaraan di `D.vehicles` (kendaraan yang `getSummary()`-nya
+  `{ok:false}` dilewati, pola sama persis
+  `FuelFleetSelector._candidates()`), lalu render 1 baris per
+  kendaraan: nama, Fuel Health Score, Remaining Fuel, Estimated
+  Distance, Monthly Fuel Cost, Fuel Efficiency, Maintenance Risk,
+  Highest Priority Insight — SEMUA field dibaca apa adanya dari
+  `summary`, 0 kalkulasi baru.
+  - `FuelFleetSelector.selectVehicle()` (100% reuse, 0 logic
+    seleksi/prioritas baru ditulis di sini) dipakai HANYA utk badge
+    "⚠️ Prioritas Tertinggi" pada kendaraan dgn insight paling urgent
+    fleet-wide.
+  - `openVehicle(vehicleId)` — tap 1 baris kendaraan membuka
+    `FuelModal.open(vehicleId)` (SUDAH ADA, TASK-141) apa adanya,
+    termasuk penanganan "Invalid vehicle" (`FuelModal.open()` sendiri
+    sudah toast + tidak jadi buka modal kalau vehicleId tidak
+    ditemukan).
+  - `setSort(key)`/`_sortRows()` — sort by Vehicle Name/Health
+    Score/Monthly Cost/Remaining Fuel, tap key yang sama membalik arah
+    (asc↔desc). Default: `healthScore` ASC (= Highest Health Risk ->
+    Lowest, karena healthScore rendah berarti risiko tinggi). Nilai
+    `null`/`undefined` selalu ditaruh di akhir hasil sort, apa pun
+    arahnya.
+  - Wrap `#fuelCompareWrap` disembunyikan HANYA kalau: 0 kendaraan
+    sama sekali ("No vehicles"), `FuelInsightEngine` belum dimuat, atau
+    `getSummary()` gagal utk SEMUA kendaraan yang dicoba ("Invalid
+    vehicle" utk seluruh armada) — tidak pernah throw ke pemanggil.
+
+**3 file diubah** (HANYA wiring, 0 logic baru):
+
+- `scripts/build.js` — 1 baris registrasi `modules/vehicle/
+  fuel-compare.js`, ditaruh setelah `fuel-dashboard.js` (dependency:
+  `FuelInsightEngine`/`FuelFleetSelector`/`FuelModal` semua sudah
+  dimuat sebelum titik itu).
+- `modules/shared/modules-render.js` — 1 baris `FuelCompare.render()`
+  ditambahkan di `renderCnTab()`, tepat di sebelah `FuelDashboard.
+  render()` yang sudah ada. Karena `renderCnTab()` dipanggil ulang
+  tiap ada perubahan data kendaraan (termasuk setelah transaksi
+  BBM/servis tersimpan), refresh "after fuel transaction"/"after
+  maintenance" otomatis terjadi lewat baris ini — 0 hook refresh baru
+  ditambahkan secara terpisah.
+- (tidak ada perubahan lain di file existing — `FuelInsightEngine`/
+  `FuelFleetSelector`/`FuelCostAnalytics`/`FuelPredictionEngine`/
+  `FuelMaintenanceEngine`/`FuelModal` TIDAK disentuh sama sekali)
+
+**Markup HTML** (identik di kedua file, diverifikasi lewat build):
+
+- `index.html` & `app_production.html` — `<div id="fuelCompareWrap">
+  <div id="fuelCompareBody"></div></div>` ditambahkan tepat setelah
+  blok `#fuelDashWrap` (Dashboard Hub, tab Car Notes).
+
+**1 file test baru**: `tests/fuel-compare.test.js` (19 test) —
+mencakup seluruh skenario regresi yang diminta: Single vehicle,
+Multiple vehicles, No vehicles, Invalid vehicle, Sorting (default +
+4 kunci sortable + toggle arah), Vehicle switch (`openVehicle()` ->
+`FuelModal.open()`), Refresh after fuel transaction, Refresh after
+maintenance, plus reuse `FuelFleetSelector` (badge prioritas).
+
+## Hasil
+
+- Build: `kw154-fuel-comparison-fleet-view` (`?v=585`)
+- Test: `node --test tests/*.test.js` → **323/323 PASS**, 0 fail
+  (+19 test baru dari 304 sebelumnya)
+- `index.html` == `app_production.html`: ya (diverifikasi via
+  `build.js`)
+- `FuelInsightEngine`/`FuelFleetSelector`/`FuelCostAnalytics`/
+  `FuelPredictionEngine`/`FuelMaintenanceEngine`/`D.vehicles`/
+  `D.bbmLogs`/`D.servisLogs` (data & logic) TIDAK disentuh sama
+  sekali sesi ini.
+
+---
+
+# Changelog — Sesi 154: Fuel Dashboard Integration (TASK-150)
+
+## Konteks
+
+`TASK-150 AUDIT` diberikan dulu (verifikasi source-only, mengabaikan
+`AI_STATE.md`/`AI_TASK_QUEUE.md`/`CHANGELOG.md`/klaim chat sebelumnya):
+mengonfirmasi seluruh 8 item checklist ("modules/vehicle/
+fuel-dashboard.js", registrasi `scripts/build.js`,
+`FuelDashboard.render()` dari `modules-render.js`, refresh setelah
+`FuelBarCorrection.save()`, markup `#fuelDashWrap`/`#fuelDashBody` di
+kedua HTML, `tests/fuel-dashboard.test.js`, regression test) memang
+belum ada sama sekali di repo — hasil audit: `IN_PROGRESS`, semua 8
+item hilang. Menyusul itu, task implementasi TASK-150 diberikan ulang
+dgn syarat eksplisit: reuse arsitektur existing, JANGAN ubah
+`FuelInsightEngine`/`FuelFleetSelector`, JANGAN storage baru, JANGAN
+duplikasi kalkulasi, presentation layer only.
+
+## Perubahan
+
+**1 file baru** (presenter, pola SAMA PERSIS `modules/vehicle/
+fuel-card.js`):
+
+- `modules/vehicle/fuel-dashboard.js` (`FuelDashboard`) —
+  `render(vehicleId?)` 100% REUSE `FuelInsightEngine.getSummary()`:
+  `fuel` (currentBar/maxBar/remainingLiter/fuelPercent/reserve) utk
+  gauge BBM, `healthScore` utk skor kesehatan, `highestInsight` utk
+  insight prioritas tertinggi — SEMUA dibaca apa adanya, 0 rumus/skoring
+  baru. CTA "📊 Lihat Detail"/"⚙️ Koreksi" reuse `FuelModal.open()`/
+  `FuelBarCorrection.open()` (data-action, pola SAMA PERSIS baris CTA
+  `fuel-card.js`). Switcher multi-kendaraan (`_vehicleChips()`) pola
+  sama persis `renderDashServisVehChips()` (`modules-render.js`).
+  Kendaraan aktif dikelola SENDIRI (`this.curVehicleId`, pola sama
+  `FuelModal.curVehicleId`/`FuelBarCorrection.curVehicleId`) supaya
+  `FuelFleetSelector` maupun variabel global `curVehicleId` (dipakai tab
+  Car Notes) TIDAK tersentuh sama sekali. `switchVehicle(vehicleId)`
+  murni delegasi ke `render()`.
+  - `render()` MENYEMBUNYIKAN `#fuelDashWrap` HANYA kalau: 0 kendaraan
+    sama sekali, `FuelInsightEngine` belum dimuat, atau
+    `getSummary()` gagal utk kendaraan yang dicoba. `vehicleId` yang
+    tidak valid ("Invalid vehicle" — mis. kendaraan sudah dihapus)
+    FALLBACK ke kendaraan pertama, BUKAN menyembunyikan dashboard.
+
+**3 file diubah** (HANYA wiring, 0 logic baru):
+
+- `scripts/build.js` — 1 baris registrasi `modules/vehicle/
+  fuel-dashboard.js`, ditaruh setelah `fuel-notif-bridge.js` (dependency:
+  `FuelInsightEngine`/`FuelModal`/`FuelBarCorrection` semua sudah dimuat
+  sebelum titik itu).
+- `modules/shared/modules-render.js` — 1 baris `FuelDashboard.render()`
+  ditambahkan di `renderCnTab()`, tepat di sebelah `FuelCard.render()`
+  yang sudah ada.
+- `modules/vehicle/fuel-intelligence-ui.js` — `FuelBarCorrection.save()`
+  dapat 1 baris refresh baru (`FuelDashboard.render(vid)`), ditambahkan
+  setelah blok refresh `FuelCard`/`FuelModal` yang sudah ada, pola sama
+  persis.
+
+**Markup HTML** (identik di kedua file, diverifikasi lewat build):
+
+- `index.html` & `app_production.html` — `<div id="fuelDashWrap"><div
+  id="fuelDashBody"></div></div>` ditambahkan tepat setelah blok
+  `#fuelIntelWrap` yang sudah ada (di dalam Dashboard Hub / Car Notes).
+
+**1 file test baru** (18 test):
+
+- `tests/fuel-dashboard.test.js` — smoke render, no vehicle (wrap
+  disembunyikan), `FuelInsightEngine` belum dimuat, `getSummary()`
+  gagal (tidak throw), single vehicle (switcher tersembunyi), multiple
+  vehicles (switcher + kendaraan aktif ditandai), invalid vehicle
+  (fallback kendaraan pertama), remaining fuel (gauge bar/liter/
+  persen + peringatan reserve + placeholder kalau `fuel` null), health
+  score (warna + dilewati kalau null), highest insight (warna prioritas
+  + dilewati kalau null), CTA reuse `FuelModal`/`FuelBarCorrection` (0
+  class baru), refresh after refill (render ulang mencerminkan data
+  baru), refresh after correction (`FuelBarCorrection.save()` memanggil
+  `FuelDashboard.render(vid)`), vehicle switch (`switchVehicle()`
+  memperbarui body & `curVehicleId`).
+
+## Validasi
+
+- Build: `node scripts/build.js kw154-fuel-dashboard-integration` — versi
+  naik ke `?v=584`, sintaks kedua bundle lolos `node --check`,
+  `index.html`/`app_production.html` dikonfirmasi identik oleh build
+  script sendiri.
+- Test: `node --test tests/*.test.js` — 304/304 pass (286 lama + 18
+  baru).
+- ZIP checkpoint dibuat & diverifikasi (lihat `AI_STATE.md` § Current
+  Step Sesi 154 utk detail lengkap).
+
+## Batasan yang dijaga
+
+`FuelInsightEngine` — 0 baris diubah. `FuelFleetSelector` — 0 baris
+diubah, 0 dependency baru ke situ (dashboard mengelola kendaraan
+aktifnya sendiri). 0 storage baru (`FuelDashboard` tidak pernah menulis
+ke `D`). 0 duplikasi kalkulasi (seluruh angka dibaca dari
+`FuelInsightEngine.getSummary()` apa adanya). `reminder-notif.js`/
+`FuelNotifBridge` (TASK-153) TIDAK disentuh — target klik notifikasi
+masih `FuelModal`, di luar scope TASK-150 (lihat `AI_STATE.md` § Known
+Blocker).
+
+---
+
+# Changelog — Sesi 153: Fuel Notification & Reminder (TASK-153)
+
+## Konteks
+
+Task baru dari user: "Integrate Fuel Intelligence with the existing
+Notification system", dgn syarat eksplisit: reuse Notification Engine
+existing, JANGAN buat sistem notifikasi baru, JANGAN duplikasi reminder
+logic, JANGAN ubah rumus `FuelInsightEngine`, 0 storage baru. Behavior
+wajib: notifikasi otomatis utk (1) fuel reserve reached, (2) fuel
+efficiency drops significantly, (3) maintenance affects fuel efficiency,
+(4) predicted fuel refill reminder — dan notifikasi membuka Fuel
+Dashboard existing.
+
+## Audit sebelum kode diubah
+
+Satu-satunya "Notification Engine" di project ini adalah
+`reminder-notif.js` (`fireNotif()` + `checkAndFireReminders()` + dedup
+harian `kw_notif_fired` di `localStorage`) — sudah dipakai tagihan/LDR/
+pajak-kendaraan/SIM/SPT (ad-hoc, baca `D` langsung) DAN servis/estimasi-
+BBM kendaraan lewat `VehicleNotifBridge` (Sesi 84) — sebuah translator
+murni yang HANYA menerjemahkan sinyal existing (`VehicleReminder`
+severity `'overdue'`) jadi `{fireKey,title,body}`, tidak pernah memanggil
+`fireNotif()`/`Notification`/`localStorage` sendiri.
+
+`FuelInsightEngine` (TASK-149/150A) SUDAH punya seluruh 4 sinyal yang
+dibutuhkan task ini — insight `reserve-fuel`/`fuel-efficiency`/
+`maintenance`/`next-refuel`, masing-masing sudah punya `priority`
+(CRITICAL/HIGH/MEDIUM/LOW/INFO) yang SUDAH dihitung dari
+`FuelGaugeEngine`/`FuelMaintenanceEngine`/`FuelPredictionEngine` — tapi
+BELUM PERNAH ditembak jadi notifikasi push. Itu satu-satunya gap yang
+ditutup sesi ini.
+
+Ditemukan juga: **TASK-150 (Fuel Dashboard Integration)**, UI-nya sendiri
+masih `STOPPED`/belum dikerjakan (lihat `AI_TASK_QUEUE.md`/`AI_STATE.md`
+§ Sesi 151). Satu-satunya tampilan BBM per-kendaraan yang SUDAH ADA di
+aplikasi ini adalah `FuelModal` (`#fuelIntelModal`, Fuel Intelligence
+Modal, TASK-141) — dipakai sbg target "existing Fuel Dashboard" task ini
+(bukan dashboard baru yang dibuat sesi ini). Kalau TASK-150 dikerjakan
+nanti, target klik notifikasi ini perlu diarahkan ulang.
+
+## Perubahan
+
+**1 file baru** (translator murni, pola SAMA PERSIS
+`modules/vehicle/vehicle-notif-bridge.js`):
+
+- `modules/vehicle/fuel-notif-bridge.js` (`FuelNotifBridge`) —
+  `items(vehicleId?, firedIds?)` memanggil `FuelInsightEngine.
+  getInsights(vehicleId)` APA ADANYA (0 rumus reserve/efisiensi/risiko/
+  prediksi baru dihitung ulang) per kendaraan, filter ke 4 insight id yang
+  "actionable" lewat `NOTIFY_RULES`:
+  - `reserve-fuel` priority `CRITICAL` → *Fuel reserve reached*
+  - `fuel-efficiency` priority `CRITICAL`/`HIGH` (degradationDetected) →
+    *Fuel efficiency drops significantly*
+  - `maintenance` priority `CRITICAL` (riskLevel `'tinggi'` — overdue
+    servis relevan BBM DAN degradasi efisiensi terdeteksi BERSAMAAN,
+    persis definisi *Maintenance affects fuel efficiency*)
+  - `next-refuel` priority `CRITICAL`/`HIGH` (estimatedRemainingDays<=3)
+    → *Predicted fuel refill reminder*
+
+  Insight lain (`fuel-consumption`/`monthly-cost`/`prediction`, selalu
+  INFO) & priority MEDIUM/LOW/INFO pada 4 insight di atas SENGAJA TIDAK
+  ditembak — pola sama `VehicleNotifBridge` (hanya severity `'overdue'`
+  yang aktif menembak, bukan `'due-soon'`/`'info'`) supaya notifikasi
+  tetap actionable, bukan noise harian.
+
+**2 file diubah** (HANYA wiring, 0 logic reminder baru):
+
+- `reminder-notif.js`:
+  - `fireNotif(title,body,tag,onClick)` — 1 parameter opsional BARU
+    (additive, 100% backward compatible — 2 caller lama,
+    `requestNotifPermission()`/`checkAndFireReminders()` blok lama, tetap
+    jalan tanpa perubahan) supaya klik notifikasi bisa jalankan aksi.
+  - `checkAndFireReminders()` — 1 blok baru (pola SAMA PERSIS blok
+    `VehicleNotifBridge` yang sudah ada tepat di atasnya) yang panggil
+    `FuelNotifBridge.items(undefined, fired.ids)`, tembak tiap item lewat
+    `fireNotif()` yang SAMA (0 mekanisme dedup baru — `kw_notif_fired`
+    yang SUDAH ADA dipakai apa adanya), `onClick` memanggil
+    `FuelModal.open(vehicleId)` (guard `typeof`, aman kalau `FuelModal`
+    belum dimuat).
+- `scripts/build.js` — 1 baris baru, daftarkan
+  `modules/vehicle/fuel-notif-bridge.js` tepat setelah
+  `fuel-fleet-selector.js`.
+
+```js
+function fireNotif(title,body,tag,onClick){
+if(!('Notification' in window)||Notification.permission!=='granted')return;
+try{
+const n=new Notification(title,{body,tag,renotify:!!tag});
+n.onclick=()=>{window.focus();n.close();if(typeof onClick==='function'){try{onClick();}catch(e){console.warn('Gagal jalankan aksi klik notifikasi:',e);}}};
+}catch(e){console.warn('Gagal kirim notifikasi:',e);}
+}
+```
+
+```js
+if(typeof FuelNotifBridge!=='undefined'&&typeof FuelNotifBridge.items==='function'){
+FuelNotifBridge.items(undefined,fired.ids).forEach((n)=>{
+fireNotif(n.title,n.body,n.fireKey,()=>{if(typeof FuelModal!=='undefined'&&typeof FuelModal.open==='function')FuelModal.open(n.vehicleId);});
+fired.ids.push(n.fireKey);
+});
+}
+```
+
+## Tidak diubah
+
+0 rumus `FuelInsightEngine`/`FuelGaugeEngine`/`FuelPredictionEngine`/
+`FuelMaintenanceEngine` disentuh, 0 storage baru dibuat, 0 sistem
+notifikasi baru (100% reuse `Notification` browser API + `fireNotif()` +
+`kw_notif_fired`), 0 reminder logic diduplikasi (`FuelNotifBridge` murni
+translator, sama seperti `VehicleNotifBridge`).
+
+## Hasil verifikasi
+
+```
+node --test tests/*.test.js
+# 286/286 pass (0 fail) — +11 test baru tests/fuel-notif-bridge.test.js
+#   (reserve notification CRITICAL vs INFO, efficiency warning
+#   CRITICAL/HIGH vs MEDIUM/LOW/INFO, maintenance reminder CRITICAL vs
+#   MEDIUM/LOW, prediction reminder CRITICAL/HIGH vs MEDIUM/LOW, insight
+#   tipe lain tidak pernah ditembak, no duplicate notifications via
+#   firedIds, vehicle switch/filter per kendaraan + multi-kendaraan,
+#   kendaraan tanpa insight valid dilewati tanpa menggagalkan kendaraan
+#   lain, kendaraan tanpa id dilewati, FuelInsightEngine belum dimuat,
+#   0 kendaraan)
+
+node scripts/build.js kw153-fuel-notification-reminder
+# ✅ Build selesai & lolos cek sintaks bundle (node --check), ?v=583
+#   (naik dari ?v=582)
+# index.html & app_production.html identik (0 diff)
+# grep app-bundle-b.min.js: FuelNotifBridge terdaftar
+
+node --test tests/*.test.js   # ulang setelah build, tetap 286/286 pass
+```
+
+Checkpoint ZIP: `kw_release_sesi153_fuel-notification-reminder_v583.zip`.
+
+---
+
+# Changelog — Sesi 152: Fuel Finance Integration (TASK-152)
+
+## Konteks
+
+Task baru dari user: "Integrate Fuel Intelligence with the Finance
+module. Every fuel transaction should automatically enrich Fuel Analytics
+without creating duplicate transactions", dgn syarat eksplisit: TIDAK
+boleh ada transaksi kedua, TIDAK boleh duplikat riwayat keuangan, TIDAK
+mengubah record historis, TIDAK redesign UI, TIDAK mengubah rumus
+`FuelInsightEngine`, wajib reuse arsitektur yang sudah ada (Finance
+transaction engine, `FuelCostAnalytics`, `FuelInsightEngine`,
+`FuelPredictionEngine`, `FuelMaintenanceEngine`, `FuelFleetSelector`).
+
+## Audit sebelum kode diubah
+
+Ditemukan bahwa SEBAGIAN BESAR requirement task ini **sudah terpenuhi**
+dari sesi-sesi sebelumnya (149-151B), 0 gap besar:
+
+- **Tidak ada transaksi ganda**: `tx-bbm.js` (`recordBbmLog()`) +
+  `car-notes.js` (`BBM._saveInner()`) SUDAH menghubungkan 1 transaksi
+  Finance (`D.transactions`) <-> 1 log BBM (`D.bbmLogs`) via
+  `txLinkId`/`bbmLinkId`, baik dari form Transaksi umum (centang "Sinkron
+  BBM") maupun modal "Catat Isi BBM" khusus Car Notes. Edit tidak pernah
+  membuat baris baru (`Object.assign` di tempat), hapus menghapus
+  keduanya sekaligus (tidak ada log/transaksi yatim).
+- **Refresh tanpa reload**: `renderCnTab()` (SUDAH ADA, dipanggil dari
+  `_saveTxInner()`/`BBM._saveInner()`/`delTx()`/`BBM.del()`) SUDAH
+  merender ulang `FuelCard` (Fuel Dashboard) dan `VehicleDailyBrief`
+  (AI Daily Briefing per-kendaraan, TASK-151B) begitu transaksi BBM
+  tersimpan — Fuel Analytics (`FuelAnalytics.render()`, dalam
+  `FuelModal`) sendiri selalu baca `D` langsung tiap dibuka, jadi otomatis
+  konsisten tanpa perlu push refresh terpisah.
+
+## GAP yang ditemukan & ditutup
+
+Satu inkonsistensi: jalur `_saveTxInner()` (`transaksi.js`, transaksi
+umum) SUDAH memancarkan `AIBus.emit("finance.updated", {...})` tiap
+transaksi tersimpan (dipakai `AIService.wireEvents()` -> `AIDecision.
+decide()`, SUDAH ADA sejak Smart Delivery Engine), TAPI jalur
+`BBM._saveInner()` (`car-notes.js`, modal "Catat Isi BBM" — jalur UTAMA
+user mencatat BBM dari Car Notes) **tidak pernah** memancarkan event yang
+sama. Akibatnya AI Decision/Service tidak pernah "tahu" ada transaksi BBM
+baru kalau user mencatatnya lewat Car Notes, bukan lewat form Transaksi
+umum — padahal keduanya sama-sama "fuel transaction tersimpan".
+
+## Perubahan
+
+Satu file diubah: `car-notes.js`. Tepat 1 baris baru ditambahkan setelah
+`save();closeModal('bbmModal');renderCnTab();renderDashboard();
+renderKeuangan();` yang SUDAH ADA di akhir `BBM._saveInner()`:
+
+```js
+if(typeof AIBus!=="undefined")AIBus.emit("finance.updated",{txId,category:resolveVehicleTxCategory(veh),type:'expense',amount:cost,kind:'bbm'});
+```
+
+Payload bentuk dasarnya (`txId`/`category`/`type`/`amount`) SAMA PERSIS
+pola `_saveTxInner()` di `transaksi.js` — tambahan `kind:'bbm'` (pola
+sama dgn `kind:"cicilan-baru"`/`"langganan"` yang sudah dipakai
+`transaksi.js` sendiri) supaya listener bisa membedakan asal event kalau
+perlu, tanpa mengubah bentuk dasar payload yang sudah dikonsumsi
+`AIService`. Guard `typeof AIBus!=="undefined"` (pola sama persis semua
+pemanggilan `AIBus.emit` lain di project ini) — kalau `AIBus` belum
+dimuat, `BBM._saveInner()` tetap jalan normal, tidak throw.
+
+**TIDAK ADA transaksi kedua ditambahkan, TIDAK ADA riwayat keuangan
+diduplikasi, TIDAK ADA record historis diubah, TIDAK ADA UI di-redesign,
+`FuelInsightEngine`/`FuelCostAnalytics`/`FuelPredictionEngine`/
+`FuelMaintenanceEngine`/`FuelFleetSelector` TIDAK disentuh sama sekali** —
+murni 1 baris pemancar event, reuse `AIBus` yang sudah ada apa adanya.
+
+## Test baru
+
++7 test baru `tests/tx-bbm-finance-integration.test.js`:
+single fuel transaction (1x simpan -> 1 transaksi + 1 log, saling
+terhubung), multiple fuel transactions (2x simpan -> 2 transaksi + 2 log,
+tidak silang), finance edit (edit log existing -> transaksi lama
+di-update di tempat, TIDAK ada baris baru), dashboard/AI daily brief
+refresh (`renderCnTab`/`renderDashboard`/`renderKeuangan` terpanggil),
+`AIBus.emit("finance.updated")` terpancar 1x per simpan (2x utk 2x
+simpan, tidak digabung/di-debounce) dgn payload yang benar, dan guard
+`AIBus` belum dimuat (tidak throw).
+
+Build `kw152-fuel-finance-integration` (`?v=582`, naik dari `?v=581`).
+Test naik dari 268 ke 275 pass (2x — sebelum & sesudah build).
+
+## Hasil verifikasi
+
+```
+node --test tests/*.test.js
+# 275/275 pass (268 lama + 7 baru, 0 regresi)
+
+node scripts/build.js kw152-fuel-finance-integration
+# ✅ Build selesai & lolos cek sintaks bundle (node --check), ?v=582
+# index.html & app_production.html identik (0 diff)
+```
+
+---
+
+
+
+## Konteks
+
+Menutup TASK-151 (Sesi 151, `STOPPED`) sekarang gap-nya (pemilihan
+kendaraan) sudah ditutup TASK-151A (`FuelFleetSelector.selectVehicle()`).
+Task ini murni WIRING presentasi — mengintegrasikan `FuelFleetSelector`
+ke `VehicleDailyBrief` (AI Daily Briefing kendaraan yang sudah ada,
+`modules/vehicle/vehicle-daily-brief.js`, container `#vehBriefBody`).
+
+## Perubahan
+
+Satu file diubah: `modules/vehicle/vehicle-daily-brief.js`. Method baru
+`_fuelBriefHtml()` + dipanggil dari `render()` (append ke `innerHTML`
+yang sudah ada, container/mekanisme render TIDAK berubah). Alur:
+
+1. Panggil `FuelFleetSelector.selectVehicle()` — **satu-satunya** sumber
+   pemilihan kendaraan (`FuelFleetSelector` TIDAK disentuh). Kalau `null`
+   (tidak ada insight sama sekali) atau modul belum dimuat, section Fuel
+   TIDAK ditambahkan (rule task #3) — silent, bukan error/empty-state.
+2. Kalau ada hasil, tampilkan **satu** briefing Fuel dari `summary`/
+   `insight` (= `summary.highestInsight`) apa adanya: nama kendaraan
+   (lookup by-id TAMPILAN saja, id sudah final dari selector — 0 logic
+   seleksi baru), Fuel Health (`healthScore`), Sisa BBM (`fuel.
+   remainingLiter`/`fuelPercent`), Estimasi Jarak Tersisa
+   (`remainingDistance`), Biaya BBM Bulanan (`monthlyCost`, format via
+   `fmt()` global SUDAH ADA), Risiko Perawatan (`maintenanceRisk`),
+   insight prioritas tertinggi (`insight.title`/`description`), dan
+   Rekomendasi — **`insight.recommendation` dipakai LANGSUNG**, 0 kalimat
+   rekomendasi baru disusun (rule task "Never generate new
+   recommendations").
+3. `FuelFleetSelector.selectVehicle()` dibungkus `try/catch` (presenter
+   tidak pernah throw ke pemanggil) — kendaraan invalid/`getSummary()`
+   gagal sudah ditangani `FuelFleetSelector` sendiri (balikin `null`),
+   di sini cuma jaga-jaga tambahan.
+
+0 rumus/skoring/logic prioritas/logic seleksi kendaraan baru ditulis di
+sini — murni presentasi dari data yang `FuelFleetSelector`/
+`FuelInsightEngine` SUDAH sediakan. `FuelInsightEngine` dan
+`FuelFleetSelector` **TIDAK disentuh sama sekali**. `UnifiedAIBriefing`
+(briefing finance+vehicle gabungan, `modules/cross/unified-ai-briefing.js`)
+juga TIDAK disentuh — integrasi ditaruh di `VehicleDailyBrief` (briefing
+level kendaraan, tempat paling natural utk data per-kendaraan seperti
+BBM) supaya tidak perlu mengubah bentuk/arsitektur briefing gabungan yang
+levelnya tetap fleet-wide. 0 storage baru, 0 UI/container baru
+(`#vehBriefBody` yang sudah ada dipakai apa adanya).
+
++8 test baru `tests/vehicle-daily-brief.test.js` (tanpa kendaraan
+terpilih -> tidak ada section Fuel, kendaraan terpilih -> section tampil
+dgn nama, highest insight rendering, recommendation rendering reuse apa
+adanya, invalid vehicle/`selectVehicle()` throw -> tidak menggagalkan
+render, empty history -> field kosong jadi placeholder tanpa error,
+`FuelFleetSelector` belum dimuat -> section dilewati, 0 kendaraan armada
+-> body dikosongkan). Build `kw151-fuel-ai-daily-briefing-integration`
+(`?v=581`, naik dari `?v=580`). Test naik dari 260 ke 268 pass (2x —
+sebelum & sesudah build).
+
+---
+
+# Changelog — Sesi 151A: Fuel Fleet Brief Selector (TASK-151A)
+
+## Konteks
+
+Menutup gap TASK-151 (Sesi sebelumnya, `STOPPED`): pipeline "AI Daily
+Briefing" yang ada beroperasi fleet-wide, sedangkan `FuelInsightEngine.
+getSummary()`/`getInsights()` wajib 1 `vehicleId`. Tidak ada mekanisme
+"kendaraan mana yang diceritakan" — TASK-151A diminta khusus utk
+menyediakan selector-nya (murni pemilihan kendaraan, bukan wiring ke
+briefing itu sendiri).
+
+## Perubahan
+
+Modul BARU `modules/vehicle/fuel-fleet-selector.js` (`FuelFleetSelector`)
+— presentation helper only, 0 UI, PURE (read-only, tidak pernah panggil
+`save()`). API publik tunggal:
+
+- **`selectVehicle()`** -> `{ok:true, vehicleId, summary, insight}` atau
+  `null` kalau tidak ada satu pun kendaraan dgn insight (0 kendaraan /
+  seluruh kendaraan invalid / seluruh kendaraan tanpa insight).
+
+100% REUSE:
+- `FuelInsightEngine.getSummary(vehicleId)` (TASK-149/150A) per kendaraan
+  — `summary.highestInsight` (sudah diurutkan prioritas oleh
+  `FuelInsightEngine` sendiri via `getInsights()`, TASK-150A) dipakai apa
+  adanya sbg insight prioritas tertinggi kendaraan itu, 0 logic sortir
+  insight baru ditulis di modul ini.
+- `curVehicleId` (global SUDAH ADA sejak lama, `modules/shared/
+  features-helpers-global-security.js` — sudah dipakai sbg "kendaraan
+  aktif" di `fuel-card.js`/`fuel-modal.js`/`fuel-intelligence-ui.js`/
+  `vehicle-core.js` dst) sbg tie-breaker "active/current vehicle" — TIDAK
+  ADA state/field baru dibuat utk konsep ini.
+
+Logic baru (sesuai requirement task, bukan kalkulasi bisnis): (1) iterasi
+`D.vehicles`, kumpulkan `highestInsight` tiap kendaraan valid; (2)
+bandingkan level prioritas (CRITICAL->HIGH->MEDIUM->LOW->INFO, urutan
+teks dari task) cari kandidat teratas; (3) kalau seri, pilih
+`curVehicleId` kalau termasuk kandidat seri, else kandidat pertama sesuai
+urutan `D.vehicles` (deterministik, bukan tebakan acak). Kendaraan
+invalid/tanpa insight/`getSummary()` yang throw dilewati (tidak
+menggagalkan seleksi kendaraan lain), `selectVehicle()` sendiri tidak
+pernah throw ke pemanggil.
+
+`FuelInsightEngine` DAN AI Briefing (`UnifiedAIBriefing`/
+`VehicleDailyBrief`) **TIDAK disentuh sama sekali** sesuai batasan task —
+modul ini murni menyiapkan `vehicleId` terpilih; wiring nyata ke briefing
+TETAP di luar scope TASK-151A, menunggu task lanjutan eksplisit.
+
+1 file baru, 1 baris registrasi di `scripts/build.js` GROUP_B (setelah
+`fuel-insight-engine.js`). +13 test baru
+`tests/fuel-fleet-selector.test.js` (priority selection penuh
+CRITICAL->INFO, tie-breaker `curVehicleId` termasuk/tidak termasuk
+kandidat seri, `curVehicleId` undefined, 0 kendaraan, `D`/`D.vehicles`
+tidak ada, seluruh kendaraan tanpa insight, `FuelInsightEngine` belum
+dimuat, kendaraan invalid dilewati, seluruh kendaraan invalid, entri
+tanpa `id`, `getSummary()` throw utk 1 kendaraan tidak menggagalkan
+kendaraan lain). Build `kw151a-fuel-fleet-brief-selector` (`?v=580`, naik
+dari `?v=579`). Test naik dari 247 ke 260 pass (2x — sebelum & sesudah
+build).
+
+---
+
+# Changelog — Sesi 151: Fuel AI Daily Briefing Integration (TASK-151) — STOPPED
+
+## Konteks
+
+TASK-151 minta `FuelInsightEngine` diintegrasikan ke "Existing AI Daily
+Briefing" (natural-language summary saja, presentation only, dilarang
+menghitung/redesign UI/bikin storage). Audit sebelum menulis kode
+menemukan pipeline briefing yang ADA (`UnifiedAIBriefing.generate()` +
+`VehicleDailyBrief.render()`) 100% fleet-wide (baca `VehicleAIHook.
+fleetSummary()`/`UnifiedSummaryAPI.summary()`, agregat SELURUH
+kendaraan), sedangkan `FuelInsightEngine.getSummary(vehicleId)`/
+`getInsights(vehicleId)` wajib 1 `vehicleId` spesifik — tidak ada varian
+agregat di engine ini. Tidak ada mekanisme "kendaraan mana yang tampil di
+briefing" yang sudah ada di pipeline manapun.
+
+## Keputusan
+
+Sesuai instruksi "IMPORTANT" di task sendiri ("If AI Briefing requires
+changes outside presentation, STOP. Report the dependency."): task
+di-STOP. Memilih kendaraan mana yang diceritakan (kendaraan pertama? semua
+kendaraan? insight paling kritis lintas-armada?) adalah keputusan bentuk
+tampilan/produk, bukan presentasi murni — akar masalah yang sama dgn
+kandidat lama `BLOCKED` #1 di `AI_TASK_QUEUE.md` ("Wiring VehicleAIHook ke
+AI Daily Briefing", alasan identik: "Belum ada keputusan produk soal
+bentuk tampilan di briefing").
+
+## Perubahan
+
+**0 file diubah.** Tidak ada kode, test, atau build baru sesi ini — versi
+tetap `?v=579`, 247/247 test tetap hijau apa adanya dari Sesi 150A.
+Dicatat `STOPPED` di `AI_TASK_QUEUE.md` § Task selesai + `AI_STATE.md`
+§ Sesi 151 (detail lengkap gap & opsi keputusan yang ditunggu dari user).
+
+---
+
+# Changelog — Sesi 150A: Expand FuelInsightEngine Summary API (TASK-150A)
+
+## Konteks
+
+TASK-150 (Fuel Dashboard Integration) mengaudit `FuelInsightEngine` sebelum
+wiring UI dan menemukan gap: `getSummary()` belum mengekspos data numerik
+terstruktur (liter/bar/persen/reserve) yang dibutuhkan utk render Fuel
+Gauge + Remaining Fuel — hanya tersedia sbg teks prosa di dalam
+`description` insight. Karena rule task "Dashboard hanya boleh konsumsi
+`FuelInsightEngine`" DAN "Jangan ubah engine existing" saling bertentangan
+kalau gap ini tidak ditutup dulu, TASK-150 di-STOP & gap dilaporkan —
+lihat catatan STOP di `AI_PROGRESS.md`/riwayat sesi ini. TASK-150A dibuat
+khusus menutup gap tsb (murni expand API, **0 UI, 0 Dashboard, 0 AI**).
+
+## Perubahan
+
+`modules/vehicle/fuel-insight-engine.js` — **HANYA** `getSummary()` yang
+diubah (method lain tidak disentuh). 2 field baru di-APPEND di akhir
+object return (field lama TIDAK diganti nama/nilai — 100% backward
+compatible, caller lama yang cuma baca field lama tidak terpengaruh):
+
+- **`fuel`** — `{currentBar, maxBar, remainingLiter, fuelPercent, reserve,
+  reserveLiter}`. 100% REUSE `FuelGaugeEngine.calculateFuelBar()`/
+  `calculateFuelPercent()`/`getReserveStatus()` (liter input dibaca apa
+  adanya dari `fuelState.currentFuelLiter`, pola sama persis
+  `_reserveFuelInsight()` yang sudah ada) + `FuelTankProfile.get().
+  fuelBarCount` (dibaca apa adanya — satu-satunya tempat nilai ini
+  tersimpan, tidak diekspos engine lain manapun). 0 rumus bar/liter/
+  persen/reserve baru dihitung — murni membungkus nilai yang SUDAH
+  dihitung jadi 1 objek terstruktur (helper baru `_fuelGaugeData()`).
+  `null` kalau belum ada `fuelState.currentFuelLiter` tersimpan sama
+  sekali (kendaraan belum pernah dikoreksi); kalau liter ada tapi salah
+  satu engine dependency belum dimuat/gagal, field terkait itu saja
+  `null` (tidak memblokir field lain di objek `fuel`).
+- **`highestInsight`** — 100% REUSE `this.getInsights(vehicleId)` (array
+  yang SAMA PERSIS sudah diurutkan `_sortByPriority()` sejak TASK-149) —
+  `insights[0]` apa adanya, atau `null` kalau array kosong/kendaraan
+  tidak valid. 0 logic sortir/prioritas baru ditulis di sini.
+
+**TIDAK disentuh**: `FuelGaugeEngine`/`FuelPredictionEngine`/
+`FuelCostAnalytics`/`FuelMaintenanceEngine`/`FuelTankProfile` (logic-nya
+masing-masing), `getInsights()` (method lain di file yang sama),
+`D.bbmLogs`/`D.servisLogs`/`D.vehicles`/`D.sparepartCats` (data). 0
+storage baru, 0 UI, 0 Dashboard, 0 AI diimplementasi (sesuai batasan
+eksplisit task — itu tetap jadi kerjaan TASK-150 lanjutan setelah gap ini
+ditutup).
+
++10 test baru di `tests/fuel-insight-engine.test.js` (`fuel.currentBar`/
+`fuel.remainingLiter`/`fuel.fuelPercent`/`fuel.reserve`/`fuel.reserveLiter`/
+`fuel.maxBar`, `fuel:null` kalau belum ada fuelState, `fuel` partial-null
+kalau dependency belum dimuat, `highestInsight` kosong & terisi, 2 test
+backward-compatibility). Build `kw150a-expand-fuel-insight-summary-api`
+(`?v=579`, naik dari `?v=578`). Test naik dari 237 ke 247 pass (2x —
+sebelum & sesudah build).
+
+# Changelog — Sesi 149: Fuel Insight Engine (TASK-149)
+
+## Fitur baru
+
+Modul BARU `modules/vehicle/fuel-insight-engine.js` (`FuelInsightEngine`)
+— engine yang MENGGABUNGKAN seluruh engine Fuel Intelligence yang sudah
+ada jadi insight & ringkasan siap tampil, **engine-only, 0 UI**. 100%
+REUSE (0 rumus km/L/Rp-per-km/interval servis/degradasi/proyeksi baru):
+`FuelGaugeEngine.getReserveStatus()` (TASK-143),
+`FuelPredictionEngine.predictRemainingDistance()`/`predictNextRefuel()`/
+`predictMonthlyFuelUsage()`/`predictYearlyFuelUsage()` (TASK-146),
+`FuelCostAnalytics.costPerKm()`/`monthlyCost()`/`projectedMonthlyCost()`
+(TASK-147), `FuelMaintenanceEngine.fuelEfficiencyHealth()`/
+`maintenanceRisk()`/`maintenanceRecommendation()` (TASK-148).
+
+API publik (2 method, semua `{ok,...}` / `{ok:false,reason}`, tidak
+pernah throw):
+
+- `getInsights(vehicleId)` -> `{ok, insights:[]}` — sampai 7 tipe
+  insight siap tampil (`Fuel Consumption`, `Monthly Cost`,
+  `Fuel Efficiency`, `Maintenance`, `Reserve Fuel`, `Next Refuel`,
+  `Prediction`), tiap insight `{id,type,priority,title,description,
+  recommendation,confidence,source}`. Prioritas
+  (`CRITICAL`/`HIGH`/`MEDIUM`/`LOW`/`INFO`) murni MAPPING TAMPILAN dari
+  nilai yang sudah dihitung engine sumber (mis. `dropPct`/`riskLevel`/
+  `estimatedRemainingDays`) — 0 rumus baru. Insight yang sumbernya belum
+  tersedia (dependency belum dimuat/data belum cukup) dilewati, tidak
+  membuat seluruh hasil gagal. Array diurutkan menaik berdasarkan
+  prioritas.
+- `getSummary(vehicleId)` -> `{ok, healthScore, efficiencyScore,
+  monthlyCost, remainingDistance, maintenanceRisk, confidenceScore}`.
+  `efficiencyScore`/`healthScore` adalah skor 0-100 (LOGIC BARU: komposisi
+  rule-based dari `dropPct`/`riskLevel` yang sudah dihitung, pola sama
+  persis `FuelMaintenanceEngine.maintenanceRisk()` yang juga
+  menggabungkan 2 sinyal existing jadi 1 level baru). `monthlyCost`
+  pakai histori aktual bulan ini, fallback ke proyeksi kalau belum ada
+  transaksi. `remainingDistance`/`confidenceScore` diteruskan apa adanya
+  dari engine sumber.
+
+Build `kw149-fuel-insight-engine` (`?v=578`), **237/237 test pass**
+(+25 test baru, `tests/fuel-insight-engine.test.js`). 1 file baru, 1
+baris registrasi di `scripts/build.js` (setelah
+`fuel-maintenance-engine.js`). `FuelGaugeEngine`/`FuelPredictionEngine`/
+`FuelCostAnalytics`/`FuelMaintenanceEngine`/`FuelTankProfile` (logic)/
+`D.bbmLogs`/`D.servisLogs`/`D.vehicles`/`D.sparepartCats` tidak
+disentuh — 0 storage baru dibuat, 0 UI diubah (murni disiapkan utk
+konsumen Dashboard/AI Chat masa depan).
+
+### Hasil verifikasi
+
+```
+node --test tests/*.test.js   # 237/237 PASS (sebelum & sesudah build)
+node scripts/build.js kw149-fuel-insight-engine
+# ✅ Build selesai & lolos cek sintaks bundle (node --check), ?v=578
+# index.html & app_production.html identik (0 diff)
+```
+
+---
+
+# Changelog — Sesi 148: Fuel Maintenance Intelligence Engine (TASK-148)
+
+## Fitur baru
+
+Modul BARU `modules/vehicle/fuel-maintenance-engine.js`
+(`FuelMaintenanceEngine`) — engine korelasi perawatan↔efisiensi BBM,
+**engine-only, 0 UI**. 100% REUSE (0 rumus km/L/Rp-per-km/interval
+servis/deteksi-drop baru): `FuelCostAnalytics.costPerKm()` (TASK-147),
+`fuelEfficiency()` global, `predictService()` (Vehicle Service History,
+sparepart-servis.js), `_vehicleFuelEfficiencyDropCheck()` (SATU-SATUNYA
+logic deteksi penurunan efisiensi yang sudah ada, dipakai rule AI
+`vehicle-fuel-efficiency-drop`), dan `findVehicleSpec()` (referensi
+statis tekanan ban pabrikan — **TIDAK ADA histori tekanan ban aktual**
+tersimpan di app manapun, jadi field ini selalu referensi statis, 0
+storage baru dibuat sesuai larangan task).
+
+API publik (4 method, semua `{ok,...}` / `{ok:false,reason}`, tidak
+pernah throw):
+
+- `maintenanceImpact(vehicleId)` — kmPerLiter/costPerKm saat ini +
+  daftar item servis jatuh-tempo/mendekati yang RELEVAN efisiensi BBM
+  (oli mesin, saringan udara, busi, CVT/v-belt — via keyword match nama
+  kategori `D.sparepartCats`, bukan storage/rumus baru) + jumlah total
+  kategori lewat jatuh tempo (sinyal umum) + referensi tekanan ban
+  statis (kalau motor dikenali katalog).
+- `fuelEfficiencyHealth(vehicleId)` — kmPerLiter/rpPerKm + status
+  degradasi (reuse `_vehicleFuelEfficiencyDropCheck()`, difilter ke 1
+  kendaraan).
+- `maintenanceRecommendation(vehicleId)` — daftar rekomendasi teks dari
+  gabungan 2 method di atas (LOGIC BARU: penyusunan kalimat, bukan
+  rumus).
+- `maintenanceRisk(vehicleId)` — level risiko (`tinggi`/`sedang`/
+  `rendah`) dari kombinasi overdue-relevan-BBM + degradasi terdeteksi.
+
+Build `kw148-fuel-maintenance-intelligence-engine` (`?v=577`),
+**212/212 test pass** (+22 test baru,
+`tests/fuel-maintenance-engine.test.js`). 1 file baru, 1 baris
+registrasi di `scripts/build.js` (setelah `fuel-cost-analytics.js`).
+`FuelGaugeEngine`/`FuelPredictionEngine`/`FuelCostAnalytics`/
+`FuelTankProfile` (logic)/`D.bbmLogs`/`D.servisLogs`/`D.vehicles`/
+`D.sparepartCats` tidak disentuh — 0 storage baru dibuat.
+
+### Hasil verifikasi
+
+```
+node --test tests/*.test.js   # 212/212 PASS
+node scripts/build.js kw148-fuel-maintenance-intelligence-engine
+# ✅ Build selesai & lolos cek sintaks bundle (node --check), ?v=577
+# index.html & app_production.html identik (0 diff)
+```
+
+---
+
+# Changelog — Sesi 147: Fuel Cost Analytics Engine (TASK-147)
+
+## Fitur baru
+
+Modul BARU `modules/vehicle/fuel-cost-analytics.js` (`FuelCostAnalytics`)
+— engine analitik biaya BBM read-only, **engine-only, 0 UI**. 100% REUSE
+modul fuel yang sudah ada (`FuelStorage`, `fuelEfficiency()` global,
+`FuelPredictionEngine`, `D.vehicles[i].fuelState`) — 0 rumus km/L, Rp/km,
+atau proyeksi baru dihitung ulang, PURE/read-only (tidak pernah panggil
+`save()` atau menulis ke `D`).
+
+API publik (6 method, semua `{ok,...}` / `{ok:false,reason}`, tidak
+pernah throw):
+
+- `monthlyCost(vehicleId)` — total liter/biaya/rata-rata harga BBM
+  bulan kalender berjalan (SUM `D.bbmLogs[].liter/cost` via
+  `FuelStorage`, bukan rumus baru).
+- `yearlyCost(vehicleId)` — sama seperti di atas, dikelompokkan per
+  tahun kalender berjalan.
+- `costPerKm(vehicleId)` — reuse `fuelEfficiency()` apa adanya
+  (`rpPerKm`/`kmPerLiter`/`avgHarga`), 0 recompute.
+- `averageFuelPrice(vehicleId)` — rata-rata harga BBM tertimbang
+  (`totalCost/totalLiter`) dari SELURUH histori transaksi valid (beda
+  cakupan dari `avgHarga` di `costPerKm()` yang cuma 10 log terakhir).
+- `projectedMonthlyCost(vehicleId)` / `projectedYearlyCost(vehicleId)`
+  — reuse `FuelPredictionEngine.predictMonthlyFuelUsage()`/
+  `predictYearlyFuelUsage()` apa adanya, ditambah `confidenceScore`
+  dari `D.vehicles[i].fuelState.confidenceScore` (dibaca apa adanya).
+- `refillFrequency(vehicleId)` — jumlah transaksi isi BBM & rata-rata
+  interval hari antar transaksi berurutan (logic baru: murni selisih
+  tanggal, bukan rumus konsumsi/efisiensi).
+
+Build `kw147-fuel-cost-analytics-engine` (`?v=576`), **190/190 test
+pass** (+19 test baru, `tests/fuel-cost-analytics.test.js`). 1 file baru
+(`modules/vehicle/fuel-cost-analytics.js`), 1 baris registrasi di
+`scripts/build.js` (setelah `fuel-prediction-engine.js`).
+`FuelGaugeEngine`/`FuelPredictionEngine`/`D.bbmLogs`/`D.vehicles`/Finance
+tidak disentuh.
+
+### Hasil verifikasi
+
+```
+node --test tests/*.test.js   # 190/190 PASS
+node scripts/build.js kw147-fuel-cost-analytics-engine
+# ✅ Build selesai & lolos cek sintaks bundle (node --check), ?v=576
+# index.html & app_production.html identik (0 diff)
+```
+
+---
+
+# Changelog — Sesi 146: Fuel Consumption Prediction Engine (TASK-146)
+
+## Fitur baru
+
+Modul BARU `modules/vehicle/fuel-prediction-engine.js`
+(`FuelPredictionEngine`) — engine prediksi konsumsi BBM, **engine-only,
+0 UI**. 100% REUSE modul fuel yang sudah ada (`FuelGaugeEngine`,
+`FuelTankProfile` tidak langsung, `fuelEfficiency()` global,
+`D.vehicles[i].fuelState`) — 0 rumus baru, PURE/read-only, deterministik
+(rule-based, bukan machine learning).
+
+API publik (4 method, semua `{ok,...}` / `{ok:false,reason}`, tidak
+pernah throw):
+
+- `predictRemainingDistance(vehicleId)` — estimasi jarak tempuh
+  tersisa (km) dari sisa BBM saat ini.
+- `predictNextRefuel(vehicleId)` — estimasi tanggal & jumlah hari
+  sampai perlu isi BBM lagi (dari liter di atas ambang reserve dibagi
+  rata-rata jarak harian).
+- `predictMonthlyFuelUsage(vehicleId)` — proyeksi liter & biaya BBM
+  sebulan ke depan (reuse `fuelEfficiency().estMonthlyLiter/Cost`
+  langsung).
+- `predictYearlyFuelUsage(vehicleId)` — proyeksi liter & biaya BBM
+  setahun ke depan, diturunkan dari proyeksi bulanan x12 (bukan
+  formula independen — supaya angka bulanan & tahunan selalu
+  konsisten).
+
+Extension point `_applyAdjustments()` disiapkan (belum diimplementasi)
+supaya sesi mendatang bisa menambah weather/traffic/riding-style/
+seasonal adjustment tanpa mengubah API publik.
+
+## Yang TIDAK diubah
+
+`FuelGaugeEngine` (kalkulasi bar↔liter↔persen↔jarak), `D.bbmLogs`
+(riwayat transaksi BBM historis), `FuelTankProfile`, dan UI apa pun —
+sesuai batasan TASK-146 ("engine-only", "Do NOT redesign the UI", "Do
+NOT modify FuelGaugeEngine calculations", "Do NOT modify historical
+fuel transactions", "Do NOT create duplicate calculations").
+
+## Test
+
++17 test baru `tests/fuel-prediction-engine.test.js`: remaining
+distance, next-refuel prediction, monthly prediction, yearly
+prediction (konsisten x12 dgn monthly), invalid vehicle (4 method
+sekaligus), missing fuel profile (`tankCapacityLiter` belum diatur),
+missing fuel state, zero fuel (tidak error, balikin 0), dan 1 test
+read-only guarantee. Total naik dari 154 ke **171/171 pass**.
+
+## Build
+
+`kw146-fuel-consumption-prediction-engine-2` (`?v=575`, naik dari
+`?v=573`). 1 file baru (`modules/vehicle/fuel-prediction-engine.js`),
+1 baris registrasi baru di `scripts/build.js` (GROUP_B, setelah
+`fuel-intelligence-ui.js`).
+
+---
+
+# Changelog — Sesi 145: Fuel Intelligence Integration (TASK-145)
+
+## Fitur baru
+
+Melengkapi end-to-end user flow Fuel Intelligence — Sesi 144 sudah
+bikin `FuelBarCorrection` (controller lengkap `open()`/`selectBar()`/
+`save()`), tapi belum ada tombol trigger di UI manapun yang
+memanggilnya. Sesi ini menutup gap itu tanpa menyentuh business
+logic/kalkulasi apa pun. **2 file diubah, 0 file baru:**
+
+- `modules/vehicle/fuel-card.js`:
+  - Tombol "⚙️ Koreksi" ditambah di sebelah tombol "📊 Lihat Detail"
+    yang sudah ada. Baris CTA sekarang `.btn-row` (class SUDAH ADA,
+    dipakai modal lain seperti konfirmasi — 0 CSS baru) berisi 2 tombol
+    `.btn.btn-ghost.btn-sm` (class SUDAH ADA). Tombol baru panggil
+    `FuelBarCorrection.open(vehicleId)` lewat `data-action` dispatch
+    generik yang sudah ada di seluruh aplikasi (pola persis tombol
+    "Lihat Detail" di sampingnya) — 0 handler klik baru ditulis manual.
+    `aria-label="Koreksi estimasi BBM dengan speedometer"` disertakan.
+  - Rekomendasi pasif (non-blocking, bukan dialog) ditambah:
+    `_lowConfidenceHint(vehicleId)` baca LANGSUNG
+    `veh.fuelState.confidenceScore` dari `D.vehicles` (field opsional
+    dari TASK-144, 0 rumus/skoring baru dihitung di sini) — kalau di
+    bawah ambang presenter `LOW_CONFIDENCE_THRESHOLD=50`, tampilkan teks
+    "⚠️ Estimasi mulai kurang akurat. Disarankan sinkronkan dengan
+    speedometer." Ambang ini murni nilai presenter (kapan menampilkan
+    teks), BUKAN rumus confidence baru.
+- `modules/vehicle/fuel-intelligence-ui.js`:
+  - Satu baris diubah — teks toast sukses di `FuelBarCorrection.save()`
+    disamakan dgn spesifikasi task: **"✅ Kalibrasi bensin berhasil
+    diperbarui"** (sebelumnya "✅ Estimasi BBM disinkronkan dengan
+    speedometer" — beda kata-kata saja, 0 perubahan perilaku). Refresh
+    `FuelCard.render()` + `FuelModal.open()` (kalau modal terbuka utk
+    kendaraan yang sama) tetap seperti Sesi 144, tidak diubah.
+
+## Yang TIDAK diubah
+
+`FuelGaugeEngine` (kalkulasi bar↔liter↔persen), `D.bbmLogs` (riwayat
+transaksi BBM), `FuelTankProfile`, dan seluruh business logic lain —
+sesuai batasan TASK-145 ("Do NOT change business logic", "Do NOT modify
+historical fuel transactions", "Do NOT change FuelGaugeEngine
+calculations"). Diverifikasi lewat test "riwayat D.bbmLogs TIDAK
+diubah" (Sesi 144, tetap hijau) + audit baris-per-baris kedua file yang
+diubah.
+
+## User flow (sekarang lengkap end-to-end)
+
+```
+Fuel Card → tap "⚙️ Koreksi" → FuelBarCorrection Modal → Pilih Bar
+→ Preview (Sebelum/Sesudah/Selisih) → Simpan → FuelGaugeEngine
+→ D.vehicles[i].fuelState → refresh Fuel Card + refresh Fuel Modal
+(kalau terbuka) → toast "✅ Kalibrasi bensin berhasil diperbarui"
+```
+
+## Test
+
++7 test baru:
+
+- `tests/fuel-card.test.js` — tombol Koreksi tampil & `data-action`
+  terpasang benar, 0 class button baru dipakai (masih reuse
+  `.btn.btn-ghost.btn-sm`), rekomendasi low-confidence tampil kalau
+  `confidenceScore < 50`, TIDAK tampil kalau skor tinggi, TIDAK tampil
+  kalau `fuelState` belum pernah ada sama sekali.
+- `tests/fuel-intelligence-ui.test.js` — teks toast baru sesuai
+  spesifikasi, refresh `FuelCard` + `FuelModal` sekaligus tervalidasi
+  dalam 1 test end-to-end.
+
+### Hasil verifikasi
+
+```
+node --test tests/*.test.js
+# 154/154 PASS (naik dari 147/147 sebelum sesi ini)
+
+node scripts/build.js kw145-fuel-intelligence-integration-1
+# ✅ Build selesai & lolos cek sintaks bundle (node --check), ?v=573
+# index.html & app_production.html identik (md5sum sama persis)
+# grep app-bundle-b.min.js: "⚙️ Koreksi" (4x, termasuk sumber+bundle),
+#   "Kalibrasi bensin berhasil diperbarui" (1x) — terkonfirmasi masuk bundle
+```
+
+---
+
+
+
+## Fitur baru
+
+Modul baru `modules/vehicle/fuel-intelligence-ui.js` (`FuelBarCorrection`)
+— melengkapi modal `#fuelBarCorrectionModal` yang markup HTML-nya sudah
+ada di `modules/shared/modals.js` sejak sesi sebelumnya tapi belum punya
+controller (tombol Simpan sebelumnya memanggil method yang tidak ada,
+akan error kalau ditekan). Sekarang lengkap:
+
+- `FuelBarCorrection.open(vehicleId?)` — validasi kendaraan & profil
+  tangki (`FuelTankProfile.get()`, butuh `tankCapacityLiter`), render
+  estimasi BBM saat ini (dari `fuelState` tersimpan, atau log BBM
+  terbaru kalau full tank, atau `-` kalau belum ada dasar sama sekali),
+  render bar picker dinamis (0..`fuelBarCount` kendaraan ini — bukan
+  hardcode), lalu buka modal.
+- `FuelBarCorrection.selectBar(bar)` — live preview Sebelum/Sesudah/
+  Selisih liter, 100% REUSE `FuelGaugeEngine.calculateFuelLiter()`
+  (TASK-143), 0 rumus konversi baru.
+- `FuelBarCorrection.save()` — tulis `currentFuelBar`, `currentFuelLiter`,
+  `correctedAt` (ISO timestamp), `estimatedSource`
+  (`'manual-bar-correction'`), `confidenceScore` (100 — pembacaan manual
+  langsung dari speedometer) ke `D.vehicles[i].fuelState` (field baru,
+  OPSIONAL/additive, pola sama `fuelTankProfile` TASK-142). **Riwayat
+  `D.bbmLogs` TIDAK disentuh** — koreksi ini murni memperbaiki estimasi
+  saat ini, bukan transaksi/log historis. Setelah simpan: refresh
+  `FuelCard.render()` + refresh `FuelModal` kalau sedang terbuka untuk
+  kendaraan yang sama (`FuelModal.curVehicleId`).
+
+CSS baru scoped `#fbcBarPicker .fbc-bar-btn` (full-width per baris) —
+warna/hover/active 100% reuse `.chip-btn` yang sudah ada, 0 style global
+diubah.
+
+## TASK-REF-001 (konsolidasi)
+
+Task minta merge `fuel-gauge-ui.js` + `fuel-bar-correction.js` jadi
+`fuel-intelligence-ui.js` — tapi audit menemukan KEDUA file sumber itu
+tidak pernah ada (TASK-144 sebelumnya cuma bikin markup modal, belum
+bikin controller-nya). Daripada bikin 2 file kosong lalu langsung
+di-merge, controller TASK-144 di atas langsung ditulis sebagai SATU file
+`fuel-intelligence-ui.js` — memenuhi tujuan TASK-REF-001 (0 fragmentasi
+file kecil baru) sekaligus TASK-144 (controller lengkap) dalam satu
+langkah.
+
+## Build & Test
+
+Terdaftar di `scripts/build.js` GROUP_B setelah `fuel-card.js` (dependency:
+`FuelGaugeEngine`/`FuelTankProfile`/`FuelStorage`/`FuelCard`/`FuelModal`,
+semua sudah dimuat sebelum titik ini). +12 test baru
+`tests/fuel-intelligence-ui.test.js`. Build `kw144-fuel-bar-correction`
+(`?v=572`, naik dari `?v=571`). Test naik dari 135 ke 147 pass.
+
+## Catatan lingkup
+
+Belum ada tombol/trigger UI manapun yang memanggil
+`FuelBarCorrection.open()` (mis. dari Fuel Card) — item ini TIDAK ada di
+checklist TASK-144 yang diberikan, dan menambahkannya berarti mengedit
+`fuel-card.js` (modul TASK-141 yang sudah selesai), di luar lingkup
+"Never modify unrelated modules". `FuelBarCorrection.open(vehicleId)`
+sudah diekspos sebagai API publik siap dipanggil — wiring tombol trigger
+jadi kandidat task terpisah kalau dibutuhkan.
+
+# Changelog — Sesi 140: Bugfix Kartu Beranda Tidak Muncul Lagi Setelah Dinyalakan Ulang
+
+## Bug yang diperbaiki
+
+Kartu Beranda opsional (Kebebasan Finansial/Dana Pensiun/Absensi Harian/
+Refleksi & Self-Care, `DASH_CARD_DEFS` di `modules/shared/modules-render.js`)
+yang sudah dimatikan lewat Pengaturan → Tampilan → Kartu di Beranda TIDAK
+PERNAH muncul lagi walau checkbox-nya dinyalakan ulang — checkbox &
+`D.dashCardPrefs` sudah benar menunjukkan "aktif", tapi kartunya tetap
+kosong/hilang sampai aplikasi di-reload penuh.
+
+**Root cause**: `hideDashCardEl(elId)` menyembunyikan kartu lewat DUA
+jalur — `classList.add('u-dnone')` DAN inline `style.display='none'`.
+`toggleDashCardPref()`/`setAllDashCardPrefs()` sudah benar memanggil
+`renderDashboard()` ulang, dan loop `DASH_RENDER_ORDER` di dalamnya sudah
+benar SKIP `hideDashCardEl()` begitu `isDashCardOn()` balik `true` — tapi
+tidak ada fungsi kebalikan yang pernah melepas inline `style.display='none'`
+yang sudah kadung ditulis. Inline style attribute punya spesifisitas lebih
+tinggi dari class CSS (`.u-dnone{display:none}`), jadi kartu tetap
+invisible walau class-nya sendiri sudah tidak ditambahkan lagi.
+
+## Diperbaiki
+
+- **`modules/shared/modules-render.js`** — tambah `showDashCardEl(elId)`
+  (kebalikan simetris persis `hideDashCardEl()`, melepas class `u-dnone`
+  DAN inline `style.display`), dipanggil di loop `DASH_RENDER_ORDER`
+  (`renderDashboard()`) SETELAH guard `isDashCardOn()` & SEBELUM
+  `cardDef.render(...)`. 0 fungsi lama diubah, 0 perilaku lain berubah —
+  kartu yang memang selalu ON perilakunya identik dengan sebelumnya
+  (`showDashCardEl` pada elemen yang tidak pernah disembunyikan adalah
+  no-op).
+- **`app-bundle-a.min.js`** — dibuat ulang otomatis dari source yang sudah
+  dipatch (grup A, memuat `modules-render.js`).
+
+## Ditambahkan
+
+- **`tests/dash-card-show-hide.test.js`** (7 test baru) — `hideDashCardEl()`
+  (class + inline style ditambahkan), `showDashCardEl()` (keduanya
+  dilepas, idempotent, aman di elemen yang tidak ada/tidak pernah
+  disembunyikan), serta pemeriksaan urutan pemanggilan di source
+  (`isDashCardOn` guard → `showDashCardEl` → `cardDef.render`) supaya
+  patch di loop `renderDashboard()` tidak diam-diam terlepas di sesi
+  mendatang.
+
+## Tidak diubah
+
+- `hideDashCardEl()` — 0 baris disentuh, `showDashCardEl()` murni fungsi
+  BARU yang simetris, bukan modifikasi fungsi lama.
+- `DASH_CARD_DEFS`/`DASH_RENDER_ORDER`/`DASH_CARD_BY_KEY`,
+  `isDashCardOn()`/`toggleDashCardPref()`/`setAllDashCardPrefs()` — 0
+  baris disentuh.
+- `dashboard-hub-registry.js` (`FEATURE_REGISTRY`, termasuk field
+  `dashKey` yang dipakai `dash-refleksi`/`dash-fi`/`per-absensi`) — 0
+  baris disentuh.
+- `dashHubNavigateToFeature()`/`DASHHUB_GOTO_SECTION_MAP` (bugfix Sesi
+  139, sub-tab Dashboard Hub) — 0 baris disentuh sesi ini, area berbeda
+  (sub-tab vs inline style kartu opsional).
+
+## Test & Build
+
+```
+node --test tests/*.test.js
+# tests 69 / pass 69 / fail 0  (62 lama + 7 baru, semua hijau)
+
+node scripts/build.js kw140-fix-dashcard-toggle-inline-style
+# ✓ Linter bawaan "pola bug u-dnone vs style.display" lolos bersih
+# ✓ Sintaks kedua bundle valid (node --check lolos)
+# ✓ index.html & app_production.html sudah identik.
+# Versi baru: ?v=565 / kw-cache-v565
+```
+
+---
+
 # Changelog — Sesi 139: Bugfix Navigasi "Semua Fitur" Dashboard Hub (goTo ke sub-tab tidak aktif)
 
 ## Bug yang diperbaiki

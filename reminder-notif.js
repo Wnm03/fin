@@ -45,11 +45,11 @@ toast('❌ Izin notifikasi ditolak / diblokir browser');
 }catch(e){toast('⚠️ Gagal minta izin notifikasi');}
 renderNotifSettings();
 }
-function fireNotif(title,body,tag){
+function fireNotif(title,body,tag,onClick){
 if(!('Notification' in window)||Notification.permission!=='granted')return;
 try{
 const n=new Notification(title,{body,tag,renotify:!!tag});
-n.onclick=()=>{window.focus();n.close();};
+n.onclick=()=>{window.focus();n.close();if(typeof onClick==='function'){try{onClick();}catch(e){console.warn('Gagal jalankan aksi klik notifikasi:',e);}}};
 }catch(e){console.warn('Gagal kirim notifikasi:',e);}
 }
 function toggleNotifEnabled(checked){
@@ -123,6 +123,19 @@ fired.ids.push(fireKey);
 if(typeof VehicleNotifBridge!=='undefined'&&typeof VehicleNotifBridge.items==='function'){
 VehicleNotifBridge.items(undefined,fired.ids).forEach((n)=>{
 fireNotif(n.title,n.body,n.fireKey);
+fired.ids.push(n.fireKey);
+});
+}
+// TASK-153 (Fuel Notification & Reminder): 100% REUSE FuelNotifBridge
+// (translator murni FuelInsightEngine, pola SAMA PERSIS VehicleNotifBridge
+// di atas) + fireNotif() yang sama (0 sistem notifikasi baru). Klik
+// notifikasi membuka FuelModal (Fuel Intelligence Modal existing, TASK-141)
+// utk kendaraan terkait -- satu-satunya dashboard BBM per-kendaraan yang
+// sudah ada di aplikasi ini (TASK-150 Fuel Dashboard belum dikerjakan,
+// lihat AI_STATE.md).
+if(typeof FuelNotifBridge!=='undefined'&&typeof FuelNotifBridge.items==='function'){
+FuelNotifBridge.items(undefined,fired.ids).forEach((n)=>{
+fireNotif(n.title,n.body,n.fireKey,()=>{if(typeof FuelModal!=='undefined'&&typeof FuelModal.open==='function')FuelModal.open(n.vehicleId);});
 fired.ids.push(n.fireKey);
 });
 }

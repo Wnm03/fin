@@ -110,6 +110,20 @@ D.transactions.push({id:txId,type:'expense',amount:cost,category:resolveVehicleT
 toast('✅ Catatan BBM tersimpan & tersinkron ke Keuangan');
 }
 save();closeModal('bbmModal');renderCnTab();renderDashboard();renderKeuangan();
+// TASK-152 (Fuel Finance Integration): samakan dgn pola _saveTxInner()
+// di transaksi.js (transaksi umum dgn sinkron BBM lewat tx-bbm.js) yang
+// SUDAH emit AIBus "finance.updated" tiap transaksi tersimpan -- sebelum
+// ini, catatan BBM lewat modal "Catat Isi BBM" (jalur INI) tidak pernah
+// memancarkan event itu, jadi AIDecision/AIService (modules/ai/ai-service.js
+// wireEvents(), SUDAH ADA) tidak pernah tahu ada transaksi BBM baru kalau
+// user masuk lewat Car Notes bukan lewat form Transaksi umum. 0 field baru
+// di payload selain yang sudah dipakai transaksi.js (txId/category/type/
+// amount) + `kind:'bbm'` (pola sama dgn kind:"cicilan-baru"/"langganan" di
+// transaksi.js) supaya listener bisa membedakan asal event kalau perlu,
+// TANPA mengubah bentuk dasar payload. TIDAK menyentuh AIBus/AIService/
+// FuelInsightEngine sama sekali -- murni tambah 1 pemancar event dari sisi
+// ini, reuse bus yang sudah ada apa adanya.
+if(typeof AIBus!=="undefined")AIBus.emit("finance.updated",{txId,category:resolveVehicleTxCategory(veh),type:'expense',amount:cost,kind:'bbm'});
 },
 deleteFromModal(){if(BBM.editId===null)return;const id=BBM.editId;closeModal('bbmModal');BBM.del(id);},
 async del(id){

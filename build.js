@@ -87,10 +87,38 @@ const GROUP_A = [
   'modules/asset/invest-ai-widget.js',
   'modules/asset/penyusutan-ai-widget.js',
   'modules/asset/aset-emas-impor.js',
-  'modules/asset/asset-portfolio-api.js',
+
+  // modules/aset.js (dependency: PropertyManagementAPI._properti() butuh
+  // `PajakAset`/`Penyusutan`/`Aset`, ketiganya didefinisikan di
+  // modules/asset/aset.js, sudah dimuat lebih dulu di blok ini) — TIDAK
+  // perlu forward-reference, pola sama persis penempatan
+  // asset-portfolio-api.js (S101) relatif ke dependency-nya.
   'modules/asset/property-management-api.js',
+
+  // Presenter Sesi 132 (audit): ditaruh langsung setelah API-nya, pola
+  // sama persis debt-optimizer-api.js -> debt-optimizer-presenter.js.
+  'modules/asset/property-management-presenter.js',
+
+  // S103 (Batch 10): Rental Management Foundation — ditaruh SETELAH
+  // property-management-api.js (dependency: RentalManagementAPI._properties()
+  // butuh `PropertyManagementAPI.propertyList()`, S102, sudah dimuat
+  // lebih dulu). `LaporanAset` (dependency lain, modules/asset/aset.js)
+  // sudah dimuat lebih dulu juga (awal blok asset di atas) — TIDAK perlu
+  // forward-reference sama sekali.
   'modules/asset/rental-management-api.js',
+
+  // Presenter Sesi 132 (audit): ditaruh langsung setelah API-nya.
+  'modules/asset/rental-management-presenter.js',
+
+  // S104 (Batch 10): Asset Maintenance Foundation — ditaruh SETELAH
+  // rental-management-api.js, bareng grouping per-domain asset.
+  // Dependency `Penyusutan`/`Aset` (modules/asset/aset.js) & `todayStr`
+  // (modules/shared/features-helpers-global-security.js) semuanya sudah
+  // dimuat lebih dulu — TIDAK perlu forward-reference sama sekali.
   'modules/asset/asset-maintenance-api.js',
+
+  // Presenter Sesi 132 (audit): ditaruh langsung setelah API-nya.
+  'modules/asset/asset-maintenance-presenter.js',
   'modules/finance/worthit.js',
   'modules/shared/ripple-position.js',
 ];
@@ -126,6 +154,22 @@ const GROUP_B = [
   'modules/ai/kategorisasi-ai.js',
   'modules/finance/tagihan-kalender.js',
   'modules/shared/backup-restore.js',
+
+  // Data Management Core (Sesi ini): Backup History + Backup Health.
+  // Ditaruh SETELAH backup-restore.js (dependency: BackupHistoryAPI.
+  // recordEntry() dipanggil dari exportData()/runFullBackup()/runBackup()
+  // di backup-restore.js — TAPI pemanggilannya lazy, di dalam function
+  // body yg baru jalan saat backup beneran dijalankan user, BUKAN saat
+  // file di-parse, jadi urutan load ini sebenarnya tidak wajib — tetap
+  // ditaruh setelahnya biar mengelompok scr logis). backup-health-api.js
+  // SETELAH backup-history-api.js (dependency: BackupHealthAPI.
+  // reliability() memanggil BackupHistoryAPI.summary(), sama alasan
+  // lazy di atas). Kedua presenter SETELAH kedua api-nya.
+  'modules/shared/backup-history-api.js',
+  'modules/shared/backup-health-api.js',
+  'modules/shared/backup-history-presenter.js',
+  'modules/shared/backup-health-presenter.js',
+
   'modules/business/payroll-absensi.js',
   'modules/business/tukang-absensi.js',
   'modules/vehicle/vehicle-core.js',
@@ -145,6 +189,246 @@ const GROUP_B = [
   'pajak-aset-ui-wrappers.js',
   'modules/finance/finance-intelligence.js',
   'modules/finance/finance-dashboard.js',
+
+  // Sesi 91 (Batch 10): Financial Forecast Foundation — ditaruh SETELAH
+  // finance-dashboard.js (dependency: FinancialForecastAPI butuh
+  // FinanceDashboard.getAIHook() sudah dimuat lebih dulu), sebelum modul
+  // vehicle (grouping per-domain finance tetap bersebelahan).
+  'modules/finance/financial-forecast-api.js',
+  'modules/finance/financial-forecast-presenter.js',
+
+  // Sesi 92 (Batch 10): Budget Recommendation Foundation — ditaruh SETELAH
+  // finance-intelligence.js (dependency: BudgetRecommendationAPI butuh
+  // FinanceIntelligence.budgetSummary() sudah dimuat lebih dulu), bareng
+  // finance-forecast (grouping per-domain finance tetap bersebelahan).
+  'modules/finance/budget-recommendation-api.js',
+  'modules/finance/budget-recommendation-presenter.js',
+
+  // Sesi 93 (Batch 10): Cash Flow Projection Foundation — ditaruh SETELAH
+  // financial-forecast-*.js (dependency: CashFlowProjectionAPI butuh
+  // FinancialForecastAPI.summary() sudah dimuat lebih dulu), bareng
+  // budget-recommendation (grouping per-domain finance tetap bersebelahan).
+  'modules/finance/cashflow-projection-api.js',
+  'modules/finance/cashflow-projection-presenter.js',
+
+  // Sesi 94 (Batch 10): Financial Goal Planner Foundation — ditaruh
+  // SETELAH cashflow-projection-*.js (dependency: FinancialGoalAPI butuh
+  // CashFlowProjectionAPI.summary() sudah dimuat lebih dulu, bareng
+  // grouping per-domain finance). `goalAdapterList` (dependency lain,
+  // lifeos/adapters/goal-adapter.js) dimuat BELAKANGAN di bundle ini
+  // (blok LifeOS di bawah) — TIDAK masalah krn hanya dipanggil di dalam
+  // method (runtime, setelah seluruh bundle selesai di-parse), pola sama
+  // persis modules/ai/ai-service.js yang juga forward-reference
+  // goalAdapterList lebih dulu dari blok LifeOS.
+  'modules/finance/financial-goal-api.js',
+  'modules/finance/financial-goal-presenter.js',
+
+  // Sesi 95 (Batch 10): Investment Planner Foundation — ditaruh SETELAH
+  // financial-goal-*.js (dependency: InvestmentPlannerAPI._surplus()
+  // butuh FinancialGoalAPI._surplus() sudah dimuat lebih dulu), bareng
+  // grouping per-domain finance. `Investment` (dependency lain,
+  // modules/asset/investasi.js) dimuat BELAKANGAN di bundle ini (blok
+  // asset di bawah) — TIDAK masalah krn hanya dipanggil di dalam method
+  // (runtime, setelah seluruh bundle selesai di-parse), pola sama persis
+  // forward-reference `goalAdapterList` di financial-goal-api.js.
+  'modules/finance/investment-planner-api.js',
+  'modules/finance/investment-planner-presenter.js',
+
+  // Sesi 96 (Batch 10): Debt Optimizer Foundation — ditaruh SETELAH
+  // investment-planner-*.js, bareng grouping per-domain finance.
+  // `Debt`/`DebtStrategy` (dependency, modules/finance/piutang-utang.js)
+  // sudah dimuat lebih dulu (di atas, awal GROUP_A) — TIDAK perlu
+  // forward-reference sama sekali (beda dari investment-planner-api.js
+  // yang forward-reference `Investment`).
+  'modules/finance/debt-optimizer-api.js',
+  'modules/finance/debt-optimizer-presenter.js',
+
+  // Sesi 97 (Batch 10): Retirement Planner Foundation — ditaruh SETELAH
+  // debt-optimizer-*.js, bareng grouping per-domain finance. `Pensiun`
+  // (dependency, modules/shared/modules-calc.js) sudah dimuat lebih
+  // dulu (awal GROUP_A, baris kedua) — TIDAK perlu forward-reference
+  // sama sekali (beda dari investment-planner-api.js yang
+  // forward-reference `Investment`).
+  'modules/finance/retirement-planner-api.js',
+  'modules/finance/retirement-planner-presenter.js',
+
+  // Sesi 98 (Batch 10): Financial Health Score Foundation — ditaruh
+  // SETELAH retirement-planner-*.js, bareng grouping per-domain finance.
+  // `FinanceIntelligence` (dependency, modules/finance/
+  // finance-intelligence.js) sudah dimuat lebih dulu (awal GROUP_A) —
+  // TIDAK perlu forward-reference sama sekali (beda dari
+  // investment-planner-api.js yang forward-reference `Investment`).
+  'modules/finance/financial-health-score-api.js',
+  'modules/finance/financial-health-score-presenter.js',
+
+  // Sesi 99 (Batch 10): Financial Risk Dashboard — ditaruh SETELAH
+  // financial-health-score-*.js, bareng grouping per-domain finance.
+  // Dependency `DebtOptimizerAPI`/`FinancialHealthScoreAPI`/
+  // `FinanceIntelligence` semuanya sudah dimuat lebih dulu (di atas) —
+  // TIDAK perlu forward-reference. `TanggaKeuangan` (modules/finance/
+  // tangga-keuangan.js) dimuat lewat <script> TERPISAH setelah kedua
+  // bundle (lihat index.html/app_production.html) — TIDAK masalah krn
+  // hanya dipanggil di dalam method (runtime, setelah seluruh halaman
+  // selesai dimuat), pola sama persis forward-reference `Investment` di
+  // investment-planner-api.js.
+  'modules/finance/financial-risk-dashboard-api.js',
+  'modules/finance/financial-risk-dashboard-presenter.js',
+  'modules/vehicle/vehicle-intelligence.js',
+  'modules/vehicle/vehicle-dashboard.js',
+  'modules/vehicle/vehicle-reminder.js',
+  'modules/vehicle/vehicle-notif-bridge.js',
+  'modules/vehicle/vehicle-ai-hook.js',
+  'modules/vehicle/vehicle-insight-presenter.js',
+  'modules/vehicle/vehicle-daily-brief.js',
+  'modules/vehicle/vehicle-alert-panel.js',
+  'modules/vehicle/vehicle-insight-feed.js',
+  'modules/vehicle/vehicle-trend-api.js',
+  'modules/vehicle/vehicle-cost-summary.js',
+  'modules/vehicle/vehicle-fuel-trend.js',
+  'modules/vehicle/vehicle-service-trend.js',
+  'modules/vehicle/vehicle-analytics-presenter.js',
+
+  // TASK-141: Fuel Intelligence Card — ditaruh SETELAH vehicle-analytics-
+  // presenter.js (dependency: VehicleFuelTrendSummary/VehicleReminder/
+  // VehicleIntelligence sudah dimuat lebih dulu, di atas). Urutan
+  // internal: storage/engine dulu, lalu 2 presenter section (history/
+  // analytics) yang konsumsi-nya, baru modal orchestrator, baru card
+  // (yang membuka modal itu) — pola sama persis urutan Vehicle Analytics
+  // Foundation (Sesi 81) di atas.
+  'modules/vehicle/fuel-storage.js',
+  // TASK-142: Fuel Tank Profile — ditaruh setelah fuel-storage.js (sama-sama
+  // lapisan data domain fuel, 0 dependency satu sama lain) & SEBELUM
+  // fuel-intelligence-engine.js (engine baca FuelTankProfile.get() opsional,
+  // guard typeof, lihat komentar di file itu).
+  'modules/vehicle/fuel-tank-profile.js',
+  'modules/vehicle/fuel-intelligence-engine.js',
+  // TASK-143: Fuel Gauge Engine — ditaruh setelah fuel-intelligence-engine.js
+  // (dependency: FuelTankProfile.get() + fuelEfficiency() global, keduanya
+  // sudah dimuat sebelum titik ini) & SEBELUM fuel-history.js (tidak ada
+  // dependency ke arah situ, cuma jaga urutan lapisan data domain fuel tetap
+  // berdekatan).
+  'modules/vehicle/fuel-gauge-engine.js',
+  'modules/vehicle/fuel-history.js',
+  'modules/vehicle/fuel-analytics.js',
+  'modules/vehicle/fuel-modal.js',
+  'modules/vehicle/fuel-card.js',
+  // TASK-144: Fuel Bar Correction — ditaruh SETELAH fuel-card.js (dependency:
+  // FuelGaugeEngine, FuelTankProfile, FuelStorage, FuelCard, FuelModal —
+  // semua sudah dimuat sebelum titik ini). Satu file tunggal
+  // (fuel-intelligence-ui.js) sesuai TASK-REF-001, bukan dipecah
+  // fuel-gauge-ui.js/fuel-bar-correction.js terpisah.
+  'modules/vehicle/fuel-intelligence-ui.js',
+  // TASK-146: Fuel Consumption Prediction Engine — ditaruh SETELAH
+  // fuel-intelligence-ui.js (dependency: FuelGaugeEngine/fuelEfficiency()
+  // sudah dimuat di atas, DAN field D.vehicles[i].fuelState yang dibaca
+  // engine ini pertama kali DITULIS oleh FuelBarCorrection.save() di file
+  // itu — urutan load tidak mengubah runtime behavior krn fuelState cuma
+  // dibaca saat method dipanggil, bukan saat file di-load, tapi ditaruh
+  // berdekatan biar kelompok modul fuel tetap berurutan sesuai
+  // dependency logicalnya). Engine-only, 0 UI, PURE/read-only.
+  'modules/vehicle/fuel-prediction-engine.js',
+  // TASK-147: Fuel Cost Analytics Engine — ditaruh SETELAH
+  // fuel-prediction-engine.js (dependency: FuelStorage/fuelEfficiency()/
+  // FuelPredictionEngine semua sudah dimuat sebelum titik ini). Engine-only,
+  // 0 UI, PURE/read-only — 0 rumus km/L/Rp-per-km/proyeksi baru, 100% REUSE.
+  'modules/vehicle/fuel-cost-analytics.js',
+  // TASK-148: Fuel Maintenance Intelligence Engine — ditaruh SETELAH
+  // fuel-cost-analytics.js (dependency: FuelCostAnalytics/fuelEfficiency()/
+  // predictService()/_vehicleFuelEfficiencyDropCheck()/findVehicleSpec()
+  // semua sudah dimuat sebelum titik ini). Engine-only, 0 UI, PURE/
+  // read-only — 0 rumus km/L/Rp-per-km/servis/degradasi baru, 100% REUSE.
+  'modules/vehicle/fuel-maintenance-engine.js',
+  // TASK-149: Fuel Insight Engine — ditaruh SETELAH fuel-maintenance-engine.js
+  // (dependency: FuelGaugeEngine/FuelPredictionEngine/FuelCostAnalytics/
+  // FuelMaintenanceEngine semua sudah dimuat sebelum titik ini). Engine-only,
+  // 0 UI, PURE/read-only — 0 rumus km/L/Rp-per-km/servis/degradasi/proyeksi
+  // baru, 100% REUSE seluruh engine fuel yang sudah ada.
+  'modules/vehicle/fuel-insight-engine.js',
+  // TASK-151A: Fuel Fleet Brief Selector — ditaruh SETELAH
+  // fuel-insight-engine.js (dependency: FuelInsightEngine.getSummary()
+  // sudah dimuat sebelum titik ini). Presentation helper only, 0 UI, PURE/
+  // read-only — 0 kalkulasi bisnis baru, 100% REUSE
+  // FuelInsightEngine.getSummary()/highestInsight + curVehicleId (global
+  // SUDAH ADA) utk tie-breaker "kendaraan aktif". Menutup gap TASK-151
+  // (Fuel AI Daily Briefing Integration, di-STOP sesi sebelumnya).
+  'modules/vehicle/fuel-fleet-selector.js',
+  // TASK-153: Fuel Notification & Reminder — ditaruh SETELAH
+  // fuel-fleet-selector.js (dependency: FuelInsightEngine.getInsights()
+  // sudah dimuat sebelum titik ini; FuelModal, dipakai lewat guard typeof
+  // di reminder-notif.js checkAndFireReminders() saat notifikasi diklik,
+  // sudah dimuat lebih awal di modul fuel-modal.js di atas). Translator
+  // murni, 0 UI, PURE/read-only — 0 ambang/rumus reserve/efisiensi/risiko/
+  // prediksi baru, 100% REUSE FuelInsightEngine.getInsights(). Pola SAMA
+  // PERSIS modules/vehicle/vehicle-notif-bridge.js (Sesi 84).
+  'modules/vehicle/fuel-notif-bridge.js',
+  // TASK-150: Fuel Dashboard Integration — ditaruh SETELAH
+  // fuel-notif-bridge.js (dependency: FuelInsightEngine.getSummary()/
+  // FuelModal/FuelBarCorrection semua sudah dimuat sebelum titik ini).
+  // UI presenter only, 0 rumus/skoring baru — 100% REUSE
+  // FuelInsightEngine.getSummary() + FuelModal.open()/
+  // FuelBarCorrection.open() yang sudah ada. Mengelola kendaraan aktifnya
+  // sendiri (this.curVehicleId) supaya TIDAK menyentuh FuelFleetSelector
+  // ataupun FuelInsightEngine sama sekali (batasan task).
+  'modules/vehicle/fuel-dashboard.js',
+  // TASK-154: Multi Vehicle Fuel Comparison — ditaruh SETELAH
+  // fuel-dashboard.js (dependency: FuelInsightEngine.getSummary()/
+  // FuelFleetSelector.selectVehicle()/FuelModal.open() semua sudah dimuat
+  // sebelum titik ini). Presentation only, 0 engine/storage baru — 100%
+  // REUSE FuelInsightEngine.getSummary() (per kendaraan) +
+  // FuelFleetSelector.selectVehicle() (badge prioritas fleet-wide) +
+  // FuelModal.open() (buka modal saat kendaraan dipilih).
+  'modules/vehicle/fuel-compare.js',
+
+  'modules/vehicle/vehicle-decision-api.js',
+  'modules/vehicle/vehicle-recommendation-engine.js',
+  'modules/vehicle/vehicle-priority-scoring.js',
+  'modules/vehicle/vehicle-action-recommendation.js',
+  'modules/vehicle/vehicle-decision-presenter.js',
+  'modules/vehicle/vehicle-automation-api.js',
+  'modules/vehicle/vehicle-reminder-scheduler.js',
+  'modules/vehicle/vehicle-maintenance-automation.js',
+  'modules/vehicle/vehicle-tax-document-automation.js',
+  'modules/vehicle/vehicle-automation-presenter.js',
+
+  // Sesi 87 (Batch 8): Finance & Vehicle Cross Integration Foundation —
+  // ditaruh SETELAH seluruh modul finance/vehicle (dependency: butuh
+  // FinanceDashboard/FinanceIntelligence & VehicleAIHook/
+  // VehicleIntelligence sudah dimuat lebih dulu), sebelum app-bootstrap.js.
+  'modules/cross/finance-vehicle-cross-summary.js',
+  'modules/cross/cross-ai-hook.js',
+  'modules/cross/cross-dashboard-card.js',
+  'modules/cross/cross-insight-presenter.js',
+
+  // Sesi 88 (Batch 8): Unified AI Briefing Foundation — ditaruh SETELAH
+  // cross-ai-hook.js (dependency: butuh CrossAIHook sudah dimuat lebih
+  // dulu), sebelum app-bootstrap.js.
+  'modules/cross/unified-summary-api.js',
+  'modules/cross/unified-ai-briefing.js',
+  'modules/cross/unified-briefing-presenter.js',
+
+  // Sesi 89 (Batch 8): Personal Life Dashboard Foundation — ditaruh
+  // SETELAH unified-briefing-presenter.js (dependency: butuh
+  // UnifiedSummaryAPI/UnifiedAIBriefing sudah dimuat lebih dulu), sebelum
+  // app-bootstrap.js. Urutan internal: summary API dulu, lalu 3 presenter
+  // yang konsumsi-nya, baru orchestrator (UnifiedDashboardHome) yang
+  // memanggil ketiga presenter itu.
+  'modules/cross/life-dashboard-summary-api.js',
+  'modules/cross/priority-engine.js',
+  'modules/cross/personal-overview-presenter.js',
+  'modules/cross/cross-module-widgets.js',
+  'modules/cross/life-priority-panel.js',
+  'modules/cross/unified-dashboard-home.js',
+
+  // Sesi 90 (Batch 8): Personal Decision Center Foundation — ditaruh
+  // SETELAH unified-dashboard-home.js (dependency: DecisionCenterAPI
+  // butuh LifeDashboardSummaryAPI/PriorityEngine sudah dimuat lebih
+  // dulu, keduanya di atas). Urutan internal: data API dulu, lalu 2
+  // presenter yang konsumsi-nya, baru orchestrator (DecisionCenterHome)
+  // yang memanggil keduanya.
+  'modules/cross/decision-center-api.js',
+  'modules/cross/recommendation-panel.js',
+  'modules/cross/action-queue.js',
+  'modules/cross/decision-center-home.js',
   'app-bootstrap.js',
   'modules/shared/feature-icons.js',
   'modules/dashboard-hub/dashboard-hub-registry.js',
@@ -152,11 +436,34 @@ const GROUP_B = [
   'modules/dashboard-hub/dashboard-hub-search.js',
   'modules/dashboard-hub/dashboard-hub-favorit.js',
   'modules/dashboard-hub/dashboard-hub-favorit-view.js',
+
+  // S129 (Dashboard Settings): dashboard-hub-settings.js ditaruh SETELAH
+  // dashboard-hub-registry.js/dashboard-hub.js/modules-render.js (dependency:
+  // DashboardSettings.applyDashCardOrder()/renderDashCardOrderUI() butuh
+  // DASH_CARD_BY_KEY/DASH_RENDER_ORDER dari modules-render.js — sudah dimuat
+  // lebih dulu, lihat GROUP_A). Tidak ada file lain yang bergantung ke file
+  // ini saat load time (cuma dipanggil via typeof-guard dari
+  // renderDashboard()/renderSettings()/DashboardHub.render()), jadi aman
+  // ditaruh di titik manapun SETELAH dependency-nya.
+  'modules/dashboard-hub/dashboard-hub-settings.js',
   'modules/ai/ai-command-center.js',
   'modules/self-reward/self-reward-engine.js',
   'modules/self-reward/self-reward-view.js',
   'modules/self-reward/self-reward-ai-widget.js',
   'modules/asset/investasi.js',
+
+  // S101 (Batch 10): Asset Portfolio Foundation — ditaruh SETELAH
+  // investasi.js (dependency: AssetPortfolioAPI._investment() butuh
+  // `Investment` sudah dimuat lebih dulu). `Aset` (aset.js)/
+  // `totalSaldoAkun` (akun.js)/`Kekayaan` (modules-calc.js) sudah dimuat
+  // lebih dulu (GROUP_A) — TIDAK perlu forward-reference utk ketiganya,
+  // pola sama persis debt-optimizer-api.js/retirement-planner-api.js
+  // yang dependency-nya juga sudah dimuat lebih dulu.
+  'modules/asset/asset-portfolio-api.js',
+
+  // Presenter Sesi 132 (audit): ditaruh langsung setelah API-nya, pola
+  // sama persis debt-optimizer-api.js -> debt-optimizer-presenter.js.
+  'modules/asset/asset-portfolio-presenter.js',
 
   // --- LifeOS: layer orkestrasi read-only di atas D (lihat
   // lifeos-data-model.md). Urutan WAJIB: store -> registry -> link-registry

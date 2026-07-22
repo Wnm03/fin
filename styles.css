@@ -396,6 +396,14 @@ textarea.fi { resize: vertical; min-height: 80px; }
 .chip-btn { padding: 11px 14px; border-radius: var(--r-pill); border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); font-size: var(--fs-label); font-weight: 600; cursor: pointer; white-space: nowrap; transition: all var(--dur-moderate); }
 .chip-btn:active { transform: scale(0.94); }
 .chip-btn.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 12px var(--accent-soft); }
+
+/* fuel-intelligence-ui.js (TASK-144) — bar picker #fbcBarPicker. Tombol
+   dasarnya 100% reuse .chip-btn di atas (0 style baru utk warna/hover/
+   active); aturan di bawah cuma menata full-width + kepadatan vertikal
+   yang khusus dibutuhkan tampilan gauge (satu tombol per baris, makin ke
+   atas makin dekat status "penuh" — urutan DOM diatur di JS, wrapper-nya
+   sendiri sudah flex-direction:column-reverse dari markup). */
+#fbcBarPicker .fbc-bar-btn { width: 100%; text-align: center; padding: 10px 14px; }
 .ms-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
 .ms-item:last-child { border-bottom: none; }
 .ms-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border2); cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size:var(--fs-label); transition: all var(--dur-moderate); }
