@@ -1,6 +1,6 @@
 
 // Dipindah ke modules/shared/modules-calc.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
-const MODULE_CALC_VERSION='kw120-batch13-final-integration-release';
+const MODULE_CALC_VERSION='kw154-fuel-comparison-fleet-view';
 const FI={
 assetScopeState:'zakatable',
 investmentAssetValue(){

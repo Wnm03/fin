@@ -15,29 +15,45 @@
 /* moved to modules-render.js: renderVehicleSelect */
 function selectVehicle(id){curVehicleId=id;renderVehicleSelect();renderCnTab();}
 /* moved to modules-render.js: renderCarImportVehicleSelect */
+let vehEditIdx=null;
 function openVehicleModal(){
+vehEditIdx=null;
 renderVehicleManageList();
+document.getElementById('vehFormLabel').textContent='Nama Kendaraan Baru';
 document.getElementById('vehName').value='';
 document.getElementById('vehEmoji').value='🏍️';
 document.getElementById('vehInterval').value='3000';
+const kmWrap=document.getElementById('vehKmAwalWrap');if(kmWrap)kmWrap.style.display='';
+document.getElementById('vehSaveBtn').textContent='+ Tambah Kendaraan';
 openModal('vehicleModal');
 }
-/* moved to modules-render.js: renderVehicleManageList */
-async function editVehicleInterval(i){
+function editVehicle(i){
+vehEditIdx=i;
 const v=D.vehicles[i];
-const val=await showPromptModal({title:'Interval Servis',message:'Interval servis untuk '+v.name+' (KM):',icon:'🔧',inputType:'number',defaultValue:v.serviceIntervalKm||3000});
-if(val===null)return;
-const n=parseFloat(val);
-if(!n||n<=0){toast('⚠️ Interval tidak valid');return;}
-v.serviceIntervalKm=n;save();renderVehicleManageList();renderServisList();toast('✅ Interval servis diperbarui');
+renderVehicleManageList();
+document.getElementById('vehFormLabel').textContent='Edit Kendaraan';
+document.getElementById('vehName').value=v.name;
+document.getElementById('vehEmoji').value=v.emoji||'🏍️';
+document.getElementById('vehInterval').value=v.serviceIntervalKm||3000;
+const kmWrap=document.getElementById('vehKmAwalWrap');if(kmWrap)kmWrap.style.display='none';
+document.getElementById('vehSaveBtn').textContent='Simpan Perubahan';
+openModal('vehicleModal');
 }
 function saveVehicle(){
 const name=document.getElementById('vehName').value.trim();
 const emoji=document.getElementById('vehEmoji').value||'🏍️';
 const interval=parseFloat(document.getElementById('vehInterval').value)||3000;
+if(!name){toast('⚠️ Isi nama kendaraan');return;}
+if(vehEditIdx!==null&&vehEditIdx!==undefined){
+const v=D.vehicles[vehEditIdx];
+if(!v){vehEditIdx=null;return;}
+v.name=name;v.emoji=emoji;v.serviceIntervalKm=interval;
+vehEditIdx=null;
+save();renderVehicleManageList();renderVehicleSelect();renderCarImportVehicleSelect();renderDashboardServisReminder();renderServisList();toast('✅ Kendaraan diperbarui');
+return;
+}
 const kmAwalEl=document.getElementById('vehKmAwal');
 const kmAwal=kmAwalEl?parseFloat(kmAwalEl.value):NaN;
-if(!name){toast('⚠️ Isi nama kendaraan');return;}
 const newId='veh_'+Date.now();
 D.vehicles.push({id:newId,name,emoji,serviceIntervalKm:interval,intervalOverrides:{}});
 if(!isNaN(kmAwal)&&kmAwal>0){

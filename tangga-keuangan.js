@@ -133,21 +133,18 @@ const TanggaKeuangan = {
 if (typeof window !== 'undefined') {
   window.TanggaKeuangan = TanggaKeuangan;
 
-  // Non-invasive hook: render ulang setiap kali halaman Dashboard Hub
-  // ditampilkan, tanpa mengubah fungsi showPage asli di bundle (bungkus,
-  // bukan timpa -- pola aman yang sama dipakai widget2 lain di app ini).
-  const _origShowPage = window.showPage;
-  if (typeof _origShowPage === 'function') {
-    window.showPage = function (name, el) {
-      _origShowPage(name, el);
-      if (name === 'dashboard-hub') {
-        try { TanggaKeuangan.render(); } catch (e) { console.error('TanggaKeuangan render error:', e); }
-      }
-    };
-  }
-  window.addEventListener('load', function () {
-    setTimeout(function () {
-      try { TanggaKeuangan.render(); } catch (e) { console.error('TanggaKeuangan render error:', e); }
-    }, 450);
-  });
+  // S121 (bugfix -- lihat CHECKPOINT.md/RELEASE-NOTES.md): render() TIDAK lagi
+  // di-trigger dari sini. Sebelumnya file ini membungkus window.showPage sendiri
+  // + fallback setTimeout(450ms) di window 'load' -- keduanya gagal di boot
+  // pertama krn page-dashboard-hub adalah landing page DEFAULT (showMain() lewat
+  // refreshCurrentPage(), bukan showPage()), dan setTimeout-nya race melawan
+  // await load() (async, bisa lebih lambat dari 450ms) tanpa retry -- kartu bisa
+  // macet permanen di "Menghitung...". Sekarang TanggaKeuangan.render() dipanggil
+  // dari renderDashboard() (modules/shared/modules-render.js, blok "DASHBOARD HUB
+  // — LIVE WIRING"), titik yang sama dipakai 20+ presenter Dashboard Hub lain:
+  // dipanggil LANGSUNG-sinkron dari showMain() setelah data siap (boot beres,
+  // tanpa tebak-tebak delay) DAN dari tiap save() di seluruh app (live-update
+  // kalau user tetap di Beranda sambil simpan data dari halaman lain). compute()/
+  // render() di atas TIDAK berubah sama sekali -- murni titik pemanggilnya yang
+  // dipindah ke mekanisme yang sudah teruji.
 }

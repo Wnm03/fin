@@ -1,0 +1,235 @@
+// fuel-intelligence-ui.js — Fuel Bar Correction (TASK-144).
+//
+// PRINSIP: UI/orkestrasi TIPIS saja, 100% REUSE FuelGaugeEngine (TASK-143,
+// konversi bar<->liter<->persen) + FuelTankProfile (TASK-142, kapasitas
+// tangki & jumlah bar) — TIDAK ada rumus konversi baru di sini. Modal
+// markup (#fuelBarCorrectionModal) sudah ada di modals.js (dibuat sesi
+// sebelumnya) — modul ini murni mengisi & mewire-nya. Satu file tunggal
+// (bukan dipecah fuel-gauge-ui.js/fuel-bar-correction.js terpisah) sesuai
+// TASK-REF-001 — konsolidasi modul UI/helper kecil yang selalu jalan
+// bersama, supaya tidak menambah fragmentasi file baru sejak awal.
+//
+// Penyimpanan: field baru & OPSIONAL di D.vehicles[i].fuelState (ADDITIVE,
+// pola sama persis D.vehicles[i].fuelTankProfile di fuel-tank-profile.js —
+// kendaraan lama tanpa field ini tetap jalan normal). TIDAK ada koleksi
+// baru di D, TIDAK mengubah riwayat D.bbmLogs (koreksi ini cuma
+// memperbaiki ESTIMASI saat ini, bukan transaksi/log BBM historis).
+//
+// TASK-145 (Fuel Intelligence Integration): trigger UI "⚙️ Koreksi" utk
+// open() akhirnya dipasang di fuel-card.js sesi ini (di luar file ini,
+// 0 baris di sini berubah utk itu). Satu-satunya perubahan di file ini
+// adalah teks toast sukses di save() disamakan dgn spesifikasi task —
+// murni copy, 0 perubahan urutan/logic refresh FuelCard/FuelModal yang
+// sudah ada dari TASK-144.
+const FuelBarCorrection = {
+
+curVehicleId: null,
+selectedBar: null,
+
+// ESTIMATED_SOURCE — nilai yang dipakai field estimatedSource. Konstanta
+// dipisah supaya konsisten & gampang direferensikan test/konsumen lain
+// di masa depan (mis. kalau nanti ada sumber estimasi otomatis lain,
+// tinggal tambah konstanta baru di sini, tidak ada string literal
+// tersebar).
+ESTIMATED_SOURCE_MANUAL: 'manual-bar-correction',
+
+_vehicles() {
+  return (typeof D !== 'undefined' && D.vehicles) ? D.vehicles : [];
+},
+
+_vehicle(vehicleId) {
+  return this._vehicles().find((v) => v.id === vehicleId) || null;
+},
+
+// _currentEstimate(vehicleId) — estimasi BBM saat ini SEBELUM koreksi.
+// Prioritas: (1) veh.fuelState tersimpan (koreksi sebelumnya), (2) log
+// BBM terbaru KALAU full tank (asumsi tangki penuh = tankCapacityLiter,
+// 100% REUSE FuelTankProfile, 0 rumus baru), (3) null (belum ada dasar
+// estimasi apa pun — UI tampilkan "-", bukan menebak angka).
+_currentEstimate(vehicleId) {
+  const veh = this._vehicle(vehicleId);
+  if (!veh) return null;
+  if (veh.fuelState && typeof veh.fuelState.currentFuelLiter === 'number') {
+    return { liter: veh.fuelState.currentFuelLiter, source: 'stored' };
+  }
+  if (typeof FuelStorage !== 'undefined' && typeof FuelTankProfile !== 'undefined') {
+    const latest = FuelStorage.latest(vehicleId);
+    if (latest && latest.fullTank) {
+      const profile = FuelTankProfile.get(vehicleId);
+      if (profile && profile.tankCapacityLiter) {
+        return { liter: profile.tankCapacityLiter, source: 'bbm-log-full' };
+      }
+    }
+  }
+  return null;
+},
+
+// open(vehicleId?) — vehicleId opsional, default curVehicleId (kendaraan
+// aktif, pola sama persis FuelModal.open()). {toast, tidak jadi buka
+// modal} kalau kendaraan tidak ditemukan atau profil tangki belum diatur
+// (butuh tankCapacityLiter & fuelBarCount buat render bar picker & hitung
+// preview — tanpa itu modal tidak berguna).
+open(vehicleId) {
+  const vid = vehicleId || (typeof curVehicleId !== 'undefined' ? curVehicleId : null);
+  const veh = this._vehicle(vid);
+  if (!veh) {
+    if (typeof toast === 'function') toast('⚠️ Kendaraan tidak ditemukan');
+    return;
+  }
+  if (typeof FuelGaugeEngine === 'undefined' || typeof FuelTankProfile === 'undefined') {
+    if (typeof toast === 'function') toast('⚠️ Modul Fuel Gauge belum dimuat');
+    return;
+  }
+  const profile = FuelTankProfile.get(vid);
+  if (!profile || !profile.tankCapacityLiter) {
+    if (typeof toast === 'function') toast('⚠️ Atur dulu profil tangki kendaraan ini (kapasitas liter)');
+    return;
+  }
+
+  this.curVehicleId = vid;
+  this.selectedBar = null;
+
+  const nameEl = document.getElementById('fbcVehName');
+  if (nameEl) nameEl.textContent = (veh.emoji ? veh.emoji + ' ' : '') + veh.name;
+
+  this._renderCurrentEstimate(vid, profile);
+  this._renderBarPicker(vid, profile);
+
+  const previewBox = document.getElementById('fbcPreviewBox');
+  if (previewBox) previewBox.style.display = 'none';
+  const saveBtn = document.getElementById('fbcSaveBtn');
+  if (saveBtn) saveBtn.disabled = true;
+
+  if (typeof openModal === 'function') openModal('fuelBarCorrectionModal');
+},
+
+// _renderCurrentEstimate(vehicleId, profile) — isi kotak "Estimasi
+// Aplikasi" (bar/liter/persen) dari _currentEstimate(). "-" kalau belum
+// ada dasar estimasi apa pun (pola sama placeholder di markup modals.js).
+_renderCurrentEstimate(vehicleId, profile) {
+  const barLabel = document.getElementById('fbcCurrentBarLabel');
+  const literLabel = document.getElementById('fbcCurrentLiterLabel');
+  const percentLabel = document.getElementById('fbcCurrentPercentLabel');
+  const est = this._currentEstimate(vehicleId);
+  if (!est) {
+    if (barLabel) barLabel.textContent = `- / ${profile.fuelBarCount} Bar`;
+    if (literLabel) literLabel.textContent = '- Liter';
+    if (percentLabel) percentLabel.textContent = '-%';
+    return;
+  }
+  const barRes = FuelGaugeEngine.calculateFuelBar(vehicleId, est.liter);
+  const percentRes = FuelGaugeEngine.calculateFuelPercent(vehicleId, est.liter);
+  if (barLabel) barLabel.textContent = `${barRes.ok ? Math.round(barRes.bar) : '-'} / ${profile.fuelBarCount} Bar`;
+  if (literLabel) literLabel.textContent = `${est.liter} Liter`;
+  if (percentLabel) percentLabel.textContent = `${percentRes.ok ? percentRes.percent : '-'}%`;
+},
+
+// _renderBarPicker(vehicleId, profile) — render dinamis 1 tombol per posisi
+// bar (0..fuelBarCount, sesuai profil tangki kendaraan ini — BUKAN
+// hardcode 8 bar). Ditulis urutan menaik (0 dulu) supaya secara visual
+// (wrapper pakai flex-direction:column-reverse di markup) bar TERTINGGI
+// (tangki penuh) muncul PALING ATAS, sama seperti indikator BBM asli di
+// speedometer.
+_renderBarPicker(vehicleId, profile) {
+  const wrap = document.getElementById('fbcBarPicker');
+  if (!wrap) return;
+  const est = this._currentEstimate(vehicleId);
+  const currentBar = est ? Math.round(FuelGaugeEngine.calculateFuelBar(vehicleId, est.liter).bar) : null;
+  let html = '';
+  for (let bar = 0; bar <= profile.fuelBarCount; bar++) {
+    const active = bar === currentBar ? ' active' : '';
+    html += `<button type="button" class="chip-btn fbc-bar-btn${active}" data-onclick="FuelBarCorrection.selectBar(${bar})">${bar} Bar</button>`;
+  }
+  wrap.innerHTML = html;
+},
+
+// selectBar(bar) — dipanggil tiap tap tombol bar picker. Live preview:
+// hitung liter dari bar terpilih (100% REUSE FuelGaugeEngine.
+// calculateFuelLiter(), 0 rumus baru), tampilkan Sebelum/Sesudah/Selisih,
+// aktifkan tombol Simpan.
+selectBar(bar) {
+  if (!this.curVehicleId || typeof FuelGaugeEngine === 'undefined') return;
+  this.selectedBar = bar;
+
+  const wrap = document.getElementById('fbcBarPicker');
+  if (wrap) {
+    Array.prototype.forEach.call(wrap.children, (btn, idx) => {
+      btn.classList.toggle('active', idx === bar);
+    });
+  }
+
+  const literRes = FuelGaugeEngine.calculateFuelLiter(this.curVehicleId, bar);
+  if (!literRes.ok) return;
+  const est = this._currentEstimate(this.curVehicleId);
+  const beforeLiter = est ? est.liter : null;
+  const afterLiter = literRes.liter;
+  const diff = beforeLiter !== null ? Math.round((afterLiter - beforeLiter) * 100) / 100 : null;
+
+  const beforeEl = document.getElementById('fbcBeforeLiter');
+  const afterEl = document.getElementById('fbcAfterLiter');
+  const diffEl = document.getElementById('fbcDiffLiter');
+  if (beforeEl) beforeEl.textContent = beforeLiter !== null ? `${beforeLiter} L` : 'Belum ada data';
+  if (afterEl) afterEl.textContent = `${afterLiter} L`;
+  if (diffEl) diffEl.textContent = diff === null ? '-' : `${diff > 0 ? '+' : ''}${diff} L`;
+
+  const previewBox = document.getElementById('fbcPreviewBox');
+  if (previewBox) previewBox.style.display = '';
+  const saveBtn = document.getElementById('fbcSaveBtn');
+  if (saveBtn) saveBtn.disabled = false;
+},
+
+// save() — target data-action tombol Simpan. Tulis currentFuelBar/
+// currentFuelLiter/correctedAt/estimatedSource/confidenceScore ke
+// D.vehicles[i].fuelState (partial object, additive, TIDAK menyentuh
+// D.bbmLogs/riwayat), panggil save() global (SUDAH ADA, pola sama persis
+// FuelTankProfile.save()), lalu refresh Fuel Intelligence Card + Fuel
+// Modal (kalau sedang terbuka utk kendaraan yang sama).
+save() {
+  if (!this.curVehicleId || this.selectedBar === null || this.selectedBar === undefined) return;
+  const veh = this._vehicle(this.curVehicleId);
+  if (!veh || typeof FuelGaugeEngine === 'undefined') return;
+
+  const literRes = FuelGaugeEngine.calculateFuelLiter(this.curVehicleId, this.selectedBar);
+  if (!literRes.ok) {
+    if (typeof toast === 'function') toast('⚠️ ' + literRes.reason);
+    return;
+  }
+
+  // confidenceScore: 100 — pembacaan manual langsung dari speedometer
+  // fisik adalah ground truth (bukan estimasi tidak langsung dari log
+  // BBM/rata-rata efisiensi), jadi confidence maksimum.
+  veh.fuelState = {
+    currentFuelBar: this.selectedBar,
+    currentFuelLiter: literRes.liter,
+    correctedAt: new Date().toISOString(),
+    estimatedSource: this.ESTIMATED_SOURCE_MANUAL,
+    confidenceScore: 100,
+  };
+  if (typeof save === 'function') save();
+
+  const vid = this.curVehicleId;
+  if (typeof closeModal === 'function') closeModal('fuelBarCorrectionModal');
+  // TASK-145: teks toast disamakan dgn spesifikasi task (sebelumnya
+  // "Estimasi BBM disinkronkan dengan speedometer" — beda kata-kata saja,
+  // 0 perubahan perilaku/logic, reuse toast() global apa adanya).
+  if (typeof toast === 'function') toast('✅ Kalibrasi bensin berhasil diperbarui');
+
+  // Refresh Fuel Intelligence Card — 100% REUSE FuelCard.render() (SUDAH
+  // ADA, TASK-141), 0 logic render baru di sini.
+  if (typeof FuelCard !== 'undefined') FuelCard.render();
+  // Refresh Fuel Modal HANYA kalau sedang terbuka utk kendaraan yang sama
+  // (FuelModal.curVehicleId, SUDAH ADA) — reuse FuelModal.open() apa
+  // adanya (sudah re-render FuelAnalytics/FuelHistory di dalamnya).
+  if (typeof FuelModal !== 'undefined' && FuelModal.curVehicleId === vid) {
+    FuelModal.open(vid);
+  }
+  // TASK-150: Refresh Fuel Dashboard — 100% REUSE FuelDashboard.render()
+  // (SUDAH ADA), pola sama persis refresh FuelCard/FuelModal di atas. 0
+  // logic render baru di sini.
+  if (typeof FuelDashboard !== 'undefined') FuelDashboard.render(vid);
+
+  this.curVehicleId = null;
+  this.selectedBar = null;
+},
+
+};

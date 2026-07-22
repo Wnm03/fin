@@ -26,6 +26,8 @@ const aiDelLowStockEl=document.getElementById('sAIDeliveryLowStock');
 if(aiDelLowStockEl&&typeof setAIDeliveryLowStockThreshold==='function') setAIDeliveryLowStockThreshold(aiDelLowStockEl.value);
 const aiAssetZakatMinEl=document.getElementById('sAIAssetZakatMin');
 if(aiAssetZakatMinEl&&typeof setAIAssetZakatMinThreshold==='function') setAIAssetZakatMinThreshold(aiAssetZakatMinEl.value);
+const ocrMinConfEl=document.getElementById('sOcrMinConfidence');
+if(ocrMinConfEl&&typeof setOcrMinConfidence==='function') setOcrMinConfidence(ocrMinConfEl.value);
 document.getElementById('hNama').textContent=D.profile.nama;
 updateProfilPTKPPreview();
 updateUsiaPreview();

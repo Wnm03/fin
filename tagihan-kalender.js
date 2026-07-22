@@ -137,6 +137,22 @@ const archModal=document.getElementById('billArchiveModal');
 if(archModal&&archModal.classList.contains('open'))renderBillArchive();
 }
 let curBillHistoryId=null, curBillHistoryEditTxId=null;
+// delBillArchive(id) — Hapus permanen entri Riwayat Tagihan Lunas (audit
+// sesi 132: sebelumnya arsip cuma bisa dilihat via "Riwayat Pembayaran",
+// tidak ada cara hapus langsung — satu-satunya jalan tidak langsung
+// adalah hapus transaksi pembayaran terakhir, yang malah mengembalikan
+// tagihan ke status aktif, bukan menghapusnya). Ini murni menghapus
+// record arsipnya sendiri (metadata tagihan yang sudah lunas) — riwayat
+// transaksi pembayaran terkait (D.transactions) TIDAK ikut dihapus,
+// tetap jadi catatan keuangan yang sah (pola sama dgn delAsset/
+// delSparepart yang juga tidak menghapus riwayat transaksi terkait).
+async function delBillArchive(id){
+const b=(D.billsArchive||[]).find(x=>x.id===id);
+if(!b)return;
+if(!await askConfirm(`Hapus permanen catatan arsip "${escapeHtml(b.name)}" dari Riwayat Tagihan Lunas? Riwayat pembayaran (transaksi) yang sudah tercatat TIDAK ikut terhapus.`,{title:'Hapus Arsip Tagihan',okText:'Ya, Hapus',icon:'🗑'}))return;
+D.billsArchive=D.billsArchive.filter(x=>x.id!==id);
+save();renderBillArchive();toast('🗑 Arsip dihapus');
+}
 function openBillHistory(billId){
 curBillHistoryId=billId;
 openModal('billHistoryModal');

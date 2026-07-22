@@ -313,6 +313,80 @@ async delete(i){
 if(!await askConfirm('Hapus produk ini dari etalase?'))return;
 D.products.splice(i,1);save();this.renderList();toast('🗑 Dihapus');
 },
+katEditId:null,
+// editKategori(id) — Fitur Edit Kategori Produk (audit sesi 132: kategori
+// sebelumnya cuma bisa Hapus, tidak bisa rename tanpa hapus+buat ulang).
+// Pola reuse input inline `cobekKategoriNewInput` yang sudah ada (bukan
+// modal baru) — isi input dgn nama lama, tombol berubah jadi "Simpan",
+// tombol Batal muncul. Additive, tidak mengubah alur tambah kategori biasa.
+editKategori(id){
+const kat=D.cobekKategori.find(c=>c.id===id);
+if(!kat)return;
+this.katEditId=id;
+const el=document.getElementById('cobekKategoriNewInput');
+if(el){el.value=kat.name;el.focus();}
+const btn=document.getElementById('cobekKategoriAddBtn');
+if(btn)btn.textContent='💾 Simpan';
+const cancelBtn=document.getElementById('cobekKategoriCancelBtn');
+if(cancelBtn)cancelBtn.style.display='';
+},
+cancelEditKategori(){
+this.katEditId=null;
+const el=document.getElementById('cobekKategoriNewInput');
+if(el)el.value='';
+const btn=document.getElementById('cobekKategoriAddBtn');
+if(btn)btn.textContent='+ Tambah';
+const cancelBtn=document.getElementById('cobekKategoriCancelBtn');
+if(cancelBtn)cancelBtn.style.display='none';
+},
+addKategoriManual(){
+const el=document.getElementById('cobekKategoriNewInput');
+if(!el)return;
+const name=(el.value||'').trim();
+if(!name){toast('⚠️ Nama kategori belum diisi');return;}
+if(this.katEditId){
+const kat=D.cobekKategori.find(c=>c.id===this.katEditId);
+if(!kat){this.cancelEditKategori();return;}
+const clash=D.cobekKategori.find(c=>c.id!==this.katEditId&&c.name.toLowerCase()===name.toLowerCase());
+if(clash){toast(`⚠️ Kategori "${name}" sudah ada`);return;}
+kat.name=name;
+this.katEditId=null;
+save();el.value='';this.renderKategoriList();this.renderList();
+const btn=document.getElementById('cobekKategoriAddBtn');if(btn)btn.textContent='+ Tambah';
+const cancelBtn=document.getElementById('cobekKategoriCancelBtn');if(cancelBtn)cancelBtn.style.display='none';
+toast('✅ Kategori diperbarui');
+return;
+}
+resolveShopKategori(name);
+save();el.value='';this.renderKategoriList();toast('✅ Kategori ditambahkan');
+},
+async delKategori(id){
+const kat=D.cobekKategori.find(c=>c.id===id);
+if(!kat)return;
+const usedCount=D.products.filter(p=>p.kategoriId===id).length;
+const msg=usedCount>0
+?`Hapus kategori "${escapeHtml(kat.name)}"? Dipakai di ${usedCount} produk — kategori produk itu akan dikosongkan (produk & data lain TIDAK ikut terhapus).`
+:`Hapus kategori "${escapeHtml(kat.name)}"?`;
+if(!await askConfirm(msg,{title:'Hapus Kategori',okText:'Ya, Hapus'}))return;
+if(this.katEditId===id)this.cancelEditKategori();
+D.cobekKategori=D.cobekKategori.filter(c=>c.id!==id);
+D.products.forEach(p=>{if(p.kategoriId===id)p.kategoriId='';});
+save();this.renderKategoriList();this.renderList();toast('🗑 Kategori dihapus');
+},
+renderKategoriList(){
+const el=document.getElementById('cobekKategoriList');
+if(!el)return;
+if(!D.cobekKategori||!D.cobekKategori.length){el.innerHTML='<div class="empty"><div class="empty-icon">🏷️</div><div class="empty-text">Belum ada kategori</div></div>';return;}
+el.innerHTML=D.cobekKategori.map(k=>{
+const n=D.products.filter(p=>p.kategoriId===k.id).length;
+return`<div class="tx-item">
+        <div class="tx-icon" style="background:var(--accent2-soft)">🏷️</div>
+        <div class="tx-info"><div class="tx-name">${escapeHtml(k.name)}</div><div class="tx-meta">${n} produk</div></div>
+        <button class="tx-del u-bgaccsoft u-cacc" style="margin-right:6px" data-action="Etalase.editKategori" data-args="${escapeHtml(JSON.stringify([k.id]))}" aria-label="Edit">✏️</button>
+        <button class="tx-del" data-action="Etalase.delKategori" data-args="${escapeHtml(JSON.stringify([k.id]))}" aria-label="Hapus">🗑</button>
+      </div>`;
+}).join('');
+},
 renderList(){
 if(typeof ShopInsight!=='undefined')ShopInsight.render();
 const el=document.getElementById('productList');

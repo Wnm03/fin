@@ -178,6 +178,7 @@ if(t==='laporan'){populateCatFilter();populateAccFilters();renderLaporan();}
 // saat masuk tab Laporan di atas) tetap mengisi semua kartu di ketiga
 // sub-tab sekaligus, terlepas dari sub-tab mana yang lagi aktif.
 const LAPORAN_SUBTAB_ORDER=['ringkasan','aruskas','transaksi'];
+const LAPORAN_SUBTAB_LABEL={ringkasan:'Ringkasan',aruskas:'Arus Kas & Kategori',transaksi:'Transaksi & Export'};
 function setLaporanTab(t,el){
 document.querySelectorAll('#keuanganTab-laporan .lap-subtab').forEach(b=>b.classList.remove('active'));
 if(el) el.classList.add('active');
@@ -185,6 +186,8 @@ else { const idx=LAPORAN_SUBTAB_ORDER.indexOf(t); const btn=document.querySelect
 document.getElementById('laporanTab-ringkasan').classList.toggle('u-dnone', t!=='ringkasan');
 document.getElementById('laporanTab-aruskas').classList.toggle('u-dnone', t!=='aruskas');
 document.getElementById('laporanTab-transaksi').classList.toggle('u-dnone', t!=='transaksi');
+const lapBc=document.getElementById('laporanBreadcrumbSub');
+if(lapBc)lapBc.textContent=LAPORAN_SUBTAB_LABEL[t]||t;
 }
 
 // 2026-07-17 (bagian ke-3): split tab 💰 Kelola jadi 3 sub-tab (Ringkasan /
@@ -193,6 +196,7 @@ document.getElementById('laporanTab-transaksi').classList.toggle('u-dnone', t!==
 // tab Kelola) tetap mengisi semua kartu di ketiga sub-tab sekaligus,
 // terlepas dari sub-tab mana yang lagi aktif.
 const KELOLA_SUBTAB_ORDER=['ringkasan','transaksi','pengaturan'];
+const KELOLA_SUBTAB_LABEL={ringkasan:'Ringkasan',transaksi:'Transaksi',pengaturan:'Kelola Data'};
 function setKelolaTab(t,el){
 document.querySelectorAll('#keuanganTab-kelola .kel-subtab').forEach(b=>b.classList.remove('active'));
 if(el) el.classList.add('active');
@@ -200,6 +204,8 @@ else { const idx=KELOLA_SUBTAB_ORDER.indexOf(t); const btn=document.querySelecto
 document.getElementById('kelolaTab-ringkasan').classList.toggle('u-dnone', t!=='ringkasan');
 document.getElementById('kelolaTab-transaksi').classList.toggle('u-dnone', t!=='transaksi');
 document.getElementById('kelolaTab-pengaturan').classList.toggle('u-dnone', t!=='pengaturan');
+const kelBc=document.getElementById('kelolaBreadcrumbSub');
+if(kelBc)kelBc.textContent=KELOLA_SUBTAB_LABEL[t]||t;
 }
 
 // ---------------------------------------------------------------------------

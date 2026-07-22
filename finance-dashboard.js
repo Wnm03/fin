@@ -11,10 +11,10 @@
 // duplikasi rumus, cuma dipanggil ulang apa adanya krn FinanceIntelligence
 // tidak expose angka net worth mentah sbg field summary()).
 //
-// Dipanggil dari DashboardHub.render() (pola "tambahan murni" sama persis
+// Dipanggil dari renderKeuangan() (DIPINDAH dari DashboardHub.render() di Sesi 133; pola "tambahan murni" sama persis
 // EIEDashboard.render()/DashboardHubAnalytics.render() — lihat komentar di
-// dashboard-hub.js) & dari live-wiring renderDashboard()
-// (modules/shared/modules-render.js), TIDAK ada mekanisme render baru.
+// dashboard-hub.js). Live-wiring renderDashboard() DIHAPUS di Sesi 134 (gap fix,
+// sudah dobel dgn renderKeuangan(), lihat CHANGELOG.md Sesi 134), TIDAK ada mekanisme render baru.
 //
 // AI Hook (getAIHook()): satu pintu masuk read-only utk konsumen AI/briefing
 // masa depan (ai-chat.js dst) — WRAPPER TIPIS ke FinanceIntelligence.summary(),

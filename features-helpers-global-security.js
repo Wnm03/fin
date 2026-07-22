@@ -43,8 +43,8 @@ if(location.hostname==='localhost'||location.hostname==='127.0.0.1')return true;
 }catch(e){ /* anggap bukan dev mode kalau gagal deteksi */ }
 return false;
 }
-const APP_BUILD_VERSION = 'kw120-batch13-final-integration-release';
-const PRODUCTION_BUILD_SYNCED_VERSION = 'kw120-batch13-final-integration-release';
+const APP_BUILD_VERSION = 'kw154-fuel-comparison-fleet-view';
+const PRODUCTION_BUILD_SYNCED_VERSION = 'kw154-fuel-comparison-fleet-view';
 let D = {
 schemaVersion:SCHEMA_VERSION,
 transactions:[],cobek:[],products:[],produsen:[],cobekKategori:JSON.parse(JSON.stringify(DEFAULT_COBEK_KATEGORI)),targets:[],eduFunds:[],reminders:[],bills:[],billsArchive:[],
@@ -465,9 +465,49 @@ applyCardCollapsePrefs();
 applyDashHubMainGridDefaultCollapse();
 autoSnapshotWealthIfNeeded();
 autoSnapshotLifeBalanceIfNeeded();
-renderDashboard(); checkBackup(); checkBills(); populateCatFilter(); populateAccFilters();
+// PERF (unblock PIN-unlock freeze): sebelumnya renderDashboard()+checkBackup()+checkBills()+
+// populateCatFilter()+populateAccFilters()+renderSiapPulang()+checkAndFireReminders() semuanya
+// jalan SINKRON balik ke belakang di sini sebelum layar PIN sempat hilang dari layar — makin
+// banyak transaksi/data, makin kerasa jedanya (freeze sesaat pas PIN benar). renderDashboard()
+// sendiri sudah dipecah: bagian intinya (kartu ringkasan/DASH_RENDER_ORDER) tetap sinkron di sini
+// supaya Beranda langsung kelihatan, sedangkan ~25 presenter tambahannya dijadwalkan lewat
+// runDeferredOrNow() di dalam modules-render.js (lihat catatan di sana). 6 pemanggilan di bawah
+// ini (checkBackup/checkBills/populateCatFilter/populateAccFilters/renderSiapPulang/
+// checkAndFireReminders) BUKAN bagian dari tampilan inti Beranda yang langsung terlihat (populate
+// filter dipakai di halaman Laporan, checkBackup/checkBills/checkAndFireReminders cuma
+// menampilkan banner/notifikasi, renderSiapPulang widget halaman Shop) — jadi disusulkan lewat
+// runDeferredOrNow() yang sama supaya tidak ikut menahan cat pertama Beranda. refreshCurrentPage()
+// TETAP sinkron (di bawah, tidak berubah) krn itu yang benar-benar merender halaman aktif yang
+// sedang dilihat user. 0 perubahan logika/hasil masing-masing fungsi — cuma KAPAN dipanggil.
+//
+// GAP FIX (Sesi 135): renderDashboard() DI SINI selalu dipanggil SINKRON tanpa syarat — padahal
+// `page-dashboard` (Beranda) BUKAN landing page default; landing page default adalah
+// `page-dashboard-hub` (lihat komentar di tangga-keuangan.js & docs/PROJECT_STATE.md), yang
+// dirender lewat refreshCurrentPage() beberapa baris di bawah (renderPageContent('dashboard-hub')
+// -> DashboardHub.render(), sendiri sinkron & berat: bangun ulang seluruh grid fitur + 15+
+// presenter). Jadi pada kasus paling umum (buka app dari kondisi tertutup, PIN muncul di landing
+// page default) baris renderDashboard() di sini menghitung & menggambar SELURUH konten Beranda
+// (Advisor/LifeBalance/AIWidget/FinCoach/AIRecommendCard/AIDailyBriefingCard/loop
+// DASH_RENDER_ORDER 17 kartu) ke halaman yang TIDAK kelihatan sama sekali (ketutup halaman
+// Dashboard Hub) — kerja terbuang persis sebelum DashboardHub.render() yang justru berat & yang
+// BENERAN dilihat user. Sebaliknya kalau Beranda memang halaman aktif (PIN cuma overlay, BUKAN
+// reload, jadi .page.active tetap keingat kalau user lagi di Beranda saat mengunci app),
+// renderDashboard() di sini JUSTRU dobel dgn refreshCurrentPage() -> renderPageContent('dashboard')
+// -> renderDashboard() lagi beberapa baris di bawah (gap yang sama, sudah ada dari sebelum sesi
+// ini, ikut dibereskan sekalian). Solusi: kalau Beranda aktif, biarkan refreshCurrentPage() yang
+// merender (BUKAN dihapus, cuma dipindah biar 1x saja) — tetap sinkron & sama-sama di tick yang
+// sama jadi TIDAK ada regresi "Beranda langsung kelihatan". Kalau Beranda TIDAK aktif,
+// renderDashboard() disusulkan lewat runDeferredOrNow() yang sama dgn 6 pemanggilan non-inti di
+// bawah (state-nya tetap fresh begitu user pindah ke Beranda nanti via showPage(), yang juga
+// manggil renderPageContent('dashboard')->renderDashboard() seperti biasa — 0 perubahan di jalur
+// itu). 0 perubahan logika/hasil renderDashboard() itu sendiri — murni KAPAN/berapa kali dipanggil.
+const _berandaAktifSaatUnlock=!!document.querySelector('.page.active#page-dashboard');
+runDeferredOrNow(function(){
+if(!_berandaAktifSaatUnlock)renderDashboard();
+checkBackup(); checkBills(); populateCatFilter(); populateAccFilters();
 renderSiapPulang();
 checkAndFireReminders();
+});
 setTimeout(checkWeeklySalaryReset,600);
 refreshCurrentPage();
 setTimeout(autoRunSelfTestIfNeeded,800);

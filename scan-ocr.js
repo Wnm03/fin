@@ -821,3 +821,562 @@ toast('❌ Gagal scan: '+scanErrorMessage(err));
 };
 inp.click();
 }
+
+// ==================== BillMultiScan (Sesi 124) ====================
+// BARU: parser & flow scan MULTI-ITEM untuk screenshot "Rincian Tagihan" (mis. Tagihan
+// Kartu Kredit/PayLater marketplace) yang punya BANYAK baris transaksi sekaligus dalam 1
+// foto -- beda dari scanReceipt()/scanBuktiTransfer() dkk di atas yang cuma ambil 1 nominal
+// per foto. Pola screenshot: tiap item biasanya berurutan nama/deskripsi transaksi, lalu
+// tanggal ("23 Jun 2026"), lalu nominal bertanda ("-Rp87.724" / "+Rp463.585"). 100% REUSE
+// ocrRecognize() (di atas) utk ambil teksnya -- parseBillMultiItems() sendiri murni fungsi
+// teks->array (tidak baca/tulis DOM), supaya gampang dites lewat loadSource() (lihat
+// tests/scan-ocr-multi-item-parse.test.js).
+// wajib ada tanda +/- di depan "Rp" -- ini yang membedakan 1 baris ITEM transaksi (selalu
+// bertanda di screenshot rincian tagihan) dari baris ringkasan/footer tanpa tanda (mis.
+// "Total Tagihan" / "Minimal Bayar" / "Rp568.469" polos), supaya baris ringkasan itu TIDAK
+// ikut kebaca sbg item transaksi tersendiri.
+const BILL_MULTI_AMOUNT_RE=/([+\-])\s*Rp\.?\s*(\d[\d.,]*)/i;
+const BILL_MULTI_DATE_RE=/(\d{1,2})\s+([A-Za-z]{3,10})\s+(\d{4})/;
+// baris "chrome" umum di screenshot tagihan (header kolom, tombol, footer total) yang bukan
+// bagian dari 1 item transaksi -- dilewati saat mencari nama/tanggal mundur dari 1 nominal.
+const BILL_MULTI_NOISE_LINE_RE=/^rincian\s*tagihan$|^total\s*tagihan$|^bayar\s*sekarang$|^minimal\s*bayar$|^batas\s*waktu\s*bayar$|^penting\s*:|^lihat\s*detail$/i;
+function _billMultiIsNoiseLine(line){
+if(!line)return true;
+const t=String(line).trim();
+if(!t)return true;
+return BILL_MULTI_NOISE_LINE_RE.test(t);
+}
+// tanggal per baris format "23 Jun 2026" (reuse _bulanIndoMap yang sudah ada di atas file
+// ini, dipakai bareng extractDateFromText()).
+function _billMultiParseDateLine(line){
+if(!line)return null;
+const m=String(line).match(BILL_MULTI_DATE_RE);
+if(!m)return null;
+const[,d,bulanRaw,y]=m;
+const bulan=_bulanIndoMap[bulanRaw.toLowerCase()];
+if(!bulan)return null;
+const iso=`${y}-${String(bulan).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+if(isNaN(new Date(iso).getTime()))return null;
+return iso;
+}
+// Default unchecked utk baris yang biasanya BUKAN tagihan/pengeluaran nyata (pembayaran yang
+// sudah masuk, biaya administrasi e-statement, dst) -- lihat spesifikasi Sesi 124. Baris lain
+// (item tagihan/transaksi biasa) default TERCENTANG.
+function _billMultiDefaultChecked(nama){
+if(!nama)return true;
+const t=String(nama).toUpperCase();
+if(/PAYMENT/.test(t))return false;
+if(/PEMBAYARAN/.test(t))return false;
+if(/E[\s\-.]?STATEMENT/.test(t))return false;
+return true;
+}
+// parseBillMultiItems(text) -- input: teks mentah hasil OCR (result.data.text dari
+// ocrRecognize()). Output: array {nama,tanggal,nominal,checked}. Toleran thd noise OCR:
+// dicari mundur dari tiap baris nominal lewat WINDOW beberapa baris (bukan pola 3-baris
+// kaku), jadi tetap kebaca meski ada baris kosong/noise yang nyempil di antara nama-
+// tanggal-nominal (umum terjadi krn hasil Tesseract).
+function parseBillMultiItems(text){
+if(!text)return[];
+const lines=String(text).split('\n').map(l=>l.trim());
+const items=[];
+for(let i=0;i<lines.length;i++){
+const line=lines[i];
+if(!line||_billMultiIsNoiseLine(line))continue;
+const amtMatch=line.match(BILL_MULTI_AMOUNT_RE);
+if(!amtMatch)continue;
+const nominal=normalizeOcrNumber(amtMatch[2]);
+if(isNaN(nominal)||nominal<=0)continue;
+// cari tanggal mundur dari baris nominal ini (window 4 baris, lewati noise/kosong)
+let tanggal=null,dateLineIdx=-1;
+for(let j=i;j>=Math.max(0,i-4);j--){
+if(j!==i&&BILL_MULTI_AMOUNT_RE.test(lines[j])&&!_billMultiIsNoiseLine(lines[j]))break;
+if(_billMultiIsNoiseLine(lines[j]))continue;
+const iso=_billMultiParseDateLine(lines[j]);
+if(iso){tanggal=iso;dateLineIdx=j;break;}
+}
+// cari nama mundur dari baris tanggal (atau dari baris nominal kalau tanggal tidak ketemu)
+const searchFrom=dateLineIdx>=0?dateLineIdx:i;
+let nama=null;
+for(let j=searchFrom-1;j>=Math.max(0,searchFrom-4);j--){
+const cand=lines[j];
+if(_billMultiIsNoiseLine(cand))continue;
+if(BILL_MULTI_AMOUNT_RE.test(cand))continue;
+if(_billMultiParseDateLine(cand))continue;
+nama=cand;
+break;
+}
+if(!nama)nama='(tanpa nama)';
+items.push({nama,tanggal,nominal:Math.round(nominal),checked:_billMultiDefaultChecked(nama)});
+}
+return items;
+}
+// BillMultiScan -- object flow UI (ambil foto -> OCR -> parseBillMultiItems -> preview
+// checklist -> import terpilih ke D.bills), pola sama persis GoldImport
+// (modules/asset/aset-emas-impor.js: open/preview/commit) & scanAssetPortfolio() di atas
+// (candidate list). 100% reuse ocrRecognize(); TIDAK ada struktur data baru -- item hasil
+// import masuk ke D.bills dgn field yang SAMA PERSIS dgn yang dipakai _saveBillInner()
+// (modules/finance/tagihan-kalender.js).
+const BillMultiScan={
+items:[],
+scan(){
+const inp=document.createElement('input');
+inp.type='file'; inp.accept='image/*';
+inp.onchange=async(e)=>{
+const file=e.target.files[0]; if(!file)return;
+this.items=[];
+openModal('billMultiScanModal');
+this.render();
+const box=document.getElementById('billMultiScanBody');
+if(box)box.innerHTML='🔍 Memindai gambar, mohon tunggu...';
+toast('🔍 Memindai gambar, mohon tunggu...',6000);
+try{
+const result=await ocrRecognize(file);
+const text=result&&result.data?result.data.text:'';
+this.items=parseBillMultiItems(text);
+this.render();
+toast(this.items.length?'✅ '+this.items.length+' item terbaca — cek & koreksi centangnya sebelum impor':'⚠️ Tidak ada item tagihan yang terbaca dari foto ini');
+}catch(err){
+toast('❌ Gagal scan: '+scanErrorMessage(err));
+this.render();
+}
+};
+inp.click();
+},
+render(){
+const box=document.getElementById('billMultiScanBody');
+if(!box)return;
+if(!this.items.length){
+box.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada item terbaca. Scan foto rincian tagihan dulu.</div></div>';
+return;
+}
+box.innerHTML=this.items.map((it,i)=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+<input type="checkbox" ${it.checked?'checked':''} style="width:16px;height:16px;margin-top:2px;flex-shrink:0" data-action="BillMultiScan.toggle" data-args="${escapeHtml(JSON.stringify([i]))}">
+<div style="flex:1;font-size:12px">
+<div style="font-weight:700">${escapeHtml(it.nama)}</div>
+<div class="u-t2">${it.tanggal||'tanggal tidak terbaca'} · ${fmtFull(it.nominal)}</div>
+</div>
+</div>`).join('');
+},
+toggle(i){
+const it=this.items[i];
+if(!it)return;
+it.checked=!it.checked;
+this.render();
+},
+importSelected(){
+const selected=this.items.filter(it=>it.checked);
+if(!selected.length){toast('⚠️ Pilih minimal 1 item dulu');return;}
+selected.forEach(it=>{
+D.bills.push({
+id:uid(),
+name:it.nama,
+amount:it.nominal,
+nextDue:it.tanggal||todayStr(),
+freq:'sekali',
+category:'',
+subcategory:'',
+accountId:D.accounts[0]?.id,
+note:'Impor dari Scan Rincian Tagihan',
+kind:'tagihan',
+shared:false,
+sharedPct:null,
+totalAmount:null
+});
+});
+save();
+closeModal('billMultiScanModal');
+if(typeof refreshBillEverywhere==='function')refreshBillEverywhere();
+toast('✅ '+selected.length+' tagihan diimpor dari scan');
+}
+};
+function scanBillMultiItems(){return BillMultiScan.scan();}
+
+// ==================== UniversalScan (Sesi 125) ====================
+// BARU: scan screenshot BANK / E-WALLET / BIBIT / JAGO (Kantong) buat isi ➕/Edit Akun
+// (accModal) otomatis -- beda dari scanAssetPortfolio() (portofolio ASET, bukan akun) &
+// BillMultiScan (item TAGIHAN, bukan saldo akun). 100% REUSE ocrRecognize() (di atas),
+// D.accounts, save(), recalcAccBalance() (modules/finance/akun.js, dipanggil lewat
+// forward reference runtime -- sama seperti BillMultiScan manggil refreshBillEverywhere()
+// di atas), openModal()/closeModal() bawaan. detectScreenType()/parse*Screen() SEMUA murni
+// fungsi teks->data (tidak baca/tulis DOM) supaya gampang dites lewat loadSource().
+//
+// 4 jenis layar yang dikenali:
+//  - "bank"        : layar akun bank/digital-bank biasa ("Total Saldo", "No. Rekening") -> 1 akun
+//  - "wallet"      : layar e-wallet (GoPay/DANA/OVO/ShopeePay dkk) -> 1 akun
+//  - "bibit"       : layar portofolio Bibit ("Total Investasi"/"Portofolio") -> 1 akun
+//  - "jago_pocket" : layar daftar "Kantong" (Bank Jago dkk, banyak kantong sekaligus
+//                    dalam 1 foto) -> BANYAK akun, pola mirip parseBillMultiItems() di atas
+//
+// Parser di sini bersifat "best effort" (OCR + toleransi noise) -- hasilnya SELALU lewat
+// preview checklist (universalOcrModal) dulu sebelum diimpor, jadi item yang salah baca
+// bisa dicentang-lepas dulu sebelum disimpan ke D.accounts.
+// detectScreenTypeScores(text) -- Batch 19: ekstraksi MURNI dari body scoring yang
+// sebelumnya inline di detectScreenType() (Sesi 125), supaya bisa dipakai ulang oleh
+// detectScreenTypeWithConfidence() tanpa duplikasi aturan skor. detectScreenType() TIDAK
+// berubah kontraknya (tetap return string|null), cuma manggil helper ini sekarang.
+function detectScreenTypeScores(text){
+const t=String(text||'').toLowerCase();
+const scores={bank:0,wallet:0,bibit:0,jago_pocket:0};
+if(/kantong\s*utama|kantong\s*bayar|kantong\s*berbagi|cari\s*kantong/.test(t))scores.jago_pocket+=3;
+if(/aset\s*saya/.test(t))scores.jago_pocket+=2;
+if(/\bbibit\b|reksa\s*dana\s*pasar\s*uang|portofolio\s*saya|top\s*gainer|imbal\s*hasil/.test(t))scores.bibit+=3;
+if(/gopay|\bdana\s*aktif\b|shopeepay|\bovo\b/.test(t))scores.wallet+=3;
+if(/tarik\s*tunai|top\s*up\b/.test(t))scores.wallet+=1;
+if(/no\.?\s*rekening|nomor\s*rekening|total\s*saldo|\btabungan\b|\bdeposito\b/.test(t))scores.bank+=3;
+if(/\brekening\b/.test(t))scores.bank+=1;
+return scores;
+}
+function detectScreenType(text){
+if(!text)return null;
+const scores=detectScreenTypeScores(text);
+let best=null,bestScore=0;
+for(const k in scores){if(scores[k]>bestScore){bestScore=scores[k];best=k;}}
+return bestScore>0?best:null;
+}
+// detectScreenTypeWithConfidence(text) -- Batch 19 Tahap 1, item 1 (Confidence Score).
+// REUSE detectScreenTypeScores()/detectScreenType(), TIDAK mengganti keduanya. confidence
+// dihitung dari margin antara skor tertinggi & skor kedua tertinggi (skor tinggi + margin
+// lebar = yakin; skor tinggi tapi mepet dgn kandidat lain = ragu-ragu), dinormalisasi ke
+// rentang 0..1 lewat pembagi tetap (4 -- margin terbesar yang mungkin dari aturan skor di
+// detectScreenTypeScores()).
+function detectScreenTypeWithConfidence(text){
+const scores=detectScreenTypeScores(text);
+const sorted=Object.keys(scores).map(k=>scores[k]).sort((a,b)=>b-a);
+const type=detectScreenType(text);
+if(!type)return{type:null,confidence:0,scores};
+const best=sorted[0],second=sorted[1]||0;
+const margin=best-second;
+const confidence=Math.max(0,Math.min(1,margin/4));
+return{type,confidence:Math.round(confidence*100)/100,scores};
+}
+// parseBankScreen(text) -- 1 akun: nama pemilik/bank (ditebak dari baris sebelum "No.
+// Rekening") + nominal dari "Total Saldo" (fallback "Saldo" polos).
+function parseBankScreen(text){
+if(!text)return null;
+const mPrimary=text.match(/total\s*saldo[^\d]{0,20}(\d[\d.,]*)/i);
+const m=mPrimary||text.match(/\bsaldo\b[^\d]{0,20}(\d[\d.,]*)/i);
+const nominalRaw=m?normalizeOcrNumber(m[1]):NaN;
+const lines=String(text).split('\n').map(l=>l.trim()).filter(Boolean);
+const relIdx=lines.findIndex(l=>/no\.?\s*rekening|nomor\s*rekening/i.test(l));
+let nama=null;
+if(relIdx>0){
+for(let j=relIdx-1;j>=Math.max(0,relIdx-3);j--){
+if(lines[j]&&!/\d{4,}/.test(lines[j])){nama=lines[j];break;}
+}
+}
+// confidence (Batch 19 item 1): nominal via "Total Saldo" (pola paling spesifik) = 0.9,
+// via fallback "Saldo" polos = 0.6, nominal tidak ketemu = 0. nama ketemu dari baris
+// sebelum "No. Rekening" -> +0.1 (default label "Rekening Bank" generik -> tanpa bonus).
+if(isNaN(nominalRaw))return{nama:nama||'Rekening Bank',nominal:null,confidence:0};
+let confidence=mPrimary?0.9:0.6;
+if(nama)confidence=Math.min(1,confidence+0.1);
+return{nama:nama||'Rekening Bank',nominal:Math.round(nominalRaw),confidence:Math.round(confidence*100)/100};
+}
+// parseWalletScreen(text) -- 1 akun: nama e-wallet ditebak dari brand yang kedetek
+// (GoPay/DANA/OVO/ShopeePay), nominal dari angka "Rp..." pertama yang match (biasanya
+// saldo besar di bagian atas layar).
+function parseWalletScreen(text){
+if(!text)return null;
+const mPrimary=text.match(/\bRp\.?\s*(\d[\d.,]*)\s*(?:\n|$)/i);
+const m=mPrimary||text.match(/Rp\.?\s*(\d[\d.,]*)/i);
+const nominalRaw=m?normalizeOcrNumber(m[1]):NaN;
+let nama='E-Wallet',brandMatched=false;
+if(/gopay/i.test(text)){nama='GoPay';brandMatched=true;}
+else if(/\bdana\b/i.test(text)){nama='DANA';brandMatched=true;}
+else if(/\bovo\b/i.test(text)){nama='OVO';brandMatched=true;}
+else if(/shopeepay/i.test(text)){nama='ShopeePay';brandMatched=true;}
+// confidence (Batch 19 item 1): brand e-wallet kedetek (GoPay/DANA/OVO/ShopeePay) +
+// nominal via pola "Rp... di akhir baris" (biasanya saldo besar paling atas) = 0.9;
+// brand tidak kedetek (fallback nama generik "E-Wallet") atau nominal via fallback "Rp..."
+// bebas posisi = confidence lebih rendah.
+if(isNaN(nominalRaw))return{nama,nominal:null,confidence:0};
+let confidence=(brandMatched?0.7:0.4)+(mPrimary?0.2:0);
+return{nama,nominal:Math.round(nominalRaw),confidence:Math.round(Math.min(1,confidence)*100)/100};
+}
+// parseBibitScreen(text) -- 1 akun: nominal dari "Total Investasi"/"Portofolio"/"Total
+// Aset".
+function parseBibitScreen(text){
+if(!text)return null;
+const mPrimary=text.match(/total\s*(?:investasi|portofolio|aset)[^\d]{0,20}(\d[\d.,]*)/i);
+const m=mPrimary||text.match(/portofolio[^\d]{0,20}(\d[\d.,]*)/i);
+const nominalRaw=m?normalizeOcrNumber(m[1]):NaN;
+if(isNaN(nominalRaw))return{nama:'Bibit',nominal:null,confidence:0};
+return{nama:'Bibit',nominal:Math.round(nominalRaw),confidence:mPrimary?0.9:0.6};
+}
+// parseJagoPocketScreen(text) -- BANYAK akun sekaligus (1 per "Kantong"): cari tiap baris
+// nominal "Rp...", lalu cari nama kantong mundur 1-2 baris (skip label umum "Aset Saya"/
+// "Semua"/"Kantong Saya"/"Investasi" yang bukan nama kantong individual).
+const JAGO_POCKET_AMOUNT_RE=/^Rp\.?\s*(\d[\d.,]*)/i;
+const JAGO_POCKET_NOISE_LINE_RE=/^semua$|^kantong\s*saya$|^investasi$|^aset\s*saya$|^dibagikan$|^cari\s*kantong$/i;
+function parseJagoPocketScreen(text){
+if(!text)return[];
+const lines=String(text).split('\n').map(l=>l.trim()).filter(Boolean);
+const items=[];
+for(let i=0;i<lines.length;i++){
+const m=lines[i].match(JAGO_POCKET_AMOUNT_RE);
+if(!m)continue;
+const nominalRaw=normalizeOcrNumber(m[1]);
+if(isNaN(nominalRaw))continue;
+let nama=null,dist=0;
+for(let j=i-1;j>=Math.max(0,i-2);j--){
+const cand=lines[j];
+if(!cand||JAGO_POCKET_NOISE_LINE_RE.test(cand))continue;
+if(JAGO_POCKET_AMOUNT_RE.test(cand))continue;
+nama=cand;dist=i-j;break;
+}
+if(!nama)continue;
+// confidence (Batch 19 item 1): nama 1 baris di atas nominal (dist===1, pola paling
+// umum) = 0.9; 2 baris di atas (ada baris noise yang dilompati) = 0.7.
+items.push({nama,nominal:Math.round(nominalRaw),confidence:dist===1?0.9:0.7});
+}
+return items;
+}
+function _universalScanEmoji(screenType){
+return{bank:'🏦',wallet:'📱',bibit:'🌱',jago_pocket:'👝'}[screenType]||'💰';
+}
+// UNIVERSAL_SCAN_PARSERS -- Batch 19 Tahap 1, item 4 (Parser Registry). REUSE 100%
+// parseBankScreen()/parseWalletScreen()/parseBibitScreen()/parseJagoPocketScreen() yang
+// SUDAH ADA (Sesi 125) -- registry ini cuma peta screenType->parser supaya UniversalScan
+// tidak perlu if/else berjenjang tiap nambah jenis layar baru. TIDAK ada parser baru,
+// TIDAK ada perubahan aturan parsing (lihat diff parseBankScreen dkk di atas: hanya
+// nambah field `confidence`, bukan ganti logic).
+const UNIVERSAL_SCAN_PARSERS={
+bank:parseBankScreen,
+wallet:parseWalletScreen,
+bibit:parseBibitScreen,
+jago_pocket:parseJagoPocketScreen,
+};
+// runUniversalScanParser(screenType, text) -- lookup di registry lalu normalisasi hasil
+// jadi array (parseJagoPocketScreen sudah array; parseBankScreen/Wallet/Bibit single
+// object -> dibungkus [x]). Dipakai UniversalScan.scan() (lihat di bawah) supaya alur
+// "screenType -> parser -> array item" 1 pintu, bukan diulang di 2 tempat.
+function runUniversalScanParser(screenType,text){
+const parser=UNIVERSAL_SCAN_PARSERS[screenType];
+if(!parser)return[];
+const result=parser(text);
+if(Array.isArray(result))return result;
+return result?[result]:[];
+}
+// validateUniversalScanItem(item) -- Batch 19 Tahap 1, item 2 (Preview Validation). Fungsi
+// MURNI (tidak baca/tulis DOM) yang mengecek 1 item hasil parse SEBELUM ditampilkan di
+// preview checklist (universalOcrModal) / sebelum diimpor ke D.accounts. Tidak mengubah
+// item, cuma melaporkan {valid, issues[]} -- keputusan akhir (tetap ditampilkan tapi
+// dikasih peringatan, vs di-uncheck default) ranah UI (render()), bukan fungsi ini.
+// validateUniversalScanItem(item, minConfidence) -- S128: `minConfidence` sekarang
+// parameter opsional (default OCR_MIN_CONFIDENCE_DEFAULT_PCT/100 = 0.5, SAMA PERSIS
+// angka lama yang tadinya hardcoded), bukan aturan validasi baru -- cuma supaya nilainya
+// bisa disuplai dari Pengaturan (lihat getOcrMinConfidence() di bawah) tanpa mengubah
+// fungsi ini jadi bergantung ke `D` global (tetap murni/gampang dites lewat loadSource(),
+// pemanggil yang urusan baca D.profile).
+function validateUniversalScanItem(item,minConfidence){
+const threshold=typeof minConfidence==='number'&&!isNaN(minConfidence)?minConfidence:(OCR_MIN_CONFIDENCE_DEFAULT_PCT/100);
+const issues=[];
+if(!item||item.nominal==null||isNaN(item.nominal)){
+issues.push('nominal tidak terbaca');
+}else{
+if(item.nominal<=0)issues.push('nominal 0 atau negatif');
+if(item.nominal>100000000000)issues.push('nominal tidak wajar (di atas Rp100 miliar)');
+}
+if(!item||!item.nama||!String(item.nama).trim())issues.push('nama akun kosong');
+else if(String(item.nama).trim().length<2)issues.push('nama akun terlalu pendek, kemungkinan salah baca');
+if(item&&typeof item.confidence==='number'&&item.confidence<threshold)issues.push('confidence rendah, cek ulang manual');
+return{valid:issues.length===0,issues};
+}
+// getOcrMinConfidence()/setOcrMinConfidence(pct) -- S128 (OCR Settings). REUSE 100% pola
+// getter/setter threshold yang SUDAH ADA di project (getAIFinanceOverspendThreshold() di
+// modules/finance/tx-list-cashflow.js, getAIDeliveryThinMarginThreshold() di
+// modules/shop/cobek-pricing.js, dst): simpan sebagai persen (0-100) di
+// D.profile.ocrMinConfidencePct, TIDAK ada struktur data baru (reuse D.profile yang sudah
+// ada, sama seperti threshold AI lainnya), field Pengaturan baca/tulis lewat
+// renderSettings()/autoSaveProfile() (lihat modules/shared/profil-pengaturan.js,
+// modules-render.js) dgn pola persis sama.
+const OCR_MIN_CONFIDENCE_DEFAULT_PCT=50;
+function getOcrMinConfidence(){
+const v=typeof D!=='undefined'&&D.profile&&D.profile.ocrMinConfidencePct;
+return(typeof v==='number'&&v>=0&&v<=100)?v:OCR_MIN_CONFIDENCE_DEFAULT_PCT;
+}
+function setOcrMinConfidence(pct){
+const n=parseInt(pct,10);
+const clamped=(Number.isFinite(n)&&n>=0&&n<=100)?n:OCR_MIN_CONFIDENCE_DEFAULT_PCT;
+if(typeof D!=='undefined'&&D.profile)D.profile.ocrMinConfidencePct=clamped;
+return clamped;
+}
+// UniversalScanHistory -- Batch 19 Tahap 1, item 5 (Universal Scan History). Riwayat
+// ringkas tiap sesi scan (bukan struktur data baru di D -- disimpan terpisah, in-memory +
+// localStorage best-effort, SAMA SEKALI TIDAK menyentuh D.accounts / bentuk akun yang
+// sudah ada, sesuai larangan "JANGAN mengubah struktur data"). add()/list()/clear() murni
+// operasi array biasa, gampang dites lewat loadSource() tanpa stub tambahan.
+const UNIVERSAL_SCAN_HISTORY_KEY='universalScanHistory';
+const UniversalScanHistory={
+_mem:[],
+add(record){
+const entry={
+ts:record&&record.ts?record.ts:Date.now(),
+screenType:record?record.screenType:null,
+totalDetected:record?(record.totalDetected||0):0,
+importedCount:record?(record.importedCount||0):0,
+confidence:record&&typeof record.confidence==='number'?record.confidence:null,
+};
+this._mem.unshift(entry);
+if(this._mem.length>50)this._mem.length=50;
+try{
+if(typeof localStorage!=='undefined'&&localStorage&&typeof localStorage.setItem==='function'){
+localStorage.setItem(UNIVERSAL_SCAN_HISTORY_KEY,JSON.stringify(this._mem));
+}
+}catch(e){/* localStorage tidak tersedia/full -- history in-memory tetap jalan */}
+return entry;
+},
+list(){return this._mem.slice();},
+clear(){
+this._mem=[];
+try{
+if(typeof localStorage!=='undefined'&&localStorage&&typeof localStorage.removeItem==='function'){
+localStorage.removeItem(UNIVERSAL_SCAN_HISTORY_KEY);
+}
+}catch(e){/* no-op */}
+},
+};
+// UniversalScan -- object flow UI (ambil foto -> OCR -> detectScreenType -> parse*Screen ->
+// preview checklist -> import terpilih ke D.accounts), pola sama persis BillMultiScan di
+// atas. Akun yang namanya SUDAH ADA di D.accounts (case-insensitive) di-UPDATE saldonya
+// (pola sama seperti _saveAccInner() di akun.js: baseBalance disesuaikan lewat selisih
+// transaksi supaya riwayat transaksi tidak berubah); yang belum ada dibuatkan akun BARU.
+// TIDAK ada struktur data baru -- field akun yang dipakai SAMA PERSIS dgn D.accounts biasa.
+const UniversalScan={
+screenType:null,
+items:[],
+scanConfidence:0,
+scan(){
+const inp=document.createElement('input');
+inp.type='file'; inp.accept='image/*';
+inp.onchange=async(e)=>{
+const file=e.target.files[0]; if(!file)return;
+this.items=[]; this.screenType=null; this.scanConfidence=0;
+openModal('universalOcrModal');
+this.render();
+const box=document.getElementById('universalOcrBody');
+if(box)box.innerHTML='🔍 Memindai gambar, mohon tunggu...';
+toast('🔍 Memindai gambar, mohon tunggu...',6000);
+try{
+const result=await ocrRecognize(file);
+const text=result&&result.data?result.data.text:'';
+// Batch 19: pakai detectScreenTypeWithConfidence() (bukan detectScreenType() polos)
+// supaya confidence keseluruhan-jenis-layar ikut kesimpan, lalu runUniversalScanParser()
+// (Parser Registry, REUSE parse*Screen() yang sudah ada -- lihat komentar di atasnya).
+const detected=detectScreenTypeWithConfidence(text);
+this.screenType=detected.type;
+this.scanConfidence=detected.confidence;
+const raw=runUniversalScanParser(this.screenType,text);
+this.items=raw.filter(it=>it&&it.nominal!=null&&!isNaN(it.nominal)).map(it=>{
+const validation=validateUniversalScanItem(it,getOcrMinConfidence()/100);
+return{
+nama:it.nama,
+nominal:it.nominal,
+confidence:typeof it.confidence==='number'?it.confidence:null,
+valid:validation.valid,
+issues:validation.issues,
+checked:it.nominal>0&&validation.valid,
+};
+});
+this.render();
+UniversalScanHistory.add({
+screenType:this.screenType,
+totalDetected:this.items.length,
+importedCount:0,
+confidence:this.scanConfidence,
+});
+toast(this.items.length?'✅ '+this.items.length+' akun terbaca ('+(this.screenType||'?')+') — cek & koreksi sebelum impor':'⚠️ Tidak ada saldo akun yang terbaca dari foto ini, isi manual ya');
+}catch(err){
+toast('❌ Gagal scan: '+scanErrorMessage(err));
+this.render();
+}
+};
+inp.click();
+},
+render(){
+const box=document.getElementById('universalOcrBody');
+if(!box)return;
+if(!this.items.length){
+box.innerHTML='<div class="empty"><div class="empty-icon">📷</div><div class="empty-text">Belum ada akun terbaca. Scan foto layar Bank/E-Wallet/Bibit/Jago dulu.</div></div>';
+return;
+}
+const emoji=_universalScanEmoji(this.screenType);
+box.innerHTML=this.items.map((it,i)=>{
+const existing=D.accounts.find(a=>a.name.trim().toLowerCase()===String(it.nama).trim().toLowerCase());
+const confPct=typeof it.confidence==='number'?Math.round(it.confidence*100):null;
+const confBadge=confPct==null?'':` · <span style="color:${confPct>=70?'var(--green,#2e7d32)':'var(--orange,#b45309)'}">confidence ${confPct}%</span>`;
+const warn=(!it.valid&&it.issues&&it.issues.length)?`<div class="u-t2" style="color:var(--red,#c0392b)">⚠️ ${escapeHtml(it.issues.join('; '))}</div>`:'';
+// Batch 19 item 3 (Editable Preview): nama & nominal jadi <input> (data-action
+// UniversalScan.updateItem), bukan teks statis lagi -- user bisa koreksi hasil OCR yang
+// salah baca langsung di preview, sebelum importSelected() (tidak berubah kontraknya:
+// tetap baca this.items[i].nama/nominal/checked, cuma sumbernya sekarang bisa hasil edit
+// manual juga, bukan cuma hasil OCR).
+return`<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+<input type="checkbox" ${it.checked?'checked':''} style="width:16px;height:16px;margin-top:2px;flex-shrink:0" data-action="UniversalScan.toggle" data-args="${escapeHtml(JSON.stringify([i]))}">
+<div style="flex:1;font-size:12px">
+<div style="font-weight:700;display:flex;align-items:center;gap:4px">${emoji} <input type="text" value="${escapeHtml(it.nama)}" style="font-weight:700;border:1px solid var(--border);border-radius:4px;padding:2px 4px;flex:1;min-width:0" data-action="UniversalScan.updateItemField" data-args="${escapeHtml(JSON.stringify([i,'nama']))}"></div>
+<div class="u-t2" style="display:flex;align-items:center;gap:4px;margin-top:2px">Rp <input type="number" value="${it.nominal}" style="border:1px solid var(--border);border-radius:4px;padding:2px 4px;width:110px" data-action="UniversalScan.updateItemField" data-args="${escapeHtml(JSON.stringify([i,'nominal']))}">${existing?' · akun sudah ada, saldo akan diupdate':' · akun baru akan dibuat'}${confBadge}</div>
+${warn}
+</div>
+</div>`;
+}).join('');
+},
+toggle(i){
+const it=this.items[i];
+if(!it)return;
+it.checked=!it.checked;
+this.render();
+},
+// updateItemField(i, field, value) -- Batch 19 item 3 (Editable Preview). Dipanggil dari
+// <input onchange> lewat data-action (pola sama persis toggle() di atas). field cuma
+// 'nama'|'nominal' (2 kolom yang ditampilkan editable di render()); nominal divalidasi ulang
+// lewat validateUniversalScanItem() (item 2, REUSE, bukan aturan validasi baru) supaya
+// badge ⚠️ & status checked ikut nyesuaian kalau user perbaiki jadi valid (atau sebaliknya).
+updateItemField(i,field,value){
+const it=this.items[i];
+if(!it)return;
+if(field==='nama'){
+it.nama=value;
+}else if(field==='nominal'){
+const n=typeof value==='number'?value:normalizeOcrNumber(String(value));
+it.nominal=isNaN(n)?null:Math.round(n);
+}else{
+return;
+}
+const validation=validateUniversalScanItem(it,getOcrMinConfidence()/100);
+it.valid=validation.valid;
+it.issues=validation.issues;
+this.render();
+},
+importSelected(){
+const selected=this.items.filter(it=>it.checked);
+if(!selected.length){toast('⚠️ Pilih minimal 1 akun dulu');return;}
+const emoji=_universalScanEmoji(this.screenType);
+let created=0,updated=0;
+selected.forEach(it=>{
+const existing=D.accounts.find(a=>a.name.trim().toLowerCase()===String(it.nama).trim().toLowerCase());
+if(existing){
+const txDelta=recalcAccBalance(existing.id)-(existing.baseBalance!==undefined?existing.baseBalance:(existing.balance||0));
+existing.baseBalance=it.nominal-txDelta;
+existing.balance=it.nominal;
+updated++;
+} else {
+D.accounts.push({id:'acc_'+Date.now()+'_'+created,name:it.nama,emoji,baseBalance:it.nominal,balance:it.nominal,includeInBalance:true,jenis:'kas_bebas'});
+created++;
+}
+});
+save();
+closeModal('universalOcrModal');
+if(typeof renderAccGrid==='function')renderAccGrid();
+if(typeof populateAccFilters==='function')populateAccFilters();
+if(typeof renderDashAccList==='function')renderDashAccList();
+if(typeof renderLapAccList==='function')renderLapAccList();
+// Batch 19 item 5: catat hasil impor di history entry paling baru (dibuat scan() di atas),
+// biar UniversalScanHistory.list() bisa nunjukin "10 terbaca, 8 diimpor" bukan cuma "10
+// terbaca". REUSE entry yang sama (unshift di scan()), bukan bikin entry duplikat.
+const last=UniversalScanHistory._mem[0];
+if(last)last.importedCount=selected.length;
+toast('✅ '+selected.length+' akun diimpor dari scan ('+created+' baru, '+updated+' diupdate)');
+}
+};
+function scanUniversal(){return UniversalScan.scan();}
