@@ -70,7 +70,7 @@ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=
 D.lastBackup=new Date().toISOString();save();
 document.getElementById('lastBackup').textContent=new Date().toLocaleDateString('id-ID');
 document.getElementById('backupBadge').textContent='💾 Backup';
-document.getElementById('backupBanner').classList.add('hidden');
+document.getElementById('backupBanner')?.classList.add('hidden');
 if(typeof BackupHistoryAPI!=='undefined')BackupHistoryAPI.recordEntry({type:'local',status:'success',done:['File lokal (JSON)']});
 toast('✅ Backup berhasil!');
 }
@@ -360,7 +360,7 @@ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=
 D.lastBackup=new Date().toISOString();save();
 const lb=document.getElementById('lastBackup');if(lb)lb.textContent=new Date().toLocaleDateString('id-ID');
 document.getElementById('backupBadge').textContent='💾 Backup';
-document.getElementById('backupBanner').classList.add('hidden');
+document.getElementById('backupBanner')?.classList.add('hidden');
 if(typeof BackupHistoryAPI!=='undefined')BackupHistoryAPI.recordEntry({type:'custom',status:'success',done:['Backup custom ('+format+')']});
 closeModal('backupModal');
 toast('✅ Backup berhasil di-download!');
@@ -479,9 +479,9 @@ toast('📦 Backup otomatis dijalankan (sudah lewat 7 hari)',4000);
 },900);
 }
 function checkBackup(){
-if(!D.lastBackup){document.getElementById('backupBanner').classList.remove('hidden');document.getElementById('backupBadge').textContent='⚠️ Backup';_autoBackupIfOverdue();return;}
+if(!D.lastBackup){document.getElementById('backupBanner')?.classList.remove('hidden');document.getElementById('backupBadge').textContent='⚠️ Backup';_autoBackupIfOverdue();return;}
 const days=Math.floor((new Date()-new Date(D.lastBackup))/(1000*60*60*24));
-if(days>=7){document.getElementById('backupBanner').classList.remove('hidden');document.getElementById('lastBackupDate').textContent=new Date(D.lastBackup).toLocaleDateString('id-ID');document.getElementById('backupBadge').textContent='⚠️ Backup';_autoBackupIfOverdue();}
+if(days>=7){document.getElementById('backupBanner')?.classList.remove('hidden');const lbd=document.getElementById('lastBackupDate');if(lbd)lbd.textContent=new Date(D.lastBackup).toLocaleDateString('id-ID');document.getElementById('backupBadge').textContent='⚠️ Backup';_autoBackupIfOverdue();}
 if(D.lastBackup)document.getElementById('lastBackup').textContent=new Date(D.lastBackup).toLocaleDateString('id-ID');
 }
 function setImportType(type,el){

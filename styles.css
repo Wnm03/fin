@@ -517,6 +517,13 @@ textarea.fi { resize: vertical; min-height: 80px; }
 .pm-btn.active { background:var(--accent-soft); color:var(--accent); border-color:var(--accent); }
 .pm-icon { font-size:var(--fs-icon); display:block; margin-bottom:3px; }
 .cn-tabs { display:flex; gap:var(--sp-2); margin-bottom:var(--sp-5); }
+/* Breadcrumb kecil untuk navigasi 3-lapis (page -> tab -> subtab), mis.
+   Keuangan -> Laporan -> Ringkasan/Aruskas/Transaksi. Murni label teks,
+   ditulis oleh setLaporanTab()/setKelolaTab()/setPjkTab() lewat textContent
+   ke span di dalamnya — tidak ada navigasi/logic baru, cuma penanda posisi
+   supaya user tidak "nyasar" setelah 2-3 tap masuk. */
+.page-breadcrumb{font-size:11px;color:var(--text3);margin:-6px 0 10px;padding:0 2px;}
+.page-breadcrumb .pb-current{color:var(--text2);font-weight:600;}
 .cn-tab { flex:1; padding:var(--sp-4) var(--sp-1); border-radius:var(--r-md); border:1px solid var(--border); background:var(--surface2); color:var(--text2); font-size:var(--fs-label); font-weight:700; cursor:pointer; text-align:center; }
 .cn-tab.active { background:var(--accent); color:white; border-color:var(--accent); }
 /* 2026-07-17: sub-tab nav utk split tab Laporan (Keuangan) — class SENGAJA
@@ -837,6 +844,13 @@ textarea.fi { resize: vertical; min-height: 80px; }
    dropdown hasil, empty-state, & item aktif bisa dipakai/dites. */
 .dashhub-search-wrap{position:relative;margin-bottom:14px;}
 .dashhub-search-results{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:5;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);max-height:320px;overflow-y:auto;}
+/* Discoverability fix (audit "Bottom nav cuma 6 slot"): chip pintas ke section
+   "Semua Fitur" (#dashHubMainGridCard), tepat di bawah search bar. Murni
+   tambahan visual, tidak menyentuh markup/CSS yang sudah ada di atasnya —
+   lihat dashHubOpenAllFeatures() di dashboard-hub.js untuk logic klik. */
+.dashhub-explore-link{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;padding:9px 12px;border-radius:var(--r-pill);border:1px dashed var(--border2);background:transparent;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;width:100%;}
+.dashhub-explore-link:active{transform:scale(0.97);}
+@media (min-width:600px){.dashhub-explore-link:hover{border-color:var(--accent);color:var(--accent);}}
 .dashhub-search-item{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;user-select:none;border-bottom:1px solid var(--border);}
 .dashhub-search-item:last-child{border-bottom:none;}
 .dashhub-search-item:active,.dashhub-search-item:hover{background:var(--surface3);}

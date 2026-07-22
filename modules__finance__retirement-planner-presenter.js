@@ -11,10 +11,10 @@
 // Pensiun langsung. Pola SAMA PERSIS `DebtOptimizerPresenter.render()`
 // (Sesi 96 — 3 kartu, container `findash-grid` generik yang sama).
 //
-// Dipanggil dari DashboardHub.render() (pola "tambahan murni" sama
+// Dipanggil dari renderKeuangan() (DIPINDAH dari DashboardHub.render() di Sesi 133; pola "tambahan murni" sama
 // persis DebtOptimizerPresenter.render() — lihat komentar di
-// dashboard-hub.js) & dari live-wiring renderDashboard()
-// (modules/shared/modules-render.js), TIDAK ada mekanisme render baru.
+// dashboard-hub.js). Live-wiring renderDashboard() DIHAPUS di Sesi 134 (gap fix,
+// sudah dobel dgn renderKeuangan(), lihat CHANGELOG.md Sesi 134), TIDAK ada mekanisme render baru.
 // CSS TIDAK baru — reuse penuh class findash-grid/findash-card (grid
 // generik, sudah dipakai FinanceDashboard/.../DebtOptimizerPresenter/dst).
 const RetirementPlannerPresenter = {

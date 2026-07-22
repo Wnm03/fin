@@ -14,7 +14,9 @@
 // (beda dari VehicleInsightPresenter yang selalu tampil krn berupa
 // angka ringkasan, bukan daftar).
 //
-// Dipanggil dari DashboardHub.render() & live-wiring renderDashboard()
+// Dipanggil dari renderCnTab() (modules/shared/modules-render.js) — DIPINDAH dari
+// DashboardHub.render() di Sesi 133, live-wiring renderDashboard() DIHAPUS di Sesi 134
+// (gap fix, sudah dobel dgn renderCnTab(), lihat CHANGELOG.md Sesi 134)
 // (modules/shared/modules-render.js), TIDAK ada mekanisme render baru.
 const VehicleAlertPanel = {
 

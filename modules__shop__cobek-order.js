@@ -129,6 +129,7 @@ wrap.innerHTML=`
 
 const Order={
 items:[],
+editId:null,
 populateProductSelect(){
 const sel=document.getElementById('oProductSelect');
 if(!sel)return;
@@ -136,6 +137,7 @@ sel.innerHTML=D.products.map(p=>`<option value="${p.id}">${escapeHtml(p.name)} (
 },
 openModal(){
 if(!D.products.length){toast('⚠️ Tambah produk di Etalase dulu');return;}
+Order.editId=null;
 Order.items=[];
 document.getElementById('oDate').value=new Date().toISOString().split('T')[0];
 ['oCustName','oCustPhone','oCustAddr','oNote'].forEach(id=>document.getElementById(id).value='');
@@ -148,7 +150,45 @@ const oAccEl=document.getElementById('oAcc');
 if(oAccEl) oAccEl.innerHTML=D.accounts.map(a=>`<option value="${a.id}">${a.emoji} ${escapeHtml(a.name)}</option>`).join('');
 Order.populateProductSelect();
 Order.renderItems();
+const titleEl=document.getElementById('orderModalTitle');if(titleEl)titleEl.textContent='Transaksi Baru';
+const delBtn=document.getElementById('orderDelBtn');if(delBtn)delBtn.style.display='none';
 openModal('orderModal');
+},
+// kw-shop-edit: buka modal orderModal dalam mode edit (isi ulang form dari data D.cobek yang
+// sudah ada, lalu saat Simpan _saveInner memanggil recordShopSale() dengan existingShopId ->
+// engine yang sama persis dipakai applyTxShopSaleFromTx() utk update in-place, TIDAK ada
+// formula/kalkulasi baru). Transaksi Shop lama tanpa field items[] (format "data lama") belum
+// bisa diedit di sini -- hapus & catat ulang.
+openEditModal(id){
+if(!D.products.length){toast('⚠️ Tambah produk di Etalase dulu');return;}
+const t=D.cobek.find(x=>x.id===id);
+if(!t){toast('⚠️ Transaksi tidak ditemukan');return;}
+if(!t.items||!t.items.length){toast('⚠️ Transaksi lama (format lama) belum bisa diedit di sini — hapus & catat ulang kalau perlu koreksi.');return;}
+Order.editId=id;
+Order.items=t.items.map(it=>({productId:it.productId,qty:it.qty,hargaOverride:(it.harga!=null?it.harga:null)}));
+document.getElementById('oDate').value=t.date||new Date().toISOString().split('T')[0];
+document.getElementById('oCustName').value=(t.customer&&t.customer.name)||'';
+document.getElementById('oCustPhone').value=(t.customer&&t.customer.phone)||'';
+document.getElementById('oCustAddr').value=(t.customer&&t.customer.address)||'';
+document.getElementById('oNote').value=t.note||'';
+document.getElementById('oDiskon').value=t.diskon||'';
+document.getElementById('oOngkir').value=t.ongkir||'';
+document.getElementById('oPriceType').value=t.priceType==='reseller'?'reseller':'jual';
+const oCustHintEl=document.getElementById('oCustHint'); if(oCustHintEl){oCustHintEl.style.display='none';oCustHintEl.innerHTML='';}
+const oDeliveredEl=document.getElementById('oDelivered'); if(oDeliveredEl){oDeliveredEl.checked=t.delivered!==false;toggleOrderDeliveredField();}
+const oAccEl=document.getElementById('oAcc');
+if(oAccEl){oAccEl.innerHTML=D.accounts.map(a=>`<option value="${a.id}">${a.emoji} ${escapeHtml(a.name)}</option>`).join('');if(t.accountId)oAccEl.value=t.accountId;}
+Order.populateProductSelect();
+Order.renderItems();
+const titleEl=document.getElementById('orderModalTitle');if(titleEl)titleEl.textContent='Edit Transaksi';
+const delBtn=document.getElementById('orderDelBtn');if(delBtn)delBtn.style.display='flex';
+openModal('orderModal');
+},
+async deleteFromModal(){
+if(!Order.editId)return;
+const before=D.cobek.length;
+await Laporan.delete(Order.editId);
+if(D.cobek.length<before){Order.editId=null;closeModal('orderModal');}
 },
 addItem(){
 const pid=document.getElementById('oProductSelect').value;
@@ -234,18 +274,30 @@ const date=document.getElementById('oDate').value;
 const priceType=document.getElementById('oPriceType').value;
 const delivered=document.getElementById('oDelivered')?document.getElementById('oDelivered').checked:true;
 const note=document.getElementById('oNote').value;
-const txId=uid();
+const isEdit=!!Order.editId;
+const existing=isEdit?D.cobek.find(c=>c.id===Order.editId):null;
+const txId=(existing&&existing.txLinkId)?existing.txLinkId:uid();
+// kw-shop-edit: existingShopId->recordShopSale() (di cobek-tx-cart.js) yg kembalikan stok lama
+// & apply stok baru, engine sama persis dgn yg sudah dipakai applyTxShopSaleFromTx().
 const result=recordShopSale({
 items,subtotal,diskon,ongkir,total,profit,date,note,customer,priceType,delivered,
-accountId:accId,txId,existingShopId:null
+accountId:accId,txId,existingShopId:isEdit?Order.editId:null
 });
 if(!result.ok){toast('⚠️ '+result.message);return;}
 const itemSummary=items.map(it=>it.name+' x'+it.qty).join(', ');
-D.transactions.push({id:txId,type:'income',amount:total,category:'Bisnis',subcategory:'Cobek',accountId:accId,payMethod:'tunai',note:(customer.name?customer.name+' - ':'')+itemSummary,date,cobekLinkId:result.shopId});
+const txNote=(customer.name?customer.name+' - ':'')+itemSummary;
+if(isEdit&&existing&&existing.txLinkId){
+const tx=D.transactions.find(x=>x.id===existing.txLinkId);
+if(tx)Object.assign(tx,{amount:total,accountId:accId,note:txNote,date,cobekLinkId:result.shopId});
+else D.transactions.push({id:txId,type:'income',amount:total,category:'Bisnis',subcategory:'Cobek',accountId:accId,payMethod:'tunai',note:txNote,date,cobekLinkId:result.shopId});
+} else {
+D.transactions.push({id:txId,type:'income',amount:total,category:'Bisnis',subcategory:'Cobek',accountId:accId,payMethod:'tunai',note:txNote,date,cobekLinkId:result.shopId});
+}
 save();
 const marginPct=total>0?(profit/total)*100:0;
 if(typeof AIBus!=="undefined")AIBus.emit("delivery.created",{orderId:txId,total,ongkir,delivered,date,marginPct});
-closeModal('orderModal');renderProductList();renderShop();Order.renderRecent();renderDashboard();renderKeuangan();renderSiapPulang();toast('✅ Transaksi tersimpan & tersinkron ke Keuangan');
+Order.editId=null;
+closeModal('orderModal');renderProductList();renderShop();Order.renderRecent();renderDashboard();renderKeuangan();renderSiapPulang();toast(isEdit?'✅ Transaksi diperbarui':'✅ Transaksi tersimpan & tersinkron ke Keuangan');
 },
 renderRecent(){
 const el=document.getElementById('shopRecentList');
@@ -257,11 +309,11 @@ rowHTML(t){
 if(t.items){
 const itemSummary=t.items.map(i=>i.name+' x'+i.qty).join(', ');
 const pendingBadge=t.delivered===false?' <span class="acc-chip u-cacc4" style="background:var(--accent4-soft)">📦 Belum diserahkan</span>':'';
-return`<div class="tx-item">
+return`<div class="tx-item u-pointer" data-action="Order.openEditModal" data-args="${escapeHtml(JSON.stringify([t.id]))}">
         <div class="tx-icon u-bgaccsoft">🪨</div>
         <div class="tx-info"><div class="tx-name">${t.customer&&t.customer.name?escapeHtml(t.customer.name):'Transaksi'} · ${escapeHtml(itemSummary)}${pendingBadge}</div><div class="tx-meta">${t.date}${t.customer&&t.customer.phone?' · '+escapeHtml(t.customer.phone):''} ${t.note?'· '+escapeHtml(t.note):''}</div></div>
         <div class="tx-amount green">${fmt(t.total)}</div>
-        <button class="tx-del" data-action="delShop" data-args="${escapeHtml(JSON.stringify([t.id]))}" aria-label="Hapus">🗑</button>
+        <button class="tx-del" data-stop="1" data-action="delShop" data-args="${escapeHtml(JSON.stringify([t.id]))}" aria-label="Hapus">🗑</button>
       </div>`;
 }
 return`<div class="tx-item">

@@ -2,7 +2,7 @@
 // Dipindah ke modules/shared/modules-render.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Semua fungsi ini murni definisi function global (bukan module), jadi tetap bisa dipanggil dari file manapun
 // yang loadnya belakangan (sama seperti modules-calc.js/features-*.js).
-const MODULE_RENDER_VERSION='kw130-data-management-core-backup-history-health-6';
+const MODULE_RENDER_VERSION='kw139-fix-dashboard-hub-goto-subtab';
 
 function renderPageContent(name){
 if(name==='dashboard')renderDashboard();
@@ -261,10 +261,15 @@ const statusBadge=b._lunas?`<span class="bill-due-badge bill-due-ok">✅ Lunas</
 const anomaly=b._lunas?null:getBillAnomalyInfo(b.id,b.amount);
 const anomalyNote=anomaly?`<div class="u-fs11 u-mt2 u-fw700" style="color:var(--accent4)">⚠️ Naik ${anomaly.pctChange}% dari rata-rata ${anomaly.count}x terakhir (${fmt(anomaly.avgPrev)}) — cek lagi sebelum bayar</div>`:'';
 const actionBtns=b._lunas?
-`<button class="tx-del u-cacc3" data-action="openBillHistory" data-args="${escapeHtml(JSON.stringify([b.id]))}" title="Riwayat Pembayaran" aria-label="Riwayat Pembayaran">📋</button>`:
-`<button class="tx-del" data-action="markBillPaid" data-args="${escapeHtml(JSON.stringify([b.id]))}" title="Bayar sekarang" aria-label="Bayar sekarang">✅</button>
-       <button class="bill-more-btn" data-action="openBillActionsMenu" data-args="${escapeHtml(JSON.stringify([b.id]))}" title="Opsi lainnya" aria-label="Opsi lainnya">⋮</button>`;
-return`<div class="bill-item" style="flex-direction:column;align-items:stretch;gap:8px;${b._lunas?'opacity:0.75':''}">
+`<button class="tx-del u-cacc3" data-stop="1" data-action="openBillHistory" data-args="${escapeHtml(JSON.stringify([b.id]))}" title="Riwayat Pembayaran" aria-label="Riwayat Pembayaran">📋</button>
+       <button class="tx-del u-bgaccsoft u-cacc" data-stop="1" data-action="openBillModal" data-args="${escapeHtml(JSON.stringify([b.id]))}" title="Edit" aria-label="Edit">✏️</button>
+       <button class="tx-del" data-stop="1" data-action="delBill" data-args="${escapeHtml(JSON.stringify([b.id]))}" title="Hapus" aria-label="Hapus">🗑</button>`:
+`<button class="tx-del" data-stop="1" data-action="markBillPaid" data-args="${escapeHtml(JSON.stringify([b.id]))}" title="Bayar sekarang" aria-label="Bayar sekarang">✅</button>
+       <button class="tx-del" data-stop="1" data-action="shareBillWA" data-args="${escapeHtml(JSON.stringify([b.id]))}" title="Kirim ke WhatsApp" aria-label="Kirim ke WhatsApp">💬</button>
+       <button class="tx-del u-cacc3" data-stop="1" data-action="openBillHistory" data-args="${escapeHtml(JSON.stringify([b.id]))}" title="Riwayat Pembayaran" aria-label="Riwayat Pembayaran">📋</button>
+       <button class="tx-del u-bgaccsoft u-cacc" data-stop="1" data-action="openBillModal" data-args="${escapeHtml(JSON.stringify([b.id]))}" title="Edit" aria-label="Edit">✏️</button>
+       <button class="tx-del" data-stop="1" data-action="delBill" data-args="${escapeHtml(JSON.stringify([b.id]))}" title="Hapus" aria-label="Hapus">🗑</button>`;
+return`<div class="bill-item u-pointer" data-action="openBillModal" data-args="${escapeHtml(JSON.stringify([b.id]))}" style="flex-direction:column;align-items:stretch;gap:8px;${b._lunas?'opacity:0.75':''}">
       <div class="u-flex u-aic u-gap10">
         <div class="tx-icon u-bgaccsoft">${icons[b.kind]||'🔔'}</div>
         <div class="tx-info">
@@ -557,29 +562,24 @@ toast('Oke, tidak akan diingatkan lagi. Kamu tetap bisa aktifkan backup kapan sa
 // inc/exp/billStats) — dipakai kalau card butuh (mis. laporanMini, zakatMini, bill), diabaikan
 // kalau tidak. Urutan render sesungguhnya (beda dari urutan checklist Pengaturan di bawah, yang
 // sengaja dikelompokkan per tema) diatur lewat DASH_RENDER_ORDER, bukan urutan array ini.
+// S138 (breadcrumb-navigasi-3lapis, cleanup #page-dashboard lama): 13 entry lama
+// (bill/servisReminder/sewaKiosReminder/backupReminder/danaDarurat/cashflowForecast/
+// timeline/budgetMini/eduFund/zakatMini/laporanMini/siapPulang/ldr) DIHAPUS dari sini —
+// elemen target masing2 (dashBillCard/dashServisReminderCard/dst) HANYA ada di dalam
+// blok HTML #page-dashboard lama (app_production.html/index.html baris 202-325 sebelum
+// dihapus sesi ini), BUKAN di #page-dashboard-hub. 4 entry sisanya (fi/pensiun/absensi/
+// refleksi) TETAP karena elemennya (dashFiCard/dashPensiunCard/dashAbsensiCard/
+// refleksiCard) sudah pindah ke #page-dashboard-hub sejak migrasi Tahap 3a.
 const DASH_CARD_DEFS=[
-{key:'bill',label:'🔔 Tagihan & Cicilan',elId:'dashBillCard',render:(ctx)=>renderDashboardBills(ctx.billStats)},
-{key:'servisReminder',label:'🔧 Pengingat Servis Kendaraan',elId:'dashServisReminderCard',render:()=>renderDashboardServisReminder()},
-{key:'sewaKiosReminder',label:'🏠 Pengingat Tagih Sewa Kios',elId:'dashSewaKiosReminderCard',render:()=>renderDashboardSewaKiosReminder()},
-{key:'backupReminder',label:'☁️ Pengingat Backup Belum Aktif',elId:'dashBackupReminderCard',render:()=>renderDashboardBackupReminder()},
-{key:'danaDarurat',label:'🛟 Dana Darurat',elId:'dashDanaDaruratCard',render:()=>DanaDaruratAI.renderDash()},
-{key:'cashflowForecast',label:'📉 Proyeksi Arus Kas',elId:'cashflowForecastCard',render:()=>renderDashCashflowForecast()},
-{key:'timeline',label:'🗓️ Linimasa Prioritas Keuangan',elId:'timelineWCard',render:()=>TimelineW.render()},
-{key:'budgetMini',label:'📊 Anggaran Bulan Ini',elId:'dashBudgetMiniCard',render:()=>renderDashBudgetMini()},
-{key:'eduFund',label:'🎓 Dana Pendidikan',elId:'dashEduFundMiniCard',render:()=>EduFund.renderDashMini()},
-{key:'zakatMini',label:'🕌 Zakat Penghasilan',elId:'dashZakatMiniCard',render:(ctx)=>renderDashZakatMini(ctx.inc)},
 {key:'fi',label:'🎯 Kebebasan Finansial',elId:'dashFiCard',render:()=>renderFinancialFreedom()},
 {key:'pensiun',label:'🏖️ Dana Pensiun',elId:'dashPensiunCard',render:()=>Pensiun.renderDashMini()},
 {key:'absensi',label:'📅 Absensi Harian',elId:'dashAbsensiCard',render:()=>Payroll.renderDashMini()},
-{key:'laporanMini',label:'📊 Ringkasan Laporan Bulan Ini',elId:'dashLaporanMiniCard',render:(ctx)=>renderDashLaporanMini(ctx.inc,ctx.exp,ctx.txM)},
 {key:'refleksi',label:'🌱 Refleksi & Self-Care',elId:'refleksiCard',render:()=>Refleksi.renderDashCard()},
-{key:'siapPulang',label:'🪨 Siap Pulang (Untung Shop)',elId:'siapPulangCard',render:()=>renderSiapPulang()},
-{key:'ldr',label:'✈️ Siklus Kerja & Jadwal Pulang',elId:'ldrCard',render:()=>renderLDR()},
 ];
 // Urutan render sesungguhnya di Beranda (beda dari urutan checklist Pengaturan di
 // DASH_CARD_DEFS). Dipisah dari DASH_CARD_DEFS supaya menambah/menyusun ulang checklist
 // Pengaturan tidak diam-diam mengubah urutan tampilan Beranda, begitu juga sebaliknya.
-const DASH_RENDER_ORDER=['ldr','siapPulang','bill','servisReminder','sewaKiosReminder','backupReminder','danaDarurat','cashflowForecast','timeline','zakatMini','budgetMini','laporanMini','fi','pensiun','absensi','eduFund','refleksi'];
+const DASH_RENDER_ORDER=['fi','pensiun','absensi','refleksi'];
 const DASH_CARD_BY_KEY={};
 DASH_CARD_DEFS.forEach(c=>{DASH_CARD_BY_KEY[c.key]=c;});
 function isDashCardOn(key){
@@ -609,13 +609,13 @@ if(!D.dashCardPrefs)D.dashCardPrefs={};
 DASH_CARD_DEFS.forEach(c=>{if(on)delete D.dashCardPrefs[c.key];else D.dashCardPrefs[c.key]=false;});
 save();
 renderDashCardPrefsUI();
-if(document.getElementById('page-dashboard'))renderDashboard();
+if(document.getElementById('page-dashboard-hub'))renderDashboard();
 }
 function toggleDashCardPref(key,checked){
 if(!D.dashCardPrefs)D.dashCardPrefs={};
 if(checked)delete D.dashCardPrefs[key]; else D.dashCardPrefs[key]=false;
 save();
-if(document.getElementById('page-dashboard'))renderDashboard();
+if(document.getElementById('page-dashboard-hub'))renderDashboard();
 }
 
 // runDeferredOrNow(fn) — PERF helper (unblock PIN-unlock/showMain freeze). Menjadwalkan `fn`
@@ -654,15 +654,13 @@ if(typeof FinCoach!=='undefined')FinCoach.renderDash(dashCtx);
 if(typeof AIRecommendCard!=='undefined')AIRecommendCard.render();
 if(typeof AIDailyBriefingCard!=='undefined')AIDailyBriefingCard.render();
 if(typeof AIStatusCard!=='undefined')AIStatusCard.render();
-const cobM=D.cobek.filter(t=>{const d=new Date(t.date);return d.getMonth()===m&&d.getFullYear()===y;}).reduce((s,t)=>s+t.profit,0);
-document.getElementById('dIncome').textContent=fmt(inc);
-document.getElementById('dExpense').textContent=fmt(exp);
-const bal=inc-exp,bEl=document.getElementById('dBalance');
-bEl.textContent=(bal<0?'-':'')+fmt(bal);bEl.className='stat-val '+(bal>=0?'green':'red');
-document.getElementById('dShop').textContent=fmt(cobM)+(cobM>0?' 📈':'');
-const recent=[...D.transactions].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
-document.getElementById('recentTx').innerHTML=recent.length?recent.map(txHTML).join(''):'<div class="empty"><div class="empty-icon">💸</div><div class="empty-text">Belum ada transaksi</div><div class="u-mt10 u-flex u-gap8 u-jcc"><button class="btn btn-income btn-sm" data-action="openTxModal" data-args=\'["income"]\'>+ Catat Pemasukan</button><button class="btn btn-expense btn-sm" data-action="openTxModal" data-args=\'["expense"]\'>- Catat Pengeluaran</button></div></div>';
-renderDashAccList();
+// S138 (breadcrumb-navigasi-3lapis): baris yang dulu menulis ke dIncome/dExpense/
+// dBalance/dShop/recentTx/dashAccList DIHAPUS — elemen2 itu HANYA ada di dalam
+// blok HTML #page-dashboard lama yang sudah dihapus sesi ini (Kekayaan Bersih/
+// Saldo Bulan Ini/Transaksi Terakhir versi Dashboard Hub sudah punya presenter
+// live sendiri — FinanceDashboard/DashboardHubSummary dst, lihat live-wiring di
+// bawah). dashCtx (now/m/y/txM/inc/exp/billStats) TETAP dihitung & dipertahankan
+// apa adanya karena masih dikonsumsi FinCoach.renderDash(dashCtx) di bawah.
 // Card opsional lewat feature registry DASH_CARD_DEFS/DASH_RENDER_ORDER — tiap card dicek dulu ke
 // isDashCardOn() sebelum dihitung/dirender: kalau user matikan lewat Pengaturan → Tampilan →
 // Kartu di Beranda, elemennya disembunyikan DAN fungsi hitungnya SAMA SEKALI TIDAK dipanggil
@@ -708,7 +706,8 @@ console.warn('renderDashboard: card "'+key+'" ('+cardDef.elId+') gagal dirender,
 // loop DASH_RENDER_ORDER di atas) supaya kalau salah satu gagal, TIDAK menjatuhkan sisa
 // renderDashboard() yang dipanggil dari alur simpan data di halaman lain (Keuangan/Shop/dst).
 // PERF (unblock PIN-unlock/showMain freeze, lihat catatan runDeferredOrNow() di
-// features-helpers-global-security.js): blok ~25 presenter di bawah ini TIDAK dicek
+// features-helpers-global-security.js): blok presenter di bawah ini (~18 sejak Sesi 134,
+// 10 Finance + 8 Vehicle DIHAPUS — lihat catatan gap fix di bawah) TIDAK dicek
 // isDashCardOn() dulu (beda dari loop DASH_RENDER_ORDER di atas) & sebelumnya jalan SINKRON di
 // tumpukan JS yang sama dengan showMain() -> layar PIN "membeku" sampai semuanya selesai baru
 // dashboard-core kelihatan, makin kerasa kalau data besar. Sekarang dijadwalkan lewat
@@ -722,28 +721,26 @@ try{
 if(typeof DashboardHubHero!=='undefined')DashboardHubHero.render();
 if(typeof DashboardHubSummary!=='undefined')DashboardHubSummary.render();
 if(typeof DashboardHubAnalytics!=='undefined')DashboardHubAnalytics.render();
-if(typeof FinanceDashboard!=='undefined')FinanceDashboard.render();
-if(typeof FinancialForecastPresenter!=='undefined')FinancialForecastPresenter.render();
-if(typeof BudgetRecommendationPresenter!=='undefined')BudgetRecommendationPresenter.render();
-if(typeof CashFlowProjectionPresenter!=='undefined')CashFlowProjectionPresenter.render();
-if(typeof FinancialGoalPresenter!=='undefined')FinancialGoalPresenter.render();
-if(typeof InvestmentPlannerPresenter!=='undefined')InvestmentPlannerPresenter.render();
-if(typeof DebtOptimizerPresenter!=='undefined')DebtOptimizerPresenter.render();
-if(typeof RetirementPlannerPresenter!=='undefined')RetirementPlannerPresenter.render();
-if(typeof FinancialHealthScorePresenter!=='undefined')FinancialHealthScorePresenter.render();
-if(typeof FinancialRiskDashboardPresenter!=='undefined')FinancialRiskDashboardPresenter.render();
+// Finance Dashboard/Forecast/Budget Reko/Cashflow Proj/Financial Goal/Invest Planner/Debt
+// Optimizer/Retirement Planner/Health Score/Risk Dashboard (10 presenter) — DIHAPUS dari live-
+// wiring ini di Sesi 134 (gap fix pasca-Sesi 133). Alasan asli blok ini ("supaya card Dashboard
+// Hub tetap live-update kalau user simpan data dari halaman lain") sudah TIDAK berlaku buat 10
+// presenter ini krn card-nya sudah pindah keluar dari Dashboard Hub ke #page-keuangan (Sesi 133).
+// Sebelum fix ini, 10 presenter di atas tetap dihitung ulang di SINI setiap kali salah satu dari
+// puluhan titik save() di seluruh app terpanggil (bukan cuma pas buka tab Keuangan) — padahal
+// renderKeuangan() (dipanggil dari titik save() yang SAMA) sudah menghitung ulang persis yang
+// sama. 100% duplikasi kerja, 0 manfaat (containernya sudah tidak ada di Dashboard Hub lagi).
+// Live-update Dashboard Hub utk 10 presenter ini sekarang murni via renderKeuangan().
 if(typeof PropertyManagementPresenter!=='undefined')PropertyManagementPresenter.render();
 if(typeof RentalManagementPresenter!=='undefined')RentalManagementPresenter.render();
 if(typeof AssetPortfolioPresenter!=='undefined')AssetPortfolioPresenter.render();
 if(typeof AssetMaintenancePresenter!=='undefined')AssetMaintenancePresenter.render();
-if(typeof VehicleDashboard!=='undefined')VehicleDashboard.render();
-if(typeof VehicleInsightPresenter!=='undefined')VehicleInsightPresenter.render();
-if(typeof VehicleDailyBrief!=='undefined')VehicleDailyBrief.render();
-if(typeof VehicleAlertPanel!=='undefined')VehicleAlertPanel.render();
-if(typeof VehicleInsightFeed!=='undefined')VehicleInsightFeed.render();
-if(typeof VehicleAnalyticsPresenter!=='undefined')VehicleAnalyticsPresenter.render();
-if(typeof VehicleDecisionPresenter!=='undefined')VehicleDecisionPresenter.render();
-if(typeof VehicleAutomationPresenter!=='undefined')VehicleAutomationPresenter.render();
+// VehicleDashboard/VehicleInsightPresenter/VehicleDailyBrief/VehicleAlertPanel/
+// VehicleInsightFeed/VehicleAnalyticsPresenter/VehicleDecisionPresenter/
+// VehicleAutomationPresenter (8 presenter) — DIHAPUS dari live-wiring ini di Sesi 134
+// (gap fix pasca-Sesi 133), alasan SAMA PERSIS 10 presenter Finance di atas: card-nya
+// sudah pindah ke #page-carnotes (Sesi 133), renderCnTab() (dipanggil dari titik save()
+// yang sama) sudah menghitung ulang yang sama, blok ini tinggal duplikasi kerja.
 if(typeof CrossDashboardCard!=='undefined')CrossDashboardCard.render();
 if(typeof CrossInsightPresenter!=='undefined')CrossInsightPresenter.render();
 if(typeof UnifiedBriefingPresenter!=='undefined')UnifiedBriefingPresenter.render();
@@ -846,6 +843,22 @@ cardEl.classList.add('u-dnone');cardEl.style.display='none';
 }
 function renderKeuangan(){
 if(typeof KeuanganInsight!=='undefined')KeuanganInsight.render();
+// Finance Dashboard/Forecast/Budget Reco/Cashflow Proj/Financial Goal/
+// Invest Planner/Debt Optimizer/Retirement Planner/Health Score/Risk
+// Dashboard (Sesi 75/91-99, Batch 6/10) — DIPINDAH ke sini dari
+// DashboardHub.render() (Sesi 133, permintaan eksplisit user). 100%
+// reuse presenter yang sudah ada, TIDAK ada rumus baru. Container HTML
+// (#findashWrap dst) juga sudah dipindah ke #page-keuangan.
+if(typeof FinanceDashboard!=='undefined')FinanceDashboard.render();
+if(typeof FinancialForecastPresenter!=='undefined')FinancialForecastPresenter.render();
+if(typeof BudgetRecommendationPresenter!=='undefined')BudgetRecommendationPresenter.render();
+if(typeof CashFlowProjectionPresenter!=='undefined')CashFlowProjectionPresenter.render();
+if(typeof FinancialGoalPresenter!=='undefined')FinancialGoalPresenter.render();
+if(typeof InvestmentPlannerPresenter!=='undefined')InvestmentPlannerPresenter.render();
+if(typeof DebtOptimizerPresenter!=='undefined')DebtOptimizerPresenter.render();
+if(typeof RetirementPlannerPresenter!=='undefined')RetirementPlannerPresenter.render();
+if(typeof FinancialHealthScorePresenter!=='undefined')FinancialHealthScorePresenter.render();
+if(typeof FinancialRiskDashboardPresenter!=='undefined')FinancialRiskDashboardPresenter.render();
 document.getElementById('monthLabel').textContent=MONTHS_FULL[curMonth]+' '+curYear;
 renderKeuAbsensiGajiCard();
 const txM=D.transactions.filter(t=>{const d=new Date(t.date);return d.getMonth()===curMonth&&d.getFullYear()===curYear;});
@@ -1133,6 +1146,19 @@ return `<div class="tx-item u-pointer" data-action="openSimModal" data-args="${e
 
 function renderCnTab(){
 if(typeof MobilInsight!=='undefined')MobilInsight.render();
+// Vehicle Dashboard/Insight/Brief/Alert/Insight Feed/Analytics/Decision/
+// Automation (Sesi 77-83, Batch 7) — DIPINDAH ke sini dari
+// DashboardHub.render() (Sesi 133, permintaan eksplisit user). 100%
+// reuse presenter yang sudah ada, TIDAK ada rumus baru. Container HTML
+// (#vehdashWrap dst) juga sudah dipindah ke #page-carnotes.
+if(typeof VehicleDashboard!=='undefined')VehicleDashboard.render();
+if(typeof VehicleInsightPresenter!=='undefined')VehicleInsightPresenter.render();
+if(typeof VehicleDailyBrief!=='undefined')VehicleDailyBrief.render();
+if(typeof VehicleAlertPanel!=='undefined')VehicleAlertPanel.render();
+if(typeof VehicleInsightFeed!=='undefined')VehicleInsightFeed.render();
+if(typeof VehicleAnalyticsPresenter!=='undefined')VehicleAnalyticsPresenter.render();
+if(typeof VehicleDecisionPresenter!=='undefined')VehicleDecisionPresenter.render();
+if(typeof VehicleAutomationPresenter!=='undefined')VehicleAutomationPresenter.render();
 const curKmEl=document.getElementById('cnCurKm');
 if(curKmEl&&!document.getElementById('cnCurKmInput'))curKmEl.textContent=getVehicleKm(curVehicleId).toLocaleString('id-ID')+' km';
 renderCarImportVehicleSelect();

@@ -1690,7 +1690,6 @@ const EXTRA_MODAL_SWEEP_SPECS=[
 {fn:'openQS',args:['qsCarnotes'],id:'qsCarnotes',close:()=>closeQS('qsCarnotes')},
 {fn:'openQS',args:['qsLaporan'],id:'qsLaporan',close:()=>closeQS('qsLaporan')},
 {fn:'openQS',args:['qsAI'],id:'qsAI',close:()=>closeQS('qsAI')},
-{fn:'openQS',args:['qsDashboard'],id:'qsDashboard',close:()=>closeQS('qsDashboard')},
 {fn:'openCalc',args:[undefined],id:'calcModal',close:()=>closeCalc()},
 {fn:'openBillArchive',args:[],id:'billArchiveModal'},
 {fn:'openBillCalendar',args:[],id:'billCalendarModal'},

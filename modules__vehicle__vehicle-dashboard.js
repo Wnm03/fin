@@ -10,10 +10,11 @@
 // tersedia lewat field fleet dari summary(), jadi tidak perlu pembacaan D
 // tambahan apa pun).
 //
-// Dipanggil dari DashboardHub.render() (pola "tambahan murni" sama persis
-// FinanceDashboard.render()/EIEDashboard.render() — lihat komentar di
-// dashboard-hub.js) & dari live-wiring renderDashboard()
-// (modules/shared/modules-render.js), TIDAK ada mekanisme render baru.
+// Dipanggil dari renderCnTab() (DIPINDAH dari DashboardHub.render() di Sesi 133; pola
+// "tambahan murni" sama persis FinanceDashboard.render()/EIEDashboard.render() — lihat
+// komentar di dashboard-hub.js). Live-wiring renderDashboard() DIHAPUS di Sesi 134 (gap
+// fix, sudah dobel dgn renderCnTab(), lihat CHANGELOG.md Sesi 134), TIDAK ada mekanisme
+// render baru.
 //
 // AI Hook (getAIHook()): satu pintu masuk read-only utk konsumen AI/briefing
 // masa depan (ai-chat.js dst) — WRAPPER TIPIS ke VehicleIntelligence.summary()
