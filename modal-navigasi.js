@@ -183,6 +183,18 @@ el.classList.remove('closing');
 el.classList.add('open');
 _syncNavVisibilityForModals();
 }
+// CARD_COLLAPSE_DEFAULT_CLOSED (Sesi 156b, permintaan eksplisit user):
+// key card yang defaultnya TERTUTUP kalau user belum pernah tap toggle-nya
+// sama sekali (belum ada entry di localStorage cardCollapsePrefs). Card di
+// luar daftar ini defaultnya tetap TERBUKA seperti sebelumnya (0 perubahan
+// perilaku). Reuse penuh mekanisme toggleCardCollapse/localStorage yang
+// sudah ada — TIDAK ada storage/mekanisme collapse baru, cuma nilai default
+// saat prefs[key] belum pernah diset.
+const CARD_COLLAPSE_DEFAULT_CLOSED=['vehAnalyticsCard','fuelDashCard','fuelCompareCard','fuelTrendCard'];
+function _cardCollapseShouldBeCollapsed(key,prefs){
+if(Object.prototype.hasOwnProperty.call(prefs,key))return !!prefs[key];
+return CARD_COLLAPSE_DEFAULT_CLOSED.indexOf(key)!==-1;
+}
 function toggleCardCollapse(key,ev){
 if(ev)ev.stopPropagation();
 const body=document.getElementById(key+'-cbody');
@@ -199,22 +211,21 @@ localStorage.setItem('cardCollapsePrefs',JSON.stringify(prefs));
 function applyOneCardCollapsePref(key){
 let prefs={};
 try{prefs=JSON.parse(localStorage.getItem('cardCollapsePrefs')||'{}');}catch(e){}
-if(!prefs[key])return;
 const body=document.getElementById(key+'-cbody');
 const chev=document.getElementById(key+'-chev');
+if(_cardCollapseShouldBeCollapsed(key,prefs)){
 if(body)body.classList.add('collapsed');
 if(chev)chev.classList.add('collapsed');
+}else{
+if(body)body.classList.remove('collapsed');
+if(chev)chev.classList.remove('collapsed');
+}
 }
 function applyCardCollapsePrefs(){
 let prefs={};
 try{prefs=JSON.parse(localStorage.getItem('cardCollapsePrefs')||'{}');}catch(e){}
-Object.keys(prefs).forEach(key=>{
-if(!prefs[key])return;
-const body=document.getElementById(key+'-cbody');
-const chev=document.getElementById(key+'-chev');
-if(body)body.classList.add('collapsed');
-if(chev)chev.classList.add('collapsed');
-});
+const keys=new Set(Object.keys(prefs).concat(CARD_COLLAPSE_DEFAULT_CLOSED));
+keys.forEach(key=>applyOneCardCollapsePref(key));
 }
 function closeModal(id){
 const el=document.getElementById(id);

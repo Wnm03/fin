@@ -2,7 +2,7 @@
 // Dipindah ke modules/shared/modules-render.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
 // Semua fungsi ini murni definisi function global (bukan module), jadi tetap bisa dipanggil dari file manapun
 // yang loadnya belakangan (sama seperti modules-calc.js/features-*.js).
-const MODULE_RENDER_VERSION='kw154-fuel-comparison-fleet-view';
+const MODULE_RENDER_VERSION='kw158-carnotes-subtab-deeplink-cntabidx-fix-600';
 
 function renderPageContent(name){
 if(name==='dashboard')renderDashboard();
@@ -866,22 +866,6 @@ cardEl.classList.add('u-dnone');cardEl.style.display='none';
 }
 function renderKeuangan(){
 if(typeof KeuanganInsight!=='undefined')KeuanganInsight.render();
-// Finance Dashboard/Forecast/Budget Reco/Cashflow Proj/Financial Goal/
-// Invest Planner/Debt Optimizer/Retirement Planner/Health Score/Risk
-// Dashboard (Sesi 75/91-99, Batch 6/10) — DIPINDAH ke sini dari
-// DashboardHub.render() (Sesi 133, permintaan eksplisit user). 100%
-// reuse presenter yang sudah ada, TIDAK ada rumus baru. Container HTML
-// (#findashWrap dst) juga sudah dipindah ke #page-keuangan.
-if(typeof FinanceDashboard!=='undefined')FinanceDashboard.render();
-if(typeof FinancialForecastPresenter!=='undefined')FinancialForecastPresenter.render();
-if(typeof BudgetRecommendationPresenter!=='undefined')BudgetRecommendationPresenter.render();
-if(typeof CashFlowProjectionPresenter!=='undefined')CashFlowProjectionPresenter.render();
-if(typeof FinancialGoalPresenter!=='undefined')FinancialGoalPresenter.render();
-if(typeof InvestmentPlannerPresenter!=='undefined')InvestmentPlannerPresenter.render();
-if(typeof DebtOptimizerPresenter!=='undefined')DebtOptimizerPresenter.render();
-if(typeof RetirementPlannerPresenter!=='undefined')RetirementPlannerPresenter.render();
-if(typeof FinancialHealthScorePresenter!=='undefined')FinancialHealthScorePresenter.render();
-if(typeof FinancialRiskDashboardPresenter!=='undefined')FinancialRiskDashboardPresenter.render();
 document.getElementById('monthLabel').textContent=MONTHS_FULL[curMonth]+' '+curYear;
 renderKeuAbsensiGajiCard();
 const txM=D.transactions.filter(t=>{const d=new Date(t.date);return d.getMonth()===curMonth&&d.getFullYear()===curYear;});
@@ -893,6 +877,25 @@ const net=incReal-expReal;
 document.getElementById('mIncome').textContent=fmtFull(incReal);
 document.getElementById('mExpense').textContent=fmtFull(expReal);
 const nEl=document.getElementById('mNet');nEl.textContent=(net<0?'-':'')+fmtFull(net);nEl.className='stat-val '+(net>=0?'green':'red');
+// GAP FIX Kekayaan Bersih: kartu "📊 Kekayaan Bersih" (#kbSaldoAkun/
+// #kbTotalAset/#kbUtang/#kbPiutang/#kbInventori/#kbNetWorth) DIPINDAH ke
+// halaman #page-keuangan ini (lihat komentar di index.html/
+// app_production.html persis di atas kartu itu: "Dipindah dari tab Zakat
+// (halaman Pajak)"), tapi renderKekayaanBersih() (alias Kekayaan.
+// renderBersih(), modules-calc.js) TIDAK ikut dipindah/ditambahkan ke
+// sini -- satu-satunya pemanggilnya masih renderPajakZakat(), yang HANYA
+// jalan kalau user membuka halaman Pajak/Zakat secara terpisah (lihat
+// `if(name==='pajak')renderPajakZakat();` di atas file ini). Akibatnya
+// kartu ini macet permanen di placeholder statis "Rp 0" di HTML buat
+// user yang belum pernah/tidak sering membuka halaman Pajak/Zakat --
+// padahal kartunya sendiri sudah kelihatan di tab Keuangan yang jauh
+// lebih sering dibuka. Pola gap SAMA PERSIS TanggaKeuangan (Sesi 136,
+// lihat dashboard-hub.js) & DecisionCenterHome (Sesi 118) -- fix-nya
+// sama: panggil LANGSUNG di sini juga, 100% reuse fungsi yang sudah ada
+// (0 rumus baru). Panggilan di renderPajakZakat() TETAP dibiarkan (bukan
+// dihapus) -- perlu utk live-update kalau user sedang di halaman Pajak
+// lalu ubah data zakat/utang di sana.
+if(typeof renderKekayaanBersih!=='undefined')renderKekayaanBersih();
 const {from:txFrom,to:txTo}=getTxListRange();
 const kf=getKeuFilters();
 const txList=D.transactions.filter(t=>{const d=new Date(t.date);return d>=txFrom&&d<=txTo&&txMatchesFilters(t,kf)&&txMatchesSearch(t,kf.search);});
@@ -914,6 +917,29 @@ BudgetReko.init();
 Pensiun.render();
 Renov.render();
 SewaKios.render();
+// PERF (unblock tab-Keuangan freeze, permintaan eksplisit user): 10 presenter finansial di
+// bawah ini (Finance Dashboard/Forecast/Budget Reco/Cashflow Proj/Financial Goal/Invest
+// Planner/Debt Optimizer/Retirement Planner/Health Score/Risk Dashboard — Sesi 75/91-99,
+// DIPINDAH ke #page-keuangan di Sesi 133) SEBELUMNYA jalan SINKRON di paling ATAS
+// renderKeuangan(), sebelum stat cards (mIncome/mExpense/mNet), list transaksi (#allTx), dan
+// Budget/BudgetReko/Pensiun/Renov/SewaKios sempat digambar — jadi user nunggu 10 presenter
+// berat ini kelar duluan sebelum konten inti tab Keuangan yang paling sering dilihat kelihatan.
+// Sekarang bagian inti di atas tetap 100% sinkron (0 perubahan logika/hasil), sedangkan 10
+// presenter ini disusulkan lewat runDeferredOrNow() yang sama dengan yang dipakai showMain()
+// (Sesi 135) — supaya browser sempat nge-paint konten inti dulu baru widget tambahan nyusul.
+// 0 perubahan logika/rumus masing-masing presenter — murni KAPAN dipanggil.
+runDeferredOrNow(function(){
+if(typeof FinanceDashboard!=='undefined')FinanceDashboard.render();
+if(typeof FinancialForecastPresenter!=='undefined')FinancialForecastPresenter.render();
+if(typeof BudgetRecommendationPresenter!=='undefined')BudgetRecommendationPresenter.render();
+if(typeof CashFlowProjectionPresenter!=='undefined')CashFlowProjectionPresenter.render();
+if(typeof FinancialGoalPresenter!=='undefined')FinancialGoalPresenter.render();
+if(typeof InvestmentPlannerPresenter!=='undefined')InvestmentPlannerPresenter.render();
+if(typeof DebtOptimizerPresenter!=='undefined')DebtOptimizerPresenter.render();
+if(typeof RetirementPlannerPresenter!=='undefined')RetirementPlannerPresenter.render();
+if(typeof FinancialHealthScorePresenter!=='undefined')FinancialHealthScorePresenter.render();
+if(typeof FinancialRiskDashboardPresenter!=='undefined')FinancialRiskDashboardPresenter.render();
+});
 }
 
 function renderBudgets(){return Budget.render();}
@@ -1177,8 +1203,13 @@ if(typeof MobilInsight!=='undefined')MobilInsight.render();
 if(typeof VehicleDashboard!=='undefined')VehicleDashboard.render();
 if(typeof VehicleInsightPresenter!=='undefined')VehicleInsightPresenter.render();
 if(typeof VehicleDailyBrief!=='undefined')VehicleDailyBrief.render();
-if(typeof VehicleAlertPanel!=='undefined')VehicleAlertPanel.render();
-if(typeof VehicleInsightFeed!=='undefined')VehicleInsightFeed.render();
+// Sesi 156b (permintaan eksplisit user): VehicleAlertPanel.render()/
+// VehicleInsightFeed.render() TIDAK LAGI dipanggil terpisah di sini —
+// digabung jadi satu panggilan VehicleAttentionPresenter.render() bareng
+// VehicleDecisionPresenter (lihat baris itu di bawah, dihapus dari sana
+// juga) supaya mengisi SATU container #vehAttentionBody ("🧭 Perlu
+// Perhatian"), bukan 3 container/versi terpisah dari info yang sama.
+if(typeof VehicleAttentionPresenter!=='undefined')VehicleAttentionPresenter.render();
 if(typeof VehicleAnalyticsPresenter!=='undefined')VehicleAnalyticsPresenter.render();
 // TASK-141: Fuel Intelligence Card — 100% reuse FuelIntelligenceEngine
 // (yang sendiri 100% reuse VehicleFuelTrendSummary/VehicleReminder di
@@ -1194,7 +1225,14 @@ if(typeof FuelDashboard!=='undefined')FuelDashboard.render();
 // transaksi BBM/servis terjadi lewat renderCnTab() ini sendiri dipanggil
 // ulang (pola sama persis refresh FuelCard/FuelDashboard).
 if(typeof FuelCompare!=='undefined')FuelCompare.render();
-if(typeof VehicleDecisionPresenter!=='undefined')VehicleDecisionPresenter.render();
+// TASK-156: Fuel Trend Dashboard — 100% reuse FuelInsightEngine.getSummary()
+// + FuelCostAnalytics/FuelPredictionEngine/FuelMaintenanceEngine (dipanggil
+// langsung utk field trend granular) + FuelModal.open()/
+// FuelBarCorrection.open(), pola sama persis FuelDashboard.render() di
+// baris atas. Refresh setelah transaksi BBM/servis terjadi lewat
+// renderCnTab() ini sendiri dipanggil ulang (pola sama persis refresh
+// FuelCard/FuelDashboard/FuelCompare).
+if(typeof FuelTrendDashboard!=='undefined')FuelTrendDashboard.render();
 if(typeof VehicleAutomationPresenter!=='undefined')VehicleAutomationPresenter.render();
 const curKmEl=document.getElementById('cnCurKm');
 if(curKmEl&&!document.getElementById('cnCurKmInput'))curKmEl.textContent=getVehicleKm(curVehicleId).toLocaleString('id-ID')+' km';

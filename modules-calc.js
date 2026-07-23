@@ -1,6 +1,6 @@
 
 // Dipindah ke modules/shared/modules-calc.js (Sesi 17-18 restrukturisasi folder — lihat docs/FILE-MAP.md & RENCANA-SESI.md; isi & nama file TIDAK berubah, cuma lokasi folder).
-const MODULE_CALC_VERSION='kw154-fuel-comparison-fleet-view';
+const MODULE_CALC_VERSION='kw158-carnotes-subtab-deeplink-cntabidx-fix-600';
 const FI={
 assetScopeState:'zakatable',
 investmentAssetValue(){
@@ -868,15 +868,25 @@ const totalPiutang=totalPiutangValue();
 const utangManual=D.pajakZakat.utangJT||parsePzNum(document.getElementById('zmUtang')?document.getElementById('zmUtang').value:0);
 const utang=utangManual+totalDebtValue()+totalCicilanOutstanding();
 const netWorth=saldoAkun+totalAset+totalInventori+totalPiutang-utang;
-document.getElementById('kbSaldoAkun').textContent=fmtFull(saldoAkun);
-document.getElementById('kbTotalAset').textContent=fmtFull(totalAset);
+// GAP FIX (lihat renderKeuangan()/modules-render.js, komentar "GAP FIX
+// Kekayaan Bersih"): dulu SEMUA elemen di bawah (kecuali #kbInventori)
+// diakses tanpa guard `if(el)` -- kalau salah satu id belum ada di DOM
+// (mis. dipanggil sebelum halaman terkait ter-render), baris itu THROW
+// & seluruh sisa fungsi (termasuk #kbNetWorth di baris paling bawah)
+// batal dieksekusi, membuat Kekayaan Bersih macet permanen di placeholder
+// statis "Rp 0" di HTML. Sekarang semua elemen di-guard sama rata, pola
+// sama dgn TanggaKeuangan.render()/showDashCardEl() di modules-render.js.
+const saldoEl=document.getElementById('kbSaldoAkun');if(saldoEl)saldoEl.textContent=fmtFull(saldoAkun);
+const asetEl=document.getElementById('kbTotalAset');if(asetEl)asetEl.textContent=fmtFull(totalAset);
 const invEl=document.getElementById('kbInventori');
 if(invEl)invEl.textContent=fmtFull(totalInventori);
-document.getElementById('kbPiutang').textContent=fmtFull(totalPiutang);
-document.getElementById('kbUtang').textContent=fmtFull(utang);
+const piutangEl=document.getElementById('kbPiutang');if(piutangEl)piutangEl.textContent=fmtFull(totalPiutang);
+const utangEl=document.getElementById('kbUtang');if(utangEl)utangEl.textContent=fmtFull(utang);
 const netEl=document.getElementById('kbNetWorth');
+if(netEl){
 netEl.textContent=fmtFullSigned(netWorth);
 netEl.style.color=netWorth<0?'var(--accent2)':'';
+}
 Kekayaan.renderSnapshots();
 }
 };

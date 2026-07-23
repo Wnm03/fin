@@ -1131,6 +1131,31 @@ items.push({nama,nominal:Math.round(nominalRaw),confidence:dist===1?0.9:0.7});
 }
 return items;
 }
+// _normalizeAccNameForMatch/_fuzzyAccountMatch -- BUGFIX (laporan user): parseBankScreen()
+// menebak `nama` dari baris TEPAT SEBELUM "No. Rekening", yang di banyak layar bank/digital-
+// bank (mis. SeaBank) adalah NAMA PEMILIK REKENING ("Wisnu Nur Muhamad"), BUKAN nama bank
+// ("SeaBank"). Padahal importSelected() sebelumnya cuma cocokkan exact-string (trim+lowercase)
+// ke D.accounts -- kalau akun yang sudah ada bernama "SeaBank", nama hasil OCR ("Wisnu Nur
+// Muhamad") TIDAK PERNAH cocok, jadi tiap scan selalu bikin akun baru alih-alih update saldo
+// akun yang sudah ada (persis keluhan user). Fix: tambahkan matcher fuzzy (exact match setelah
+// dinormalisasi, lalu substring kedua arah) dipakai sebagai SARAN default akun tujuan di
+// preview (lihat targetAccId di scan()/render() di bawah) -- user tetap bisa ganti manual lewat
+// dropdown kalau saran salah, & tetap bisa pilih "Buat Akun Baru" eksplisit. 0 perubahan pada
+// parser OCR itu sendiri (parseBankScreen dkk) -- murni menambah lapisan pencocokan akun.
+function _normalizeAccNameForMatch(s){
+return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'').trim();
+}
+function _fuzzyAccountMatch(nama){
+const norm=_normalizeAccNameForMatch(nama);
+if(!norm)return null;
+const exact=D.accounts.find(a=>_normalizeAccNameForMatch(a.name)===norm);
+if(exact)return exact;
+const sub=D.accounts.find(a=>{
+const an=_normalizeAccNameForMatch(a.name);
+return an.length>=3&&(norm.includes(an)||an.includes(norm));
+});
+return sub||null;
+}
 function _universalScanEmoji(screenType){
 return{bank:'🏦',wallet:'📱',bibit:'🌱',jago_pocket:'👝'}[screenType]||'💰';
 }
@@ -1269,6 +1294,7 @@ this.scanConfidence=detected.confidence;
 const raw=runUniversalScanParser(this.screenType,text);
 this.items=raw.filter(it=>it&&it.nominal!=null&&!isNaN(it.nominal)).map(it=>{
 const validation=validateUniversalScanItem(it,getOcrMinConfidence()/100);
+const fuzzy=_fuzzyAccountMatch(it.nama);
 return{
 nama:it.nama,
 nominal:it.nominal,
@@ -1276,6 +1302,7 @@ confidence:typeof it.confidence==='number'?it.confidence:null,
 valid:validation.valid,
 issues:validation.issues,
 checked:it.nominal>0&&validation.valid,
+targetAccId:fuzzy?fuzzy.id:'__new__',
 };
 });
 this.render();
@@ -1302,10 +1329,19 @@ return;
 }
 const emoji=_universalScanEmoji(this.screenType);
 box.innerHTML=this.items.map((it,i)=>{
-const existing=D.accounts.find(a=>a.name.trim().toLowerCase()===String(it.nama).trim().toLowerCase());
+if(it.targetAccId!=='__new__'&&!D.accounts.find(a=>a.id===it.targetAccId))it.targetAccId='__new__';
 const confPct=typeof it.confidence==='number'?Math.round(it.confidence*100):null;
 const confBadge=confPct==null?'':` · <span style="color:${confPct>=70?'var(--green,#2e7d32)':'var(--orange,#b45309)'}">confidence ${confPct}%</span>`;
 const warn=(!it.valid&&it.issues&&it.issues.length)?`<div class="u-t2" style="color:var(--red,#c0392b)">⚠️ ${escapeHtml(it.issues.join('; '))}</div>`:'';
+// BUGFIX (laporan user): dulu status "akun sudah ada"/"akun baru" dihitung dari
+// exact-string-match antara `nama` hasil OCR vs D.accounts -- di layar bank/digital-bank
+// (mis. SeaBank) `nama` yang kebaca sering NAMA PEMILIK REKENING (bukan nama bank), jadi
+// TIDAK PERNAH cocok ke akun yang sudah ada ("SeaBank") & tiap scan selalu bikin akun
+// baru. Sekarang ada dropdown "Akun Tujuan" eksplisit (default: hasil _fuzzyAccountMatch()
+// di atas kalau ketemu, kalau tidak "Buat Akun Baru") -- user bisa arahkan manual ke akun
+// mana saja, importSelected() ikut baca targetAccId ini (bukan cocok-nama lagi).
+const accOptions=`<option value="__new__" ${it.targetAccId==='__new__'?'selected':''}>➕ Buat Akun Baru</option>`+
+D.accounts.map(a=>`<option value="${escapeHtml(a.id)}" ${it.targetAccId===a.id?'selected':''}>🔄 Update: ${escapeHtml(a.name)}</option>`).join('');
 // Batch 19 item 3 (Editable Preview): nama & nominal jadi <input> (data-action
 // UniversalScan.updateItem), bukan teks statis lagi -- user bisa koreksi hasil OCR yang
 // salah baca langsung di preview, sebelum importSelected() (tidak berubah kontraknya:
@@ -1315,11 +1351,20 @@ return`<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;bor
 <input type="checkbox" ${it.checked?'checked':''} style="width:16px;height:16px;margin-top:2px;flex-shrink:0" data-action="UniversalScan.toggle" data-args="${escapeHtml(JSON.stringify([i]))}">
 <div style="flex:1;font-size:12px">
 <div style="font-weight:700;display:flex;align-items:center;gap:4px">${emoji} <input type="text" value="${escapeHtml(it.nama)}" style="font-weight:700;border:1px solid var(--border);border-radius:4px;padding:2px 4px;flex:1;min-width:0" data-action="UniversalScan.updateItemField" data-args="${escapeHtml(JSON.stringify([i,'nama']))}"></div>
-<div class="u-t2" style="display:flex;align-items:center;gap:4px;margin-top:2px">Rp <input type="number" value="${it.nominal}" style="border:1px solid var(--border);border-radius:4px;padding:2px 4px;width:110px" data-action="UniversalScan.updateItemField" data-args="${escapeHtml(JSON.stringify([i,'nominal']))}">${existing?' · akun sudah ada, saldo akan diupdate':' · akun baru akan dibuat'}${confBadge}</div>
+<div class="u-t2" style="display:flex;align-items:center;gap:4px;margin-top:2px">Rp <input type="number" value="${it.nominal}" style="border:1px solid var(--border);border-radius:4px;padding:2px 4px;width:110px" data-action="UniversalScan.updateItemField" data-args="${escapeHtml(JSON.stringify([i,'nominal']))}">${confBadge}</div>
+<div style="margin-top:4px"><select class="fs" style="font-size:11px;padding:4px 6px" onchange="UniversalScan.setTarget(${i},this.value)">${accOptions}</select></div>
 ${warn}
 </div>
 </div>`;
 }).join('');
+},
+// setTarget(i, value) -- dipanggil dari onchange <select> langsung (BUKAN lewat dispatcher
+// data-action, karena dispatcher itu cuma listen event 'click', bukan 'change' -- pola sama
+// dengan <select> lain di app ini, mis. id="txAcc" onchange="_txAccManuallySet=true").
+setTarget(i,value){
+const it=this.items[i];
+if(!it)return;
+it.targetAccId=value||'__new__';
 },
 toggle(i){
 const it=this.items[i];
@@ -1354,7 +1399,12 @@ if(!selected.length){toast('⚠️ Pilih minimal 1 akun dulu');return;}
 const emoji=_universalScanEmoji(this.screenType);
 let created=0,updated=0;
 selected.forEach(it=>{
-const existing=D.accounts.find(a=>a.name.trim().toLowerCase()===String(it.nama).trim().toLowerCase());
+// BUGFIX (laporan user): dulu di sini SELALU cari akun via exact-string-match nama vs
+// D.accounts, walau user sudah punya akun yang tepat tapi namanya beda dari hasil OCR
+// (mis. layar SeaBank yang kebaca "Wisnu Nur Muhamad", bukan "SeaBank") -- akibatnya tiap
+// scan selalu bikin akun baru. Sekarang pakai targetAccId yang dipilih (otomatis lewat
+// _fuzzyAccountMatch() di scan(), atau manual lewat dropdown "Akun Tujuan" di preview).
+const existing=(it.targetAccId&&it.targetAccId!=='__new__')?D.accounts.find(a=>a.id===it.targetAccId):null;
 if(existing){
 const txDelta=recalcAccBalance(existing.id)-(existing.baseBalance!==undefined?existing.baseBalance:(existing.balance||0));
 existing.baseBalance=it.nominal-txDelta;
