@@ -1453,7 +1453,12 @@ const groups=[
 {page:'#page-aset',fn:(typeof setAsetTab==='function')?setAsetTab:null,paneId:t=>'asetTab-'+t},
 {page:'#keuanganTab-laporan',fn:(typeof setLaporanTab==='function')?setLaporanTab:null,paneId:t=>'laporanTab-'+t,btnClass:'.lap-subtab'},
 {page:'#keuanganTab-kelola',fn:(typeof setKelolaTab==='function')?setKelolaTab:null,paneId:t=>'kelolaTab-'+t,btnClass:'.kel-subtab'},
-{page:'#pajakTab-pajak',fn:(typeof setPjkTab==='function')?setPjkTab:null,paneId:t=>'pjkTab-'+t,btnClass:'.pjk-subtab'}
+{page:'#pajakTab-pajak',fn:(typeof setPjkTab==='function')?setPjkTab:null,paneId:t=>'pjkTab-'+t,btnClass:'.pjk-subtab'},
+// Sesi 158 (permintaan eksplisit user): sub-tab bersarang BARU di dalam
+// tab Insight AI/BBM (page-carnotes) — pola SAMA PERSIS 3 entry sub-tab
+// di atas (laporan/kelola/pajak).
+{page:'#cnTab-insight',fn:(typeof setCnInsightTab==='function')?setCnInsightTab:null,paneId:t=>'cniTab-'+t,btnClass:'.cni-subtab'},
+{page:'#cnTab-bbm',fn:(typeof setCnBbmTab==='function')?setCnBbmTab:null,paneId:t=>'cnbTab-'+t,btnClass:'.cnb-subtab'}
 ];
 groups.forEach(g=>{
 if(!g.fn)return;

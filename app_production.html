@@ -79,8 +79,8 @@
 <link rel="preconnect" href="https://accounts.google.com" crossorigin>
 <link rel="dns-prefetch" href="https://accounts.google.com">
 <title>Keluarga W</title>
-<link rel="stylesheet" href="styles.css?v=585">
-<link rel="stylesheet" href="modern-ui-layer.css?v=585">
+<link rel="stylesheet" href="styles.css?v=600">
+<link rel="stylesheet" href="modern-ui-layer.css?v=600">
 <script>
 /* Debug console (Eruda) — aktifkan sekali lewat ?debug=1 di URL, nempel via localStorage.
    Matikan lagi lewat ?debug=0. Tidak aktif buat user biasa. */
@@ -133,8 +133,8 @@ b.appendChild(closeBtn);
 }catch(_e){ console.error('Gagal tampilkan banner error modul:',_e); }
 };
 </script>
-<script src="app-bundle-a.min.js?v=585" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
-<script src="modules/shared/smoke-test.js?v=585" defer></script>
+<script src="app-bundle-a.min.js?v=600" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
+<script src="modules/shared/smoke-test.js?v=600" defer></script>
 <link rel="manifest" id="pwaManifestLink" href="manifest.json">
 </head>
 <body data-theme="fresh">
@@ -1234,6 +1234,42 @@ b.appendChild(closeBtn);
       <div class="card-title">💡 Insight Mobil</div>
       <div id="mobilInsightBody"></div>
     </div>
+  <!-- VEHICLE SELECTOR + ODOMETER (Sesi 156b, permintaan eksplisit user:
+       naikkan ke paling atas — konteks utama "kendaraan mana yang sedang
+       dilihat", jangan dikubur di bawah 11 card lain. DIPINDAH dari lokasi
+       lama (bawah #vehAutomationWrap) ke sini, TIDAK ADA perubahan
+       markup/id/logic — murni urutan DOM yang berubah. -->
+  <div class="vehicle-select" id="vehicleSelect"></div>
+  <div class="card u-mb10 u-flex u-aic u-jcb" style="padding:12px 14px">
+    <div><div class="u-fs12 u-t2 u-fw700" style="text-transform:uppercase;letter-spacing:0.6px">Odometer Saat Ini</div><div class="u-fw800 u-pointer" style="font-size:20px;user-select:none;-webkit-user-select:none" id="cnCurKm" data-action="startEditCurKm" title="Tap untuk edit langsung" aria-label="Edit odometer saat ini">0 km</div></div>
+    <button class="btn btn-ghost btn-sm" data-action="openKmModal" aria-label="Edit/Buka">📏 Update KM</button>
+  </div>
+  <button class="btn btn-ghost btn-full btn-sm u-mb12" data-action="openVehicleModal" aria-label="Edit/Buka">+ Kelola Kendaraan</button>
+
+  <!-- Sesi 157 (permintaan eksplisit user): pecah page-carnotes jadi 4
+       cn-tabs (Insight AI / BBM / Servis / Pajak & SIM) — pola SAMA PERSIS
+       dgn cn-tabs #page-keuangan (setKeuanganTab, tx-list-cashflow.js).
+       Tab-level ini MENGGANTIKAN tab lama "bbm/servis" (dulu di bawah,
+       lihat catatan di #cnPeriodeWrap) — curCnTab (vehicle-core.js)
+       dipakai ulang sebagai state 4 tab ini, TIDAK ADA variable baru.
+       Vehicle selector + Odometer TETAP di luar tab (di atas sini) supaya
+       konteks multi-kendaraan tetap kelihatan di semua tab, tidak
+       berubah sama sekali. TIDAK ADA rumus/render baru — murni
+       reorganisasi DOM + toggle visibility (setCnTab()). -->
+  <div class="cn-tabs">
+    <button class="cn-tab" data-action="setCnTab" data-args='["insight", "$el"]'>🧠 Insight AI</button>
+    <button class="cn-tab active" data-action="setCnTab" data-args='["bbm", "$el"]'>⛽ BBM</button>
+    <button class="cn-tab" data-action="setCnTab" data-args='["servis", "$el"]'>🔧 Servis</button>
+    <button class="cn-tab" data-action="setCnTab" data-args='["pajak", "$el"]'>🚦 Pajak &amp; SIM</button>
+  </div>
+
+  <!-- INSIGHT AI TAB (Sesi 157) — kumpulan 6 card AI/dashboard yang dulu
+       numpuk selalu tampil di atas (Vehicle Dashboard/Insight/Brief/
+       Attention/Analytics/Automation + vehSpecCard), sekarang disembunyikan
+       kecuali tab ini aktif. Semua render() TETAP dipanggil dari
+       renderCnTab() apa adanya (data selalu fresh, murni DOM visibility
+       yang berubah lewat setCnTab()). -->
+  <div id="cnTab-insight" class="u-dnone">
   <!-- Vehicle Dashboard/Insight/Brief/Alert/Insight Feed/Analytics/
        Decision/Automation (Sesi 77-83, Batch 7) — DIPINDAH ke sini
        (Sesi 133, permintaan eksplisit user "pindahkan insight AI ke
@@ -1242,6 +1278,30 @@ b.appendChild(closeBtn);
        container HTML dipindah, diisi render() yang sama persis
        (sekarang dipanggil dari renderCnTab(), modules/shared/
        modules-render.js, bukan lagi dari DashboardHub.render()). -->
+  <!-- Sesi 158 (permintaan eksplisit user): tab Insight AI dipecah lagi
+       jadi 2 sub-tab bersarang (Ringkasan / Rekomendasi & Tren) — pola
+       SAMA PERSIS dgn setPjkTab/setLaporanTab/setKelolaTab (sub-tab
+       nested di dalam satu tab cn-tab). Class BARU .cni-subtab(s),
+       BUKAN reuse .cn-tab/.pjk-subtab/dst — alasan sama persis komentar
+       di styles.css utk class subtab lain: cegah tabrakan query
+       `#page-carnotes .cn-tab` (dipakai setCnTab()) & query subtab page
+       lain. Grouping: "Ringkasan" = 3 card ringkasan angka cepat
+       (vehdashWrap/vehinsightWrap/vehBriefWrap, 100% reuse render()
+       yang sudah ada); "Rekomendasi & Tren" = 4 card actionable/detail
+       (vehAttentionWrap/vehAnalyticsWrap/vehAutomationWrap/vehSpecCard).
+       TIDAK ADA render/rumus baru — murni reorganisasi DOM + toggle
+       visibility (pola sama persis setPjkTab()), render() card tetap
+       dipanggil apa adanya dari renderCnTab() terlepas dari sub-tab mana
+       yang aktif (sama seperti renderPajakZakat() mengisi kedua sub-tab
+       Pajak sekaligus). Vehicle selector + Odometer TETAP di luar (di
+       atas tab #cnTab-insight ini) supaya konteks multi-kendaraan tetap
+       kelihatan di kedua sub-tab, tidak berubah. -->
+  <div class="cn-tabs cni-subtabs">
+    <button type="button" class="cni-subtab active" data-action="setCnInsightTab" data-args='["ringkasan", "$el"]'>📊 Ringkasan</button>
+    <button type="button" class="cni-subtab" data-action="setCnInsightTab" data-args='["rekomendasi", "$el"]'>🧭 Rekomendasi &amp; Tren</button>
+  </div>
+
+  <div id="cniTab-ringkasan">
   <!-- VEHICLE DASHBOARD FOUNDATION (Sesi 77, Batch 7). Section di dalam
        Dashboard Hub, sama seperti #findashWrap di atas — diisi oleh
        VehicleDashboard.render() (dipanggil dari DashboardHub.render() di
@@ -1285,22 +1345,39 @@ b.appendChild(closeBtn);
        SILENT (body dikosongkan) kalau tidak ada apa pun buat ditampilkan
        (pola sama AIDailyBriefingCard/AIStatusCard di ai-chat.js) — beda
        dari #vehdashWrap/#vehinsightWrap yang selalu tampilkan angka
-       ringkasan. -->
+       ringkasan.
+       KONSOLIDASI (Sesi 156d, permintaan eksplisit user): section "Fuel
+       Briefing" 1 kendaraan yang dulu ditambahkan di sini oleh
+       VehicleDailyBrief (TASK-151B) DIPINDAH ke #fuelIntelWrap di bawah
+       (FuelCard) — dua-duanya sama-sama soal BBM kendaraan aktif, jadi
+       digabung jadi SATU card, bukan 2 card berurutan. #vehBriefBody
+       sekarang HANYA berisi ringkasan armada harian (jumlah kendaraan,
+       skor kesehatan, reminder aktif). -->
   <div class="dashhub-wrap card u-mb12" id="vehBriefWrap">
     <div id="vehBriefBody"></div>
   </div>
-  <div class="dashhub-wrap card u-mb12" id="vehAlertWrap">
-    <div id="vehAlertBody"></div>
   </div>
-  <div class="dashhub-wrap card u-mb12" id="vehInsightFeedWrap">
-    <div class="dashhub-cat-head">
-      <div class="dashhub-cat-icon">📰</div>
-      <div>
-        <div class="dashhub-cat-label">Vehicle Insight Feed</div>
-        <div class="dashhub-cat-desc">Insight & reminder segera jatuh tempo kendaraan — dari data yang sudah ada</div>
-      </div>
-    </div>
-    <div id="vehInsightFeedBody"></div>
+  <!-- /Sesi 158: sub-tab "Ringkasan" (#cniTab-ringkasan) selesai di sini. -->
+
+  <div id="cniTab-rekomendasi" class="u-dnone">
+  <!-- VEHICLE ATTENTION CARD (Sesi 156b, permintaan eksplisit user:
+       gabungkan Alert Panel (#vehAlertWrap) + Insight Feed
+       (#vehInsightFeedWrap) + Decision (#vehDecisionWrap, DIPINDAH ke sini
+       dari bawah #vehAutomationWrap) jadi SATU card ranked "🧭 Perlu
+       Perhatian" — satu daftar/satu prioritas, bukan 3 versi beda dari
+       info yang sama. Diisi oleh VehicleAttentionPresenter.render()
+       (modules/vehicle/vehicle-attention-presenter.js, BARU), 100% reuse
+       VehicleRecommendationEngine/VehiclePriorityScoring/
+       VehicleActionRecommendation (dulu dipakai VehicleDecisionPresenter)
+       + VehicleAIHook (dulu dipakai VehicleAlertPanel/VehicleInsightFeed)
+       — TIDAK ada rumus/skoring baru. VehicleAlertPanel.render()/
+       VehicleInsightFeed.render()/VehicleDecisionPresenter.render() (file
+       lama) TIDAK dihapus tapi TIDAK LAGI dipanggil dari renderCnTab()
+       (lihat modules-render.js) supaya tidak dobel isi container yang
+       sudah tidak ada. Silent kalau tidak ada apa pun buat ditampilkan
+       (pola sama persis panel lama). -->
+  <div class="dashhub-wrap card u-mb12" id="vehAttentionWrap">
+    <div id="vehAttentionBody"></div>
   </div>
   <!-- VEHICLE ANALYTICS FOUNDATION (Sesi 81, Batch 7). Section di dalam
        Dashboard Hub, sama seperti #vehinsightWrap di atas — diisi oleh
@@ -1313,55 +1390,22 @@ b.appendChild(closeBtn);
   <div class="dashhub-wrap card u-mb12" id="vehAnalyticsWrap">
     <div class="dashhub-cat-head">
       <div class="dashhub-cat-icon">📊</div>
-      <div>
+      <div class="u-flex1">
         <div class="dashhub-cat-label">Vehicle Analytics</div>
         <div class="dashhub-cat-desc">Tren biaya BBM &amp; servis bulanan kendaraan — dari data yang sudah ada</div>
       </div>
+      <span class="card-collapse-toggle collapsed" id="vehAnalyticsCard-chev" data-action="toggleCardCollapse" data-args='["vehAnalyticsCard","$event"]' aria-label="Buka/tutup bagian">▾</span>
     </div>
+    <div class="card-collapse-body collapsed" id="vehAnalyticsCard-cbody">
     <div class="findash-grid" id="vehanalyticsGrid"></div>
+    </div>
   </div>
-  <!-- FUEL INTELLIGENCE CARD (TASK-141). Section di dalam Dashboard Hub,
-       diisi oleh FuelCard.render() (dipanggil dari renderCnTab(), modules-
-       render.js), 100% reuse FuelIntelligenceEngine.vehicleInsight() (yang
-       sendiri 100% reuse VehicleFuelTrendSummary/VehicleReminder). UI hanya
-       presenter, tidak ada rumus baru di sini. Silent (disembunyikan) kalau
-       belum ada kendaraan aktif/data. -->
-  <div class="dashhub-wrap card u-mb12" id="fuelIntelWrap">
-    <div id="fuelIntelBody"></div>
-  </div>
-  <!-- FUEL DASHBOARD (TASK-150). Section di dalam Dashboard Hub, diisi
-       oleh FuelDashboard.render() (dipanggil dari renderCnTab(), modules-
-       render.js, + refresh dari FuelBarCorrection.save()), 100% reuse
-       FuelInsightEngine.getSummary() + FuelModal.open()/
-       FuelBarCorrection.open() yang sudah ada. UI hanya presenter, tidak
-       ada rumus baru di sini. Silent (disembunyikan) kalau belum ada
-       kendaraan sama sekali. -->
-  <div class="dashhub-wrap card u-mb12" id="fuelDashWrap">
-    <div id="fuelDashBody"></div>
-  </div>
-  <!-- MULTI VEHICLE FUEL COMPARISON (TASK-154). Section di dalam Dashboard
-       Hub, diisi oleh FuelCompare.render() (dipanggil dari renderCnTab(),
-       modules-render.js, + refresh otomatis tiap ada transaksi BBM/servis),
-       100% reuse FuelInsightEngine.getSummary() + FuelFleetSelector.
-       selectVehicle() + FuelModal.open() yang sudah ada. UI hanya
-       presenter, tidak ada rumus baru di sini. Silent (disembunyikan)
-       kalau belum ada kendaraan sama sekali. -->
-  <div class="dashhub-wrap card u-mb12" id="fuelCompareWrap">
-    <div id="fuelCompareBody"></div>
-  </div>
-  <!-- VEHICLE DECISION ENGINE FOUNDATION (Sesi 82, Batch 7). Section di
-       dalam Dashboard Hub, diisi oleh VehicleDecisionPresenter.render()
-       (dipanggil dari DashboardHub.render() di dashboard-hub.js), 100%
-       reuse VehicleRecommendationEngine.recommendations() +
-       VehiclePriorityScoring.rank() + VehicleActionRecommendation.
-       withAction() (sesi ini, sendiri 100% reuse VehicleDecisionAPI ->
-       VehicleAIHook). UI hanya presenter, tidak ada rumus baru di sini.
-       Pola SILENT sama persis #vehAlertWrap/#vehInsightFeedWrap — body
-       dikosongkan kalau tidak ada recommendation apa pun. CSS TIDAK
-       baru. -->
-  <div class="dashhub-wrap card u-mb12" id="vehDecisionWrap">
-    <div id="vehDecisionBody"></div>
-  </div>
+  <!-- Sesi 157 (permintaan eksplisit user): #fuelIntelWrap/#fuelDashWrap/
+       #fuelCompareWrap/#fuelTrendWrap DIPINDAH dari sini ke tab ⛽ BBM
+       (#cnTab-bbm di bawah) — 4-4nya soal BBM, jadi digabung satu tempat
+       dgn tab BBM, bukan dipisah dari card BBM lain di tab Insight AI.
+       TIDAK ADA perubahan markup/id/render() card itu sendiri, murni
+       lokasi container yang pindah. -->
   <!-- VEHICLE AUTOMATION FOUNDATION (Sesi 83, Batch 7). Section di dalam
        Dashboard Hub, sama seperti #vehAnalyticsWrap di atas — diisi oleh
        VehicleAutomationPresenter.render() (dipanggil dari DashboardHub.
@@ -1384,15 +1428,18 @@ b.appendChild(closeBtn);
     <div class="findash-grid" id="vehAutomationGrid"></div>
   </div>
 
-  <div class="vehicle-select" id="vehicleSelect"></div>
-  <div class="card u-mb10 u-flex u-aic u-jcb" style="padding:12px 14px">
-    <div><div class="u-fs12 u-t2 u-fw700" style="text-transform:uppercase;letter-spacing:0.6px">Odometer Saat Ini</div><div class="u-fw800 u-pointer" style="font-size:20px;user-select:none;-webkit-user-select:none" id="cnCurKm" data-action="startEditCurKm" title="Tap untuk edit langsung" aria-label="Edit odometer saat ini">0 km</div></div>
-    <button class="btn btn-ghost btn-sm" data-action="openKmModal" aria-label="Edit/Buka">📏 Update KM</button>
-  </div>
-  <button class="btn btn-ghost btn-full btn-sm u-mb12" data-action="openVehicleModal" aria-label="Edit/Buka">+ Kelola Kendaraan</button>
-
   <div class="card u-mb12" id="vehSpecCard"></div>
+  </div>
+  <!-- /Sesi 158: sub-tab "Rekomendasi & Tren" (#cniTab-rekomendasi) selesai di sini. -->
+  </div>
+  <!-- /INSIGHT AI TAB (Sesi 157) -->
 
+  <!-- PAJAK & SIM TAB (Sesi 157) — dulu selalu tampil di bawah vehSpecCard,
+       sekarang tab sendiri (🚦 Pajak & SIM) supaya tidak ikut menambah
+       panjang tab BBM/Servis. TIDAK ADA perubahan markup/id/render()
+       card itu sendiri (renderVehTaxSim() tetap dipanggil apa adanya dari
+       renderCnTab()), murni lokasi container yang pindah. -->
+  <div id="cnTab-pajak" class="u-dnone">
   <div class="card u-mb12">
     <div class="card-title">🚦 Pajak Kendaraan &amp; SIM <span class="card-collapse-toggle" id="cnPajakSimCard-chev" data-action="toggleCardCollapse" data-args='["cnPajakSimCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
     <div class="card-collapse-body" id="cnPajakSimCard-cbody">
@@ -1406,7 +1453,15 @@ b.appendChild(closeBtn);
     <div id="simList"></div>
     </div>
   </div>
+  </div>
+  <!-- /PAJAK & SIM TAB (Sesi 157) -->
 
+  <!-- Sesi 157: periode chips ini cuma relevan buat tab BBM/Servis (filter
+       renderBbmList()/renderServisList() lewat cnPeriode) — dibungkus
+       #cnPeriodeWrap, toggle visibility di setCnTab() (tampil kalau tab
+       aktif bbm/servis, sembunyi kalau insight/pajak). Isi/id chip di
+       dalamnya TIDAK berubah sama sekali. -->
+  <div id="cnPeriodeWrap">
   <div class="filter-scroll" id="cnPeriodeChips">
     <button class="chip-btn" data-action="setCnPeriode" data-args='["hari", "$el"]'>Harian</button>
     <button class="chip-btn" data-action="setCnPeriode" data-args='["minggu", "$el"]'>Mingguan</button>
@@ -1421,10 +1476,6 @@ b.appendChild(closeBtn);
       <div><label class="fl">Sampai</label><input type="date" class="fi" id="cnTo" onchange="renderCnTab()"></div>
     </div>
   </div>
-
-  <div class="cn-tabs">
-    <button class="cn-tab active" data-action="setCnTab" data-args='["bbm", "$el"]'>⛽ BBM</button>
-    <button class="cn-tab" data-action="setCnTab" data-args='["servis", "$el"]'>🔧 Servis</button>
   </div>
 
   <!-- Sprint 2 Tahap 3: FAB Car Notes, menyamakan standar UI dgn Finance 2.0
@@ -1448,6 +1499,32 @@ b.appendChild(closeBtn);
 
   <!-- BBM TAB -->
   <div id="cnTab-bbm">
+    <!-- Sesi 158 (permintaan eksplisit user): tab BBM dipecah lagi jadi 2
+         sub-tab bersarang (Ringkasan / Analisis Lanjutan) — pola SAMA
+         PERSIS sub-tab Insight AI (.cni-subtab) di atas & setPjkTab/
+         setLaporanTab/setKelolaTab (nested sub-tab). Class BARU
+         .cnb-subtab(s) (Car Notes BBM), alasan sama: cegah tabrakan
+         query `#page-carnotes .cn-tab`/`.cni-subtab`. Grouping:
+         "Ringkasan" = Fuel Intelligence + 3 angka cepat + tren mini +
+         tombol catat + riwayat (yang paling sering dibuka); "Analisis
+         Lanjutan" = 3 card detail/perbandingan (Fuel Dashboard/Compare/
+         Trend, ketiganya SUDAH default collapsed dari Sesi 157, tetap
+         collapsed di sini) — TIDAK ADA render/rumus baru, murni
+         reorganisasi DOM + toggle visibility, render() card tetap
+         dipanggil apa adanya dari renderCnTab() terlepas sub-tab aktif. -->
+    <div class="cn-tabs cnb-subtabs">
+      <button type="button" class="cnb-subtab active" data-action="setCnBbmTab" data-args='["ringkasan", "$el"]'>📊 Ringkasan</button>
+      <button type="button" class="cnb-subtab" data-action="setCnBbmTab" data-args='["analisis", "$el"]'>📈 Analisis Lanjutan</button>
+    </div>
+
+    <div id="cnbTab-ringkasan">
+    <!-- FUEL INTELLIGENCE CARD (TASK-141) — DIPINDAH ke sini (Sesi 157,
+         permintaan eksplisit user) dari tab Insight AI, 100% reuse
+         FuelCard.render()/FuelIntelligenceEngine.vehicleInsight(). Silent
+         (disembunyikan) kalau belum ada kendaraan aktif/data. -->
+    <div class="dashhub-wrap card u-mb12" id="fuelIntelWrap">
+      <div id="fuelIntelBody"></div>
+    </div>
     <div class="bbm-stat-grid">
       <div class="bbm-stat clickable" data-action="goToList" data-args='["bbmList"]'><div class="bbm-val" id="bbmAvgKmL">0</div><div class="bbm-lbl">Rata² km/liter</div></div>
       <div class="bbm-stat clickable" data-action="goToList" data-args='["bbmList"]'><div class="bbm-val" id="bbmTotalL" style="font-size:15px">0 L</div><div class="bbm-lbl">Total liter</div></div>
@@ -1456,6 +1533,36 @@ b.appendChild(closeBtn);
     <div class="card u-mb12" id="bbmTrendCard"></div>
     <button class="btn btn-primary btn-full u-mb12" style="padding:14px" data-action="openBbmModal" aria-label="Edit/Buka">+ Catat Isi BBM</button>
     <div class="card"><div class="card-title">⛽ Riwayat Isi BBM <span class="card-collapse-toggle" id="cnBbmListCard-chev" data-action="toggleCardCollapse" data-args='["cnBbmListCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div><div class="card-collapse-body" id="cnBbmListCard-cbody"><div id="bbmList"><div class="empty"><div class="empty-icon">⛽</div><div class="empty-text">Belum ada catatan BBM</div></div></div></div></div>
+    </div>
+    <!-- /Sesi 158: sub-tab "Ringkasan" (#cnbTab-ringkasan) selesai di sini. -->
+
+    <div id="cnbTab-analisis" class="u-dnone">
+    <!-- FUEL DASHBOARD (TASK-150) — DIPINDAH ke sini (Sesi 157), 100%
+         reuse FuelDashboard.render()/FuelInsightEngine.getSummary(). -->
+    <div class="dashhub-wrap card u-mb12" id="fuelDashWrap">
+      <div class="card-title">⛽ Fuel Dashboard <span class="card-collapse-toggle collapsed" id="fuelDashCard-chev" data-action="toggleCardCollapse" data-args='["fuelDashCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
+      <div class="card-collapse-body collapsed" id="fuelDashCard-cbody">
+      <div id="fuelDashBody"></div>
+      </div>
+    </div>
+    <!-- MULTI VEHICLE FUEL COMPARISON (TASK-154) — DIPINDAH ke sini
+         (Sesi 157), 100% reuse FuelCompare.render(). -->
+    <div class="dashhub-wrap card u-mb12" id="fuelCompareWrap">
+      <div class="card-title">📊 Fuel Compare <span class="card-collapse-toggle collapsed" id="fuelCompareCard-chev" data-action="toggleCardCollapse" data-args='["fuelCompareCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
+      <div class="card-collapse-body collapsed" id="fuelCompareCard-cbody">
+      <div id="fuelCompareBody"></div>
+      </div>
+    </div>
+    <!-- FUEL TREND DASHBOARD (TASK-156) — DIPINDAH ke sini (Sesi 157),
+         100% reuse FuelTrendDashboard.render(). -->
+    <div class="dashhub-wrap card u-mb12" id="fuelTrendWrap">
+      <div class="card-title">📈 Fuel Trend <span class="card-collapse-toggle collapsed" id="fuelTrendCard-chev" data-action="toggleCardCollapse" data-args='["fuelTrendCard","$event"]' aria-label="Buka/tutup bagian">▾</span></div>
+      <div class="card-collapse-body collapsed" id="fuelTrendCard-cbody">
+      <div id="fuelTrendBody"></div>
+      </div>
+    </div>
+    </div>
+    <!-- /Sesi 158: sub-tab "Analisis Lanjutan" (#cnbTab-analisis) selesai di sini. -->
   </div>
 
   <!-- SERVIS TAB -->
@@ -2849,12 +2956,18 @@ b.appendChild(closeBtn);
        penuh class findash-grid/findash-card (grid generik). Insight
        Presenter pola SILENT sama persis #vehAlertWrap/#vehInsightFeedWrap
        — body dikosongkan kalau tidak ada insight apa pun. -->
+  <!-- FIX DEDUP (lihat DASHBOARD-DEDUP.md § CrossDashboardCard): kartu
+       "Skor Kesehatan Finansial"/"Skor Kesehatan Armada" DIHAPUS dari
+       #crossDashGrid (cross-dashboard-card.js render()) karena 100%
+       duplikat dengan #findashWrap (tab Keuangan) & #vehdashWrap (tab
+       Car Notes). Yang tersisa cuma "Total Perhatian Gabungan", satu2nya
+       angka di sini yang belum ada di kartu lain. -->
   <div class="dashhub-wrap card u-mb12" id="crossDashWrap">
     <div class="dashhub-cat-head">
       <div class="dashhub-cat-icon">🔗</div>
       <div>
         <div class="dashhub-cat-label">Finance &amp; Vehicle Cross Summary</div>
-        <div class="dashhub-cat-desc">Skor kesehatan finansial &amp; armada, total perhatian gabungan — dari data yang sudah ada</div>
+        <div class="dashhub-cat-desc">Total perhatian gabungan (anggaran lewat batas + servis/pajak/BBM lewat jatuh tempo) — dari data yang sudah ada</div>
       </div>
     </div>
     <div class="findash-grid" id="crossDashGrid"></div>
@@ -3341,7 +3454,7 @@ b.appendChild(closeBtn);
 <script>document.write(MODAL_HTML[71]);</script><!-- modal:billMultiScanModal (Scan Rincian Tagihan Multi Item) -->
 <script>document.write(MODAL_HTML[72]);</script><!-- modal:universalOcrModal (Scan Universal Bank/E-Wallet/Bibit/Jago) -->
 
-<script src="app-bundle-b.min.js?v=585" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
-<script src="modules/finance/tangga-keuangan.js?v=585"></script>
+<script src="app-bundle-b.min.js?v=600" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
+<script src="modules/finance/tangga-keuangan.js?v=600"></script>
 </body>
 </html>

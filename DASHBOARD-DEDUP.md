@@ -38,6 +38,48 @@ tampilan yang paling redundan:
 - `app-bundle-b.min.js` / `app_production.html` — hasil rebuild
   (`node scripts/build.js`).
 
+## Fix #2 — CrossDashboardCard (tab Insight) duplikat dgn tab Keuangan/Car Notes
+
+### Masalah
+Kartu **"Skor Kesehatan Finansial"** & **"Skor Kesehatan Armada"** di
+`#crossDashGrid` (tab **Insight**, `modules/cross/cross-dashboard-card.js`)
+menampilkan angka yang **100% sama** dengan kartu yang sudah tampil di:
+- `#findashWrap` (tab **Keuangan**, `FinanceDashboard`) — Skor Kesehatan
+  Finansial, sumber `FinanceIntelligence.healthScore()`.
+- `#vehdashWrap` (tab **Car Notes**, `VehicleDashboard`) — Skor Kesehatan
+  Armada, sumber `VehicleIntelligence.fleetSummary()`.
+
+`CrossDashboardCard` membaca kedua nilai ini lewat `CrossAIHook.getAIHook()`
+(gabungan `FinanceDashboard.getAIHook()`+`VehicleAIHook.fleetSummary()`) —
+sumber data persis sama, cuma dibungkus ulang, jadi user melihat angka
+identik 2x di 2 tab berbeda.
+
+### Fix
+- `modules/cross/cross-dashboard-card.js` — `render()` sekarang HANYA
+  memanggil `_combinedAttentionCard()`. `_financeHealthCard()`/
+  `_vehicleHealthCard()` TETAP ada di file (tidak dihapus) tapi tidak lagi
+  dipanggil — pola sama persis fix #1 di atas (`DashboardHubSummary.render()`
+  tetap ada, cuma output disembunyikan).
+- `index.html` (→ dibangun ulang ke `app_production.html`) — deskripsi
+  section `#crossDashWrap` diperbarui, tidak lagi menyebut "skor kesehatan
+  finansial & armada" karena sudah tidak ditampilkan di situ.
+- `CrossModuleWidgets`/`UnifiedBriefingPresenter`/dll TIDAK disentuh — sudah
+  dicek, tidak ada yang menampilkan ulang 2 skor ini.
+
+Yang tersisa di kartu `#crossDashGrid` cuma **"Total Perhatian Gabungan"**
+(gabungan anggaran lewat batas + servis/pajak/BBM lewat jatuh tempo) — satu-
+satunya angka di situ yang memang belum ada di kartu lain manapun.
+
+### Verifikasi
+```
+node --test tests/*.test.js
+# tests 381 / pass 381 / fail 0 (tidak ada test khusus CrossDashboardCard
+# sebelum maupun sesudah fix — 0 regresi)
+
+node scripts/build.js kw156f-dashboard-cross-dedup-fix
+# ✅ Build selesai & lolos cek sintaks bundle, ?v=595
+```
+
 ## Belum disentuh (butuh cek manual di browser)
 Potongan teks "Rp 1.5 jt" / "Rp 2.2 jt" yang kelihatan terpotong di atas
 baris ikon Quick Actions pada screenshot kemungkinan besar cuma posisi

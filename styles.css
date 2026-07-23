@@ -556,6 +556,23 @@ textarea.fi { resize: vertical; min-height: 80px; }
 .pjk-subtab { flex:1; padding:var(--sp-3) var(--sp-1); border-radius:var(--r-md); border:1px solid var(--border); background:var(--surface2); color:var(--text2); font-size:var(--fs-label); font-weight:700; cursor:pointer; text-align:center; }
 .pjk-subtab.active { background:var(--accent); color:white; border-color:var(--accent); }
 
+/* Sesi 158 (permintaan eksplisit user): sub-tab nav utk split tab
+   🧠 Insight AI (page-carnotes, Ringkasan/Rekomendasi & Tren) — class
+   terpisah lagi dari .cn-tab/.lap-subtab/.kel-subtab/.pjk-subtab/
+   .dhb-subtab, alasan sama: cegah tabrakan query `#page-carnotes .cn-tab`
+   yang dipakai setCnTab() utk tab Insight AI/BBM/Servis/Pajak & SIM
+   tingkat atas. */
+.cni-subtabs { margin-bottom:var(--sp-4); }
+.cni-subtab { flex:1; padding:var(--sp-3) var(--sp-1); border-radius:var(--r-md); border:1px solid var(--border); background:var(--surface2); color:var(--text2); font-size:var(--fs-label); font-weight:700; cursor:pointer; text-align:center; }
+.cni-subtab.active { background:var(--accent); color:white; border-color:var(--accent); }
+
+/* Sesi 158: sub-tab nav utk split tab ⛽ BBM (page-carnotes,
+   Ringkasan/Analisis Lanjutan) — class terpisah lagi, alasan sama persis
+   .cni-subtab di atas. */
+.cnb-subtabs { margin-bottom:var(--sp-4); }
+.cnb-subtab { flex:1; padding:var(--sp-3) var(--sp-1); border-radius:var(--r-md); border:1px solid var(--border); background:var(--surface2); color:var(--text2); font-size:var(--fs-label); font-weight:700; cursor:pointer; text-align:center; }
+.cnb-subtab.active { background:var(--accent); color:white; border-color:var(--accent); }
+
 /* Sub-tab Dashboard Hub (landing page, Fase 1 — lihat CLAUDE.md "Split tab
    🧭 Dashboard Hub") — class terpisah lagi dari .cn-tab/.lap-subtab/
    .kel-subtab/.pjk-subtab, alasan sama: cegah tabrakan query
