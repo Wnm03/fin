@@ -5,7 +5,95 @@ JANGAN audit/implement/test/build ulang bagian yang sudah **Completed**.
 
 ## Current Session
 
-Sesi 139 (2026-07-22) — Bugfix navigasi "Semua Fitur" Dashboard Hub.
+Sesi 140 (2026-07-22) — Bugfix kartu Beranda (Kebebasan Finansial/Dana
+Pensiun/Absensi Harian/Refleksi & Self-Care) tidak muncul lagi setelah
+dimatikan lalu dinyalakan ulang lewat Pengaturan → Tampilan → Kartu di
+Beranda. SELESAI PENUH. **Ditemukan lewat audit kecil lanjutan** (bukan
+laporan user) atas area yang baru disentuh Sesi 139 (dashKey/DASH_CARD_DEFS
+di `dashboard-hub-registry.js`/`modules-render.js`) — target sesi
+sebelumnya (`docs/NEXT_SESSION.md` Batch 14) TBD, jadi audit kecil ini
+dipakai utk memilih target konkret berikutnya sesuai `docs/SESSION_RULES.md`
+(cari gap nyata, bukan menebak fitur baru).
+
+**Root cause**: `hideDashCardEl(elId)` (`modules/shared/modules-render.js`)
+menyembunyikan kartu Beranda opsional (`fi`/`pensiun`/`absensi`/`refleksi`,
+`DASH_CARD_DEFS`) lewat DUA jalur — `classList.add('u-dnone')` DAN inline
+`style.display='none'`. `toggleDashCardPref(key,true)`/`setAllDashCardPrefs(true)`
+(dipanggil dari checkbox Pengaturan → Tampilan → Kartu di Beranda) sudah
+benar memanggil `save()`+`renderDashboard()` ulang, dan loop
+`DASH_RENDER_ORDER` di `renderDashboard()` sudah benar SKIP
+`hideDashCardEl()` begitu `isDashCardOn()` balik `true` — tapi **tidak
+pernah ada fungsi kebalikan** yang melepas inline `style.display='none'`
+yang sudah kadung ditulis. Inline style attribute punya spesifisitas lebih
+tinggi dari class CSS (`.u-dnone{display:none}`, `styles.css`), jadi kartu
+tetap invisible SELAMANYA (sampai reload penuh SPA) walau
+`D.dashCardPrefs`/checkbox Pengaturan sudah benar menunjukkan "aktif".
+Bug yang sama juga berdampak ke navigasi "Semua Fitur" → kartu dgn
+`target.dashKey` (`dash-refleksi`/`dash-fi`/`per-absensi`) kalau widgetnya
+sedang dimatikan user.
+
+**Fix**: `showDashCardEl(elId)` baru (`modules/shared/modules-render.js`)
+— kebalikan simetris persis `hideDashCardEl()` (melepas class + inline
+style), dipanggil di loop `DASH_RENDER_ORDER` SETELAH guard
+`isDashCardOn()` & SEBELUM `cardDef.render(...)`, 1 baris tambahan
+`showDashCardEl(cardDef.elId);`. Idempotent & aman dipanggil tiap render
+normal (bukan cuma sesudah toggle). 0 fungsi lama diubah/dihapus, 0
+duplicate helper/registry/storage/event baru. 7 test baru
+(`tests/dash-card-show-hide.test.js`), regression 69/69 pass (62 lama + 7
+baru). Build `kw140-fix-dashcard-toggle-inline-style` (`?v=565`), kedua
+bundle lolos `node --check` & linter bawaan build script (cek pola bug
+"u-dnone vs style.display" — sudah ada di `scripts/build.js` sejak
+sebelumnya, lolos bersih), `index.html`==`app_production.html`.
+**Catatan skop test**: sama seperti Sesi 138/139, ZIP kerja ini hanya
+membawa test yang tersedia di `tests/` (sekarang 6 file, 69 test), BUKAN
+full suite ribuan test yang disebut riwayat sesi-sesi lampau di file ini.
+
+## Current Step
+
+Sesi 140 selesai penuh — ZIP rilis dibuat & diverifikasi (`unzip -t`),
+ringkasan & link ditampilkan ke user. STOP (menunggu target lanjutan).
+
+## Files Changed (Sesi 140)
+
+- `modules/shared/modules-render.js` — `showDashCardEl(elId)` baru (persis
+  di bawah `hideDashCardEl`); loop `DASH_RENDER_ORDER` di `renderDashboard()`
+  +1 baris (`showDashCardEl(cardDef.elId);` sebelum `cardDef.render(...)`).
+- `app-bundle-a.min.js` — dibuat ulang otomatis oleh `scripts/build.js` dari
+  source yang sudah dipatch (grup A, memuat `modules-render.js`).
+- `app-bundle-b.min.js` — dibuat ulang otomatis (versi disamakan, 0 source
+  di grup B berubah).
+- `tests/dash-card-show-hide.test.js` — file test BARU, 7 test.
+- `index.html`, `app_production.html`, `sw.js`, `docs/FILE-MAP.md` — hasil
+  build (`?v=565`), disinkronkan otomatis.
+- `CHANGELOG.md`, `FILES-CHANGED.md` — entry Sesi 140.
+- `docs/CHECKPOINT.md` (file ini), `docs/NEXT_SESSION.md` — sinkronisasi
+  dokumentasi.
+- **TIDAK diubah:** `hideDashCardEl()`, `DASH_CARD_DEFS`/`DASH_RENDER_ORDER`/
+  `DASH_CARD_BY_KEY`, `isDashCardOn()`/`toggleDashCardPref()`/
+  `setAllDashCardPrefs()`, `dashboard-hub-registry.js` (`FEATURE_REGISTRY`,
+  termasuk field `dashKey`), `dashHubNavigateToFeature()`
+  (`dashboard-hub.js`, sudah diperbaiki Sesi 139 utk kasus sub-tab, TIDAK
+  disentuh lagi sesi ini), seluruh 62 test lama.
+
+## Test
+
+`node --test tests/*.test.js` -> **69/69 pass, 0 fail** (naik dari 62, 7
+test baru murni aditif).
+
+## Build
+
+`node scripts/build.js kw140-fix-dashcard-toggle-inline-style` -> sukses,
+`?v=565`. Bundle TANPA minifikasi (esbuild tidak tersedia di sandbox,
+fallback otomatis).
+
+## ZIP
+
+`kw_release_sesi140_fix-dashcard-toggle-inline-style_v565.zip` — dibuat &
+diverifikasi `unzip -t` ("No errors detected in compressed data").
+
+---
+
+Sebelumnya Sesi 139 (2026-07-22) — Bugfix navigasi "Semua Fitur" Dashboard Hub.
 SELESAI PENUH. **Dilaporkan user** (screenshot preview HTML): klik kartu
 apa pun di grid "🗂️ Semua Fitur" yang goTo-nya adalah Penasihat AI/
 Rekomendasi AI/Ringkasan Harian AI/Skor Hidup Seimbang/Refleksi & Self-
@@ -351,3 +439,63 @@ sandbox, fallback otomatis — sama seperti sesi-sesi sebelumnya).
 `kw_release_sesi84_vehicle-dashboard-final-integration_v508.zip` —
 dibuat & diverifikasi `unzip -t` ("No errors detected in compressed
 data").
+
+---
+
+## Checkpoint — Sesi 157 (2026-07-23): Split Nav Car Notes jadi 4 Tab
+
+**Selesai:** `#page-carnotes` dipecah jadi 4 `cn-tabs` (🧠 Insight AI /
+⛽ BBM / 🔧 Servis / 🚦 Pajak & SIM), pola sama persis `setKeuanganTab`.
+Vehicle selector + Odometer tetap di luar tab (multi-vehicle utuh).
+Detail lengkap: `docs/CLAUDE.md` § Sesi 157.
+
+**Hasil build (`?v=597`, `kw157-mobil-nav-split-tab`):**
+`app-bundle-a.min.js`, `app-bundle-b.min.js`, `index.html`,
+`app_production.html`, `sw.js`, `docs/FILE-MAP.md`, + konstanta versi
+di 5 file source (sinkronisasi otomatis `build.js`).
+
+**TIDAK diubah:** semua presenter/engine vehicle & fuel (0 rumus/render
+baru — murni reorganisasi DOM `index.html` + `setCnTab()` di
+`vehicle-core.js`). Tidak ada file test baru (murni DOM, existing test
+sudah cukup).
+
+## Test
+
+`node --test tests/*.test.js` -> **381/381 pass, 0 fail**.
+
+## Build
+
+`node scripts/build.js kw157-mobil-nav-split-tab` -> sukses, `?v=597`.
+
+## ZIP
+
+`kw_release_sesi157_mobil_nav_split_tab_v597.zip` — dibuat & dikirim ke
+user.
+
+---
+
+## Checkpoint — Sesi 158 (2026-07-23): Bugfix 6 card bocor di semua tab Dashboard Hub
+
+**Selesai:** `SECTION_GROUPS.insight` (`dashboard-hub.js`) ditambah 6 id
+(`propertyManagementWrap`/`rentalManagementWrap`/`assetPortfolioWrap`/
+`assetMaintenanceWrap`/`recommendationPanelWrap`/`actionQueueWrap`) yang
+sebelumnya tidak terdaftar & selalu tampil di semua tab. Detail lengkap:
+`docs/CLAUDE.md` § Sesi 158.
+
+**Hasil build (`?v=598`, `kw158-dashboard-hub-section-groups-fix`):**
+`app-bundle-a.min.js`, `app-bundle-b.min.js`, `index.html`,
+`app_production.html`, `sw.js`, `docs/FILE-MAP.md`,
+`keluarga-w-preview.html` (regenerasi), + konstanta versi di 5 file
+source.
+
+## Test
+
+`node --test tests/*.test.js` -> **381/381 pass, 0 fail**.
+
+## Build
+
+`node scripts/build.js kw158-dashboard-hub-section-groups-fix` -> sukses, `?v=598`.
+
+## ZIP
+
+`kw_release_sesi158_dashboard_hub_section_groups_fix_v598.zip` — dibuat & dikirim ke user.

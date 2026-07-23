@@ -79,8 +79,8 @@
 <link rel="preconnect" href="https://accounts.google.com" crossorigin>
 <link rel="dns-prefetch" href="https://accounts.google.com">
 <title>Keluarga W</title>
-<link rel="stylesheet" href="styles.css?v=600">
-<link rel="stylesheet" href="modern-ui-layer.css?v=600">
+<link rel="stylesheet" href="styles.css?v=604">
+<link rel="stylesheet" href="modern-ui-layer.css?v=604">
 <script>
 /* Debug console (Eruda) — aktifkan sekali lewat ?debug=1 di URL, nempel via localStorage.
    Matikan lagi lewat ?debug=0. Tidak aktif buat user biasa. */
@@ -133,8 +133,8 @@ b.appendChild(closeBtn);
 }catch(_e){ console.error('Gagal tampilkan banner error modul:',_e); }
 };
 </script>
-<script src="app-bundle-a.min.js?v=600" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
-<script src="modules/shared/smoke-test.js?v=600" defer></script>
+<script src="app-bundle-a.min.js?v=604" onerror="window.__moduleLoadFail('app-bundle-a.min.js')"></script>
+<script src="modules/shared/smoke-test.js?v=604" defer></script>
 <link rel="manifest" id="pwaManifestLink" href="manifest.json">
 </head>
 <body data-theme="fresh">
@@ -2725,13 +2725,11 @@ b.appendChild(closeBtn);
   <div class="dashhub-search-wrap">
     <input type="text" class="fi" id="dashHubSearchInput" placeholder="🔍 Cari fitur/menu... (mis. sewa kios, kasir, backup)" oninput="DashboardHubSearch.render(this.value)" aria-label="Cari fitur">
     <div class="dashhub-search-results u-dnone" id="dashHubSearchResults"></div>
-    <!-- Discoverability fix (audit navigasi: fitur tanpa nav-item/Quick
-         Action sendiri cuma ketemu lewat search kalau user kebetulan tahu
-         nama fiturnya). Chip ini MURNI jalan pintas ke section "Semua
-         Fitur" yang SUDAH ADA (#dashHubMainGridCard) via
-         DashboardHub.openAllFeatures() — tidak ada grid/registry baru,
-         tidak mengubah default tab/collapse permanen. -->
-    <button type="button" class="dashhub-explore-link" data-action="DashboardHub.openAllFeatures" aria-label="Jelajahi semua fitur">🗂️ Jelajahi Semua Fitur</button>
+    <!-- Sesi 159: chip "Jelajahi Semua Fitur" dihapus — 100% redundan dgn
+         tab "Fitur" (sama-sama nuju #dashHubMainGridCard, cuma beda entry
+         point). DashboardHub.openAllFeatures() di JS sengaja TIDAK dihapus
+         (dead code kecil, 0 risiko), cuma pemanggil satu-satunya (tombol
+         ini) yang dicabut. -->
   </div>
   <!-- FAVORIT (Tahap 3, ADR-001). Diisi oleh DashboardHubFavoritView.render()
        (dipanggil dari DashboardHub.render() di dashboard-hub.js). Sengaja
@@ -3406,55 +3404,34 @@ b.appendChild(closeBtn);
 <!-- MODAL: BBM -->
 <script>document.write(MODAL_HTML[50]);</script><!-- modal:bbmModal externalized to modals.js -->
 
-<!-- MODAL: SERVIS -->
-<script>document.write(MODAL_HTML[51]);</script><!-- modal:servisModal externalized to modals.js -->
+<!-- MODAL: FUEL INTELLIGENCE -->
+<script>document.write(MODAL_HTML[51]);</script><!-- modal:fuelIntelModal -->
+<script>document.write(MODAL_HTML[52]);</script><!-- modal:servisModal -->
+<script>document.write(MODAL_HTML[53]);</script><!-- modal:torsiModal -->
+<script>document.write(MODAL_HTML[54]);</script><!-- modal:filterTxModal -->
+<script>document.write(MODAL_HTML[55]);</script><!-- modal:dataHealthModal -->
+<script>document.write(MODAL_HTML[56]);</script><!-- modal:globalSearchModal -->
+<script>document.write(MODAL_HTML[57]);</script><!-- modal:budgetModal -->
+<script>document.write(MODAL_HTML[58]);</script><!-- modal:fiSettingsModal -->
+<script>document.write(MODAL_HTML[59]);</script><!-- modal:pensiunModal -->
+<script>document.write(MODAL_HTML[60]);</script><!-- modal:confirmModalOverlay -->
+<script>document.write(MODAL_HTML[61]);</script><!-- modal:promptModalOverlay -->
+<script>document.write(MODAL_HTML[62]);</script><!-- modal:choiceModalOverlay -->
+<script>document.write(MODAL_HTML[63]);</script><!-- modal:infoModalOverlay -->
+<script>document.write(MODAL_HTML[64]);</script><!-- modal:pinPromptModalOverlay -->
+<script>document.write(MODAL_HTML[65]);</script><!-- modal:budgetSettingsModal -->
+<script>document.write(MODAL_HTML[66]);</script><!-- modal:refleksiModal -->
+<script>document.write(MODAL_HTML[67]);</script><!-- modal:importKatalogModal -->
+<script>document.write(MODAL_HTML[68]);</script><!-- modal:goldImportModal -->
+<script>document.write(MODAL_HTML[69]);</script><!-- modal:goldZakatModal -->
+<script>document.write(MODAL_HTML[70]);</script><!-- modal:importShopExcelModal -->
+<script>document.write(MODAL_HTML[71]);</script><!-- modal:mergeProductModal -->
+<script>document.write(MODAL_HTML[72]);</script><!-- modal:billMultiScanModal -->
+<script>document.write(MODAL_HTML[73]);</script><!-- modal:universalOcrModal -->
+<script>document.write(MODAL_HTML[74]);</script><!-- modal:fuelBarCorrectionModal -->
+<script>document.write(MODAL_HTML[75]);</script><!-- modal:fuelTankProfileModal -->
 
-<!-- MODAL: TORSI SPAREPART -->
-<script>document.write(MODAL_HTML[52]);</script><!-- modal:torsiModal externalized to modals.js -->
-
-<!-- MODAL: filterTxModal -->
-<script>document.write(MODAL_HTML[53]);</script><!-- modal:filterTxModal externalized to modals.js -->
-
-<!-- MODAL: Cek Kesehatan Data -->
-<script>document.write(MODAL_HTML[54]);</script><!-- modal:dataHealthModal externalized to modals.js -->
-
-<!-- MODAL: Pencarian Global -->
-<script>document.write(MODAL_HTML[55]);</script><!-- modal:globalSearchModal externalized to modals.js -->
-
-<!-- MODAL: Budget tambah/edit -->
-<script>document.write(MODAL_HTML[56]);</script><!-- modal:budgetModal externalized to modals.js -->
-
-<!-- MODAL: Asumsi Kebebasan Finansial (FI) -->
-<script>document.write(MODAL_HTML[57]);</script><!-- modal:fiSettingsModal externalized to modals.js -->
-
-<!-- MODAL: Dana Pensiun -->
-<script>document.write(MODAL_HTML[58]);</script><!-- modal:pensiunModal externalized to modals.js -->
-
-<!-- MODAL: Custom Confirm (pengganti confirm() bawaan browser) -->
-<script>document.write(MODAL_HTML[59]);</script><!-- modal:confirmModalOverlay externalized to modals.js -->
-
-<!-- MODAL: Input teks/angka generik bertema (pengganti prompt() bawaan browser) -->
-<script>document.write(MODAL_HTML[60]);</script><!-- modal:promptModalOverlay externalized to modals.js -->
-
-<!-- MODAL: Pilihan daftar bertema (pengganti prompt() "ketik nomor pilihan") -->
-<script>document.write(MODAL_HTML[61]);</script><!-- modal:choiceModalOverlay externalized to modals.js -->
-<script>document.write(MODAL_HTML[62]);</script><!-- modal:infoModalOverlay externalized to modals.js -->
-
-<!-- MODAL: Input PIN bertema (pengganti prompt() bawaan browser saat Ganti PIN) -->
-<script>document.write(MODAL_HTML[63]);</script><!-- modal:pinPromptModalOverlay externalized to modals.js -->
-
-<!-- MODAL: Budget Settings -->
-<script>document.write(MODAL_HTML[64]);</script><!-- modal:budgetSettingsModal externalized to modals.js -->
-<script>document.write(MODAL_HTML[65]);</script><!-- modal:refleksiModal (Refleksi & Self-Care) -->
-<script>document.write(MODAL_HTML[66]);</script><!-- modal:importKatalogModal (Import Katalog & Harga) -->
-<script>document.write(MODAL_HTML[67]);</script><!-- modal:goldImportModal (Impor Nota Emas Massal) -->
-<script>document.write(MODAL_HTML[68]);</script><!-- modal:goldZakatModal (Analisa Emas & Zakat) -->
-<script>document.write(MODAL_HTML[69]);</script><!-- modal:importShopExcelModal (Import dari Excel Shop) -->
-<script>document.write(MODAL_HTML[70]);</script><!-- modal:mergeProductModal (Gabungkan Harga Produk) -->
-<script>document.write(MODAL_HTML[71]);</script><!-- modal:billMultiScanModal (Scan Rincian Tagihan Multi Item) -->
-<script>document.write(MODAL_HTML[72]);</script><!-- modal:universalOcrModal (Scan Universal Bank/E-Wallet/Bibit/Jago) -->
-
-<script src="app-bundle-b.min.js?v=600" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
-<script src="modules/finance/tangga-keuangan.js?v=600"></script>
+<script src="app-bundle-b.min.js?v=604" onerror="window.__moduleLoadFail('app-bundle-b.min.js')"></script>
+<script src="modules/finance/tangga-keuangan.js?v=604"></script>
 </body>
 </html>
