@@ -326,14 +326,50 @@ renderSimList();
 }
 /* moved to modules-render.js: renderSimList */
 function setCnTab(t,el){
+// Sesi 157 (permintaan eksplisit user): page-carnotes sekarang 4 tab
+// (insight/bbm/servis/pajak) — dulu cuma bbm/servis. 'jalan' ditinggal
+// apa adanya (dead id, sudah begitu sebelum sesi ini, tidak disentuh).
 curCnTab=t;
 document.querySelectorAll('#page-carnotes .cn-tab').forEach(b=>b.classList.remove('active'));
-el.classList.add('active');
-['bbm','servis','jalan'].forEach(x=>{
+if(el) el.classList.add('active');
+['insight','bbm','servis','pajak','jalan'].forEach(x=>{
 const elx=document.getElementById('cnTab-'+x);
 if(elx){ elx.classList.toggle('u-dnone', x!==t); elx.style.display=''; }
 });
+// FAB (+Isi BBM/+Servis) & periode chips cuma relevan di tab bbm/servis —
+// disembunyikan di tab insight/pajak (bukan aksi/filter yang relevan di sana).
+const relevan=(t==='bbm'||t==='servis');
+const fabEl=document.getElementById('carNotesFab');
+if(fabEl) fabEl.classList.toggle('u-dnone',!relevan);
+const periodeEl=document.getElementById('cnPeriodeWrap');
+if(periodeEl) periodeEl.classList.toggle('u-dnone',!relevan);
 renderCnTab();
+}
+// setCnInsightTab/setCnBbmTab (Sesi 158, permintaan eksplisit user): tab
+// Insight AI & tab BBM (di dalam page-carnotes) masing-masing dipecah lagi
+// jadi 2 sub-tab bersarang — pola SAMA PERSIS setPjkTab() (pajak-aset-ui-
+// wrappers.js): murni toggle class active + toggle u-dnone per pane, TIDAK
+// ADA render/rumus baru (render() card tetap dipanggil apa adanya dari
+// renderCnTab(), terlepas sub-tab mana yang aktif — sama seperti
+// renderPajakZakat() mengisi kedua sub-tab Pajak sekaligus). Vehicle
+// selector + Odometer (di luar tab #cnTab-insight/#cnTab-bbm) TIDAK
+// disentuh, tetap tampil di semua sub-tab supaya konteks multi-kendaraan
+// tidak hilang.
+const CNI_SUBTAB_ORDER=['ringkasan','rekomendasi'];
+function setCnInsightTab(t,el){
+document.querySelectorAll('#cnTab-insight .cni-subtab').forEach(b=>b.classList.remove('active'));
+if(el) el.classList.add('active');
+else { const idx=CNI_SUBTAB_ORDER.indexOf(t); const btn=document.querySelectorAll('#cnTab-insight .cni-subtab')[idx>=0?idx:0]; if(btn) btn.classList.add('active'); }
+document.getElementById('cniTab-ringkasan').classList.toggle('u-dnone', t!=='ringkasan');
+document.getElementById('cniTab-rekomendasi').classList.toggle('u-dnone', t!=='rekomendasi');
+}
+const CNB_SUBTAB_ORDER=['ringkasan','analisis'];
+function setCnBbmTab(t,el){
+document.querySelectorAll('#cnTab-bbm .cnb-subtab').forEach(b=>b.classList.remove('active'));
+if(el) el.classList.add('active');
+else { const idx=CNB_SUBTAB_ORDER.indexOf(t); const btn=document.querySelectorAll('#cnTab-bbm .cnb-subtab')[idx>=0?idx:0]; if(btn) btn.classList.add('active'); }
+document.getElementById('cnbTab-ringkasan').classList.toggle('u-dnone', t!=='ringkasan');
+document.getElementById('cnbTab-analisis').classList.toggle('u-dnone', t!=='analisis');
 }
 function getVehicleKm(vehicleId){
 const kms=[
