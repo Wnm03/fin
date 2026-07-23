@@ -62,10 +62,31 @@ JUGA SUDAH LENGKAP (Sesi 50) — sebelumnya 3 dari 6 sourceKind
 
 ## Overall Progress
 
-- **Current Build:** `?v=508` (`kw84-batch7-vehicle-dashboard-final-integration`)
-- **Current Test:** 2826/2826 pass (`node --test tests/*.test.js`)
-- **Last ZIP:** ZIP Sesi 84 (Batch 7, Vehicle Dashboard Final Integration)
-- **Last session (kedua track digabung urutan waktu):** Sesi 84 —
+- **Current Build:** `?v=600` (`kw158-carnotes-subtab-deeplink-cntabidx-fix-600`)
+- **Current Test:** 381/381 pass (`node --test tests/*.test.js`, ZIP ini
+  hanya membawa subset test yang relevan ke module vehicle/fuel/lifeos —
+  bukan seluruh 2826 historis)
+- **Last ZIP:** ZIP Sesi 158b (Deep-link sub-tab Insight AI & BBM +
+  bugfix `CN_TAB_IDX` — lihat CHANGELOG.md § Sesi 158b)
+- **Last session (kedua track digabung urutan waktu):** Sesi 158b —
+  **Deep-link Sub-tab Insight AI & BBM + Bugfix CN_TAB_IDX**, lanjutan
+  Sesi 158: wiring `{page:'carnotes', tab, subtab}` (Global Search/Quick
+  Switcher) ke 2 sub-tab baru (`CNI_SUBTAB_IDX`/`CNB_SUBTAB_IDX`, pola
+  sama persis `LAPORAN_SUBTAB_IDX`/`PJK_SUBTAB_IDX`). Sekalian
+  ditemukan & diperbaiki bug lama `CN_TAB_IDX` stale sejak Sesi 157
+  (masih `{bbm:0,servis:1}`, padahal DOM sudah 4 tab) — efeknya cosmetic
+  (tombol active salah, pane tetap benar). Detail lengkap lihat
+  CHANGELOG.md § Sesi 158b.
+  Sebelumnya Sesi 158 —
+  **Split Sub-tab Insight AI & BBM**, lanjutan Sesi 157 (split 4-tab
+  Car Notes): permintaan eksplisit user, tab Insight AI & BBM masih
+  terlalu panjang ke bawah dibanding Keuangan/Shop. Dipecah lagi jadi
+  2 sub-tab bersarang tiap tab (`.cni-subtab`: Ringkasan/Rekomendasi &
+  Tren; `.cnb-subtab`: Ringkasan/Analisis Lanjutan), pola SAMA PERSIS
+  `setPjkTab()`. Vehicle selector + Odometer TETAP di luar sub-tab,
+  konteks multi-kendaraan tidak berubah. TIDAK ADA render/rumus baru.
+  Detail lengkap lihat CHANGELOG.md § Sesi 158.
+  Sebelumnya Sesi 84 —
   **Vehicle Dashboard Final Integration**, Batch 7, keputusan produk
   FINAL eksplisit user (lanjutan setelah Vehicle Automation Foundation,
   Sesi 83): menutup gap terakhir yang tercatat Sesi 83 — file baru

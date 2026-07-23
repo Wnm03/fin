@@ -312,6 +312,13 @@ const GROUP_B = [
   'modules/vehicle/fuel-analytics.js',
   'modules/vehicle/fuel-modal.js',
   'modules/vehicle/fuel-card.js',
+  // Sesi 156d: FuelCard._briefingHtml() (konsolidasi "Fuel Briefing", lihat
+  // catatan di fuel-card.js) memanggil FuelInsightEngine.getSummary() lewat
+  // guard typeof di DALAM method (runtime, dipanggil dari render() setelah
+  // seluruh bundle selesai dimuat) — TIDAK perlu fuel-card.js dipindah ke
+  // bawah fuel-insight-engine.js (baris di bawah), pola sama persis forward-
+  // reference lain yang sudah dijelaskan di komentar atas (mis. Investment
+  // di investment-planner-api.js).
   // TASK-144: Fuel Bar Correction — ditaruh SETELAH fuel-card.js (dependency:
   // FuelGaugeEngine, FuelTankProfile, FuelStorage, FuelCard, FuelModal —
   // semua sudah dimuat sebelum titik ini). Satu file tunggal
@@ -378,12 +385,34 @@ const GROUP_B = [
   // FuelFleetSelector.selectVehicle() (badge prioritas fleet-wide) +
   // FuelModal.open() (buka modal saat kendaraan dipilih).
   'modules/vehicle/fuel-compare.js',
+  // TASK-156: Fuel Trend Dashboard — ditaruh SETELAH fuel-compare.js
+  // (dependency: FuelInsightEngine.getSummary()/FuelCostAnalytics/
+  // FuelPredictionEngine/FuelMaintenanceEngine/FuelModal.open()/
+  // FuelBarCorrection.open() semua sudah dimuat sebelum titik ini).
+  // Presentation only, 0 engine/helper/storage/rumus baru — 100% REUSE
+  // FuelInsightEngine.getSummary() (healthScore/highestInsight) +
+  // FuelCostAnalytics (biaya aktual & proyeksi/rata-rata harga/frekuensi
+  // isi) + FuelPredictionEngine (jarak tersisa/isi ulang berikutnya/
+  // proyeksi pemakaian) + FuelMaintenanceEngine (status efisiensi &
+  // dropPct/risiko perawatan/rekomendasi) yang SEMUANYA dipanggil LANGSUNG
+  // (bukan hanya lewat FuelInsightEngine.getSummary()) supaya field trend
+  // granular yang tidak diekspos getSummary() tetap 100% dibaca apa
+  // adanya. Mengelola kendaraan aktifnya sendiri (this.curVehicleId),
+  // TIDAK menyentuh FuelFleetSelector maupun engine mana pun.
+  'modules/vehicle/fuel-trend-dashboard.js',
 
   'modules/vehicle/vehicle-decision-api.js',
   'modules/vehicle/vehicle-recommendation-engine.js',
   'modules/vehicle/vehicle-priority-scoring.js',
   'modules/vehicle/vehicle-action-recommendation.js',
   'modules/vehicle/vehicle-decision-presenter.js',
+  // Sesi 156b: Vehicle Attention Card — gabungan VehicleAlertPanel/
+  // VehicleInsightFeed/VehicleDecisionPresenter jadi satu card ranked.
+  // Ditaruh SETELAH vehicle-decision-presenter.js (dependency:
+  // VehicleRecommendationEngine/VehiclePriorityScoring/
+  // VehicleActionRecommendation di atas + VehicleAIHook, lebih jauh di
+  // atas, semua sudah dimuat sebelum titik ini).
+  'modules/vehicle/vehicle-attention-presenter.js',
   'modules/vehicle/vehicle-automation-api.js',
   'modules/vehicle/vehicle-reminder-scheduler.js',
   'modules/vehicle/vehicle-maintenance-automation.js',

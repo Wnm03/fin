@@ -1,5 +1,66 @@
 # NEXT_SESSION.md — Target sesi berikutnya (update setiap sesi)
 
+> **Catatan Sync (S156b, di luar batch tracking — bugfix dilaporkan
+> user, build `kw156b-fuel-buttons-window-expose-fix-587`, `?v=588`):**
+> Semua tombol area Fuel Intelligence (Lihat Detail/Koreksi/Export/chip
+> kendaraan/sort armada) tidak berfungsi — root cause & fix lengkap ada
+> di `CHANGELOG.md` § Sesi 156b (`const Nama = {...}` tidak otomatis
+> jadi properti `window`, sementara delegasi klik `data-action`
+> me-resolve lewat `window[...]`). Baseline regression **371/371 PASS**
+> (skop test yang tersedia di ZIP kerja ini).
+>
+> **Update S156c (2026-07-22): butir #2 di bawah ini SUDAH DIKERJAKAN**
+> (3 dari 4 saran — lihat `CHANGELOG.md` § Sesi 156c untuk detail
+> lengkap: vehicle selector+odometer dipindah ke atas, Alert
+> Panel+Insight Feed+Decision Presenter digabung jadi `#vehAttentionWrap`
+> ("🧭 Perlu Perhatian"), Analytics/Fuel Dashboard/Fuel Compare/Fuel
+> Trend dijadikan collapsible default tertutup). Baseline regression
+> **371/371 PASS**, build `?v=589`.
+>
+> **Update S156d (2026-07-22): butir #2 di atas SUDAH DIKERJAKAN** —
+> Fuel Briefing (dulu `#vehBriefWrap`, diisi `VehicleDailyBrief`) digabung
+> jadi satu card dgn Fuel Intelligence (`#fuelIntelWrap`, diisi
+> `FuelCard`) via `FuelCard._briefingHtml()`, 100% reuse
+> `FuelInsightEngine.getSummary()`. Lihat `CHANGELOG.md` § Sesi 156d
+> untuk detail lengkap. Baseline regression **375/375 PASS**, build
+> `kw156d-fuel-briefing-consolidation`, `?v=592`.
+>
+> **Sisa yang MASIH TERBUKA (pilih sebagai target sesi berikutnya):**
+> 1. Butir #1 di bawah (audit `const Nama = {...}` + `data-action` tanpa
+>    expose `window` di seluruh project) — BELUM disentuh.
+>
+> **Sisa dari S156b yang MASIH TERBUKA (pilih sebagai target sesi
+> berikutnya) — SEBELUM diperbarui S156d di atas:**
+> 1. Butir #1 di bawah (audit `const Nama = {...}` + `data-action` tanpa
+>    expose `window` di seluruh project) — BELUM disentuh.
+> 2. ~~Saran ke-4 yang sengaja belum dikerjakan S156c: gabung Fuel
+>    Briefing ke Fuel Intelligence Card (2 card sama-sama soal BBM
+>    kendaraan aktif, tidak perlu terpisah).~~ **SUDAH DIKERJAKAN S156d,
+>    lihat update di atas.**
+>
+> **2 tindak lanjut terbuka dari S156b (sebelum diperbarui S156c di
+> atas):**
+> 1. **Audit menyeluruh pola `const Nama = {...}` + `data-action` tanpa
+>    expose `window`** di seluruh project (kandidat: `Budget`, `Aset`,
+>    `Kasir`, `Etalase`, `Order`, `Payroll`, `Pensiun`, `WorthIt`,
+>    `Refleksi`, `Renov`, `Modul`, `LinkTx`, `EduFund`, `SewaKios`,
+>    `DanaDaruratAI`, `FinCoach`, `GoldImport`, `GoldZakat`,
+>    `UniversalScan`, `BillMultiScan`, `BudgetReko` — belum dicek satu
+>    per satu). Kemungkinan besar SEMUA punya bug yang sama persis
+>    dengan Fuel Intelligence, cuma belum dilaporkan user.
+> 2. **Konsolidasi tab Car Notes ("nav mobil") yang terlalu panjang** —
+>    per S156b ada **11 card AI/insight berbeda** ditumpuk vertikal
+>    SEBELUM vehicle selector & odometer (lihat analisa lengkap di chat
+>    sesi ini / minta user tempel ulang kalau perlu diringkas ke docs).
+>    Rekomendasi awal: gabung Alert Panel + Insight Feed + Decision
+>    Presenter jadi satu card ranked (banyak overlap sumber data),
+>    pindah vehicle selector + odometer ke PALING ATAS, jadikan
+>    Analytics/Fuel Dashboard/Fuel Compare/Fuel Trend collapsible
+>    (default tertutup, pola sama `vehSpecCard-chev`/`toggleCardCollapse`
+>    yang sudah ada). Belum diimplementasi — masih tahap saran, BUTUH
+>    keputusan produk user dulu (bagian mana yang boleh digabung/
+>    disembunyikan) sebelum coding.
+
 > **Catatan Sync (S140, di luar batch tracking — bugfix ditemukan lewat
 > audit kecil, build `kw140-fix-dashcard-toggle-inline-style`, `?v=565`):**
 > Kartu Beranda opsional (Kebebasan Finansial/Dana Pensiun/Absensi

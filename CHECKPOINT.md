@@ -439,3 +439,63 @@ sandbox, fallback otomatis — sama seperti sesi-sesi sebelumnya).
 `kw_release_sesi84_vehicle-dashboard-final-integration_v508.zip` —
 dibuat & diverifikasi `unzip -t` ("No errors detected in compressed
 data").
+
+---
+
+## Checkpoint — Sesi 157 (2026-07-23): Split Nav Car Notes jadi 4 Tab
+
+**Selesai:** `#page-carnotes` dipecah jadi 4 `cn-tabs` (🧠 Insight AI /
+⛽ BBM / 🔧 Servis / 🚦 Pajak & SIM), pola sama persis `setKeuanganTab`.
+Vehicle selector + Odometer tetap di luar tab (multi-vehicle utuh).
+Detail lengkap: `docs/CLAUDE.md` § Sesi 157.
+
+**Hasil build (`?v=597`, `kw157-mobil-nav-split-tab`):**
+`app-bundle-a.min.js`, `app-bundle-b.min.js`, `index.html`,
+`app_production.html`, `sw.js`, `docs/FILE-MAP.md`, + konstanta versi
+di 5 file source (sinkronisasi otomatis `build.js`).
+
+**TIDAK diubah:** semua presenter/engine vehicle & fuel (0 rumus/render
+baru — murni reorganisasi DOM `index.html` + `setCnTab()` di
+`vehicle-core.js`). Tidak ada file test baru (murni DOM, existing test
+sudah cukup).
+
+## Test
+
+`node --test tests/*.test.js` -> **381/381 pass, 0 fail**.
+
+## Build
+
+`node scripts/build.js kw157-mobil-nav-split-tab` -> sukses, `?v=597`.
+
+## ZIP
+
+`kw_release_sesi157_mobil_nav_split_tab_v597.zip` — dibuat & dikirim ke
+user.
+
+---
+
+## Checkpoint — Sesi 158 (2026-07-23): Bugfix 6 card bocor di semua tab Dashboard Hub
+
+**Selesai:** `SECTION_GROUPS.insight` (`dashboard-hub.js`) ditambah 6 id
+(`propertyManagementWrap`/`rentalManagementWrap`/`assetPortfolioWrap`/
+`assetMaintenanceWrap`/`recommendationPanelWrap`/`actionQueueWrap`) yang
+sebelumnya tidak terdaftar & selalu tampil di semua tab. Detail lengkap:
+`docs/CLAUDE.md` § Sesi 158.
+
+**Hasil build (`?v=598`, `kw158-dashboard-hub-section-groups-fix`):**
+`app-bundle-a.min.js`, `app-bundle-b.min.js`, `index.html`,
+`app_production.html`, `sw.js`, `docs/FILE-MAP.md`,
+`keluarga-w-preview.html` (regenerasi), + konstanta versi di 5 file
+source.
+
+## Test
+
+`node --test tests/*.test.js` -> **381/381 pass, 0 fail**.
+
+## Build
+
+`node scripts/build.js kw158-dashboard-hub-section-groups-fix` -> sukses, `?v=598`.
+
+## ZIP
+
+`kw_release_sesi158_dashboard_hub_section_groups_fix_v598.zip` — dibuat & dikirim ke user.
