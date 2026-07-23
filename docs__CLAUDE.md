@@ -10163,3 +10163,183 @@ sebelumnya).
 utk `BackupHistoryAPI.clear()`), threshold overdue configurable (saat ini
 hardcode 7 hari, sama dgn `checkBackup()`), smoke-test browser manual
 (tidak ada browser di sandbox ini).
+
+---
+
+## Catatan kerja — Sesi 141 (2026-07-22): TASK-141 — Fuel Intelligence Card
+
+**Target:** TASK-141 (READY) — Fuel Intelligence Card. Scope diminta:
+Fuel Engine, Fuel Storage, Fuel Card, Fuel Modal, Fuel History, Fuel
+Analytics. Exit criteria: Build PASS, Tests PASS, Dashboard terintegrasi.
+
+**Audit sebelum implementasi:** ditemukan Engine/Storage/Modal/History/
+Analytics BBM SUDAH ADA tersebar (`fuelEfficiency()`/vehicle-core.js,
+`VehicleFuelTrendSummary`, `VehicleReminder.fuelReminders()`, `D.bbmLogs`,
+`const BBM` di car-notes.js — modal tambah/edit + list + grafik SVG).
+Sesuai `docs/IMPLEMENTATION_POLICY.md` (no-duplicate/100% reuse),
+TASK-141 diinterpretasikan sbg lapisan agregasi BARU ("Fuel Intelligence
+Card") yang menggabungkan semua itu jadi 1 kartu dashboard + modal
+detail — bukan membangun ulang engine/storage yang sudah ada.
+
+**Implementasi (6 file baru, `modules/vehicle/`):**
+- `fuel-storage.js` — `FuelStorage`, accessor read-only tipis di atas
+  `D.bbmLogs` (logs/sortedByDate/latest/recent/count per vehicleId). 0
+  field baru di `D`.
+- `fuel-intelligence-engine.js` — `FuelIntelligenceEngine`,
+  `vehicleInsight(vehicleId)`/`fleetInsight()`: 100% reuse
+  `VehicleFuelTrendSummary.summary()` + `VehicleReminder.fuelReminders()`
+  + `FuelStorage`, 0 rumus baru.
+- `fuel-history.js` — `FuelHistory.render(vehicleId)`, daftar 8 log BBM
+  terbaru (`FuelStorage.recent()`), markup reuse class `tx-item` dari
+  `BBM.renderList()`, tap baris buka `bbmModal` (`openBbmModal`, SUDAH
+  ADA).
+- `fuel-analytics.js` — `FuelAnalytics.render(vehicleId)`, kartu
+  efisiensi (km/L, Rp/km, estimasi/bulan dari `trend.current` apa
+  adanya) + bar tren biaya bulanan (dari `trend.rows[].total` apa
+  adanya, width% murni tampilan).
+- `fuel-modal.js` — `FuelModal.open(vehicleId?)`, orkestrasi tipis: isi
+  judul, panggil `FuelAnalytics.render()`/`FuelHistory.render()`, lalu
+  `openModal('fuelIntelModal')` (SUDAH ADA, reuse apa adanya).
+- `fuel-card.js` — `FuelCard.render()`, kartu ringkas di Dashboard Hub
+  tab Car Notes (kendaraan aktif `curVehicleId`), status warna dari
+  reminders (merah=overdue, oranye=due-soon), CTA buka `FuelModal.open()`.
+
+**File diubah:**
+- `scripts/build.js` — 6 file baru didaftarkan di `GROUP_B`, setelah
+  `vehicle-analytics-presenter.js`, sebelum `vehicle-decision-api.js`.
+- `modules/shared/modules-render.js` — 1 baris panggil `FuelCard.render()`
+  di `renderCnTab()`, setelah `VehicleAnalyticsPresenter.render()`.
+- `modules/shared/modals.js` — 1 modal baru `fuelIntelModal` ditambahkan
+  ke `MODAL_HTML`, setelah `bbmModal`.
+- `index.html`/`app_production.html` — container baru `#fuelIntelWrap`/
+  `#fuelIntelBody` di Dashboard Hub (`#page-carnotes`), setelah
+  `#vehAnalyticsWrap`.
+
+**Test baru (+26, 6 file baru):** `tests/fuel-storage.test.js` (7),
+`tests/fuel-intelligence-engine.test.js` (5), `tests/fuel-card.test.js`
+(5), `tests/fuel-history.test.js` (3), `tests/fuel-modal.test.js` (3),
+`tests/fuel-analytics.test.js` (3). DOM-heavy (Card/History/Modal/
+Analytics) dites lewat fake DOM minimal (stub `getElementById`), bukan
+jsdom, sesuai catatan `helpers/loadSource.js`.
+
+**Diverifikasi:** `node --test tests/*.test.js` → **95/95 pass, 0 fail**
+(69 test lama di workspace bootstrap ini + 26 baru). `node scripts/build.js
+kw-task141-fuel-intelligence-card-2` → sukses, versi naik 565→567 (2x
+build selama sesi ini), 3 lint-guard bawaan lolos, kedua bundle lolos
+`node --check` sintaks, `index.html`/`app_production.html` identik,
+`FILE-MAP.md` diregenerasi. Bundle TANPA minifikasi (esbuild tidak
+terpasang di sandbox ini).
+
+**Dashboard terintegrasi:** ✅ — `FuelCard` tampil di Dashboard Hub tab
+Car Notes (`renderCnTab()`), tap CTA buka `fuelIntelModal` berisi
+`FuelAnalytics`+`FuelHistory`.
+
+**Sengaja di luar scope sesi ini:** fleet-level card (multi-kendaraan
+sekaligus — `FuelIntelligenceEngine.fleetInsight()` sudah ada tapi belum
+dipakai UI manapun, kandidat lanjutan), field "kapasitas tangki" per
+kendaraan (masih pakai estimasi rata-rata liter Full Tank historis, sama
+seperti `VehicleReminder.fuelReminders()`), export/print riwayat BBM dari
+modal (delegasi ke `bbmModal` yang sudah ada).
+
+**Known Issue:** `npm run lint`/esbuild tetap tidak bisa dijalankan
+(tanpa akses internet di sandbox ini), sama seperti sesi-sesi sebelumnya.
+
+---
+
+## Catatan kerja — Sesi 157 (2026-07-23): Split Nav Car Notes jadi 4 Tab
+
+**Target:** Permintaan eksplisit user — halaman Car Notes (`#page-carnotes`)
+terlalu panjang ke bawah (10 card AI/dashboard + fuel selalu tampil
+sekaligus di atas tab BBM/Servis), beda dari pola Keuangan/Shop yang
+sudah dipecah tab. User minta dipecah tab TAPI tetap multi-vehicle
+(vehicle selector jangan hilang/kebawa masuk ke dalam tab tertentu).
+
+**Implementasi (murni reorganisasi DOM + toggle visibility, 0 rumus/
+render/logic baru — 100% reuse):**
+- `index.html`/`app_production.html` — `#page-carnotes` dipecah jadi 4
+  `cn-tabs` (pola sama persis `setKeuanganTab`, `#page-keuangan`):
+  - `🧠 Insight AI` (`#cnTab-insight`, BARU) — `#vehdashWrap`/
+    `#vehinsightWrap`/`#vehBriefWrap`/`#vehAttentionWrap`/
+    `#vehAnalyticsWrap`/`#vehAutomationWrap`/`#vehSpecCard`, dipindah
+    dari selalu-tampil di atas.
+  - `⛽ BBM` (`#cnTab-bbm`, sudah ada) — ditambah 4 fuel card
+    (`#fuelIntelWrap`/`#fuelDashWrap`/`#fuelCompareWrap`/
+    `#fuelTrendWrap`) di atas konten BBM lama, dipindah dari tab Insight.
+  - `🔧 Servis` (`#cnTab-servis`) — tidak berubah.
+  - `🚦 Pajak & SIM` (`#cnTab-pajak`, BARU) — card Pajak Kendaraan & SIM,
+    dipindah dari selalu-tampil di bawah `#vehSpecCard`.
+  - Vehicle selector chip (`#vehicleSelect`) + Odometer (`#cnCurKm`)
+    TETAP di luar/atas ke-4 tab (tidak dipindah sama sekali) — konteks
+    "kendaraan mana yang aktif" tetap kelihatan & tetap ke-apply ke
+    semua tab (multi-vehicle tidak berubah).
+  - Periode chips (`#cnPeriodeChips`/`#cnCustomRange`) dibungkus
+    `#cnPeriodeWrap` (BARU) — cuma tampil di tab bbm/servis (filter itu
+    memang cuma dipakai `renderBbmList()`/`renderServisList()`).
+  - FAB (`#carNotesFab`) — cuma tampil di tab bbm/servis (aksinya
+    `openBbmModal()`/`openServisModal()`, tidak relevan di tab lain).
+- `modules/vehicle/vehicle-core.js` — `setCnTab(t,el)` diperluas dari
+  2 tab (`bbm`/`servis`) jadi 4 (`insight`/`bbm`/`servis`/`pajak`) +
+  toggle visibility `#carNotesFab`/`#cnPeriodeWrap` sesuai tab aktif.
+  `renderCnTab()` (modules-render.js) TIDAK disentuh — semua render()
+  presenter tetap dipanggil apa adanya tiap render (data selalu fresh),
+  murni DOM `u-dnone` yang berubah lewat `setCnTab()`.
+
+**Default tab aktif:** `bbm` (sama seperti sebelumnya, `curCnTab='bbm'`
+di `features-helpers-global-security.js`, tidak diubah) — supaya
+perilaku default tidak berubah dari sudut pandang user existing.
+
+**Diverifikasi:** `node --test tests/*.test.js` → **381/381 pass, 0
+fail** (murni reorganisasi DOM, tidak ada test yang perlu diubah).
+`node scripts/build.js kw157-mobil-nav-split-tab` → sukses, versi naik
+596→597, 3 lint-guard bawaan lolos, kedua bundle lolos `node --check`
+sintaks, `index.html`/`app_production.html` identik, `FILE-MAP.md`
+diregenerasi.
+
+**Sengaja di luar scope sesi ini:** grouping tab lain (mis. pisah
+Servis jadi sub-tab lagi kalau ke depan makin panjang), badge/notif
+count di tombol tab (mis. jumlah item "Perlu Perhatian" di tombol
+Insight AI) — belum diminta eksplisit.
+
+**Known Issue:** esbuild tetap tidak terpasang (sandbox tanpa internet),
+bundle belum diminify, sama seperti sesi-sesi sebelumnya.
+
+---
+
+## Catatan kerja — Sesi 158 (2026-07-23): Bugfix — 6 card bocor tampil di semua tab Dashboard Hub
+
+**Target:** Lanjutan analisa permintaan user ("dashboard hub masih panjang
+kebawah") — Dashboard Hub sudah punya 4 sub-tab (Ringkasan/Fitur/Widget/
+Insight) sejak 2026-07-17, tapi tetap terasa panjang di SEMUA tab.
+
+**Root cause:** `#propertyManagementWrap`/`#rentalManagementWrap`/
+`#assetPortfolioWrap`/`#assetMaintenanceWrap` (S101-104, Sesi 132) &
+`#recommendationPanelWrap`/`#actionQueueWrap` (Sesi 90, Decision Center)
+— container HTML-nya sudah ada & diisi render()-nya masing-masing lewat
+`DashboardHub.render()`, tapi TIDAK PERNAH didaftarkan ke `SECTION_GROUPS`
+(`applySectionTab()`, `dashboard-hub.js`) sejak split tab dibuat. Akibatnya
+ke-6nya tidak pernah kena toggle `u-dnone` — selalu tampil di ke-4 tab
+sekaligus, bocor keluar dari sistem tab.
+
+**Fix (1 baris array, `modules/dashboard-hub/dashboard-hub.js`):** ke-6 id
+ditambahkan ke grup `insight` (SECTION_GROUPS), sejalan tematik dgn isi
+tab itu (Life OS, Kondisi Ekonomi, Cross Summary — semua card lintas-
+domain). 0 render/logic/markup HTML disentuh — murni pendaftaran ke
+mekanisme toggle yang sudah ada, jalan otomatis lewat `applySectionTab()`
+yang sudah dipanggil tiap `DashboardHub.render()`.
+
+**Diverifikasi:** `node --test tests/*.test.js` → **381/381 pass, 0
+fail** (tidak ada test yang assert isi `SECTION_GROUPS` secara eksplisit,
+`tests/dashboard-hub-goto-subtab.test.js` pakai fake DOM independen —
+tidak terpengaruh). `node scripts/build.js
+kw158-dashboard-hub-section-groups-fix` → sukses, versi naik 597→598,
+3 lint-guard bawaan lolos, kedua bundle lolos `node --check` sintaks,
+`index.html`/`app_production.html` identik, `FILE-MAP.md` diregenerasi.
+`keluarga-w-preview.html` diregenerasi ulang (`node scripts/
+build-preview.js`) dari source `?v=598`.
+
+**Sengaja di luar scope sesi ini:** audit ulang seluruh Dashboard Hub utk
+kandidat "leak" serupa lainnya (sesi ini cuma verifikasi manual DOM
+region antara `#eieWrap`→`#crossDashWrap` & `#lifePriorityWrap`→
+`#dashboardHubPinnedWrap` tempat 6 id ini ditemukan — audit id lain di
+luar 2 region itu belum dilakukan, kandidat sesi lanjutan kalau user
+masih merasa panjang setelah fix ini).

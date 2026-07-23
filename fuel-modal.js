@@ -30,3 +30,14 @@ open(vehicleId) {
 },
 
 };
+
+// Ekspos ke window — WAJIB supaya delegasi klik global (data-action, di
+// features-helpers-global-security.js) bisa menemukan modul ini lewat
+// window['FuelModal']['open']. `const FuelModal = {...}` di atas HANYA
+// membuat binding lexical-scope (bukan properti window), pola fix sama
+// persis window.DashboardHub di dashboard-hub-search.js (bug yang sama
+// pernah terjadi & diperbaiki di sana). Tanpa baris ini, tombol
+// "📊 Lihat Detail" tidak akan pernah berfungsi meski test lolos, karena
+// test memanggil FuelModal.open() langsung (referensi lexical, bukan
+// lewat window), tidak lewat jalur klik data-action yang sesungguhnya.
+if (typeof FuelModal !== 'undefined') window.FuelModal = FuelModal;

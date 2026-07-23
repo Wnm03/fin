@@ -227,9 +227,30 @@ save() {
   // (SUDAH ADA), pola sama persis refresh FuelCard/FuelModal di atas. 0
   // logic render baru di sini.
   if (typeof FuelDashboard !== 'undefined') FuelDashboard.render(vid);
+  // TASK-156: Refresh Fuel Trend Dashboard — 100% REUSE
+  // FuelTrendDashboard.render() (SUDAH ADA), pola sama persis refresh
+  // FuelCard/FuelModal/FuelDashboard di atas. 0 logic render baru di sini.
+  if (typeof FuelTrendDashboard !== 'undefined') FuelTrendDashboard.render(vid);
 
   this.curVehicleId = null;
   this.selectedBar = null;
 },
 
 };
+
+// Ekspos ke window — WAJIB supaya delegasi klik global (data-action, di
+// features-helpers-global-security.js) bisa menemukan modul ini lewat
+// window['FuelBarCorrection']['open']. `const FuelBarCorrection = {...}`
+// di atas HANYA membuat binding lexical-scope (bukan properti window),
+// pola fix sama persis window.DashboardHub di dashboard-hub-search.js
+// (bug yang sama pernah terjadi & diperbaiki di sana). Tanpa baris ini,
+// tombol "⚙️ Koreksi" di FuelCard/FuelDashboard/FuelTrendDashboard tidak
+// akan pernah berfungsi meski test lolos, karena test memanggil
+// FuelBarCorrection.open()/selectBar() langsung (referensi lexical, bukan
+// lewat window), tidak lewat jalur klik data-action yang sesungguhnya.
+// (Tombol bar picker di dalam modal ini sendiri pakai data-onclick, bukan
+// data-action, jadi TIDAK terpengaruh bug ini — new Function() di
+// handler data-onclick membaca lewat lexical scope global, bukan lewat
+// window[...] — tapi tombol "⚙️ Koreksi" yang MEMBUKA modal ini tetap
+// butuh baris ini karena dipanggil lewat data-action="FuelBarCorrection.open".)
+if (typeof FuelBarCorrection !== 'undefined') window.FuelBarCorrection = FuelBarCorrection;

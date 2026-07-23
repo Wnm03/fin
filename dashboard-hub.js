@@ -60,7 +60,15 @@ const PAGE_NAV_IDX = {
 // dashboard-hub-registry.js untuk daftar tab yang valid per page).
 const KEU_TAB_IDX = { kelola: 0, tagihan: 1, budget: 2, utangpiutang: 3, asetproyek: 4, laporan: 5 };
 const SHOP_TAB_IDX = { kasir: 0, jual: 1, etalase: 2, produsen: 3, riwayat: 4, pelanggan: 5 };
-const CN_TAB_IDX = { bbm: 0, servis: 1 };
+// BUGFIX (Sesi 158, ditemukan sewaktu wiring deep-link sub-tab baru):
+// CN_TAB_IDX dulu {bbm:0, servis:1} — stale sejak Sesi 157 (page-carnotes
+// jadi 4 tab: insight/bbm/servis/pajak, BUKAN 2 lagi). Efeknya cosmetic
+// (pane yang ditampilkan tetap benar krn setCnTab() pakai `t`, bukan
+// index tombol -- tapi tombol yang di-marking `active` SALAH, mis. target
+// tab:'bbm' malah menyalakan tombol index 0 = "Insight AI"). Diperbaiki
+// jadi urutan DOM asli 4 tab (lihat komentar "Sesi 157" di
+// app_production.html/index.html).
+const CN_TAB_IDX = { insight: 0, bbm: 1, servis: 2, pajak: 3 };
 const PAJAK_TAB_IDX = { zakat: 0, pajak: 1 };
 const ASET_TAB_IDX = { ringkasan: 0, buku: 1, analisis: 2 };
 // Sub-tab nested DI DALAM tab 'laporan' (page keuangan) — lihat setLaporanTab
@@ -73,6 +81,12 @@ const KELOLA_SUBTAB_IDX = { ringkasan: 0, transaksi: 1, pengaturan: 2 };
 // features-sheets-pwa-selftest.js & catatan split 2026-07-17 (bagian ke-4)
 // di CLAUDE.md.
 const PJK_SUBTAB_IDX = { pph21: 0, pbb: 1 };
+// Sub-tab nested DI DALAM tab 'insight' (page carnotes) — lihat
+// setCnInsightTab di vehicle-core.js & catatan split Sesi 158.
+const CNI_SUBTAB_IDX = { ringkasan: 0, rekomendasi: 1 };
+// Sub-tab nested DI DALAM tab 'bbm' (page carnotes) — lihat setCnBbmTab
+// di vehicle-core.js & catatan split Sesi 158.
+const CNB_SUBTAB_IDX = { ringkasan: 0, analisis: 1 };
 
 // Resolve string action ("openTxModal" atau "WorthIt.open") jadi pemanggilan
 // fungsi nyata, dgn `this` yg benar kalau namespaced (pola sama dgn
@@ -168,6 +182,13 @@ function dashHubNavigateToFeature(target) {
     } else if (target.page === 'carnotes') {
       const tabs = document.querySelectorAll('#page-carnotes .cn-tab');
       setCnTab(target.tab, tabs[CN_TAB_IDX[target.tab]]);
+      if (target.tab === 'insight' && target.subtab) {
+        const subtabs = document.querySelectorAll('#cnTab-insight .cni-subtab');
+        setCnInsightTab(target.subtab, subtabs[CNI_SUBTAB_IDX[target.subtab]]);
+      } else if (target.tab === 'bbm' && target.subtab) {
+        const subtabs = document.querySelectorAll('#cnTab-bbm .cnb-subtab');
+        setCnBbmTab(target.subtab, subtabs[CNB_SUBTAB_IDX[target.subtab]]);
+      }
     } else if (target.page === 'pajak') {
       const tabs = document.querySelectorAll('#page-pajak .cn-tab');
       setPajakTab(target.tab, tabs[PAJAK_TAB_IDX[target.tab]]);
@@ -451,6 +472,35 @@ const DashboardHub = {
     // tidak mengubah baris manapun sebelum ini.
     if (typeof DashboardHubAnalytics !== 'undefined') DashboardHubAnalytics.render();
 
+    // GAP FIX lanjutan (lihat catatan panjang S136 di bawah untuk latar
+    // belakang lengkap "Menghitung..." macet permanen): panggilan
+    // TanggaKeuangan.render() DIPINDAH ke SINI (tepat setelah 4 kartu inti
+    // Dashboard 2.0 Hero/Favorit/Summary/Analytics di atas), BUKAN lagi
+    // di posisi lama (setelah EIEDashboard, lihat bekas lokasinya di
+    // bawah). Sebelumnya, kalau salah SATU SAJA dari 15+ presenter
+    // "tambahan murni" antara sini & posisi lama (Property/Rental/Asset
+    // Portfolio/Asset Maintenance/Cross Dashboard/Cross Insight/Unified
+    // Briefing/Unified Dashboard Home/Decision Center/Favorit
+    // View/EIEDashboard) throw exception TAK TERTANGKAP, SISA render()
+    // ini langsung berhenti total di titik itu -- termasuk baris
+    // TanggaKeuangan.render() yang posisinya jauh di bawah, sehingga
+    // kartu tetap macet di placeholder statis "Menghitung..." walau fix
+    // S136 (live-wiring vs DashboardHub.render() timing) sudah benar.
+    // Dipindah ke sini supaya kartu ini SELALU ikut ter-render di frame
+    // yang sama dgn 4 kartu inti lain, TIDAK bergantung pada berhasil/
+    // gagalnya presenter lain yang jauh lebih banyak & lebih berisiko
+    // (baca data lintas-modul/AI). Dibungkus try/catch sendiri (pola sama
+    // dgn renderDashboard() di modules-render.js) sbg lapisan proteksi
+    // kedua -- kalau TanggaKeuangan.render() SENDIRI yang throw, tidak
+    // ikut menjatuhkan sisa render() (Property/Rental/dst di bawah tetap
+    // jalan). 100% reuse TanggaKeuangan.render() yang sudah ada, 0
+    // rumus/mekanisme baru.
+    try {
+      if (typeof TanggaKeuangan !== 'undefined') TanggaKeuangan.render();
+    } catch (e) {
+      console.warn('DashboardHub.render(): TanggaKeuangan.render() gagal, dilewati:', e);
+    }
+
     // Finance Dashboard/Forecast/Budget Reco/Cashflow Proj/Financial
     // Goal/Invest Planner/Debt Optimizer/Retirement Planner/Health
     // Score/Risk Dashboard (Sesi 75/91-99, Batch 6/10) — DIPINDAH (Sesi
@@ -563,30 +613,14 @@ const DashboardHub = {
     // EIEDashboard.render()), jadi tidak memblokir render kartu lain.
     if (typeof EIEDashboard !== 'undefined') EIEDashboard.render();
 
-    // GAP FIX (Sesi 136): Tangga Ternak Uang (#tanggaKeuanganCard, lihat
-    // tangga-keuangan.js) SEBELUM sesi ini hanya dirender lewat live-wiring
-    // renderDashboard() (modules/shared/modules-render.js) — TIDAK PERNAH
-    // dipanggil langsung dari sini walau container-nya SECARA FISIK ada di
-    // dalam #page-dashboard-hub (halaman yang fungsi render() ini yang
-    // bertanggung jawab). Sebelum Sesi 135, itu masih "cukup cepat" karena
-    // renderDashboard() sendiri dipanggil sinkron di showMain() lalu live-
-    // wiring-nya nyusul 1 frame kemudian. Sesi 135 (perf fix PIN-unlock)
-    // membuat renderDashboard() DITUNDA lewat runDeferredOrNow() saat
-    // Dashboard Hub yang aktif (kasus paling umum, krn ini landing page
-    // default) — akibatnya kartu ini kena TUNDA DUA KALI (nunggu
-    // renderDashboard() dulu baru nunggu live-wiring di dalamnya), jadi
-    // makin lama macet di "Menghitung...". Fix-nya: render LANGSUNG di sini
-    // (pola sama persis Hero/Summary/Analytics/dst di atas — kartu yang
-    // rumahnya di Dashboard Hub, dirender dari DashboardHub.render(), BUKAN
-    // dari renderDashboard()), jadi selalu ikut ter-render di frame yang
-    // SAMA dengan kartu Dashboard Hub lain begitu halaman ini tampil,
-    // apapun kondisi timing renderDashboard(). Panggilan TanggaKeuangan.
-    // render() di live-wiring renderDashboard() TETAP dibiarkan (BUKAN
-    // dihapus) — itu perlu utk skenario user TETAP di Dashboard Hub lalu
-    // simpan data dari halaman lain (live-update), pola sama persis
-    // DecisionCenterHome/UnifiedDashboardHome di atas. 100% reuse
-    // TanggaKeuangan.render() yang sudah ada, 0 rumus/mekanisme baru.
-    if (typeof TanggaKeuangan !== 'undefined') TanggaKeuangan.render();
+    // S137: panggilan TanggaKeuangan.render() yang dulu ada DI SINI (Sesi
+    // 136 gap fix) sudah DIPINDAH lebih ke atas — tepat setelah
+    // DashboardHubAnalytics.render() — supaya tidak lagi ikut batal kalau
+    // salah satu presenter "tambahan murni" antara situ & sini (Property/
+    // Rental/Asset Portfolio/Asset Maintenance/Cross Dashboard/Cross
+    // Insight/Unified Briefing/Unified Dashboard Home/Decision Center/
+    // Favorit View/EIEDashboard) throw exception. Lihat komentar lengkap
+    // di lokasi baru (setelah DashboardHubAnalytics.render() di atas).
 
     // Tab switcher "Semua Fitur"/"Pinned Widgets" (dashHubMainTabsRow) sudah
     // DIHAPUS 2026-07-17 — #dashHubMainGridCard & #dashboardHubPinnedWrap
@@ -642,7 +676,17 @@ const DashboardHub = {
       // pindah — lihat catatan render() di atas). Sisa di grup ini murni
       // konten LINTAS-DOMAIN (Cross/LifeOS/EIE) yang tidak punya "rumah"
       // 1 fitur tunggal.
-      insight: ['lifeOSWrap', 'eieWrap', 'crossDashWrap', 'crossBriefWrap', 'crossInsightWrap', 'personalOverviewWrap', 'crossWidgetsWrap', 'lifePriorityWrap'],
+      // Sesi 158 (bugfix, permintaan eksplisit user): #propertyManagementWrap/
+      // #rentalManagementWrap/#assetPortfolioWrap/#assetMaintenanceWrap
+      // (S101-104, Sesi 132) & #recommendationPanelWrap/#actionQueueWrap
+      // (Sesi 90) DITAMBAHKAN ke grup ini — sebelumnya container-nya sudah
+      // ada di HTML & diisi render()-nya masing-masing, tapi TIDAK PERNAH
+      // didaftarkan ke SECTION_GROUPS manapun sejak split tab ini dibuat
+      // (2026-07-17), jadi ke-6nya selalu tampil di SEMUA tab sekaligus
+      // (bocor keluar dari sistem tab) — itu yang bikin Dashboard Hub masih
+      // terasa panjang walau sub-tab sudah ada. Murni pendaftaran ke array
+      // yang sudah ada, 0 render/logic/markup disentuh.
+      insight: ['lifeOSWrap', 'eieWrap', 'propertyManagementWrap', 'rentalManagementWrap', 'assetPortfolioWrap', 'assetMaintenanceWrap', 'crossDashWrap', 'crossBriefWrap', 'crossInsightWrap', 'personalOverviewWrap', 'crossWidgetsWrap', 'lifePriorityWrap', 'recommendationPanelWrap', 'actionQueueWrap'],
     };
     Object.keys(SECTION_GROUPS).forEach((t) => {
       SECTION_GROUPS[t].forEach((id) => {

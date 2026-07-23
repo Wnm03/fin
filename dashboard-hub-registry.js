@@ -52,7 +52,12 @@
 //     field opsional `subtab: 'ringkasan'|'transaksi'|'pengaturan'`
 //     (setKelolaTab, sama file)
 //   page:'shop'     -> 'kasir'|'jual'|'etalase'|'produsen'|'riwayat'|'pelanggan' (setShopTab, cobek-io.js)
-//   page:'carnotes' -> 'bbm' | 'servis'           (setCnTab, vehicle-core.js)
+//   page:'carnotes' -> 'insight'|'bbm'|'servis'|'pajak'  (setCnTab, vehicle-core.js,
+//     4 tab sejak Sesi 157 — dulu cuma 'bbm'|'servis')
+//     tab:'insight' PUNYA sub-tab bersarang (Sesi 158): field opsional
+//     `subtab: 'ringkasan'|'rekomendasi'` (setCnInsightTab, vehicle-core.js)
+//     tab:'bbm' JUGA PUNYA sub-tab bersarang (Sesi 158): field opsional
+//     `subtab: 'ringkasan'|'analisis'` (setCnBbmTab, vehicle-core.js)
 //   page:'pajak'    -> 'zakat' | 'pajak'           (setPajakTab, features-sheets-pwa-selftest.js)
 //     tab:'pajak' JUGA PUNYA sub-tab bersarang (2026-07-17, bagian ke-4):
 //     field opsional `subtab: 'pph21'|'pbb'` (setPjkTab, sama file)
@@ -164,7 +169,7 @@ const FEATURE_REGISTRY = [
     navIdx: 4,
     features: [
       { key: 'cn-pajak-sim', label: 'Pajak Kendaraan & SIM', icon: '🪪', desc: 'STNK, SPT Tahunan, SIM', target: { page: 'carnotes', goTo: 'vehTaxList' } },
-      { key: 'cn-bbm', label: 'Riwayat Isi BBM', icon: '⛽', desc: 'Catatan isi BBM & konsumsi km/L', target: { page: 'carnotes', tab: 'bbm', goTo: 'bbmList' } },
+      { key: 'cn-bbm', label: 'Riwayat Isi BBM', icon: '⛽', desc: 'Catatan isi BBM & konsumsi km/L', target: { page: 'carnotes', tab: 'bbm', subtab: 'ringkasan', goTo: 'bbmList' } },
       { key: 'cn-servis', label: 'Riwayat Servis', icon: '🔧', desc: 'Catatan servis & pengingat interval', target: { page: 'carnotes', tab: 'servis', goTo: 'servisList' } },
       { key: 'cn-sparepart', label: 'Sparepart', icon: '⚙️', desc: 'Stok sparepart per kategori', target: { page: 'carnotes', tab: 'servis', goTo: 'stockList' } },
     ],
